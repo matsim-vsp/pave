@@ -1,4 +1,6 @@
-# matsim-example-project
+# PAVE github repo (currently private)
+
+Following text comes from matsim-example-project; to be adapted ...
 
 A small example of how to use MATSim as a library.
 
