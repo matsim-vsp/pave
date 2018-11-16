@@ -19,7 +19,7 @@
 /**
  * 
  */
-package freight4AV.infrastructure;
+package privateAV.infrastructure;
 
 import java.util.Collection;
 import java.util.Iterator;

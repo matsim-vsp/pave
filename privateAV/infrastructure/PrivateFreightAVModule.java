@@ -19,7 +19,7 @@
 /**
  * 
  */
-package freight4AV.infrastructure;
+package privateAV.infrastructure;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.data.Fleet;

@@ -19,7 +19,7 @@
 /**
  * 
  */
-package freight4AV.infrastructure;
+package privateAV.infrastructure;
 
 import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.taxi.data.validator.TaxiRequestValidator;

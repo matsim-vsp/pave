@@ -19,7 +19,7 @@
 /**
  * 
  */
-package freight4AV.infrastructure;
+package privateAV.infrastructure;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.MapConfiguration;
