@@ -32,6 +32,7 @@ import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelDataImpl;
 import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
+import org.matsim.contrib.dvrp.schedule.DriveTask;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.tracker.OnlineDriveTaskTracker;
@@ -42,15 +43,20 @@ import org.matsim.contrib.taxi.optimizer.DefaultTaxiOptimizerProvider;
 import org.matsim.contrib.taxi.run.Taxi;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
+import org.matsim.contrib.taxi.schedule.TaxiPickupTask;
+import org.matsim.contrib.taxi.schedule.TaxiTask;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.router.FastAStarEuclideanFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.utils.misc.Time;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import privateAV.infrastructure.Task.TaxiFreightStartTask;
 
 /**
  * @author jbischoff
@@ -123,5 +129,59 @@ public class PrivateAV4FreightScheduler extends TaxiScheduler {
 				DEPOT_LINK, Schedules.getLastTask(vehicle.getSchedule()).getEndTime(), this.router, this.travelTime);
 		
 		 vehicle.getSchedule().addTask(new TaxiEmptyDriveTask(path));
+	}
+	
+	
+	/*
+	 * 
+	 * we need to overide this method because the calculation of the FreightStartTask (which has the TaxiTaskType.Stay) annot depend on a request, since it has none
+	 * 
+	 * @see org.matsim.contrib.taxi.scheduler.TaxiScheduler#calcNewEndTime(org.matsim.contrib.dvrp.data.Vehicle, org.matsim.contrib.taxi.schedule.TaxiTask, double)
+	 */
+	@Override
+	protected double calcNewEndTime(Vehicle vehicle, TaxiTask task, double newBeginTime) {
+		switch (task.getTaxiTaskType()) {
+		case STAY: {
+			if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
+				// even if endTime=beginTime, do not remove this task!!! A taxi schedule should end with WAIT
+				return Math.max(newBeginTime, vehicle.getServiceEndTime());
+			} else {
+				// if this is not the last task then some other task (e.g. DRIVE or PICKUP)
+				// must have been added at time submissionTime <= t
+				double oldEndTime = task.getEndTime();
+				if (oldEndTime <= newBeginTime) {// may happen if the previous task is delayed
+					return Time.UNDEFINED_TIME;// remove the task
+				} else {
+					return oldEndTime;
+				}
+			}
+		}
+
+		case EMPTY_DRIVE:
+		case OCCUPIED_DRIVE: {
+			// cannot be shortened/lengthen, therefore must be moved forward/backward
+			VrpPathWithTravelData path = (VrpPathWithTravelData)((DriveTask)task).getPath();
+			// TODO one may consider recalculation of SP!!!!
+			return newBeginTime + path.getTravelTime();
+		}
+
+		case PICKUP: {
+			double t0 = newBeginTime;
+			if(task instanceof TaxiPickupTask) {
+				t0 = ((TaxiPickupTask)task).getRequest().getEarliestStartTime();
+			} else if(task instanceof TaxiFreightStartTask) {
+				t0 = ((TaxiFreightStartTask)task).getEarliestStartTime();
+			}
+			// the actual pickup starts at max(t, t0)
+			return Math.max(newBeginTime, t0) + taxiCfg.getPickupDuration();
+		}
+		case DROPOFF: {
+			// cannot be shortened/lengthen, therefore must be moved forward/backward
+			return newBeginTime + taxiCfg.getDropoffDuration();
+		}
+
+		default:
+			throw new IllegalStateException();
+	}
 	}
 }
