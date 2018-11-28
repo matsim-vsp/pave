@@ -16,7 +16,7 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package privateAV.infrastructure;
+package privateAV.infrastructure.modules;
 
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.passenger.PassengerEngine;
@@ -39,6 +39,8 @@ import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+
+import privateAV.infrastructure.PrivateAV4FreightScheduler;
 
 /**
  * @author tschlenther

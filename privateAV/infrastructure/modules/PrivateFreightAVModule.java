@@ -19,7 +19,7 @@
 /**
  * 
  */
-package privateAV.infrastructure;
+package privateAV.infrastructure.modules;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.data.Fleet;
@@ -42,6 +42,10 @@ import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import com.google.inject.Inject;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
+
+import freight.manager.PrivateAVFreightTourManager;
+import freight.manager.SimpleFreightTourManager;
+import privateAV.infrastructure.TSPrivateAVFleetGenerator;
 
 /**
  * @author tschlenther
@@ -86,6 +90,8 @@ public final class PrivateFreightAVModule extends AbstractModule{
 		}
 
 		bind(TaxiRequestValidator.class).to(DefaultTaxiRequestValidator.class);		
+		
+		bind(PrivateAVFreightTourManager.class).to(SimpleFreightTourManager.class).asEagerSingleton();
 	}
 
 }
