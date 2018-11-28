@@ -104,6 +104,8 @@ public class TSPrivateAVRequestInserter implements UnplannedRequestInserter {
 			reqIter.remove();
 
 		}
+		
+		
 	}
 
 	private boolean isWaitStayOrEmptyDrive(TaxiTask task) {

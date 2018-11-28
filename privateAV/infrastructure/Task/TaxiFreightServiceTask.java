@@ -20,6 +20,7 @@ package privateAV.infrastructure.Task;
 
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
+import org.matsim.contrib.freight.carrier.CarrierService;
 import org.matsim.contrib.freight.carrier.FreightConstants;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 
@@ -29,15 +30,17 @@ import org.matsim.contrib.taxi.schedule.TaxiTask;
  */
 public class TaxiFreightServiceTask extends StayTaskImpl implements TaxiTask {
 
+	CarrierService service;
+	
 	/**
 	 * @param beginTime
 	 * @param endTime
 	 * @param link
 	 * @param name
 	 */
-	public TaxiFreightServiceTask(double beginTime, double endTime, Link link) {
+	public TaxiFreightServiceTask(double beginTime, double endTime, Link link, CarrierService service) {
 		super(beginTime, endTime, link, FreightConstants.DELIVERY);
-		// TODO Auto-generated constructor stub
+		this.service = service;
 	}
 	
 	@Override

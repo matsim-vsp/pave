@@ -63,6 +63,16 @@ public class RunPrivateAVScenario {
 
 		
 		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
+		
+		/*
+		 * very important: we assume that destination of trips are known in advance.
+		 * that leads to the occupiedDriveTask and the TaxiDropoffTask to inserted at the same time as the PickUpTask (when the request is processed)
+		 * in our scenario, this is realistic, since users must have defined their working location before the agreed on having their AV making freight trips.
+		 * 
+		 *  as we also convert the freight "start" activity to a TaxiPickup (we assigned the TaxiTaskType PICKUP), the following setting is even more important,
+		 *  because otherwise the scheduler would insert a normal TaxiOccupiedDriveTask and a TaxiDropoff Task after the PickupTask
+		 */
+		
 		taxiCfg.setDestinationKnown(true);
 		
 		Config config = ConfigUtils.loadConfig(CONFIG_FILE_RULEBASED, new DvrpConfigGroup(), taxiCfg);
