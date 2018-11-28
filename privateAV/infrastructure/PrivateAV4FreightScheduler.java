@@ -56,6 +56,7 @@ import org.matsim.core.utils.misc.Time;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import privateAV.infrastructure.Task.TaxiFreightServiceTask;
 import privateAV.infrastructure.Task.TaxiFreightStartTask;
 
 /**
@@ -117,8 +118,14 @@ public class PrivateAV4FreightScheduler extends TaxiScheduler {
 	
 	@Override
 	protected void appendTasksAfterDropoff(Vehicle vehicle) {
-		addDriveToDepotTask(vehicle);
+//		addDriveToDepotTask(vehicle);
 //		appendStayTask(vehicle);
+		appendEmptyDriveTask();
+	}
+
+	private void appendEmptyDriveTask() {
+		
+		TaxiEmptyDriveTask task = new TaxiEmptyDriveTask(path)
 	}
 
 	private void addDriveToDepotTask(Vehicle vehicle) {
@@ -141,47 +148,53 @@ public class PrivateAV4FreightScheduler extends TaxiScheduler {
 	@Override
 	protected double calcNewEndTime(Vehicle vehicle, TaxiTask task, double newBeginTime) {
 		switch (task.getTaxiTaskType()) {
-		case STAY: {
-			if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
-				// even if endTime=beginTime, do not remove this task!!! A taxi schedule should end with WAIT
-				return Math.max(newBeginTime, vehicle.getServiceEndTime());
-			} else {
-				// if this is not the last task then some other task (e.g. DRIVE or PICKUP)
-				// must have been added at time submissionTime <= t
-				double oldEndTime = task.getEndTime();
-				if (oldEndTime <= newBeginTime) {// may happen if the previous task is delayed
-					return Time.UNDEFINED_TIME;// remove the task
+			case STAY: {
+				if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
+					// even if endTime=beginTime, do not remove this task!!! A taxi schedule should end with WAIT
+					return Math.max(newBeginTime, vehicle.getServiceEndTime());
 				} else {
-					return oldEndTime;
+					// if this is not the last task then some other task (e.g. DRIVE or PICKUP)
+					// must have been added at time submissionTime <= t
+					double oldEndTime = task.getEndTime();
+					if (oldEndTime <= newBeginTime) {// may happen if the previous task is delayed
+						return Time.UNDEFINED_TIME;// remove the task
+					} else {
+						return oldEndTime;
+					}
 				}
 			}
-		}
-
-		case EMPTY_DRIVE:
-		case OCCUPIED_DRIVE: {
-			// cannot be shortened/lengthen, therefore must be moved forward/backward
-			VrpPathWithTravelData path = (VrpPathWithTravelData)((DriveTask)task).getPath();
-			// TODO one may consider recalculation of SP!!!!
-			return newBeginTime + path.getTravelTime();
-		}
-
-		case PICKUP: {
-			double t0 = newBeginTime;
-			if(task instanceof TaxiPickupTask) {
-				t0 = ((TaxiPickupTask)task).getRequest().getEarliestStartTime();
-			} else if(task instanceof TaxiFreightStartTask) {
-				t0 = ((TaxiFreightStartTask)task).getEarliestStartTime();
+	
+			case EMPTY_DRIVE:
+			case OCCUPIED_DRIVE: {
+				// cannot be shortened/lengthen, therefore must be moved forward/backward
+				VrpPathWithTravelData path = (VrpPathWithTravelData)((DriveTask)task).getPath();
+				// TODO one may consider recalculation of SP!!!!
+				return newBeginTime + path.getTravelTime();
 			}
-			// the actual pickup starts at max(t, t0)
-			return Math.max(newBeginTime, t0) + taxiCfg.getPickupDuration();
+	
+			case PICKUP: {
+				double t0 = newBeginTime;
+				if(task instanceof TaxiPickupTask) {
+					t0 = ((TaxiPickupTask)task).getRequest().getEarliestStartTime();
+				} else if(task instanceof TaxiFreightStartTask) {
+					t0 = ((TaxiFreightStartTask)task).getEarliestStartTime();
+				}
+				// the actual pickup starts at max(t, t0)
+				return Math.max(newBeginTime, t0) + taxiCfg.getPickupDuration();
+			}
+			case DROPOFF: {
+				//if the newBeginTime is later than the serviceStartTimeWindow, the service can't be done // delivery must be skipped... this should be handled somehow
+				//e.g. by giving at least a warning and maybe by forcing the taxi to drive back to the depot to return the non-delivered package
+				if(task instanceof TaxiFreightServiceTask) {
+					
+				}
+				
+				// cannot be shortened/lengthen, therefore must be moved forward/backward
+				return newBeginTime + taxiCfg.getDropoffDuration();
+			}
+	
+			default:
+				throw new IllegalStateException();
 		}
-		case DROPOFF: {
-			// cannot be shortened/lengthen, therefore must be moved forward/backward
-			return newBeginTime + taxiCfg.getDropoffDuration();
-		}
-
-		default:
-			throw new IllegalStateException();
-	}
 	}
 }

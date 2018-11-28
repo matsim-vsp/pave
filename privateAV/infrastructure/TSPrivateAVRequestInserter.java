@@ -85,6 +85,7 @@ public class TSPrivateAVRequestInserter implements UnplannedRequestInserter {
 			}
 			if (((TaxiTask)veh.getSchedule().getCurrentTask()).getTaxiTaskType() == TaxiTaskType.EMPTY_DRIVE) {
 				((PrivateAV4FreightScheduler)scheduler).stopCruisingVehicle(veh);
+				
 			}
 
 			VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(Schedules.getLastLinkInSchedule(veh), 
