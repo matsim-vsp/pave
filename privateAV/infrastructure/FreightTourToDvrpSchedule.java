@@ -45,9 +45,9 @@ import org.matsim.contrib.taxi.schedule.TaxiTask;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import privateAV.infrastructure.Task.TaxiFreightServiceDriveTask;
-import privateAV.infrastructure.Task.TaxiFreightServiceTask;
-import privateAV.infrastructure.Task.TaxiFreightStartTask;
+import privateAV.Task.TaxiFreightServiceDriveTask;
+import privateAV.Task.TaxiFreightServiceTask;
+import privateAV.Task.TaxiFreightStartTask;
 
 /**
  * @author tschlenther

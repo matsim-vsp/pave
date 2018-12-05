@@ -19,7 +19,7 @@
 /**
  * 
  */
-package privateAV.infrastructure;
+package privateAV.infrastructure.inherited;
 
 import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.taxi.data.validator.TaxiRequestValidator;
@@ -30,6 +30,9 @@ import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
+
+import privateAV.infrastructure.delegated.PrivateAVFreightSchedulerV2;
+import privateAV.infrastructure.delegated.TSPrivateAVRequestInserter;
 
 /**
  * @author tschlenther
@@ -46,8 +49,8 @@ public class TSPrivateAVTaxiDispatcher extends DefaultTaxiOptimizer {
 	 * @param requestValidator
 	 * @param eventsManager
 	 */
-	public TSPrivateAVTaxiDispatcher(TaxiConfigGroup taxiCfg, Fleet fleet, TaxiScheduler scheduler,
-			DefaultTaxiOptimizerParams params, TSPrivateAVRequestInserter requestInserter,
+	public TSPrivateAVTaxiDispatcher(TaxiConfigGroup taxiCfg, Fleet fleet, PrivateAV4FreightScheduler scheduler,
+			DefaultTaxiOptimizerParams params, UnplannedRequestInserter requestInserter,
 			TaxiRequestValidator requestValidator, EventsManager eventsManager) {
 		super(taxiCfg, fleet, scheduler, params, requestInserter, requestValidator, eventsManager);
 		// TODO Auto-generated constructor stub

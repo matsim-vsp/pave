@@ -16,7 +16,7 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package privateAV.infrastructure.modules;
+package privateAV.modules;
 
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.passenger.PassengerEngine;
@@ -29,6 +29,7 @@ import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
 import org.matsim.contrib.taxi.passenger.TaxiRequestCreator;
 import org.matsim.contrib.taxi.run.Taxi;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
+import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
 import org.matsim.contrib.taxi.vrpagent.TaxiActionCreator;
 import org.matsim.core.mobsim.framework.MobsimTimer;
@@ -40,7 +41,8 @@ import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
-import privateAV.infrastructure.PrivateAV4FreightScheduler;
+import privateAV.infrastructure.delegated.PrivateAVFreightSchedulerV2;
+import privateAV.infrastructure.inherited.PrivateAV4FreightScheduler;
 
 /**
  * @author tschlenther
@@ -66,7 +68,7 @@ public class FreightAVQSimModule extends AbstractQSimModule {
 
 		bind(TaxiOptimizer.class).toProvider(providerClass).asEagerSingleton();
 		
-		bind(TaxiScheduler.class).to(PrivateAV4FreightScheduler.class);
+		bind(TaxiScheduleInquiry.class).to(PrivateAVFreightSchedulerV2.class);
 
 		Named modeNamed = Names.named(TaxiConfigGroup.get(getConfig()).getMode());
 		bind(VrpOptimizer.class).annotatedWith(modeNamed).to(TaxiOptimizer.class);

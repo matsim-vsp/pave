@@ -85,7 +85,6 @@ public class SimpleFreightTourManager implements PrivateAVFreightTourManager {
 	 */
 	@Override
 	public Schedule getBestAVFreightTourForVehicle(Vehicle vehicle) {
-		// TODO Auto-generated method stub
 		return getRandomAVFreightTour();
 	}
 

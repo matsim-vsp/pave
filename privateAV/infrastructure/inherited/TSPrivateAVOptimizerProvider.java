@@ -19,7 +19,7 @@
 /**
  * 
  */
-package privateAV.infrastructure;
+package privateAV.infrastructure.inherited;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.MapConfiguration;
@@ -34,6 +34,7 @@ import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
 import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
 import org.matsim.contrib.taxi.run.Taxi;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
+import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
@@ -46,6 +47,9 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
+import privateAV.infrastructure.delegated.PrivateAVFreightSchedulerV2;
+import privateAV.infrastructure.delegated.TSPrivateAVRequestInserter;
+
 
 /**
  * @author tschlenther
@@ -55,7 +59,7 @@ public class TSPrivateAVOptimizerProvider implements Provider<TaxiOptimizer>{
 
 	private TaxiConfigGroup taxiCfg;
 	private Fleet fleet;
-	private TaxiScheduler scheduler;
+	private PrivateAV4FreightScheduler scheduler;
 //	private TSPrivateAVRequestInserter requestInserter;
 	private TaxiRequestValidator requestValidator;
 	private EventsManager events;
@@ -66,7 +70,7 @@ public class TSPrivateAVOptimizerProvider implements Provider<TaxiOptimizer>{
 
 	@Inject
 	public TSPrivateAVOptimizerProvider(TaxiConfigGroup taxiCfg, Fleet fleet,
-			TaxiScheduler scheduler, MobsimTimer timer,
+			PrivateAV4FreightScheduler scheduler, MobsimTimer timer,
 			@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
 			@Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
 			TaxiRequestValidator requestValidator, EventsManager events) {
@@ -86,7 +90,9 @@ public class TSPrivateAVOptimizerProvider implements Provider<TaxiOptimizer>{
 		Configuration optimizerConfig = new MapConfiguration(taxiCfg.getOptimizerConfigGroup().getParams());
 		LeastCostPathCalculator router = new DijkstraFactory().createPathCalculator(network, travelDisutility,
 				travelTime);
-		TSPrivateAVRequestInserter requestInserter = new TSPrivateAVRequestInserter(fleet, scheduler, timer, travelTime, router,network);
+		
+		PrivateAVTaxiInheritedRequestInserter requestInserter = new PrivateAVTaxiInheritedRequestInserter(fleet, scheduler, timer, travelTime, router,network);
+		
 		return new TSPrivateAVTaxiDispatcher(taxiCfg, fleet, scheduler,
 				new RuleBasedTaxiOptimizerParams(optimizerConfig), requestInserter, requestValidator, events);
 	}

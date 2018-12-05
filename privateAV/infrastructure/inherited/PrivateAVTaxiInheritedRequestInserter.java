@@ -19,7 +19,7 @@
 /**
  * 
  */
-package privateAV.infrastructure.delegated;
+package privateAV.infrastructure.inherited;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -45,10 +45,10 @@ import org.matsim.core.router.util.TravelTime;
  * @author tschlenther
  *
  */
-public class TSPrivateAVRequestInserter implements UnplannedRequestInserter {
+public class PrivateAVTaxiInheritedRequestInserter implements UnplannedRequestInserter {
 
 	private final Fleet fleet;
-	private final PrivateAVFreightSchedulerV2 scheduler;
+	private final PrivateAV4FreightScheduler scheduler;
 	private final MobsimTimer timer;
 	private final TravelTime travelTime;
 	private final LeastCostPathCalculator router;
@@ -57,7 +57,7 @@ public class TSPrivateAVRequestInserter implements UnplannedRequestInserter {
 	/**
 	 * 
 	 */
-	public TSPrivateAVRequestInserter(Fleet fleet, PrivateAVFreightSchedulerV2 scheduler, MobsimTimer timer, TravelTime travelTime,
+	public PrivateAVTaxiInheritedRequestInserter(Fleet fleet, PrivateAV4FreightScheduler scheduler, MobsimTimer timer, TravelTime travelTime,
 			LeastCostPathCalculator router, Network network) {
 		this.fleet = fleet;
 		this.scheduler = scheduler;
@@ -85,11 +85,7 @@ public class TSPrivateAVRequestInserter implements UnplannedRequestInserter {
 
 			}
 			if (((TaxiTask)veh.getSchedule().getCurrentTask()).getTaxiTaskType() == TaxiTaskType.EMPTY_DRIVE) {
-				if(isCurrentlyOnOrWillPerformPerformFreightTour(veh)) {
-					scheduler.cancelFreightTour(veh);
-				} else {
 					scheduler.stopCruisingVehicle(veh);
-				}
 				
 			}
 
@@ -112,11 +108,6 @@ public class TSPrivateAVRequestInserter implements UnplannedRequestInserter {
 		}
 		
 		
-	}
-
-	private boolean isCurrentlyOnOrWillPerformPerformFreightTour(Vehicle veh) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	private boolean isWaitStayOrEmptyDrive(TaxiTask task) {

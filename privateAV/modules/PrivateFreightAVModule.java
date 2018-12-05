@@ -19,7 +19,7 @@
 /**
  * 
  */
-package privateAV.infrastructure.modules;
+package privateAV.modules;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.data.Fleet;

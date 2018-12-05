@@ -20,7 +20,7 @@
 /**
  * 
  */
-package privateAV.infrastructure;
+package privateAV.infrastructure.inherited;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -35,6 +35,7 @@ import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.schedule.DriveTask;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.Schedules;
+import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
 import org.matsim.contrib.dvrp.tracker.OnlineDriveTaskTracker;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
@@ -45,6 +46,7 @@ import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
 import org.matsim.contrib.taxi.schedule.TaxiPickupTask;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
+import org.matsim.contrib.taxi.schedule.TaxiTask.TaxiTaskType;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.router.FastAStarEuclideanFactory;
@@ -56,8 +58,9 @@ import org.matsim.core.utils.misc.Time;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import privateAV.infrastructure.Task.TaxiFreightServiceTask;
-import privateAV.infrastructure.Task.TaxiFreightStartTask;
+import freight.manager.PrivateAVFreightTourManager;
+import privateAV.Task.TaxiFreightServiceTask;
+import privateAV.Task.TaxiFreightStartTask;
 
 /**
  * @author jbischoff
@@ -68,7 +71,10 @@ public class PrivateAV4FreightScheduler extends TaxiScheduler {
 	private Link DEPOT_LINK;
 	private LeastCostPathCalculator router;
 	private TravelTime travelTime;
+	private MobsimTimer timer;
 	
+	@Inject
+	private PrivateAVFreightTourManager freightManager;
 
 	/**
 	 * @param taxiCfg
@@ -86,11 +92,12 @@ public class PrivateAV4FreightScheduler extends TaxiScheduler {
 		super(taxiCfg, fleet, network, timer, travelTime, travelDisutility);
 		DEPOT_LINK = network.getLinks().get(Id.createLinkId("560"));
 		
-		//the router and traveltime variables are initialized the same way in the super class; but the fields are set to private over there. Since i'm not working on a snapshot, i can't change
+		//the router and traveltime and timer variables are initialized the same way in the super class; but the fields are set to private over there. Since i'm not working on a snapshot, i can't change
 		//this. So i choose the sloppy version to have another instance of the router and the travel time field variable
 		router = new FastAStarEuclideanFactory(taxiCfg.getAStarEuclideanOverdoFactor()).createPathCalculator(network,
 				travelDisutility, travelTime);
 		this.travelTime = travelTime;
+		this.timer = timer;
 	}
 
 	public void moveIdleVehicle(Vehicle vehicle, VrpPathWithTravelData vrpPath) {
@@ -120,12 +127,9 @@ public class PrivateAV4FreightScheduler extends TaxiScheduler {
 	protected void appendTasksAfterDropoff(Vehicle vehicle) {
 //		addDriveToDepotTask(vehicle);
 //		appendStayTask(vehicle);
-		appendEmptyDriveTask();
-	}
-
-	private void appendEmptyDriveTask() {
+//		appendEmptyDriveTask();
 		
-		TaxiEmptyDriveTask task = new TaxiEmptyDriveTask(path)
+		super.appendTasksAfterDropoff(vehicle);
 	}
 
 	private void addDriveToDepotTask(Vehicle vehicle) {
@@ -141,7 +145,7 @@ public class PrivateAV4FreightScheduler extends TaxiScheduler {
 	
 	/*
 	 * 
-	 * we need to overide this method because the calculation of the FreightStartTask (which has the TaxiTaskType.Stay) annot depend on a request, since it has none
+	 * we need to override this method because the calculation of the FreightStartTask (which has the TaxiTaskType.Stay) annot depend on a request, since it has none
 	 * 
 	 * @see org.matsim.contrib.taxi.scheduler.TaxiScheduler#calcNewEndTime(org.matsim.contrib.dvrp.data.Vehicle, org.matsim.contrib.taxi.schedule.TaxiTask, double)
 	 */
@@ -196,5 +200,33 @@ public class PrivateAV4FreightScheduler extends TaxiScheduler {
 			default:
 				throw new IllegalStateException();
 		}
+		
 	}
+	
+	@Override
+	public void updateBeforeNextTask(Vehicle vehicle) {
+		
+		Schedule schedule = vehicle.getSchedule();
+		// Assumption: there is no delay as long as the schedule has not been started (PLANNED)
+		if (schedule.getStatus() != ScheduleStatus.STARTED) {
+			return;
+		}
+
+//		updateTimelineImpl(vehicle, timer.getTimeOfDay());
+		super.updateTimeline(vehicle);
+
+		TaxiTask currentTask = (TaxiTask)schedule.getCurrentTask();
+	
+		switch(currentTask.getTaxiTaskType()) {
+		
+		case PICKUP:
+			if (!taxiCfg.isDestinationKnown()) {
+				appendOccupiedDriveAndDropoff(schedule);
+				appendTasksAfterDropoff(vehicle);
+			}
+		case DROPOFF:
+			
+		}
+	}
+	
 }
