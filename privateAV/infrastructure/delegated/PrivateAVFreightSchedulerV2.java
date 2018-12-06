@@ -2,6 +2,7 @@ package privateAV.infrastructure.delegated;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -48,6 +49,8 @@ import privateAV.Task.TaxiFreightServiceTask;
 import privateAV.Task.TaxiFreightStartTask;
 
 public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
+
+	private static final Logger log = Logger.getLogger(PrivateAVFreightSchedulerV2.class);
 
 	private TaxiScheduler delegate;
 	private Link DEPOT_LINK;
@@ -122,6 +125,7 @@ public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
 			if(currentTask instanceof TaxiDropoffTask) {
 				Schedule freightTour = freightManager.getBestAVFreightTourForVehicle(vehicle); 
 				if(freightTour != null) {
+					log.info("++++++++++++++ Vehicle " + vehicle.getId() + " is assigned to a freight tour!++++++");
 					insertFreightSchedule(vehicle, freightTour, (TaxiDropoffTask) currentTask);
 				} else {
 					throw new IllegalArgumentException();
@@ -139,6 +143,9 @@ public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
 			throw new IllegalStateException(
 					"if a freight tour shall be inserted - the next vehicle task must be STAY. That is not the case for vehicle " + vehicle.getId() + " at " + timer.getTimeOfDay());
 		} else {
+			
+			//remove the stay task
+			schedule.removeLastTask();
 			
 			StayTaskImpl previousTask = (StayTaskImpl) freightTour.getTasks().get(0);
 			
@@ -163,21 +170,35 @@ public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
 			}
 		}
 	}
-
-	public void scheduleRequest(Vehicle vehicle, TaxiRequest request, VrpPathWithTravelData vrpPath) {
+	
+	protected void scheduleRequest(Vehicle vehicle, TaxiRequest request) {
 		if (request.getStatus() != TaxiRequestStatus.UNPLANNED) {
 			throw new IllegalStateException();
 		}
 
 		Schedule schedule = vehicle.getSchedule();
-		divertOrAppendDrive(schedule, vrpPath);
+		TaxiTask lastTask = (TaxiTask)Schedules.getLastTask(schedule);
 
-		double pickupEndTime = Math.max(vrpPath.getArrivalTime(), request.getEarliestStartTime())
-				+ taxiCfg.getPickupDuration();
-		schedule.addTask(new TaxiPickupTask(vrpPath.getArrivalTime(), pickupEndTime, request));
+		if( ((TaxiTask) lastTask).getTaxiTaskType() != TaxiTaskType.STAY ) {
+			throw new IllegalStateException();
+		} else {
+			
+			double departureTime = Math.max(lastTask.getBeginTime(), timer.getTimeOfDay());
+			
+			VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(Schedules.getLastLinkInSchedule(vehicle), 
+					request.getFromLink(), departureTime, router, travelTime);
+			
+			scheduleDrive(schedule, (TaxiStayTask)lastTask, path);
+			
+			double pickupEndTime = Math.max(path.getArrivalTime(), request.getEarliestStartTime())
+					+ taxiCfg.getPickupDuration();
+			schedule.addTask(new TaxiPickupTask(path.getArrivalTime(), pickupEndTime, request));
+			
+			appendResultingTasksAfterPickup(vehicle);
+		}
 		
-		appendResultingTasksAfterPickup(vehicle);
 	}
+	
 
 	private void appendResultingTasksAfterPickup(Vehicle vehicle) {
 		appendOccupiedDriveAndDropoff(vehicle.getSchedule());
@@ -210,8 +231,8 @@ public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
 	
 
 	protected void cancelFreightTour(Vehicle veh) {
-		// TODO Auto-generated method stub
-		
+		// TODO: cancel the freight tour and make vehicle return to depot. insert STAY task at the depot
+		throw new RuntimeException("currently not implemented");
 	}
 	
 	//---------------------------------------------------- DELEGATE METHODS --------------

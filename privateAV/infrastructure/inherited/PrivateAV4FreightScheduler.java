@@ -73,8 +73,8 @@ public class PrivateAV4FreightScheduler extends TaxiScheduler {
 	private TravelTime travelTime;
 	private MobsimTimer timer;
 	
-	@Inject
-	private PrivateAVFreightTourManager freightManager;
+//	@Inject
+//	private PrivateAVFreightTourManager freightManager;
 
 	/**
 	 * @param taxiCfg

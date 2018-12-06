@@ -54,13 +54,9 @@ import privateAV.Task.TaxiFreightStartTask;
  *
  */
 public class FreightTourToDvrpSchedule {
-
-	@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
-	private static Network network;
 	
 	
-	public static Schedule convert(ScheduledTour freightTour) {
-
+	public static Schedule convert(ScheduledTour freightTour, Network network) {
 		
 		Schedule dvrpSchedule = new ScheduleImpl(convertVehicle(freightTour));
 		
@@ -69,26 +65,25 @@ public class FreightTourToDvrpSchedule {
 		CarrierVehicle carrierVehicle = freightTour.getVehicle();
 		double earliestStart = carrierVehicle.getEarliestStartTime();
 		
+		Start startAct = freightTour.getTour().getStart();
 		
-		//get the first element - this should be the start activity
-		TourElement currentElement = it.next();
-		if(!(currentElement instanceof Start)) {
-			throw new IllegalArgumentException("the first activity of the ScheduledTour " + freightTour.toString() + " is not a 'Start' activity");
-		} else {
-			Start startAct = (Start) currentElement;
-			
-			/*it's not yet clear what time points we put in here.... but maybe it's not too important since they get updated anyways, as soon as the schedule is assigned to a taxi
-			*furthermore, the duarion of a 'Start' activitiy in the freight contrib is currently hardcoded to 0  - this should get changed in the future
-			*tschlenther 11/2018
-			*/
-			TaxiFreightStartTask startTask = new TaxiFreightStartTask(earliestStart, earliestStart + startAct.getDuration(),
-																		network.getLinks().get(startAct.getLocation())); 
-			startTask.setEarliestStartTime(carrierVehicle.getEarliestStartTime());
-			
-			dvrpSchedule.addTask(startTask);
+		if(startAct == null) {
+			throw new RuntimeException();
 		}
+		if(network == null) {
+			throw new RuntimeException();
+		}
+		/*it's not yet clear what time points we put in here.... but maybe it's not too important since they get updated anyways, as soon as the schedule is assigned to a taxi
+		*furthermore, the duration of a 'Start' activitiy in the freight contrib is currently hardcoded to 0  - this should get changed in the future
+		*tschlenther 11/2018<
+		*/
+		TaxiFreightStartTask startTask = new TaxiFreightStartTask(earliestStart, earliestStart + startAct.getDuration(),
+																	network.getLinks().get(startAct.getLocation())); 
+		startTask.setEarliestStartTime(carrierVehicle.getEarliestStartTime());
+		dvrpSchedule.addTask(startTask);
 		
-		
+		//get the first element - this is actually the first leg
+		TourElement currentElement = it.next();
 		while(it.hasNext()) {
 			
 			Leg lastLeg = null;

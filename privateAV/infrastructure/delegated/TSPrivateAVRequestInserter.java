@@ -80,24 +80,21 @@ public class TSPrivateAVRequestInserter implements UnplannedRequestInserter {
 			if (veh == null) {
 				throw new RuntimeException("Vehicle " + personalAV.toString() + "does not exist.");
 			}
-			if (!isWaitStayOrEmptyDrive((TaxiTask)veh.getSchedule().getCurrentTask())) {
-				throw new RuntimeException("Vehicle " + personalAV.toString() + "is not idle.");
-
-			}
-			if (((TaxiTask)veh.getSchedule().getCurrentTask()).getTaxiTaskType() == TaxiTaskType.EMPTY_DRIVE) {
-				if(isCurrentlyOnOrWillPerformPerformFreightTour(veh)) {
-					scheduler.cancelFreightTour(veh);
-				} else {
+			if(isCurrentlyOnOrWillPerformPerformFreightTour(veh)) {
+				scheduler.cancelFreightTour(veh);
+			} else {
+				if (!isWaitStayOrEmptyDrive((TaxiTask)veh.getSchedule().getCurrentTask())) {
+					throw new RuntimeException("Vehicle " + personalAV.toString() + "is not idle.");
+				}
+				if (((TaxiTask)veh.getSchedule().getCurrentTask()).getTaxiTaskType() == TaxiTaskType.EMPTY_DRIVE) {
 					scheduler.stopCruisingVehicle(veh);
 				}
-				
 			}
+				
 
 			VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(Schedules.getLastLinkInSchedule(veh), 
 					req.getFromLink(), timer.getTimeOfDay(), router, travelTime);
 			scheduler.scheduleRequest(veh, req, path);
-			
-			
 			
 			/*
 			 * this is the part in PrivatAVTaxiRequestInserter we don't need 

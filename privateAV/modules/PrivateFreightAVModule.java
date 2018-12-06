@@ -71,7 +71,7 @@ public final class PrivateFreightAVModule extends AbstractModule{
 		bind(Fleet.class).annotatedWith(Names.named(taxiCfg.getMode())).to(TSPrivateAVFleetGenerator.class);
 		bind(Fleet.class).annotatedWith(Taxi.class).to(TSPrivateAVFleetGenerator.class);
 		bind(Fleet.class).to(TSPrivateAVFleetGenerator.class);
-		addControlerListenerBinding().to(TSPrivateAVFleetGenerator.class);
+		
 		
 		bind(TravelDisutilityFactory.class).annotatedWith(Names.named(DefaultTaxiOptimizerProvider.TAXI_OPTIMIZER))
 				.toInstance(travelTime -> new TimeAsTravelDisutility(travelTime));
@@ -91,7 +91,9 @@ public final class PrivateFreightAVModule extends AbstractModule{
 
 		bind(TaxiRequestValidator.class).to(DefaultTaxiRequestValidator.class);		
 		
-		bind(PrivateAVFreightTourManager.class).to(SimpleFreightTourManager.class).asEagerSingleton();
+		
+		addControlerListenerBinding().to(TSPrivateAVFleetGenerator.class);
+//		bind(PrivateAVFreightTourManager.class).to(SimpleFreightTourManager.class).asEagerSingleton();
 	}
 
 }

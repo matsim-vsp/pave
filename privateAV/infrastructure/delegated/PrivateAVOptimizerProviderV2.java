@@ -1,8 +1,9 @@
 /* *********************************************************************** *
- * project: org.matsim.*
+ * project: org.matsim.*												   *
+ *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2018 by the members listed in the COPYING,        *
+ * copyright       : (C) 2008 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -15,11 +16,7 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-
-/**
- * 
- */
-package privateAV.infrastructure.inherited;
+package privateAV.infrastructure.delegated;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.MapConfiguration;
@@ -29,38 +26,33 @@ import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.router.TimeAsTravelDisutility;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.taxi.data.validator.TaxiRequestValidator;
-import org.matsim.contrib.taxi.optimizer.DefaultTaxiOptimizerProvider;
 import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
 import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
-import org.matsim.contrib.taxi.run.Taxi;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
-import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.router.DijkstraFactory;
-import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
-import privateAV.infrastructure.delegated.PrivateAVFreightSchedulerV2;
-import privateAV.infrastructure.delegated.TSPrivateAVRequestInserter;
-
+import privateAV.infrastructure.inherited.PrivateAV4FreightScheduler;
+import privateAV.infrastructure.inherited.PrivateAVTaxiInheritedRequestInserter;
+import privateAV.infrastructure.inherited.TSPrivateAVTaxiDispatcher;
 
 /**
  * @author tschlenther
  *
  */
-public class TSPrivateAVOptimizerProvider implements Provider<TaxiOptimizer>{
-
+public class PrivateAVOptimizerProviderV2 implements Provider<TaxiOptimizer> {
 	private TaxiConfigGroup taxiCfg;
 	private Fleet fleet;
 	private TaxiScheduleInquiry scheduler;
-	private TSPrivateAVRequestInserter requestInserter;
 	private TaxiRequestValidator requestValidator;
 	private EventsManager events;
 	private MobsimTimer timer;
@@ -69,7 +61,7 @@ public class TSPrivateAVOptimizerProvider implements Provider<TaxiOptimizer>{
 	private Network network;
 
 	@Inject
-	public TSPrivateAVOptimizerProvider(TaxiConfigGroup taxiCfg, Fleet fleet,
+	public PrivateAVOptimizerProviderV2(TaxiConfigGroup taxiCfg, Fleet fleet,
 			TaxiScheduleInquiry scheduler, MobsimTimer timer,
 			@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
 			@Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
@@ -84,7 +76,7 @@ public class TSPrivateAVOptimizerProvider implements Provider<TaxiOptimizer>{
 			this.requestValidator = requestValidator;
 			this.events = events;
 	}
-	
+
 	@Override
 	public TaxiOptimizer get() {
 		Configuration optimizerConfig = new MapConfiguration(taxiCfg.getOptimizerConfigGroup().getParams());
@@ -94,10 +86,9 @@ public class TSPrivateAVOptimizerProvider implements Provider<TaxiOptimizer>{
 		if(!(scheduler instanceof PrivateAV4FreightScheduler)) {
 			throw new IllegalArgumentException();
 		}
-		PrivateAVTaxiInheritedRequestInserter requestInserter = new PrivateAVTaxiInheritedRequestInserter(fleet, (PrivateAV4FreightScheduler) scheduler, timer, travelTime, router,network);
 		
-		return new TSPrivateAVTaxiDispatcher(taxiCfg, fleet, (PrivateAV4FreightScheduler) scheduler,
-				new RuleBasedTaxiOptimizerParams(optimizerConfig), requestInserter, requestValidator, events);
+		return new PrivateAV4FreightOptimizer(taxiCfg, fleet, (PrivateAVFreightSchedulerV2) scheduler,
+				new RuleBasedTaxiOptimizerParams(optimizerConfig), requestValidator, events);
 	}
-
+	
 }

@@ -50,13 +50,15 @@ import privateAV.infrastructure.inherited.PrivateAV4FreightScheduler;
  */
 public class FreightAVQSimModule extends AbstractQSimModule {
 	private final Class<? extends Provider<? extends TaxiOptimizer>> providerClass;
+	private final Class<? extends TaxiScheduleInquiry> schedulerClass;
 
 	public FreightAVQSimModule() {
-		this(DefaultTaxiOptimizerProvider.class);
+		this(DefaultTaxiOptimizerProvider.class, TaxiScheduler.class);
 	}
 
-	public FreightAVQSimModule(Class<? extends Provider<? extends TaxiOptimizer>> providerClass) {
+	public FreightAVQSimModule(Class<? extends Provider<? extends TaxiOptimizer>> providerClass, final Class<? extends TaxiScheduleInquiry> schedulerClass) {
 		this.providerClass = providerClass;
+		this.schedulerClass = schedulerClass;
 	}
 
 	@Override
@@ -66,9 +68,9 @@ public class FreightAVQSimModule extends AbstractQSimModule {
 		DvrpTravelDisutilityProvider.bindTravelDisutilityForOptimizer(binder(),
 				DefaultTaxiOptimizerProvider.TAXI_OPTIMIZER);
 
+		bind(TaxiScheduleInquiry.class).to(schedulerClass);
 		bind(TaxiOptimizer.class).toProvider(providerClass).asEagerSingleton();
 		
-		bind(TaxiScheduleInquiry.class).to(PrivateAVFreightSchedulerV2.class);
 
 		Named modeNamed = Names.named(TaxiConfigGroup.get(getConfig()).getMode());
 		bind(VrpOptimizer.class).annotatedWith(modeNamed).to(TaxiOptimizer.class);

@@ -22,13 +22,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.freight.carrier.Carrier;
 import org.matsim.contrib.freight.carrier.CarrierPlan;
 import org.matsim.contrib.freight.carrier.CarrierPlanReader;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
 import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.carrier.ScheduledTour;
+
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import privateAV.infrastructure.FreightTourToDvrpSchedule;
 
@@ -38,13 +44,24 @@ import privateAV.infrastructure.FreightTourToDvrpSchedule;
  */
 public class SimpleFreightTourManager implements PrivateAVFreightTourManager {
 
+	@Inject
+	@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) 
+	private Network network;
+	
 	private List<Schedule> freightTours = new ArrayList<Schedule>();
 	
 	/**
 	 * 
 	 */
+
+	
 	public SimpleFreightTourManager(String pathToCarrierFile) {
 		Carriers carriers =  readCarriersFile(pathToCarrierFile);
+		
+		new SimpleFreightTourManager(carriers);
+	}
+	
+	public SimpleFreightTourManager(Carriers carriers) {
 		convertCarrierPlans(carriers);
 	}
 
@@ -52,14 +69,14 @@ public class SimpleFreightTourManager implements PrivateAVFreightTourManager {
 		for(Carrier carrier : carriers.getCarriers().values()) {
 			CarrierPlan plan = carrier.getSelectedPlan();
 			for (ScheduledTour freightSchedule : plan.getScheduledTours()) {
-				this.freightTours.add(FreightTourToDvrpSchedule.convert(freightSchedule));
+				this.freightTours.add(FreightTourToDvrpSchedule.convert(freightSchedule, network));
 			}
 		}
 	}
 
 	private Carriers readCarriersFile(String pathToCarrierFile) {
 		Carriers carriers = new Carriers();
-		CarrierPlanReader reader = new CarrierPlanReader(carriers);
+		CarrierPlanXmlReaderV2 reader = new CarrierPlanXmlReaderV2(carriers);
 		reader.readFile(pathToCarrierFile);
 		return carriers;
 	}
