@@ -10,6 +10,10 @@
 	<name>PAVE java code</name>
 	<description>PAVE java code</description>
 
+	<properties>
+	  <matsim.version>0.11.0-2018w49</matsim.version>
+	</properties>
+
 	<repositories>
 		<repository>
 			<!-- Geotools is not on Maven central -->
@@ -23,12 +27,6 @@
 			<url>https://dl.bintray.com/matsim/matsim</url>
 		</repository>
 		<repository>
-			<!-- For MATSim monthly snapshots: -->
-			<id>bintray-matsim-eth-matsim</id>
-			<name>bintray</name>
-			<url>https://dl.bintray.com/matsim-eth/matsim</url>
-		</repository>
-		<repository>
 			<!-- For MATSim snapshots: -->
 			<id>ojo-snapshots</id>
 			<url>http://oss.jfrog.org/libs-snapshot</url>
@@ -40,20 +38,21 @@
 		<dependency>
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim</artifactId>
-			<version>0.11.0-2018w48</version>
+			<version>${matsim.version}</version>
 		</dependency>
 
-		<!--MATSim examples. Not transitive. (Why not?) -->
+		<!--MATSim examples. Not transitive -->
 		<dependency>
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim-examples</artifactId>
 			<version>0.11.0-SNAPSHOT</version>
+			<!--(not in weekly release!)-->
 		</dependency>
 
 		<dependency>
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>freight</artifactId>
-			<version>0.11.0-2018w48</version>
+			<version>${matsim.version}</version>
 		</dependency>
 
 		<dependency>
@@ -69,7 +68,7 @@
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim</artifactId>
 			<type>test-jar</type>
-			<version>0.10.0</version>
+			<version>${matsim.version}</version>
 			<scope>test</scope>
 		</dependency>
 
