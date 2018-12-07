@@ -95,7 +95,8 @@ public class RunFreight {
 		 * Some Preparation for MATSim 
 		 */
 		Config config = ConfigUtils.createConfig();
-		config.network().setInputFile(IOUtils.newUrl(context ,"grid9x9.xml").getFile());
+		config.setContext(context);
+		config.network().setInputFile("grid9x9.xml");
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		config.controler().setLastIteration(1);
 		Scenario scenario = ScenarioUtils.createScenario(config);
