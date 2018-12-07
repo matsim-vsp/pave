@@ -18,11 +18,11 @@ public class DistanceMatrix {
 		int Rowc = 0;
 		String InputLine = "";
 		switch (Settings.deliveryArea) {
-    	case 0: scanIn = new Scanner (new BufferedReader (new FileReader(System.getProperty("user.dir") + "/Hamburg_Matrix.csv")));
+    	case 0: scanIn = new Scanner (new BufferedReader (new FileReader("scenarios/ovgu" + "/Hamburg_Matrix.csv")));
     			break;
-    	case 1: scanIn = new Scanner (new BufferedReader (new FileReader(System.getProperty("user.dir") + "/Muenchen_Matrix.csv")));
+    	case 1: scanIn = new Scanner (new BufferedReader (new FileReader("scenarios/ovgu" + "/Muenchen_Matrix.csv")));
 				break;
-    	case 2: scanIn = new Scanner (new BufferedReader (new FileReader(System.getProperty("user.dir") + "/Ruhrgebiet_Matrix.csv")));
+    	case 2: scanIn = new Scanner (new BufferedReader (new FileReader("scenarios/ovgu" + "/Ruhrgebiet_Matrix.csv")));
     			break;
 		}
 	

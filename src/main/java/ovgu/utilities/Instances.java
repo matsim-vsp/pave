@@ -20,7 +20,7 @@ public class Instances {
 		Scanner scanIn = null;
 		int Rowc = 0;
 		String InputLine = "";
-		scanIn = new Scanner (new BufferedReader (new FileReader(System.getProperty("user.dir") + "/Sequence_Instances.csv")));
+		scanIn = new Scanner (new BufferedReader (new FileReader("scenarios/ovgu" + "/Sequence_Instances.csv")));
 		
 		while(scanIn.hasNextLine()){
 			InputLine = scanIn.nextLine();
@@ -37,7 +37,7 @@ public class Instances {
 		Scanner scanIn = null;
 		int Rowc = 0;
 		String InputLine = "";
-		scanIn = new Scanner (new BufferedReader (new FileReader(System.getProperty("user.dir") + "/Requests.csv")));
+		scanIn = new Scanner (new BufferedReader (new FileReader("scenarios/ovgu" + "/Requests.csv")));
 		
 		while(scanIn.hasNextLine()){
 			InputLine = scanIn.nextLine();
