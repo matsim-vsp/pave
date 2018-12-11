@@ -39,8 +39,6 @@ import org.matsim.core.router.util.TravelTime;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import privateAV.infrastructure.ConvertFreightTourForDvrp;
-
 /**
  * @author tschlenther
  *

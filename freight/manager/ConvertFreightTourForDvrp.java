@@ -16,7 +16,7 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package privateAV.infrastructure;
+package freight.manager;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -51,9 +51,9 @@ import org.matsim.core.router.util.TravelTime;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import privateAV.Task.TaxiFreightServiceDriveTask;
-import privateAV.Task.TaxiFreightServiceTask;
-import privateAV.Task.TaxiFreightStartTask;
+import privateAV.schedule.TaxiFreightServiceDriveTask;
+import privateAV.schedule.TaxiFreightServiceTask;
+import privateAV.schedule.TaxiFreightStartTask;
 
 /**
  * @author tschlenther

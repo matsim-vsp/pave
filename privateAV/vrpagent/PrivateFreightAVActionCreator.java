@@ -16,7 +16,7 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package privateAV.infrastructure.delegated;
+package privateAV.vrpagent;
 
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.passenger.PassengerEngine;
@@ -39,8 +39,8 @@ import org.matsim.core.mobsim.framework.MobsimTimer;
 
 import com.google.inject.Inject;
 
-import privateAV.Task.TaxiFreightServiceTask;
-import privateAV.Task.TaxiFreightStartTask;
+import privateAV.schedule.TaxiFreightServiceTask;
+import privateAV.schedule.TaxiFreightStartTask;
 
 /**
  * @author tschlenther

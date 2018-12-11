@@ -45,7 +45,7 @@ import com.google.inject.name.Names;
 
 import freight.manager.PrivateAVFreightTourManager;
 import freight.manager.SimpleFreightTourManager;
-import privateAV.infrastructure.TSPrivateAVFleetGenerator;
+import privateAV.run.TSPrivateAVFleetGenerator;
 
 /**
  * @author tschlenther

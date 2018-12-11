@@ -16,7 +16,7 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package privateAV.infrastructure.delegated;
+package privateAV.optimizer;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.MapConfiguration;
@@ -32,8 +32,6 @@ import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
-import org.matsim.core.router.DijkstraFactory;
-import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 
@@ -41,9 +39,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
-import privateAV.infrastructure.inherited.PrivateAV4FreightScheduler;
-import privateAV.infrastructure.inherited.PrivateAVTaxiInheritedRequestInserter;
-import privateAV.infrastructure.inherited.TSPrivateAVTaxiDispatcher;
+import privateAV.PrivateAVFreightSchedulerV2;
 
 /**
  * @author tschlenther
@@ -55,10 +51,10 @@ public class PrivateAVOptimizerProviderV2 implements Provider<TaxiOptimizer> {
 	private TaxiScheduleInquiry scheduler;
 	private TaxiRequestValidator requestValidator;
 	private EventsManager events;
-	private MobsimTimer timer;
-	private TravelTime travelTime;
-	private TravelDisutility travelDisutility;
-	private Network network;
+//	private MobsimTimer timer;
+//	private TravelTime travelTime;
+//	private TravelDisutility travelDisutility;
+//	private Network network;
 
 	@Inject
 	public PrivateAVOptimizerProviderV2(TaxiConfigGroup taxiCfg, Fleet fleet,
@@ -69,10 +65,10 @@ public class PrivateAVOptimizerProviderV2 implements Provider<TaxiOptimizer> {
 			this.taxiCfg = taxiCfg;
 			this.fleet = fleet;
 			this.scheduler = scheduler;
-			this.timer = timer;
-			this.network = network;
-			this.travelTime = travelTime;
-			this.travelDisutility = new TimeAsTravelDisutility(travelTime);
+//			this.timer = timer;
+//			this.network = network;
+//			this.travelTime = travelTime;
+//			this.travelDisutility = new TimeAsTravelDisutility(travelTime);
 			this.requestValidator = requestValidator;
 			this.events = events;
 	}

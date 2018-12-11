@@ -34,8 +34,6 @@ import org.matsim.contrib.freight.carrier.ScheduledTour;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 import org.matsim.core.gbl.MatsimRandom;
 
-import privateAV.infrastructure.ConvertFreightTourForDvrp;
-
 /**
  * @author tschlenther
  *

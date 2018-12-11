@@ -21,35 +21,29 @@
  */
 package privateAV.run;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Date;
 
+import org.apache.log4j.helpers.DateTimeDateFormat;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.contrib.dvrp.passenger.PassengerEngineQSimModule;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
-import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
 import org.matsim.contrib.taxi.run.TaxiConfigConsistencyChecker;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
-import org.matsim.contrib.taxi.run.TaxiQSimModule;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.QSimConfigGroup.SnapshotStyle;
-import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
 
-import freight.manager.PrivateAVFreightTourManager;
-import freight.manager.SimpleFreightTourManager;
-import privateAV.infrastructure.*;
-import privateAV.infrastructure.delegated.PrivateAVFreightSchedulerV2;
-import privateAV.infrastructure.delegated.PrivateAVOptimizerProviderV2;
-import privateAV.infrastructure.inherited.PrivateAV4FreightScheduler;
-import privateAV.infrastructure.inherited.TSPrivateAVOptimizerProvider;
+import privateAV.PrivateAVFreightSchedulerV2;
 import privateAV.modules.FreightAVQSimModule;
 import privateAV.modules.PrivateFreightAVModule;
+import privateAV.optimizer.PrivateAVOptimizerProviderV2;
 
 /**
  * @author tschlenther
@@ -57,9 +51,11 @@ import privateAV.modules.PrivateFreightAVModule;
  */
 public class RunPrivateAVScenario {
 
-	public static final String CONFIG_FILE_RULEBASED = "C:/TU Berlin/MasterArbeit/input/Scenarios/mielec/mielec_taxi_config_rulebased.xml";
-	public static final String CONFIG_FILE_ASSIGNMENT = "C:/TU Berlin/MasterArbeit/input/Scenarios/mielec/mielec_taxi_config_assigment.xml";
-	public static final String CARRIERS_FILE = "C:/TU Berlin/MasterArbeit/input/Scenarios/mielec/freight/carrierPlans_routed.xml";
+	public static final String CONFIG_FILE_RULEBASED = "input/Scenarios/mielec/mielec_taxi_config_rulebased.xml";
+	public static final String CONFIG_FILE_ASSIGNMENT = "/input/Scenarios/mielec/mielec_taxi_config_assigment.xml";
+	public static final String CARRIERS_FILE = "input/Scenarios/mielec/freight/carrierPlans_routed.xml";
+	
+	public static final String OUTPUT_DIR = "output/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
 	/**
 	 * 
 	 */
@@ -73,6 +69,10 @@ public class RunPrivateAVScenario {
 	public static void main(String[] args) {
 
 		
+		String pattern = "yyyy-MM-dd";
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
+		String date = simpleDateFormat.format(new Date());	
 		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
 		
 		/*
@@ -88,9 +88,9 @@ public class RunPrivateAVScenario {
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		
 		config.controler().setLastIteration(0);
-		config.controler().setOutputDirectory("output/testFreight_TESTV3/");
+		config.controler().setOutputDirectory(OUTPUT_DIR);
 		
-//		config.plans().setInputFile("C:/TU Berlin/MasterArbeit/input/Scenarios/mielec/plans_only_taxi_ONEAGENT.xml");
+//		config.plans().setInputFile("input/Scenarios/mielec/plans_only_taxi_ONEAGENT.xml");
 		
 //		config.qsim().setStartTime(0);
 //		config.qsim().setSimStarttimeInterpretation(StarttimeInterpretation.onlyUseStarttime);

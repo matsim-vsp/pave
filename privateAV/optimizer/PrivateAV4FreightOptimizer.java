@@ -1,4 +1,4 @@
-package privateAV.infrastructure.delegated;
+package privateAV.optimizer;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,6 +26,7 @@ import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 
 import freight.manager.PrivateAVFreightTourManager;
 import freight.manager.SimpleFreightTourManager;
+import privateAV.PrivateAVFreightSchedulerV2;
 
 public class PrivateAV4FreightOptimizer implements TaxiOptimizer, BeforeMobsimListener {
 

@@ -1,4 +1,4 @@
-package privateAV.infrastructure.delegated;
+package privateAV;
 
 import java.util.List;
 
@@ -48,14 +48,13 @@ import org.matsim.core.utils.misc.Time;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import freight.manager.ConvertFreightTourForDvrp;
 import freight.manager.ListBasedFreightTourManager;
 import freight.manager.ListBasedFreightTourManagerImpl;
 import freight.manager.PrivateAVFreightTourManager;
 import freight.manager.SimpleFreightTourManager;
-import privateAV.Task.TaxiFreightServiceDriveTask;
-import privateAV.Task.TaxiFreightServiceTask;
-import privateAV.Task.TaxiFreightStartTask;
-import privateAV.infrastructure.ConvertFreightTourForDvrp;
+import privateAV.schedule.TaxiFreightServiceDriveTask;
+import privateAV.schedule.TaxiFreightStartTask;
 
 public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
 
@@ -260,7 +259,7 @@ public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
 	}
 	
 	
-	protected void scheduleRequest(Vehicle vehicle, TaxiRequest request) {
+	public void scheduleRequest(Vehicle vehicle, TaxiRequest request) {
 		if (request.getStatus() != TaxiRequestStatus.UNPLANNED) {
 			throw new IllegalStateException();
 		}
@@ -322,8 +321,9 @@ public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
 	}
 	
 
-	protected void cancelFreightTour(Vehicle veh) {
+	public void cancelFreightTour(Vehicle veh) {
 		// TODO: cancel the freight tour and make vehicle return to depot. insert STAY task at the depot
+		//		- first check if freight tour is started in the first place! otherwise throw exception!
 		throw new RuntimeException("currently not implemented");
 	}
 	

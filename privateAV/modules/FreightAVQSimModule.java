@@ -31,19 +31,14 @@ import org.matsim.contrib.taxi.run.Taxi;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
-import org.matsim.contrib.taxi.vrpagent.TaxiActionCreator;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
-import org.matsim.core.router.util.TravelDisutility;
-
 import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
-import privateAV.infrastructure.delegated.PrivateAVFreightSchedulerV2;
-import privateAV.infrastructure.delegated.PrivateFreightAVActionCreator;
-import privateAV.infrastructure.inherited.PrivateAV4FreightScheduler;
+import privateAV.vrpagent.PrivateFreightAVActionCreator;
 
 /**
  * @author tschlenther
