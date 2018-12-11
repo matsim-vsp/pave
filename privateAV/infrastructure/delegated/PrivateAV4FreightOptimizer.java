@@ -138,7 +138,9 @@ public class PrivateAV4FreightOptimizer implements TaxiOptimizer, BeforeMobsimLi
 	@Override
 	public void notifyBeforeMobsim(BeforeMobsimEvent event) {
 		if(event.getIteration() == 0) {
+			// TODO: 1) : run the freight contrib? read in a carrier plan file? => don't initialie the freightTourManager with a set of tours !?
 		}
+		// TODO: 2) : let the freight contrib run again periodacally? 
 		
 	}
 
