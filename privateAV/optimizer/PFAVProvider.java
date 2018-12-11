@@ -39,13 +39,13 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
-import privateAV.PrivateAVFreightSchedulerV2;
+import privateAV.PFAVScheduler;
 
 /**
  * @author tschlenther
  *
  */
-public class PrivateAVOptimizerProviderV2 implements Provider<TaxiOptimizer> {
+public class PFAVProvider implements Provider<TaxiOptimizer> {
 	private TaxiConfigGroup taxiCfg;
 	private Fleet fleet;
 	private TaxiScheduleInquiry scheduler;
@@ -57,7 +57,7 @@ public class PrivateAVOptimizerProviderV2 implements Provider<TaxiOptimizer> {
 //	private Network network;
 
 	@Inject
-	public PrivateAVOptimizerProviderV2(TaxiConfigGroup taxiCfg, Fleet fleet,
+	public PFAVProvider(TaxiConfigGroup taxiCfg, Fleet fleet,
 			TaxiScheduleInquiry scheduler, MobsimTimer timer,
 			@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
 			@Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
@@ -79,12 +79,12 @@ public class PrivateAVOptimizerProviderV2 implements Provider<TaxiOptimizer> {
 //		LeastCostPathCalculator router = new DijkstraFactory().createPathCalculator(network, travelDisutility,
 //				travelTime);
 		
-		if(!(scheduler instanceof PrivateAVFreightSchedulerV2)) {
-			throw new IllegalArgumentException("this OptimizerPRovider can only work with a scheduler of type " + PrivateAVFreightSchedulerV2.class);
+		if(!(scheduler instanceof PFAVScheduler)) {
+			throw new IllegalArgumentException("this OptimizerPRovider can only work with a scheduler of type " + PFAVScheduler.class);
 		}
 		
 		
-		return new PrivateAV4FreightOptimizer(taxiCfg, fleet, (PrivateAVFreightSchedulerV2) scheduler,
+		return new PFAVOptimizer(taxiCfg, fleet, (PFAVScheduler) scheduler,
 				new RuleBasedTaxiOptimizerParams(optimizerConfig), requestValidator, events);
 	}
 	

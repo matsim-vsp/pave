@@ -51,9 +51,9 @@ import org.matsim.core.router.util.TravelTime;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import privateAV.schedule.TaxiFreightServiceDriveTask;
-import privateAV.schedule.TaxiFreightServiceTask;
-import privateAV.schedule.TaxiFreightStartTask;
+import privateAV.schedule.PFAVServiceDriveTask;
+import privateAV.schedule.PFAVServiceTask;
+import privateAV.schedule.PFAVStartTask;
 
 /**
  * @author tschlenther
@@ -81,7 +81,7 @@ public class ConvertFreightTourForDvrp {
 		
 		Link location = network.getLinks().get(freightTour.getTour().getStart().getLocation());
 		
-		dvrpList.add(new TaxiFreightStartTask(tBegin, tEnd, location));
+		dvrpList.add(new PFAVStartTask(tBegin, tEnd, location));
 		
 		for(int i = 0 ; i < freightTour.getTour().getTourElements().size() ; i++) {
 			TourElement currentElement = freightTour.getTour().getTourElements().get(i);
@@ -91,7 +91,7 @@ public class ConvertFreightTourForDvrp {
 				tEnd = tBegin + ((ServiceActivity) currentElement).getDuration();
 				location = network.getLinks().get(((ServiceActivity) currentElement).getLocation());
 				
-				dvrpList.add(new TaxiFreightServiceTask(tBegin, tEnd, location, ((ServiceActivity) currentElement).getService()));
+				dvrpList.add(new PFAVServiceTask(tBegin, tEnd, location, ((ServiceActivity) currentElement).getService()));
 			}
 		}
 		tBegin = freightTour.getTour().getEnd().getExpectedArrival();
@@ -126,7 +126,7 @@ public class ConvertFreightTourForDvrp {
 		*furthermore, the duration of a 'Start' activitiy in the freight contrib is currently hardcoded to 0  - this should get changed in the future
 		*tschlenther 11/2018<
 		*/
-		TaxiFreightStartTask startTask = new TaxiFreightStartTask(earliestStart, earliestStart + startAct.getDuration(),
+		PFAVStartTask startTask = new PFAVStartTask(earliestStart, earliestStart + startAct.getDuration(),
 																	network.getLinks().get(startAct.getLocation())); 
 		startTask.setEarliestStartTime(carrierVehicle.getEarliestStartTime());
 		
@@ -161,7 +161,7 @@ public class ConvertFreightTourForDvrp {
 			if(currentElement instanceof ServiceActivity) {
 				ServiceActivity serviceActivity = (ServiceActivity) currentElement;
 				double start = serviceActivity.getExpectedArrival();
-				task = new TaxiFreightServiceTask(start, start + serviceActivity.getDuration(),
+				task = new PFAVServiceTask(start, start + serviceActivity.getDuration(),
 																				network.getLinks().get(serviceActivity.getLocation()), serviceActivity.getService());
 				
 				dvrpSchedule.addTask(task);
@@ -207,7 +207,7 @@ public class ConvertFreightTourForDvrp {
 		Schedule dvrpSchedule = new ScheduleImpl(convertVehicle(freightSchedule, network));
 		
 		double beginStart = startAct.getExpectedArrival();
-		TaxiFreightStartTask startTask = new TaxiFreightStartTask(beginStart, beginStart + startAct.getDuration(),
+		PFAVStartTask startTask = new PFAVStartTask(beginStart, beginStart + startAct.getDuration(),
 																	network.getLinks().get(startAct.getLocation()));
 		
 		dvrpSchedule.addTask(startTask);
@@ -220,7 +220,7 @@ public class ConvertFreightTourForDvrp {
 				Link toLink = network.getLinks().get(current.getRoute().getEndLinkId());
 				
 				VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(fromLink, toLink, current.getExpectedDepartureTime(), router, traveltime);
-				dvrpSchedule.addTask(new TaxiFreightServiceDriveTask(path));
+				dvrpSchedule.addTask(new PFAVServiceDriveTask(path));
 			} else if(currentElement instanceof ServiceActivity) {
 				
 				ServiceActivity act = (ServiceActivity) currentElement;
@@ -228,7 +228,7 @@ public class ConvertFreightTourForDvrp {
 				double begin = act.getExpectedArrival();
 				Link location = network.getLinks().get(act.getLocation());
 				
-				dvrpSchedule.addTask(new TaxiFreightServiceTask(begin, begin + act.getDuration(), location, act.getService()));
+				dvrpSchedule.addTask(new PFAVServiceTask(begin, begin + act.getDuration(), location, act.getService()));
 			}else if(currentElement instanceof End) {
 				
 				End act = (End) currentElement;

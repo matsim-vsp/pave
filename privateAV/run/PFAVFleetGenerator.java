@@ -52,7 +52,7 @@ import com.google.inject.name.Named;
  *
  */
 @Singleton
-public class TSPrivateAVFleetGenerator implements Fleet, BeforeMobsimListener {
+public class PFAVFleetGenerator implements Fleet, BeforeMobsimListener {
 
 	private Map<Id<Vehicle>,Vehicle> vehiclesForIteration;
 
@@ -66,7 +66,7 @@ public class TSPrivateAVFleetGenerator implements Fleet, BeforeMobsimListener {
 	 * 
 	 */
 	@Inject
-	public TSPrivateAVFleetGenerator(Scenario scenario, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network) {
+	public PFAVFleetGenerator(Scenario scenario, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network) {
 		mode = TaxiConfigGroup.get(scenario.getConfig()).getMode();
 		this.population= scenario.getPopulation();
 		this.network = network;

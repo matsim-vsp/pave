@@ -18,59 +18,38 @@
  * *********************************************************************** */
 package privateAV.schedule;
 
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
+import org.matsim.contrib.freight.carrier.CarrierService;
 import org.matsim.contrib.freight.carrier.FreightConstants;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
-
-import privateAV.vrpagent.PrivateFreightAVActionCreator;
 
 /**
  * @author tschlenther
  *
  */
-public class TaxiFreightStartTask extends StayTaskImpl implements TaxiTask {
+public class PFAVServiceTask extends StayTaskImpl implements TaxiTask {
 
-	double earliestStartTime = 0.0;
-	Id<Vehicle> vehicle = null;
+	CarrierService service;
 	
 	/**
 	 * @param beginTime
 	 * @param endTime
 	 * @param link
+	 * @param name
 	 */
-	public TaxiFreightStartTask(double beginTime, double endTime, Link link) {
-		super(beginTime, endTime, link, PrivateFreightAVActionCreator.START_ACTIVITY_TYPE);
-		// TODO Auto-generated constructor stub
-	}
-	
-	@Override
-	public void setBeginTime(double beginTime) {
-		System.out.println("setting start time of freight start task for vehicle " + this.vehicle + " to " + beginTime);
-		super.setBeginTime(beginTime);
-	}
-
-	/**
-	 * if not set at some point, this will return 0.0
-	 * @return
-	 */
-	public double getEarliestStartTime() {
-		return this.earliestStartTime;
-	}
-	
-	public void setEarliestStartTime(double earliestStartTime) {
-		this.earliestStartTime = earliestStartTime;
-	}
-
-	public void setVehicle(Id<Vehicle> vehicle) {
-		this.vehicle = vehicle;
+	public PFAVServiceTask(double beginTime, double endTime, Link link, CarrierService service) {
+		super(beginTime, endTime, link, FreightConstants.DELIVERY);
+		this.service = service;
 	}
 	
 	@Override
 	public TaxiTaskType getTaxiTaskType() {
-		return TaxiTaskType.STAY;
+		return TaxiTaskType.DROPOFF;
 	}
 
+	public CarrierService getCarrierService() {
+		return this.service;
+	}
+	
 }

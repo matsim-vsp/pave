@@ -39,14 +39,14 @@ import org.matsim.core.mobsim.framework.MobsimTimer;
 
 import com.google.inject.Inject;
 
-import privateAV.schedule.TaxiFreightServiceTask;
-import privateAV.schedule.TaxiFreightStartTask;
+import privateAV.schedule.PFAVServiceTask;
+import privateAV.schedule.PFAVStartTask;
 
 /**
  * @author tschlenther
  *
  */
-public class PrivateFreightAVActionCreator implements VrpAgentLogic.DynActionCreator {
+public class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 
 	public static final String PICKUP_ACTIVITY_TYPE = "TaxiPickup";
 	public static final String DROPOFF_ACTIVITY_TYPE = "TaxiDropoff";
@@ -60,7 +60,7 @@ public class PrivateFreightAVActionCreator implements VrpAgentLogic.DynActionCre
 	private final double pickupDuration;
 
 	@Inject
-	public PrivateFreightAVActionCreator(@Taxi PassengerEngine passengerEngine, TaxiConfigGroup taxiCfg,
+	public PFAVActionCreator(@Taxi PassengerEngine passengerEngine, TaxiConfigGroup taxiCfg,
 			TaxiOptimizer optimizer, MobsimTimer timer, DvrpConfigGroup dvrpCfg) {
 		this(passengerEngine, taxiCfg.isOnlineVehicleTracker() ?
 						v -> VrpLegFactory.createWithOnlineTracker(dvrpCfg.getMobsimMode(), v, optimizer, timer) :
@@ -68,7 +68,7 @@ public class PrivateFreightAVActionCreator implements VrpAgentLogic.DynActionCre
 				taxiCfg.getPickupDuration());
 	}
 
-	public PrivateFreightAVActionCreator(PassengerEngine passengerEngine, VrpLegFactory legFactory, double pickupDuration) {
+	public PFAVActionCreator(PassengerEngine passengerEngine, VrpLegFactory legFactory, double pickupDuration) {
 		this.passengerEngine = passengerEngine;
 		this.legFactory = legFactory;
 		this.pickupDuration = pickupDuration;
@@ -93,8 +93,8 @@ public class PrivateFreightAVActionCreator implements VrpAgentLogic.DynActionCre
 				final TaxiDropoffTask dst = (TaxiDropoffTask)task;
 				return new SinglePassengerDropoffActivity(passengerEngine, dynAgent, dst, dst.getRequest(),
 						DROPOFF_ACTIVITY_TYPE);
-			} else if( task instanceof TaxiFreightServiceTask) {
-				return new VrpActivity(SERVICE_ACTIVITY_TYPE, (TaxiFreightServiceTask) task);
+			} else if( task instanceof PFAVServiceTask) {
+				return new VrpActivity(SERVICE_ACTIVITY_TYPE, (PFAVServiceTask) task);
 			} else {
 				throw new IllegalStateException();
 			}
@@ -102,8 +102,8 @@ public class PrivateFreightAVActionCreator implements VrpAgentLogic.DynActionCre
 		case STAY:
 			if(task instanceof TaxiStayTask) {
 				return new VrpActivity(STAY_ACTIVITY_TYPE, (TaxiStayTask)task);
-			} else if(task instanceof TaxiFreightStartTask) {
-				return new VrpActivity(START_ACTIVITY_TYPE, (TaxiFreightStartTask) task);
+			} else if(task instanceof PFAVStartTask) {
+				return new VrpActivity(START_ACTIVITY_TYPE, (PFAVStartTask) task);
 			} else {
 				throw new IllegalStateException();
 			}

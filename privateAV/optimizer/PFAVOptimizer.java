@@ -26,20 +26,20 @@ import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 
 import freight.manager.PrivateAVFreightTourManager;
 import freight.manager.SimpleFreightTourManager;
-import privateAV.PrivateAVFreightSchedulerV2;
+import privateAV.PFAVScheduler;
 
-public class PrivateAV4FreightOptimizer implements TaxiOptimizer, BeforeMobsimListener {
+public class PFAVOptimizer implements TaxiOptimizer, BeforeMobsimListener {
 
-	private static final Logger log = Logger.getLogger(PrivateAVFreightSchedulerV2.class);
+	private static final Logger log = Logger.getLogger(PFAVScheduler.class);
 	
 	private Fleet fleet;
-	private PrivateAVFreightSchedulerV2 scheduler;
+	private PFAVScheduler scheduler;
 	private DefaultTaxiOptimizerParams params;
 	private TaxiRequestValidator requestValidator;
 	private EventsManager eventsManager;
 	private boolean printDetailedWarnings;
 	
-	public PrivateAV4FreightOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, PrivateAVFreightSchedulerV2 scheduler,
+	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, PFAVScheduler scheduler,
 			DefaultTaxiOptimizerParams params, 	TaxiRequestValidator requestValidator, EventsManager eventsManager) {
 		
 		this.fleet = fleet;

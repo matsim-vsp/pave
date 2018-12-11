@@ -40,16 +40,16 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
 
-import privateAV.PrivateAVFreightSchedulerV2;
-import privateAV.modules.FreightAVQSimModule;
-import privateAV.modules.PrivateFreightAVModule;
-import privateAV.optimizer.PrivateAVOptimizerProviderV2;
+import privateAV.PFAVScheduler;
+import privateAV.modules.PFAVQSimModule;
+import privateAV.modules.PFAVAVModule;
+import privateAV.optimizer.PFAVProvider;
 
 /**
  * @author tschlenther
  *
  */
-public class RunPrivateAVScenario {
+public class RunPFAVScenario {
 
 	public static final String CONFIG_FILE_RULEBASED = "input/Scenarios/mielec/mielec_taxi_config_rulebased.xml";
 	public static final String CONFIG_FILE_ASSIGNMENT = "/input/Scenarios/mielec/mielec_taxi_config_assigment.xml";
@@ -59,7 +59,7 @@ public class RunPrivateAVScenario {
 	/**
 	 * 
 	 */
-	public RunPrivateAVScenario() {
+	public RunPFAVScenario() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -102,11 +102,11 @@ public class RunPrivateAVScenario {
 		final Scenario scenario = ScenarioUtils.loadScenario(config);
 		Controler controler = new Controler(scenario);
 
-		controler.addOverridingModule(new PrivateFreightAVModule(scenario));
+		controler.addOverridingModule(new PFAVAVModule(scenario));
 		
 		
 //		controler.addQSimModule(new FreightAVQSimModule(TSPrivateAVOptimizerProvider.class,PrivateAV4FreightScheduler.class));
-		controler.addQSimModule(new FreightAVQSimModule(PrivateAVOptimizerProviderV2.class,PrivateAVFreightSchedulerV2.class));
+		controler.addQSimModule(new PFAVQSimModule(PFAVProvider.class,PFAVScheduler.class));
 		
 //		controler.addQSimModule(new PassengerEngineQSimModule(taxiCfg.getMode()));
 		

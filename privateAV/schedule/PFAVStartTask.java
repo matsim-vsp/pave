@@ -20,38 +20,57 @@ package privateAV.schedule;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.population.Person;
-import org.matsim.contrib.dvrp.path.DivertedVrpPath;
-import org.matsim.contrib.dvrp.path.VrpPath;
-import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
-import org.matsim.contrib.dvrp.schedule.AbstractTask;
-import org.matsim.contrib.dvrp.schedule.DriveTask;
-import org.matsim.contrib.dvrp.schedule.DriveTaskImpl;
+import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
+import org.matsim.contrib.freight.carrier.FreightConstants;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
-import org.matsim.core.mobsim.framework.DriverAgent;
-import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
-import org.matsim.vehicles.Vehicle;
+
+import privateAV.vrpagent.PFAVActionCreator;
 
 /**
  * @author tschlenther
  *
  */
-public class TaxiFreightServiceDriveTask extends DriveTaskImpl implements TaxiTask {
+public class PFAVStartTask extends StayTaskImpl implements TaxiTask {
 
-	public TaxiFreightServiceDriveTask(VrpPathWithTravelData path) {
-		super(path);
+	double earliestStartTime = 0.0;
+	Id<Vehicle> vehicle = null;
+	
+	/**
+	 * @param beginTime
+	 * @param endTime
+	 * @param link
+	 */
+	public PFAVStartTask(double beginTime, double endTime, Link link) {
+		super(beginTime, endTime, link, PFAVActionCreator.START_ACTIVITY_TYPE);
 		// TODO Auto-generated constructor stub
 	}
-
-	@Override
-	public TaxiTaskType getTaxiTaskType() {
-		return TaxiTaskType.OCCUPIED_DRIVE;
-	} 
-
 	
 	@Override
-	protected String commonToString() {
-		return "[" + getTaxiTaskType().name() + "_SERVICE]" + super.commonToString();
+	public void setBeginTime(double beginTime) {
+		System.out.println("setting start time of freight start task for vehicle " + this.vehicle + " to " + beginTime);
+		super.setBeginTime(beginTime);
+	}
+
+	/**
+	 * if not set at some point, this will return 0.0
+	 * @return
+	 */
+	public double getEarliestStartTime() {
+		return this.earliestStartTime;
+	}
+	
+	public void setEarliestStartTime(double earliestStartTime) {
+		this.earliestStartTime = earliestStartTime;
+	}
+
+	public void setVehicle(Id<Vehicle> vehicle) {
+		this.vehicle = vehicle;
+	}
+	
+	@Override
+	public TaxiTaskType getTaxiTaskType() {
+		return TaxiTaskType.STAY;
 	}
 
 }

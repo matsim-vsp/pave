@@ -45,20 +45,20 @@ import com.google.inject.name.Names;
 
 import freight.manager.PrivateAVFreightTourManager;
 import freight.manager.SimpleFreightTourManager;
-import privateAV.run.TSPrivateAVFleetGenerator;
+import privateAV.run.PFAVFleetGenerator;
 
 /**
  * @author tschlenther
  *
  */
-public final class PrivateFreightAVModule extends AbstractModule{
+public final class PFAVAVModule extends AbstractModule{
 
 	@Inject
 	private TaxiConfigGroup taxiCfg;
 	
 	private Scenario scenario;
 
-	public PrivateFreightAVModule(Scenario scenario) {
+	public PFAVAVModule(Scenario scenario) {
 		this.scenario = scenario;
 	}
 	
@@ -68,9 +68,9 @@ public final class PrivateFreightAVModule extends AbstractModule{
 //		install(FleetProvider.createModule(mode, taxiCfg.getTaxisFileUrl(getConfig().getContext())));
 		
 		//for some reason (annotations!?) fleet must be bound three times
-		bind(Fleet.class).annotatedWith(Names.named(taxiCfg.getMode())).to(TSPrivateAVFleetGenerator.class);
-		bind(Fleet.class).annotatedWith(Taxi.class).to(TSPrivateAVFleetGenerator.class);
-		bind(Fleet.class).to(TSPrivateAVFleetGenerator.class);
+		bind(Fleet.class).annotatedWith(Names.named(taxiCfg.getMode())).to(PFAVFleetGenerator.class);
+		bind(Fleet.class).annotatedWith(Taxi.class).to(PFAVFleetGenerator.class);
+		bind(Fleet.class).to(PFAVFleetGenerator.class);
 		
 		
 		bind(TravelDisutilityFactory.class).annotatedWith(Names.named(DefaultTaxiOptimizerProvider.TAXI_OPTIMIZER))
@@ -92,7 +92,7 @@ public final class PrivateFreightAVModule extends AbstractModule{
 		bind(TaxiRequestValidator.class).to(DefaultTaxiRequestValidator.class);		
 		
 		
-		addControlerListenerBinding().to(TSPrivateAVFleetGenerator.class);
+		addControlerListenerBinding().to(PFAVFleetGenerator.class);
 //		bind(PrivateAVFreightTourManager.class).to(SimpleFreightTourManager.class).asEagerSingleton();
 	}
 

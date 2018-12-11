@@ -53,12 +53,12 @@ import freight.manager.ListBasedFreightTourManager;
 import freight.manager.ListBasedFreightTourManagerImpl;
 import freight.manager.PrivateAVFreightTourManager;
 import freight.manager.SimpleFreightTourManager;
-import privateAV.schedule.TaxiFreightServiceDriveTask;
-import privateAV.schedule.TaxiFreightStartTask;
+import privateAV.schedule.PFAVServiceDriveTask;
+import privateAV.schedule.PFAVStartTask;
 
-public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
+public class PFAVScheduler implements TaxiScheduleInquiry {
 
-	private static final Logger log = Logger.getLogger(PrivateAVFreightSchedulerV2.class);
+	private static final Logger log = Logger.getLogger(PFAVScheduler.class);
 	
 	private TaxiScheduler delegate;
 	private Link DEPOT_LINK;
@@ -82,7 +82,7 @@ public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
 	 * @param travelDisutility
 	 */
 	@Inject
-	public PrivateAVFreightSchedulerV2(TaxiConfigGroup taxiCfg, @Taxi Fleet fleet, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
+	public PFAVScheduler(TaxiConfigGroup taxiCfg, @Taxi Fleet fleet, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
 			MobsimTimer timer, @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
 			@Named(DefaultTaxiOptimizerProvider.TAXI_OPTIMIZER) TravelDisutility travelDisutility){
 		
@@ -197,7 +197,7 @@ public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
 				if(currentFreightTask instanceof StayTaskImpl) {
 					StayTaskImpl stayTask = (StayTaskImpl) currentFreightTask;
 					VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(previousTask.getLink(), stayTask.getLink(), previousTask.getEndTime(), router, travelTime);
-					schedule.addTask(new TaxiFreightServiceDriveTask(path));
+					schedule.addTask(new PFAVServiceDriveTask(path));
 					schedule.addTask(currentFreightTask);
 					previousTask = stayTask;
 				} else {
@@ -229,7 +229,7 @@ public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
 				if(i == 0 || i == freightActivities.size() - 1) {
 					schedule.addTask(new TaxiEmptyDriveTask(path));
 				} else {
-					schedule.addTask(new TaxiFreightServiceDriveTask(path));
+					schedule.addTask(new PFAVServiceDriveTask(path));
 					
 				}
 				
@@ -237,8 +237,8 @@ public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
 				currentTask.setBeginTime(path.getArrivalTime());
 				currentTask.setEndTime(path.getArrivalTime() + duration);
 				
-				if(currentTask instanceof TaxiFreightStartTask) {
-					((TaxiFreightStartTask) currentTask).setVehicle(vehicle.getId());
+				if(currentTask instanceof PFAVStartTask) {
+					((PFAVStartTask) currentTask).setVehicle(vehicle.getId());
 				}
 				
 				schedule.addTask(currentTask);
@@ -447,7 +447,7 @@ public class PrivateAVFreightSchedulerV2 implements TaxiScheduleInquiry {
 		for (int i = startIdx; i < tasks.size(); i++) {
 			TaxiTask task = (TaxiTask)tasks.get(i);
 			
-			if(task instanceof TaxiFreightStartTask) {
+			if(task instanceof PFAVStartTask) {
 				System.out.println("about to update the times of the freight start task of vehicle " + vehicle.getId());
 			}
 			

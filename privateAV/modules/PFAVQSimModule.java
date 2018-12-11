@@ -38,21 +38,21 @@ import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
-import privateAV.vrpagent.PrivateFreightAVActionCreator;
+import privateAV.vrpagent.PFAVActionCreator;
 
 /**
  * @author tschlenther
  *
  */
-public class FreightAVQSimModule extends AbstractQSimModule {
+public class PFAVQSimModule extends AbstractQSimModule {
 	private final Class<? extends Provider<? extends TaxiOptimizer>> providerClass;
 	private final Class<? extends TaxiScheduleInquiry> schedulerClass;
 
-	public FreightAVQSimModule() {
+	public PFAVQSimModule() {
 		this(DefaultTaxiOptimizerProvider.class, TaxiScheduler.class);
 	}
 
-	public FreightAVQSimModule(Class<? extends Provider<? extends TaxiOptimizer>> providerClass, final Class<? extends TaxiScheduleInquiry> schedulerClass) {
+	public PFAVQSimModule(Class<? extends Provider<? extends TaxiOptimizer>> providerClass, final Class<? extends TaxiScheduleInquiry> schedulerClass) {
 		this.providerClass = providerClass;
 		this.schedulerClass = schedulerClass;
 	}
@@ -72,7 +72,7 @@ public class FreightAVQSimModule extends AbstractQSimModule {
 		
 		
 //		bind(DynActionCreator.class).annotatedWith(modeNamed).to(TaxiActionCreator.class).asEagerSingleton();
-		bind(DynActionCreator.class).annotatedWith(modeNamed).to(PrivateFreightAVActionCreator.class).asEagerSingleton();
+		bind(DynActionCreator.class).annotatedWith(modeNamed).to(PFAVActionCreator.class).asEagerSingleton();
 		
 		
 		bind(PassengerRequestCreator.class).annotatedWith(modeNamed).to(TaxiRequestCreator.class).asEagerSingleton();
