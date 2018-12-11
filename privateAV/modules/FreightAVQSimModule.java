@@ -42,6 +42,7 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
 import privateAV.infrastructure.delegated.PrivateAVFreightSchedulerV2;
+import privateAV.infrastructure.delegated.PrivateFreightAVActionCreator;
 import privateAV.infrastructure.inherited.PrivateAV4FreightScheduler;
 
 /**
@@ -70,11 +71,15 @@ public class FreightAVQSimModule extends AbstractQSimModule {
 
 		bind(TaxiScheduleInquiry.class).to(schedulerClass);
 		bind(TaxiOptimizer.class).toProvider(providerClass).asEagerSingleton();
-		
 
 		Named modeNamed = Names.named(TaxiConfigGroup.get(getConfig()).getMode());
 		bind(VrpOptimizer.class).annotatedWith(modeNamed).to(TaxiOptimizer.class);
-		bind(DynActionCreator.class).annotatedWith(modeNamed).to(TaxiActionCreator.class).asEagerSingleton();
+		
+		
+//		bind(DynActionCreator.class).annotatedWith(modeNamed).to(TaxiActionCreator.class).asEagerSingleton();
+		bind(DynActionCreator.class).annotatedWith(modeNamed).to(PrivateFreightAVActionCreator.class).asEagerSingleton();
+		
+		
 		bind(PassengerRequestCreator.class).annotatedWith(modeNamed).to(TaxiRequestCreator.class).asEagerSingleton();
 		bind(PassengerEngine.class).annotatedWith(Taxi.class).to(Key.get(PassengerEngine.class, modeNamed));
 	}

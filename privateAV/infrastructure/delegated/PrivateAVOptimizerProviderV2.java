@@ -80,12 +80,13 @@ public class PrivateAVOptimizerProviderV2 implements Provider<TaxiOptimizer> {
 	@Override
 	public TaxiOptimizer get() {
 		Configuration optimizerConfig = new MapConfiguration(taxiCfg.getOptimizerConfigGroup().getParams());
-		LeastCostPathCalculator router = new DijkstraFactory().createPathCalculator(network, travelDisutility,
-				travelTime);
+//		LeastCostPathCalculator router = new DijkstraFactory().createPathCalculator(network, travelDisutility,
+//				travelTime);
 		
-		if(!(scheduler instanceof PrivateAV4FreightScheduler)) {
-			throw new IllegalArgumentException();
+		if(!(scheduler instanceof PrivateAVFreightSchedulerV2)) {
+			throw new IllegalArgumentException("this OptimizerPRovider can only work with a scheduler of type " + PrivateAVFreightSchedulerV2.class);
 		}
+		
 		
 		return new PrivateAV4FreightOptimizer(taxiCfg, fleet, (PrivateAVFreightSchedulerV2) scheduler,
 				new RuleBasedTaxiOptimizerParams(optimizerConfig), requestValidator, events);

@@ -18,9 +18,12 @@
  * *********************************************************************** */
 package privateAV.infrastructure;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.data.VehicleImpl;
@@ -30,6 +33,7 @@ import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.ScheduleImpl;
+import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.freight.carrier.CarrierVehicle;
 import org.matsim.contrib.freight.carrier.ScheduledTour;
@@ -41,6 +45,8 @@ import org.matsim.contrib.taxi.schedule.TaxiOccupiedDriveTask;
 import org.matsim.contrib.taxi.schedule.TaxiPickupTask;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
+import org.matsim.core.router.util.LeastCostPathCalculator;
+import org.matsim.core.router.util.TravelTime;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -53,12 +59,55 @@ import privateAV.Task.TaxiFreightStartTask;
  * @author tschlenther
  *
  */
-public class FreightTourToDvrpSchedule {
+public class ConvertFreightTourForDvrp {
 	
 	
-	public static Schedule convert(ScheduledTour freightTour, Network network) {
+	public static List<StayTask> convertToList(ScheduledTour freightTour, Network network){
+	
+		//as far as it seems, the Start and End activities are not part of ScheduledTour.getTour.getTourElements();
+		//otherwise, this method could be shortened by two thirds
 		
-		Schedule dvrpSchedule = new ScheduleImpl(convertVehicle(freightTour));
+		List<StayTask> dvrpList = new ArrayList<StayTask>();
+		
+		double tBegin = freightTour.getTour().getStart().getExpectedArrival();
+		
+		double tEnd = tBegin + 60;	//trying to harcde the duration of the FreightStartTask in order to debug...
+		
+		
+		
+//		double tEnd = tBegin + freightTour.getTour().getStart().getDuration();
+		
+		
+		
+		Link location = network.getLinks().get(freightTour.getTour().getStart().getLocation());
+		
+		dvrpList.add(new TaxiFreightStartTask(tBegin, tEnd, location));
+		
+		for(int i = 0 ; i < freightTour.getTour().getTourElements().size() ; i++) {
+			TourElement currentElement = freightTour.getTour().getTourElements().get(i);
+			
+			if(currentElement instanceof ServiceActivity) {
+				tBegin = ((ServiceActivity) currentElement).getExpectedArrival();
+				tEnd = tBegin + ((ServiceActivity) currentElement).getDuration();
+				location = network.getLinks().get(((ServiceActivity) currentElement).getLocation());
+				
+				dvrpList.add(new TaxiFreightServiceTask(tBegin, tEnd, location, ((ServiceActivity) currentElement).getService()));
+			}
+		}
+		tBegin = freightTour.getTour().getEnd().getExpectedArrival();
+		tEnd = tBegin + freightTour.getTour().getEnd().getDuration();
+		
+		location = network.getLinks().get(freightTour.getTour().getEnd().getLocation());
+		
+		dvrpList.add(new TaxiStayTask(tBegin, tEnd, location));
+		
+		return dvrpList;
+		
+	}
+	
+	public static Schedule convertOnlyActivitiesToSchedule(ScheduledTour freightTour, Network network) {
+		
+		Schedule dvrpSchedule = new ScheduleImpl(convertVehicle(freightTour, network));
 		
 		Iterator<TourElement> it = freightTour.getTour().getTourElements().iterator();
 		
@@ -80,11 +129,12 @@ public class FreightTourToDvrpSchedule {
 		TaxiFreightStartTask startTask = new TaxiFreightStartTask(earliestStart, earliestStart + startAct.getDuration(),
 																	network.getLinks().get(startAct.getLocation())); 
 		startTask.setEarliestStartTime(carrierVehicle.getEarliestStartTime());
+		
 		dvrpSchedule.addTask(startTask);
 		
-		//get the first element - this is actually the first leg
-		TourElement currentElement = it.next();
+		//the first element - this is actually the first leg
 		while(it.hasNext()) {
+			TourElement currentElement = it.next();
 			
 			Leg lastLeg = null;
 			Task task;
@@ -135,12 +185,8 @@ public class FreightTourToDvrpSchedule {
 	}
 	
 	
-	private static Vehicle convertVehicle(ScheduledTour freightTour) {
-		/*we need a Link and not only the id - we could inject our dvrp network here but that seems to me a bit too much for the moment
-		 * as we assign the schedule to be created to an existing dvrp-vehicle at some other point anyways...
-		 * so basically the vehicle can be null in the schedule to be created as long as it is not assigned yet
-		 * 
-		 *capacity could be retrieved from the service-Activities.... or just set to any value 
+	private static Vehicle convertVehicle(ScheduledTour freightTour, Network network) {
+		/*TODO: capacity could be retrieved from the service-Activities.... or just set to any value 
 		 */
 		
 		CarrierVehicle freightVehicle = freightTour.getVehicle();
@@ -149,8 +195,52 @@ public class FreightTourToDvrpSchedule {
 		String vehID = freightVehicle.getVehicleId().toString();
 		int capacity = 0;
 		
-//		Vehicle dvrpVehicle = new VehicleImpl(Id.create(vehID,Vehicle.class), freightTour.getTour().getStartLinkId(), capacity , tStart, tEnd);		
+		Vehicle dvrpVehicle = new VehicleImpl(Id.create(vehID,Vehicle.class), network.getLinks().get(freightTour.getTour().getStartLinkId()), capacity , tStart, tEnd);		
 		
-		return null;
+		return dvrpVehicle;
 	}
+
+
+	public static Schedule convert2(ScheduledTour freightSchedule, Network network, LeastCostPathCalculator router, TravelTime traveltime) {
+		Start startAct = freightSchedule.getTour().getStart();
+		
+		Schedule dvrpSchedule = new ScheduleImpl(convertVehicle(freightSchedule, network));
+		
+		double beginStart = startAct.getExpectedArrival();
+		TaxiFreightStartTask startTask = new TaxiFreightStartTask(beginStart, beginStart + startAct.getDuration(),
+																	network.getLinks().get(startAct.getLocation()));
+		
+		dvrpSchedule.addTask(startTask);
+		
+		for(TourElement currentElement : freightSchedule.getTour().getTourElements()){
+			if(currentElement instanceof Leg) {
+				Leg current = (Leg) currentElement;
+				
+				Link fromLink = network.getLinks().get(current.getRoute().getStartLinkId());
+				Link toLink = network.getLinks().get(current.getRoute().getEndLinkId());
+				
+				VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(fromLink, toLink, current.getExpectedDepartureTime(), router, traveltime);
+				dvrpSchedule.addTask(new TaxiFreightServiceDriveTask(path));
+			} else if(currentElement instanceof ServiceActivity) {
+				
+				ServiceActivity act = (ServiceActivity) currentElement;
+				
+				double begin = act.getExpectedArrival();
+				Link location = network.getLinks().get(act.getLocation());
+				
+				dvrpSchedule.addTask(new TaxiFreightServiceTask(begin, begin + act.getDuration(), location, act.getService()));
+			}else if(currentElement instanceof End) {
+				
+				End act = (End) currentElement;
+				
+				double begin = act.getExpectedArrival();
+				Link location = network.getLinks().get(act.getLocation());
+				
+				dvrpSchedule.addTask(new TaxiStayTask(begin, begin + act.getDuration(), location));
+			}
+		}
+		return dvrpSchedule;
+	}
+	
+	
 }

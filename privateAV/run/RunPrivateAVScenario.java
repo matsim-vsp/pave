@@ -88,7 +88,10 @@ public class RunPrivateAVScenario {
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		
 		config.controler().setLastIteration(0);
-		config.controler().setOutputDirectory("output/testFreightTourVersion1/");
+		config.controler().setOutputDirectory("output/testFreight_TESTV3/");
+		
+//		config.plans().setInputFile("C:/TU Berlin/MasterArbeit/input/Scenarios/mielec/plans_only_taxi_ONEAGENT.xml");
+		
 //		config.qsim().setStartTime(0);
 //		config.qsim().setSimStarttimeInterpretation(StarttimeInterpretation.onlyUseStarttime);
 		config.qsim().setSnapshotStyle(SnapshotStyle.withHoles);
@@ -113,22 +116,12 @@ public class RunPrivateAVScenario {
 			
 		
 		
-		controler.addOverridingModule(new AbstractModule() {
-			
-			@Override
-			public void install() {
-				PrivateAVFreightTourManager manager = new SimpleFreightTourManager(CARRIERS_FILE);
-				bind(PrivateAVFreightTourManager.class).toInstance(manager);
-			}
-		});
-        
-        
-//		TSPrivateAVFleetGenerator  fleet = new TSPrivateAVFleetGenerator(scenario);  
-//        controler.addOverridingModule(new AbstractModule() {
+//		controler.addOverridingModule(new AbstractModule() {
 //			
 //			@Override
 //			public void install() {
-//				bind(org.matsim.contrib.dvrp.data.Fleet.class).annotatedWith(Names.named(taxiCfg.getMode())).toInstance(fleet);
+//				PrivateAVFreightTourManager manager = new SimpleFreightTourManager(CARRIERS_FILE);
+//				bind(PrivateAVFreightTourManager.class).toInstance(manager);
 //			}
 //		});
 	

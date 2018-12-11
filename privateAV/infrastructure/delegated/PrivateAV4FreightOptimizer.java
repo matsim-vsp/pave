@@ -10,6 +10,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.Request;
 import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.taxi.data.TaxiRequest;
 import org.matsim.contrib.taxi.data.validator.TaxiRequestValidator;
 import org.matsim.contrib.taxi.optimizer.DefaultTaxiOptimizerParams;
@@ -23,6 +24,9 @@ import org.matsim.core.controler.events.BeforeMobsimEvent;
 import org.matsim.core.controler.listener.BeforeMobsimListener;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 
+import freight.manager.PrivateAVFreightTourManager;
+import freight.manager.SimpleFreightTourManager;
+
 public class PrivateAV4FreightOptimizer implements TaxiOptimizer, BeforeMobsimListener {
 
 	private static final Logger log = Logger.getLogger(PrivateAVFreightSchedulerV2.class);
@@ -33,7 +37,7 @@ public class PrivateAV4FreightOptimizer implements TaxiOptimizer, BeforeMobsimLi
 	private TaxiRequestValidator requestValidator;
 	private EventsManager eventsManager;
 	private boolean printDetailedWarnings;
-
+	
 	public PrivateAV4FreightOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, PrivateAVFreightSchedulerV2 scheduler,
 			DefaultTaxiOptimizerParams params, 	TaxiRequestValidator requestValidator, EventsManager eventsManager) {
 		
@@ -50,7 +54,7 @@ public class PrivateAV4FreightOptimizer implements TaxiOptimizer, BeforeMobsimLi
 	@Override
 	public void vehicleEnteredNextLink(Vehicle vehicle, Link nextLink) {
 		//TODO if vehicle is working on freight tour and arrival at owner is delayed, cancel freight tour and go back to depot
-		scheduler.updateTimeline(vehicle);// TODO comment this out...
+//		scheduler.updateTimeline(vehicle);// TODO comment this out...
 
 	}
 
@@ -106,6 +110,7 @@ public class PrivateAV4FreightOptimizer implements TaxiOptimizer, BeforeMobsimLi
 	@Override
 	public void nextTask(Vehicle vehicle) {
 		scheduler.updateBeforeNextTask(vehicle);
+		Task newCurrentTask = vehicle.getSchedule().nextTask();
 
 	}
 
@@ -133,7 +138,6 @@ public class PrivateAV4FreightOptimizer implements TaxiOptimizer, BeforeMobsimLi
 	@Override
 	public void notifyBeforeMobsim(BeforeMobsimEvent event) {
 		if(event.getIteration() == 0) {
-			
 		}
 		
 	}

@@ -18,6 +18,7 @@
  * *********************************************************************** */
 package freight.manager;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -32,11 +33,13 @@ import org.matsim.contrib.freight.carrier.CarrierPlanReader;
 import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
 import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.carrier.ScheduledTour;
+import org.matsim.core.router.util.LeastCostPathCalculator;
+import org.matsim.core.router.util.TravelTime;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import privateAV.infrastructure.FreightTourToDvrpSchedule;
+import privateAV.infrastructure.ConvertFreightTourForDvrp;
 
 /**
  * @author tschlenther
@@ -44,34 +47,44 @@ import privateAV.infrastructure.FreightTourToDvrpSchedule;
  */
 public class SimpleFreightTourManager implements PrivateAVFreightTourManager {
 
+	private static final String DEFAULT_CARRIER_FILE = "C:/TU Berlin/MasterArbeit/input/Scenarios/mielec/freight/carrierPlans_routed.xml";
+	
 	@Inject
 	@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) 
 	private Network network;
 	
+	private LeastCostPathCalculator router;
+	private TravelTime travelTime;
+	
 	private List<Schedule> freightTours = new ArrayList<Schedule>();
 	
-	/**
-	 * 
-	 */
 
-	
-	public SimpleFreightTourManager(String pathToCarrierFile) {
-		Carriers carriers =  readCarriersFile(pathToCarrierFile);
+	public SimpleFreightTourManager(Network network, LeastCostPathCalculator router, TravelTime travelTime, String pathToCarriersFile) {
+		this.network = network;
+		this.router = router;
+		this.travelTime = travelTime;
 		
-		new SimpleFreightTourManager(carriers);
-	}
-	
-	public SimpleFreightTourManager(Carriers carriers) {
-		convertCarrierPlans(carriers);
+		pathToCarriersFile = (pathToCarriersFile == null) ?  DEFAULT_CARRIER_FILE : pathToCarriersFile;
+		Carriers carriers =  readCarriersFile(pathToCarriersFile);
+		this.freightTours = convertCarrierPlansToTaxiSchedules(carriers);
 	}
 
-	private void convertCarrierPlans(Carriers carriers) {
+	public void initWithCarrierPlansFile(String filePath) {
+		Carriers carriers = readCarriersFile(filePath);
+		this.freightTours = convertCarrierPlansToTaxiSchedules(carriers);
+	}
+	
+	private List<Schedule> convertCarrierPlansToTaxiSchedules(Carriers carriers) {
+		List<Schedule> freightTours = new ArrayList<Schedule>();
+		
 		for(Carrier carrier : carriers.getCarriers().values()) {
 			CarrierPlan plan = carrier.getSelectedPlan();
 			for (ScheduledTour freightSchedule : plan.getScheduledTours()) {
-				this.freightTours.add(FreightTourToDvrpSchedule.convert(freightSchedule, network));
+				freightTours.add(ConvertFreightTourForDvrp.convert2(freightSchedule, this.network, this.router, this.travelTime));
 			}
 		}
+		
+		return freightTours;
 	}
 
 	private Carriers readCarriersFile(String pathToCarrierFile) {
@@ -94,7 +107,7 @@ public class SimpleFreightTourManager implements PrivateAVFreightTourManager {
 	 */
 	@Override
 	public Schedule getRandomAVFreightTour() {
-		return this.freightTours.get(new Random().nextInt(this.freightTours.size()));
+		return this.freightTours.remove(new Random().nextInt(this.freightTours.size()));
 	}
 
 	/**

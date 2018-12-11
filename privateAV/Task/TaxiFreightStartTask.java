@@ -18,10 +18,14 @@
  * *********************************************************************** */
 package privateAV.Task;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
 import org.matsim.contrib.freight.carrier.FreightConstants;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
+
+import privateAV.infrastructure.delegated.PrivateFreightAVActionCreator;
 
 /**
  * @author tschlenther
@@ -30,6 +34,7 @@ import org.matsim.contrib.taxi.schedule.TaxiTask;
 public class TaxiFreightStartTask extends StayTaskImpl implements TaxiTask {
 
 	double earliestStartTime = 0.0;
+	Id<Vehicle> vehicle = null;
 	
 	/**
 	 * @param beginTime
@@ -37,16 +42,14 @@ public class TaxiFreightStartTask extends StayTaskImpl implements TaxiTask {
 	 * @param link
 	 */
 	public TaxiFreightStartTask(double beginTime, double endTime, Link link) {
-		super(beginTime, endTime, link, FreightConstants.START);
+		super(beginTime, endTime, link, PrivateFreightAVActionCreator.START_ACTIVITY_TYPE);
 		// TODO Auto-generated constructor stub
 	}
-
-	/* (non-Javadoc)
-	 * @see org.matsim.contrib.taxi.schedule.TaxiTask#getTaxiTaskType()
-	 */
+	
 	@Override
-	public TaxiTaskType getTaxiTaskType() {
-		return TaxiTaskType.STAY;
+	public void setBeginTime(double beginTime) {
+		System.out.println("setting start time of freight start task for vehicle " + this.vehicle + " to " + beginTime);
+		super.setBeginTime(beginTime);
 	}
 
 	/**
@@ -59,6 +62,15 @@ public class TaxiFreightStartTask extends StayTaskImpl implements TaxiTask {
 	
 	public void setEarliestStartTime(double earliestStartTime) {
 		this.earliestStartTime = earliestStartTime;
+	}
+
+	public void setVehicle(Id<Vehicle> vehicle) {
+		this.vehicle = vehicle;
+	}
+	
+	@Override
+	public TaxiTaskType getTaxiTaskType() {
+		return TaxiTaskType.STAY;
 	}
 
 }
