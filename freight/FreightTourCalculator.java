@@ -24,21 +24,28 @@ import java.util.List;
 
 import javax.swing.plaf.basic.BasicTreeUI.CellEditorHandler;
 
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.freight.carrier.Carrier;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
 import org.matsim.contrib.freight.carrier.CarrierPlan;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
 import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
 import org.matsim.contrib.freight.carrier.CarrierVehicleType;
 import org.matsim.contrib.freight.carrier.CarrierVehicleTypeLoader;
+import org.matsim.contrib.freight.carrier.CarrierVehicleTypeReader;
+import org.matsim.contrib.freight.carrier.CarrierVehicleTypeWriter;
 import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
 import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
 import org.matsim.contrib.freight.jsprit.NetworkRouter;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts.Builder;
+import org.matsim.core.config.groups.TravelTimeCalculatorConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
 
 import com.graphhopper.jsprit.core.algorithm.VehicleRoutingAlgorithm;
 import com.graphhopper.jsprit.core.algorithm.box.SchrimpfFactory;
@@ -46,42 +53,59 @@ import com.graphhopper.jsprit.core.problem.VehicleRoutingProblem;
 import com.graphhopper.jsprit.core.problem.solution.VehicleRoutingProblemSolution;
 import com.graphhopper.jsprit.core.util.Solutions;
 
+import privateAV.PFAVUtils;
+
 /**
  * @author martins-turner, tschlenther
  *
+ * TODO:
+ * make the logic of this class static again!?
+ * or create a static run method that gets all the parameters needed
+ *
  */
-public class RunFreightWithRandomServices {
+public class FreightTourCalculator {
 
-	private static final String INPUT_NETWORK = "C:/TU Berlin/MasterArbeit/input/Scenarios/mielec/network.xml"; 
-	private static final String OUTPUT_CARRIERS_PLANS = "C:/TU Berlin/MasterArbeit/input/Scenarios/mielec/freight/carrierPlans_routed_finite2.xml";
+	private static final Logger log = Logger.getLogger(FreightTourCalculator.class);
 	
-	
-	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
+	private Network network;
+	Carriers carriers;
 
-		Network network = NetworkUtils.createNetwork();
-		new MatsimNetworkReader(network).readFile(INPUT_NETWORK);
+	private int timeSlice = 1800;
+	
+	
+	private static final String INPUT_NETWORK = "input/Scenarios/mielec/network.xml"; 
+	
+	public FreightTourCalculator(Network network, Carriers carriers, CarrierVehicleTypes vTypes) {
+		this.network = network;
+		this.carriers = carriers;
+		log.info("loading carrier vehicle types..");
+		new CarrierVehicleTypeLoader(this.carriers).loadVehicleTypes(vTypes) ;
+		log.info("time slice is set to 1800");
+	}
+	
+	public FreightTourCalculator(Network network, String inputCarriersPlanFile, String inputVehicleTypesFile) {
+		this.network = network;
+		carriers = new Carriers();
+		CarrierPlanXmlReaderV2 reader = new CarrierPlanXmlReaderV2(carriers);
+		reader.readFile(inputCarriersPlanFile);
+		log.info("loading carrier vehicle types..");
+		new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(readVehicleTypes(inputVehicleTypesFile));
+		log.info("time slice is set to 1800");
+	}
+	
+	private CarrierVehicleTypes readVehicleTypes(String input) {
+		CarrierVehicleTypes vTypes = new CarrierVehicleTypes();
+		CarrierVehicleTypeReader reader = new CarrierVehicleTypeReader(vTypes);
+		reader.readFile(input);
+		return vTypes;
+	}
+	
+	public Carriers run(TravelTime travelTime) {
 		
-		
-		List<CarrierVehicleType> vehTypes = new ArrayList<CarrierVehicleType>();
-		CarrierVehicleType privateAVCarrierVehType = FreightSetUp.createPrivateFreightAVVehicleType(); 
-		vehTypes.add(privateAVCarrierVehType);
-		
-		int nrOfCarriers = 2;
-		int nrOfVehPerCarrierPerVehType = 3;
-		
-		Carriers carriers = FreightSetUp.createCarriersWithRandomDepotAnd10Services(vehTypes, FleetSize.FINITE, network, nrOfCarriers, nrOfVehPerCarrierPerVehType);
-		
-		//no need to do this since i did in my FreightSetup-helper-class .... but should be aware of
-//		new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(new CarrierVehicleTypes()) ;
-		
-		
-		Builder netBuilder = NetworkBasedTransportCosts.Builder.newInstance( network, vehTypes );
+		Builder netBuilder = NetworkBasedTransportCosts.Builder.newInstance( this.network, CarrierVehicleTypes.getVehicleTypes(carriers).getVehicleTypes().values() );
+		netBuilder.setTimeSliceWidth(timeSlice) ; // !!!!, otherwise it will not do anything.
+		netBuilder.setTravelTime(travelTime);
 		final NetworkBasedTransportCosts netBasedCosts = netBuilder.build() ;
-		netBuilder.setTimeSliceWidth(1800) ; // !!!!, otherwise it will not do anything.
 		
 
 		
@@ -105,11 +129,57 @@ public class RunFreightWithRandomServices {
 			carrier.setSelectedPlan(carrierPlanServicesAndShipments) ;
 			
 		}
-		
+		return carriers;
+	}
+	
+	public void writeCarriers(String outputDir) {
 		CarrierPlanXmlWriterV2 planwriter = new CarrierPlanXmlWriterV2(carriers);
-		planwriter.write(OUTPUT_CARRIERS_PLANS);
+		planwriter.write(outputDir);
+	}
+	
+	public Carriers getCarriers() {
+		return this.carriers;
+	}
+	
+	public int getTimeSlice() {
+		return this.timeSlice;
+	}
+	
+	public void setNetwork(Network network) {
+		this.network = network;
+	}
+	
+	public void setTimeSlice(int timeSlice) {
+		this.timeSlice = timeSlice;
+	}
+	
+	
+	
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+
+		
+		Network network = NetworkUtils.createNetwork();
+		new MatsimNetworkReader(network).readFile(INPUT_NETWORK);
+		
+		CarrierVehicleType privateAVCarrierVehType = FreightSetUp.createPrivateFreightAVVehicleType(); 
+		CarrierVehicleTypes vTypes = new CarrierVehicleTypes();
+		vTypes.getVehicleTypes().put(privateAVCarrierVehType.getId(), privateAVCarrierVehType);
 		
 		
+		
+		int nrOfCarriers = 2;
+		int nrOfVehPerCarrierPerVehType = 3;
+		
+		Carriers carriers = FreightSetUp.createCarriersWithRandomDepotAnd10Services(vTypes.getVehicleTypes().values(), FleetSize.FINITE, network, nrOfCarriers, nrOfVehPerCarrierPerVehType);
+		
+		FreightTourCalculator calculator = new FreightTourCalculator(network, carriers, vTypes);
+		
+		calculator.run(new TravelTimeCalculator(network, new TravelTimeCalculatorConfigGroup()).getLinkTravelTimes());
+		calculator.writeCarriers(PFAVUtils.DEFAULT_CARRIERS_FILE);
+		new CarrierVehicleTypeWriter(vTypes).write(PFAVUtils.DEFAULT_VEHTYPES_FILE);
 	}
 
 }

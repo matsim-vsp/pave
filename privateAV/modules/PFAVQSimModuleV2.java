@@ -32,6 +32,7 @@ import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
 import org.matsim.core.controler.AbstractModule;
+import org.matsim.core.controler.Controler;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import com.google.inject.Key;
@@ -46,16 +47,14 @@ import privateAV.vrpagent.PFAVActionCreator;
  * @author tschlenther
  *
  */
-public class PFAVQSimModule extends AbstractQSimModule {
-	private final Class<? extends Provider<? extends TaxiOptimizer>> providerClass;
+public class PFAVQSimModuleV2 extends AbstractQSimModule {
+	private Controler controler;
 	private final Class<? extends TaxiScheduleInquiry> schedulerClass;
 	
-	public PFAVQSimModule() {
-		this(DefaultTaxiOptimizerProvider.class, TaxiScheduler.class);
-	}
+
 	
-	public PFAVQSimModule(Class<? extends Provider<? extends TaxiOptimizer>> providerClass, final Class<? extends TaxiScheduleInquiry> schedulerClass) {
-		this.providerClass = providerClass;
+	public PFAVQSimModuleV2(Controler controler, final Class<? extends TaxiScheduleInquiry> schedulerClass) {
+		this.controler = controler;
 		this.schedulerClass = schedulerClass;
 	}
 
@@ -67,12 +66,15 @@ public class PFAVQSimModule extends AbstractQSimModule {
 				DefaultTaxiOptimizerProvider.TAXI_OPTIMIZER);
 
 		bind(TaxiScheduleInquiry.class).to(schedulerClass);
-
-		if(providerClass == null) {
-			bind(TaxiOptimizer.class).to(PFAVOptimizer.class).asEagerSingleton();
-		} else {
-			bind(TaxiOptimizer.class).toProvider(providerClass).asEagerSingleton();
-		}
+		bind(TaxiOptimizer.class).to(PFAVOptimizer.class).asEagerSingleton();
+		
+		controler.addOverridingModule(new AbstractModule() {
+			
+			@Override
+			public void install() {
+				addControlerListenerBinding().to(PFAVOptimizer.class).asEagerSingleton();
+			}
+		});
 		
 		Named modeNamed = Names.named(TaxiConfigGroup.get(getConfig()).getMode());
 		bind(VrpOptimizer.class).annotatedWith(modeNamed).to(TaxiOptimizer.class);

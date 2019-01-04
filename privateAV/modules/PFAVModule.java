@@ -25,6 +25,8 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.data.Fleet;
 import org.matsim.contrib.dvrp.data.file.FleetProvider;
 import org.matsim.contrib.dvrp.router.TimeAsTravelDisutility;
+import org.matsim.contrib.dvrp.run.MobsimTimerProvider;
+import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelDisutilityProvider;
 import org.matsim.contrib.dynagent.run.DynRoutingModule;
 import org.matsim.contrib.taxi.data.validator.DefaultTaxiRequestValidator;
 import org.matsim.contrib.taxi.data.validator.TaxiRequestValidator;
@@ -33,10 +35,12 @@ import org.matsim.contrib.taxi.optimizer.DefaultTaxiOptimizerProvider;
 import org.matsim.contrib.taxi.passenger.SubmittedTaxiRequestsCollector;
 import org.matsim.contrib.taxi.run.Taxi;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
+import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.contrib.taxi.util.TaxiSimulationConsistencyChecker;
 import org.matsim.contrib.taxi.util.stats.TaxiStatsDumper;
 import org.matsim.contrib.taxi.util.stats.TaxiStatusTimeProfileCollectorProvider;
 import org.matsim.core.controler.AbstractModule;
+import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 
 import com.google.inject.Inject;
@@ -45,20 +49,23 @@ import com.google.inject.name.Names;
 
 import freight.manager.PrivateAVFreightTourManager;
 import freight.manager.SimpleFreightTourManager;
+import privateAV.PFAVScheduler;
+import privateAV.optimizer.PFAVOptimizer;
+import privateAV.optimizer.PFAVProvider;
 import privateAV.run.PFAVFleetGenerator;
 
 /**
  * @author tschlenther
  *
  */
-public final class PFAVAVModule extends AbstractModule{
+public final class PFAVModule extends AbstractModule{
 
 	@Inject
 	private TaxiConfigGroup taxiCfg;
 	
 	private Scenario scenario;
 
-	public PFAVAVModule(Scenario scenario) {
+	public PFAVModule(Scenario scenario) {
 		this.scenario = scenario;
 	}
 	
@@ -72,12 +79,17 @@ public final class PFAVAVModule extends AbstractModule{
 		bind(Fleet.class).annotatedWith(Taxi.class).to(PFAVFleetGenerator.class);
 		bind(Fleet.class).to(PFAVFleetGenerator.class);
 		
-		
 		bind(TravelDisutilityFactory.class).annotatedWith(Names.named(DefaultTaxiOptimizerProvider.TAXI_OPTIMIZER))
 				.toInstance(travelTime -> new TimeAsTravelDisutility(travelTime));
 
 		bind(SubmittedTaxiRequestsCollector.class).asEagerSingleton();
 		addControlerListenerBinding().to(SubmittedTaxiRequestsCollector.class);
+		
+		
+//		bind(MobsimTimer.class).toProvider(MobsimTimerProvider.class).asEagerSingleton();
+//		DvrpTravelDisutilityProvider.bindTravelDisutilityForOptimizer(binder(),	DefaultTaxiOptimizerProvider.TAXI_OPTIMIZER);
+//		bind(TaxiScheduleInquiry.class).to(PFAVScheduler.class);
+//		addControlerListenerBinding().to(PFAVOptimizer.class).asEagerSingleton();
 
 		addControlerListenerBinding().to(TaxiSimulationConsistencyChecker.class);
 		addControlerListenerBinding().to(TaxiStatsDumper.class);

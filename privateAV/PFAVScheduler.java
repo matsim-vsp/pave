@@ -54,6 +54,7 @@ import freight.manager.ListBasedFreightTourManagerImpl;
 import freight.manager.PrivateAVFreightTourManager;
 import freight.manager.SimpleFreightTourManager;
 import privateAV.schedule.PFAVServiceDriveTask;
+import privateAV.schedule.PFAVServiceTask;
 import privateAV.schedule.PFAVStartTask;
 
 public class PFAVScheduler implements TaxiScheduleInquiry {
@@ -67,9 +68,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	private MobsimTimer timer;
 	private TaxiConfigGroup taxiCfg;
 
-////	@Inject
-//	SimpleFreightTourManager freightManager;
-	
 	ListBasedFreightTourManager freightManager;
 	
 	/**
@@ -93,7 +91,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		this.travelTime = travelTime;
 		this.timer = timer;
 		
-		this.freightManager = new ListBasedFreightTourManagerImpl(network, null);
+		this.freightManager = new ListBasedFreightTourManagerImpl(network, PFAVUtils.DEFAULT_CARRIERS_FILE, PFAVUtils.DEFAULT_VEHTYPES_FILE);
 		
 		delegate = new TaxiScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility);
 	}
@@ -135,21 +133,15 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 			}
 			break;
 		case DROPOFF:
-				System.out.println("Ich (vehicle " + vehicle.getId() + ") bin fertig mit PASSENGER Dropoff");
-//				Schedule freightTour = freightManager.getBestAVFreightTourForVehicle(vehicle); 
-//				if(freightTour != null) {
-//					log.info("++++++++++++++ Vehicle " + vehicle.getId() + " is assigned to a freight tour!++++++");
-//					insertFreightSchedule(vehicle, freightTour, (TaxiDropoffTask) currentTask);
-//				} else {
-//					throw new IllegalArgumentException();
-//				}
+			
+				if(currentTask instanceof PFAVServiceTask) break;
 				
-				List<StayTask> freightTour = freightManager.getBestAVFreightTourForVehicle(vehicle); 
+				log.info("Vehicle " + vehicle.getId() + " requests a freight tour");
+				List<StayTask> freightTour = freightManager.getBestPFAVTourForVehicle(vehicle); 
 				if(freightTour != null) {
-					log.info("Vehicle " + vehicle.getId() + " requests a freight tour");
 					scheduleFreightTour(vehicle, freightTour);
 				} else {
-					log.info("+++++ vehicle " + vehicle.getId() + " requested a freight tour but the manager returned NULL ++++++");
+//					log.info("+++++ vehicle " + vehicle.getId() + " requested a freight tour but the manager returned NULL ++++++");
 				}
 			break;
 			
@@ -166,7 +158,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 			
 		}
 	}
-	
 
 	private void insertFreightSchedule(Vehicle vehicle, Schedule freightTour, TaxiDropoffTask currentTask) {
 
@@ -214,7 +205,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		
 		if( ((TaxiTask) Schedules.getNextTask(schedule)).getTaxiTaskType() != TaxiTaskType.STAY) {
 			throw new IllegalStateException(
-					"if a freight tour shall be inserted - the next vehicle task must be STAY. That is not the case for vehicle " + vehicle.getId() + " at " + timer.getTimeOfDay());
+					"if a freight tour shall be inserted - the next vehicle task has to be STAY. That is not the case for vehicle " + vehicle.getId() + " at time " + timer.getTimeOfDay());
 		} else {
 			//remove the stay task
 			schedule.removeLastTask();
@@ -335,8 +326,14 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		return this.freightManager;
 	}
 	
+	public void calculateFreightTours() {
+		((ListBasedFreightTourManagerImpl) this.freightManager).runTourPlanning(travelTime);
+	}
+
 	
 	//---------------------------------------------------- DELEGATE METHODS --------------
+	
+//	@TODO: sort out methods / clean the code
 	
 	
 	//-------------------------------COPIES
@@ -417,99 +414,99 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		delegate.stopVehicle(vehicle);
 	}
 
-//	public void updateTimeline(Vehicle vehicle) {
-//		delegate.updateTimeline(vehicle);
-//	}
-	
 	public void updateTimeline(Vehicle vehicle) {
-		Schedule schedule = vehicle.getSchedule();
-		if (schedule.getStatus() != ScheduleStatus.STARTED) {
-			return;
-		}
-
-		double predictedEndTime = TaskTrackers.predictEndTime(schedule.getCurrentTask(), timer.getTimeOfDay());
-		updateTimelineImpl(vehicle, predictedEndTime);
+		delegate.updateTimeline(vehicle);
 	}
+	
+//	public void updateTimeline(Vehicle vehicle) {
+//		Schedule schedule = vehicle.getSchedule();
+//		if (schedule.getStatus() != ScheduleStatus.STARTED) {
+//			return;
+//		}
+//
+//		double predictedEndTime = TaskTrackers.predictEndTime(schedule.getCurrentTask(), timer.getTimeOfDay());
+//		updateTimelineImpl(vehicle, predictedEndTime);
+//	}
+//
+//	private void updateTimelineImpl(Vehicle vehicle, double newEndTime) {
+//		Schedule schedule = vehicle.getSchedule();
+//		Task currentTask = schedule.getCurrentTask();
+//		if (currentTask.getEndTime() == newEndTime) {
+//			return;
+//		}
+//
+//		currentTask.setEndTime(newEndTime);
+//
+//		List<? extends Task> tasks = schedule.getTasks();
+//		int startIdx = currentTask.getTaskIdx() + 1;
+//		double newBeginTime = newEndTime;
+//
+//		for (int i = startIdx; i < tasks.size(); i++) {
+//			TaxiTask task = (TaxiTask)tasks.get(i);
+//			
+//			if(task instanceof PFAVStartTask) {
+//				System.out.println("about to update the times of the freight start task of vehicle " + vehicle.getId());
+//			}
+//			
+//			double calcEndTime = calcNewEndTime(vehicle, task, newBeginTime);
+//
+//			if (calcEndTime == Time.UNDEFINED_TIME) {
+//				schedule.removeTask(task);
+//				i--;
+//			} else if (calcEndTime < newBeginTime) {// 0 s is fine (e.g. last 'wait')
+//				throw new IllegalStateException();
+//			} else {
+//				if(task.getStatus() != TaskStatus.PLANNED) {
+//					System.out.println("!++++++problem");
+//				}
+//				task.setBeginTime(newBeginTime);
+//				task.setEndTime(calcEndTime);
+//				newBeginTime = calcEndTime;
+//			}
+//		}
+//	}
 
-	private void updateTimelineImpl(Vehicle vehicle, double newEndTime) {
-		Schedule schedule = vehicle.getSchedule();
-		Task currentTask = schedule.getCurrentTask();
-		if (currentTask.getEndTime() == newEndTime) {
-			return;
-		}
+//	protected double calcNewEndTime(Vehicle vehicle, TaxiTask task, double newBeginTime) {
+//			switch (task.getTaxiTaskType()) {
+//				case STAY: {
+//					if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
+//						// even if endTime=beginTime, do not remove this task!!! A taxi schedule should end with WAIT
+//						return Math.max(newBeginTime, vehicle.getServiceEndTime());
+//					} else {
+//						// if this is not the last task then some other task (e.g. DRIVE or PICKUP)
+//						// must have been added at time submissionTime <= t
+//						double oldEndTime = task.getEndTime();
+//						if (oldEndTime <= newBeginTime) {// may happen if the previous task is delayed
+//							return Time.UNDEFINED_TIME;// remove the task
+//						} else {
+//							return oldEndTime;
+//						}
+//					}
+//				}
+//
+//				case EMPTY_DRIVE:
+//				case OCCUPIED_DRIVE: {
+//					// cannot be shortened/lengthen, therefore must be moved forward/backward
+//					VrpPathWithTravelData path = (VrpPathWithTravelData)((DriveTask)task).getPath();
+//					// TODO one may consider recalculation of SP!!!!
+//					return newBeginTime + path.getTravelTime();
+//				}
+//
+//				case PICKUP: {
+//					double t0 = ((TaxiPickupTask)task).getRequest().getEarliestStartTime();
+//					// the actual pickup starts at max(t, t0)
+//					return Math.max(newBeginTime, t0) + taxiCfg.getPickupDuration();
+//				}
+//				case DROPOFF: {
+//					// cannot be shortened/lengthen, therefore must be moved forward/backward
+//					return newBeginTime + taxiCfg.getDropoffDuration();
+//				}
+//
+//				default:
+//					throw new IllegalStateException();
+//			}
+//		}
 
-		currentTask.setEndTime(newEndTime);
-
-		List<? extends Task> tasks = schedule.getTasks();
-		int startIdx = currentTask.getTaskIdx() + 1;
-		double newBeginTime = newEndTime;
-
-		for (int i = startIdx; i < tasks.size(); i++) {
-			TaxiTask task = (TaxiTask)tasks.get(i);
-			
-			if(task instanceof PFAVStartTask) {
-				System.out.println("about to update the times of the freight start task of vehicle " + vehicle.getId());
-			}
-			
-			double calcEndTime = calcNewEndTime(vehicle, task, newBeginTime);
-
-			if (calcEndTime == Time.UNDEFINED_TIME) {
-				schedule.removeTask(task);
-				i--;
-			} else if (calcEndTime < newBeginTime) {// 0 s is fine (e.g. last 'wait')
-				throw new IllegalStateException();
-			} else {
-				if(task.getStatus() != TaskStatus.PLANNED) {
-					System.out.println("!++++++problem");
-				}
-				task.setBeginTime(newBeginTime);
-				task.setEndTime(calcEndTime);
-				newBeginTime = calcEndTime;
-			}
-		}
-	}
-		
-
-		protected double calcNewEndTime(Vehicle vehicle, TaxiTask task, double newBeginTime) {
-			switch (task.getTaxiTaskType()) {
-				case STAY: {
-					if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
-						// even if endTime=beginTime, do not remove this task!!! A taxi schedule should end with WAIT
-						return Math.max(newBeginTime, vehicle.getServiceEndTime());
-					} else {
-						// if this is not the last task then some other task (e.g. DRIVE or PICKUP)
-						// must have been added at time submissionTime <= t
-						double oldEndTime = task.getEndTime();
-						if (oldEndTime <= newBeginTime) {// may happen if the previous task is delayed
-							return Time.UNDEFINED_TIME;// remove the task
-						} else {
-							return oldEndTime;
-						}
-					}
-				}
-
-				case EMPTY_DRIVE:
-				case OCCUPIED_DRIVE: {
-					// cannot be shortened/lengthen, therefore must be moved forward/backward
-					VrpPathWithTravelData path = (VrpPathWithTravelData)((DriveTask)task).getPath();
-					// TODO one may consider recalculation of SP!!!!
-					return newBeginTime + path.getTravelTime();
-				}
-
-				case PICKUP: {
-					double t0 = ((TaxiPickupTask)task).getRequest().getEarliestStartTime();
-					// the actual pickup starts at max(t, t0)
-					return Math.max(newBeginTime, t0) + taxiCfg.getPickupDuration();
-				}
-				case DROPOFF: {
-					// cannot be shortened/lengthen, therefore must be moved forward/backward
-					return newBeginTime + taxiCfg.getDropoffDuration();
-				}
-
-				default:
-					throw new IllegalStateException();
-			}
-		}
 
 
 }

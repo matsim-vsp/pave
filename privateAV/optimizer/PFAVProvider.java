@@ -52,7 +52,7 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 	private TaxiRequestValidator requestValidator;
 	private EventsManager events;
 //	private MobsimTimer timer;
-//	private TravelTime travelTime;
+	private TravelTime travelTime;
 //	private TravelDisutility travelDisutility;
 //	private Network network;
 
@@ -67,7 +67,7 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 			this.scheduler = scheduler;
 //			this.timer = timer;
 //			this.network = network;
-//			this.travelTime = travelTime;
+			this.travelTime = travelTime;
 //			this.travelDisutility = new TimeAsTravelDisutility(travelTime);
 			this.requestValidator = requestValidator;
 			this.events = events;

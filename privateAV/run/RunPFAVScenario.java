@@ -30,19 +30,26 @@ import org.apache.log4j.helpers.DateTimeDateFormat;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
+import org.matsim.contrib.dvrp.run.MobsimTimerProvider;
+import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelDisutilityProvider;
+import org.matsim.contrib.taxi.optimizer.DefaultTaxiOptimizerProvider;
 import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
 import org.matsim.contrib.taxi.run.TaxiConfigConsistencyChecker;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
+import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.QSimConfigGroup.SnapshotStyle;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
+import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import privateAV.PFAVScheduler;
 import privateAV.modules.PFAVQSimModule;
-import privateAV.modules.PFAVAVModule;
+import privateAV.modules.PFAVModule;
+import privateAV.optimizer.PFAVOptimizer;
 import privateAV.optimizer.PFAVProvider;
 
 /**
@@ -56,12 +63,6 @@ public class RunPFAVScenario {
 	public static final String CARRIERS_FILE = "input/Scenarios/mielec/freight/carrierPlans_routed.xml";
 	
 	public static final String OUTPUT_DIR = "output/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
-	/**
-	 * 
-	 */
-	public RunPFAVScenario() {
-		// TODO Auto-generated constructor stub
-	}
 
 	/**
 	 * @param args
@@ -102,11 +103,15 @@ public class RunPFAVScenario {
 		final Scenario scenario = ScenarioUtils.loadScenario(config);
 		Controler controler = new Controler(scenario);
 
-		controler.addOverridingModule(new PFAVAVModule(scenario));
-		
-		
 //		controler.addQSimModule(new FreightAVQSimModule(TSPrivateAVOptimizerProvider.class,PrivateAV4FreightScheduler.class));
-		controler.addQSimModule(new PFAVQSimModule(PFAVProvider.class,PFAVScheduler.class));
+		
+//		controler.addQSimModule(new PFAVQSimModule(PFAVProvider.class,PFAVScheduler.class));
+		//null für direktes binden des optimizers ohne provider klasse
+		
+		controler.addQSimModule(new PFAVQSimModule(null,PFAVScheduler.class));
+
+		controler.addOverridingModule(new PFAVModule(scenario));
+		//if PFAVProvider is used, we need to bind our optimizer as controller listener
 		
 //		controler.addQSimModule(new PassengerEngineQSimModule(taxiCfg.getMode()));
 		
@@ -114,17 +119,6 @@ public class RunPFAVScenario {
 		controler.addOverridingModule(DvrpModule.createModule(taxiCfg.getMode(),
 				Collections.singleton(TaxiOptimizer.class)));
 			
-		
-		
-//		controler.addOverridingModule(new AbstractModule() {
-//			
-//			@Override
-//			public void install() {
-//				PrivateAVFreightTourManager manager = new SimpleFreightTourManager(CARRIERS_FILE);
-//				bind(PrivateAVFreightTourManager.class).toInstance(manager);
-//			}
-//		});
-	
         controler.run();
 	}
 	

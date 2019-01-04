@@ -1,6 +1,7 @@
 package freight;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.matsim.api.core.v01.Id;
@@ -23,7 +24,7 @@ import org.matsim.vehicles.EngineInformation.FuelType;
 
 public class FreightSetUp {
 
-	public static Carriers createCarriersWithRandomDepotAnd10Services(List<CarrierVehicleType> vehicleTypes, FleetSize fleetSize, Network network, int numberOfCarriers, int nrOfVehPerCarrierPerVehType) {
+	public static Carriers createCarriersWithRandomDepotAnd10Services(Collection<CarrierVehicleType> vehicleTypes, FleetSize fleetSize, Network network, int numberOfCarriers, int nrOfVehPerCarrierPerVehType) {
 		Carriers carriers = new Carriers();
 		
 		for(int i=1; i <=numberOfCarriers; i++) {
@@ -67,7 +68,8 @@ public class FreightSetUp {
 	}
 	
 	public static CarrierVehicleType createPrivateFreightAVVehicleType() {
-		CarrierVehicleType carrierVehType = CarrierVehicleType.Builder.newInstance(Id.create("gridType", VehicleType.class))
+//		CarrierVehicleType carrierVehType = CarrierVehicleType.Builder.newInstance(Id.create("gridType", VehicleType.class))
+		CarrierVehicleType carrierVehType = CarrierVehicleType.Builder.newInstance(Id.create("PFAV", VehicleType.class))
 				.setCapacity(3)
 				.setMaxVelocity(13.3)
 				.setCostPerDistanceUnit(0.0001)
@@ -87,7 +89,7 @@ public class FreightSetUp {
 				.build();
 	}
 	
-	public static CarrierCapabilities buildCarrierCapabilities(List<CarrierVehicleType> vehTypes, List<CarrierVehicle> vehicles, FleetSize fleetSize) {
+	public static CarrierCapabilities buildCarrierCapabilities(Collection<CarrierVehicleType> vehTypes, List<CarrierVehicle> vehicles, FleetSize fleetSize) {
 		CarrierCapabilities.Builder ccBuilder = CarrierCapabilities.Builder.newInstance();
 		
 		for(CarrierVehicleType type : vehTypes) {

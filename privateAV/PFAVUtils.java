@@ -16,22 +16,15 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package freight.manager;
-
-import java.util.List;
-
-import org.matsim.contrib.dvrp.data.Vehicle;
-import org.matsim.contrib.dvrp.schedule.StayTask;
+package privateAV;
 
 /**
  * @author tschlenther
  *
  */
-public interface ListBasedFreightTourManager {
-	public List<List<StayTask>> getPFAVTours();
-	
-	public List<StayTask> getRandomPFAVTour();
-	
-	public List<StayTask> getBestPFAVTourForVehicle(Vehicle vehicle);
+public final class PFAVUtils {
 
+	public static final String DEFAULT_CARRIERS_FILE = "input/Scenarios/mielec/freight/neu/carrierPlans_routed_finite2.xml";
+	public static final String DEFAULT_VEHTYPES_FILE =  "input/Scenarios/mielec/freight/neu/vehTypes_routed_finite2.xml";
+	
 }
