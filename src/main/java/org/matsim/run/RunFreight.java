@@ -20,7 +20,9 @@ package org.matsim.run;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -28,6 +30,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.freight.carrier.Carrier;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities;
 import org.matsim.contrib.freight.carrier.CarrierImpl;
@@ -46,7 +49,6 @@ import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
 import org.matsim.contrib.freight.jsprit.NetworkRouter;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts.Builder;
-import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
@@ -54,9 +56,14 @@ import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.controler.OutputDirectoryLogging;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.router.costcalculators.FreespeedTravelTimeAndDisutility;
+import org.matsim.core.router.util.TravelDisutility;
+import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
+import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.matsim.vehicles.EngineInformationImpl;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.EngineInformation.FuelType;
@@ -67,10 +74,17 @@ import com.graphhopper.jsprit.core.problem.VehicleRoutingProblem;
 import com.graphhopper.jsprit.core.problem.solution.VehicleRoutingProblemSolution;
 import com.graphhopper.jsprit.core.util.Solutions;
 import com.graphhopper.jsprit.io.problem.VrpXMLWriter;
+import ovgu.data.entity.RouteElement;
+import ovgu.utilities.DistanceMatrix;
+import ovgu.utilities.RouteHandler;
+import ovgu.utilities.Settings;
+import ovgu.vrptw.vrpSolver;
 
 public class RunFreight {
 	private static final Logger log = Logger.getLogger(RunFreight.class);
 
+	enum Optim {jsprit, ovgu }
+	final static Optim optim = Optim.ovgu ;
 	
 //	private static final String INPUT_DIR = "../../shared-svn/projects/freight/studies/MA_Turner-Kai/input/Grid_Szenario/" ; //TODO: Define INPUT
 	final static URL context = ExamplesUtils.getTestScenarioURL("freight-chessboard-9x9"); //Scenario...
@@ -100,7 +114,9 @@ public class RunFreight {
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		config.controler().setLastIteration(1);
 		Scenario scenario = ScenarioUtils.createScenario(config);
-			
+
+		switch( optim ) {
+			case jsprit:
 		/*
 		 * Prepare and run jasprit
 		 */
@@ -154,9 +170,54 @@ public class RunFreight {
 			
 			new VrpXMLWriter(problem, solutions).write(OUTPUT_DIR + "servicesAndShipments_solutions_" + carrier.getId().toString() + ".xml");
 		}
-		new CarrierPlanXmlWriterV2(carriers).write( OUTPUT_DIR + "servicesAndShipments_jsprit_plannedCarriers.xml") ; 
-		
-		
+		new CarrierPlanXmlWriterV2(carriers).write( OUTPUT_DIR + "servicesAndShipments_jsprit_plannedCarriers.xml") ;
+				break;
+			case ovgu:
+
+
+				DistanceMatrix matrix = null ; // todo
+
+				TravelTime tt = new FreeSpeedTravelTime() ;
+				TravelDisutility tc = new FreespeedTravelTimeAndDisutility(  config.planCalcScore() ) ;
+				LeastCostPathTree tree = new LeastCostPathTree( tt, tc ) ;
+				Node originNode = null ;
+				double time = 8.*3600. ;
+				tree.calculate( scenario.getNetwork(), originNode, time );
+				Map<Id<Node>, LeastCostPathTree.NodeData> result = tree.getTree();
+
+//				for all destinations {
+//				    genCost = result.get( destinationNodeId ) ;
+//				    enter result into matrix
+//			      }
+
+				// or from dvrp
+
+				vrpSolver vrpSolver = new vrpSolver(matrix);
+
+				ArrayList<RouteElement> currentRequests = null ;  // todo  (get from carrier)
+
+				ArrayList<ArrayList<RouteElement>> finalRoutes = null ;
+				switch ( Settings.algorithm) {
+					case 0:
+						finalRoutes = vrpSolver.startInsertion( currentRequests );
+						break;
+					case 1:
+						finalRoutes = vrpSolver.startLMNS(currentRequests);
+						break;
+					case 2:
+						finalRoutes = vrpSolver.startALNS(currentRequests);
+						break;
+				}
+				RouteHandler.printRoute(finalRoutes );
+
+				// in principle, matsim should generate routes in prepare for sim, i.e. just sequences of activities and legs should be enough at this point.
+				// it may, however, not work in that way for carrier because it comes from outside, then we need to fix it in the core, not here.
+
+				break;
+		}
+
+
+
 		//--------- now start a MATsim run:
 		
 
