@@ -51,6 +51,7 @@ import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts.Builder;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.controler.OutputDirectoryLogging;
 import org.matsim.core.gbl.Gbl;
@@ -86,16 +87,17 @@ public class RunFreight {
 	 *       <li> do not overwrite output dir by matsim </li>
 	 */
 	private static final Logger log = Logger.getLogger(RunFreight.class);
-
+	
 	enum Optim {jsprit, ovgu }
 	final static Optim optim = Optim.ovgu ;
+	
+	private static URL scenarioUrl ;
+	static{
+		scenarioUrl = ExamplesUtils.getTestScenarioURL( "freight-chessboard-9x9" ) ;
+	}
 
-	//	private static final String INPUT_DIR = "../../shared-svn/projects/freight/studies/MA_Turner-Kai/input/Grid_Szenario/" ; //TODO: Define INPUT
-	final static URL context = ExamplesUtils.getTestScenarioURL("freight-chessboard-9x9"); //Scenario...
 
 	//	Config config = ConfigUtils.loadConfig(configFileName );
-	private static final String OUTPUT_DIR = "output/runFreight/";
-	private static final String LOG_DIR = OUTPUT_DIR + "Logs/";
 
 	public static void main(String[] args) throws IOException {
 		/*
@@ -105,19 +107,24 @@ public class RunFreight {
 		Logger.getRootLogger().setLevel(Level.INFO);
 
 		/*
-		 * some preparation - create output folder
-		 */
-		OutputDirectoryLogging.initLoggingWithOutputDirectory(LOG_DIR);
-
-		/*
 		 * Some Preparation for MATSim
 		 */
 		Config config = ConfigUtils.createConfig();
-		config.setContext(context);
+		config.setContext(scenarioUrl);
 		config.network().setInputFile("grid9x9.xml");
-		config.controler().setOverwriteFileSetting(OverwriteFileSetting.overwriteExistingFiles) ;
+		
+		config.controler().setOutputDirectory("./output/freight");
+		config.controler().setOverwriteFileSetting( OverwriteFileSetting.deleteDirectoryIfExists );
+		new OutputDirectoryHierarchy( config.controler().getOutputDirectory(), config.controler().getRunId(), config.controler().getOverwriteFileSetting() ) ;
+		config.controler().setOverwriteFileSetting( OverwriteFileSetting.overwriteExistingFiles );
+		// (the directory structure is needed for jsprit output, which is before the controler starts.  Maybe there is a better alternative ...)
+	
+		config.global().setRandomSeed(4177);
+		
 		config.controler().setLastIteration(1);
 		Scenario scenario = ScenarioUtils.createScenario(config);
+		
+		OutputDirectoryLogging.initLoggingWithOutputDirectory(config.controler().getOutputDirectory() +"/Logs");
 
 		//Create carrier with services
 		Carriers carriers = new Carriers() ;
@@ -147,7 +154,7 @@ public class RunFreight {
 
 		//load Network and build netbasedCosts for jsprit
 		Network network = NetworkUtils.createNetwork();
-		new MatsimNetworkReader(network).readURL(IOUtils.newUrl(context ,"grid9x9.xml"));
+		new MatsimNetworkReader(network).readURL(IOUtils.newUrl(scenarioUrl ,"grid9x9.xml"));
 
 		switch( optim ) {
 			case jsprit:
@@ -175,10 +182,10 @@ public class RunFreight {
 					NetworkRouter.routePlan(carrierPlanServicesAndShipments,netBasedCosts) ;
 					carrier.setSelectedPlan(carrierPlanServicesAndShipments) ;
 
-					new VrpXMLWriter(problem, solutions).write(OUTPUT_DIR + "servicesAndShipments_solutions_" + carrier.getId().toString() + ".xml");
-					new Plotter( problem, bestSolution ).plot( OUTPUT_DIR + "/solution_" + carrier.getId().toString() + ".png", carrier.getId().toString() );
+					new VrpXMLWriter(problem, solutions).write(config.controler().getOutputDirectory()+ "/servicesAndShipments_solutions_" + carrier.getId().toString() + ".xml");
+					new Plotter( problem, bestSolution ).plot( config.controler().getOutputDirectory()+ "/solution_" + carrier.getId().toString() + ".png", carrier.getId().toString() );
 				}
-				new CarrierPlanXmlWriterV2(carriers).write( OUTPUT_DIR + "servicesAndShipments_jsprit_plannedCarriers.xml") ;
+				new CarrierPlanXmlWriterV2(carriers).write( config.controler().getOutputDirectory()+ "servicesAndShipments_jsprit_plannedCarriers.xml") ;
 				break;
 			case ovgu:
 
