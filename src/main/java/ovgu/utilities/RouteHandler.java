@@ -42,12 +42,12 @@ public class RouteHandler {
 				System.out.println(
 
 						routes.get(route).get(c).getId() + " " + routes.get(route).get(c).getPositionDistanceMatrix()
-								+ "     ;W;   " + (routes.get(route).get(c).getWaitingTime()) + "     ;To;    "
-								+ (routes.get(route).get(c).getTravelTimeTo()) + "     ;B;   "
-								+ (routes.get(route).get(c).getServiceBegin()) + "     ;E;   "
-								+ (routes.get(route).get(c).getServiceEnd()) + "     ;From;    "
-								+ (routes.get(route).get(c).getTravelTimeFrom()) + "	;TW.KEY;    "
-								+ (routes.get(route).get(c).getTimeWindowKey()) + "     ;TW;   "
+								+ "     ;WaitingTime;   " + (routes.get(route).get(c).getWaitingTime()) + "     ;TravelTimeTo;    "
+								+ (routes.get(route).get(c).getTravelTimeTo()) + "     ;BeginService;   "
+								+ (routes.get(route).get(c).getServiceBegin()) + "     ;EndService;   "
+								+ (routes.get(route).get(c).getServiceEnd()) + "     ;TravelTimeFrom;    "
+								+ (routes.get(route).get(c).getTravelTimeFrom()) + "	;TimeWindow.KEY;    "
+								+ (routes.get(route).get(c).getTimeWindowKey()) + "     ;TimeWindow(begin - end);   "
 								+ (routes.get(route).get(c).getStartTimeWindow()) + "-"
 								+ (routes.get(route).get(c).getEndTimeWindow()));
 			}
