@@ -29,3 +29,8 @@ pieces of the failed attempt in the directory and start over.
 ### Import into IntelliJ
 
 ... todo ...
+
+Easiest way on Mac is to go into directory and type 
+```
+open -a /Applications/IntelliJ\ IDEA.app/ .
+```

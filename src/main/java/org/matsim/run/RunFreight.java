@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.*;
 
 import com.graphhopper.jsprit.analysis.toolbox.Plotter;
+import com.graphhopper.jsprit.core.problem.solution.route.VehicleRoute;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
@@ -30,19 +31,7 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.freight.carrier.Carrier;
-import org.matsim.contrib.freight.carrier.CarrierCapabilities;
-import org.matsim.contrib.freight.carrier.CarrierImpl;
-import org.matsim.contrib.freight.carrier.CarrierPlan;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
-import org.matsim.contrib.freight.carrier.CarrierService;
-import org.matsim.contrib.freight.carrier.CarrierShipment;
-import org.matsim.contrib.freight.carrier.CarrierVehicle;
-import org.matsim.contrib.freight.carrier.CarrierVehicleType;
-import org.matsim.contrib.freight.carrier.CarrierVehicleTypeLoader;
-import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
-import org.matsim.contrib.freight.carrier.Carriers;
-import org.matsim.contrib.freight.carrier.TimeWindow;
+import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
 import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
@@ -81,7 +70,7 @@ import ovgu.utilities.RouteHandler;
 import ovgu.utilities.Settings;
 import ovgu.vrptw.vrpSolver;
 
-public class RunFreight {
+class RunFreight {
 	/*
 	 * todos:<ul>
 	 *       <li> do not overwrite output dir by matsim </li>
@@ -156,15 +145,19 @@ public class RunFreight {
 		Network network = NetworkUtils.createNetwork();
 		new MatsimNetworkReader(network).readURL(IOUtils.newUrl(scenarioUrl ,"grid9x9.xml"));
 
+		new CarrierPlanXmlWriterV2( carriers ).write( config.controler().getOutputDirectory() + "/carriers-wo-plans.xml" );
+		new CarrierVehicleTypeWriter( CarrierVehicleTypes.getVehicleTypes( carriers ) ).write( config.controler().getOutputDirectory() + "/carrierTypes.xml" );
+
+		Builder netBuilder = NetworkBasedTransportCosts.Builder.newInstance( network, vehicleTypes.getVehicleTypes().values() );
+		final NetworkBasedTransportCosts netBasedCosts = netBuilder.build() ;
+		netBuilder.setTimeSliceWidth(1800) ; // !!!!, otherwise it will not do anything.
+
 		switch( optim ) {
 			case jsprit:
 				/*
 				 * Prepare and run jasprit
 				 */
 
-				Builder netBuilder = NetworkBasedTransportCosts.Builder.newInstance( network, vehicleTypes.getVehicleTypes().values() );
-				final NetworkBasedTransportCosts netBasedCosts = netBuilder.build() ;
-				netBuilder.setTimeSliceWidth(1800) ; // !!!!, otherwise it will not do anything.
 
 				for (Carrier carrier : carriers.getCarriers().values()) {
 					//Build VRP for jsprit
@@ -185,7 +178,6 @@ public class RunFreight {
 					new VrpXMLWriter(problem, solutions).write(config.controler().getOutputDirectory()+ "/servicesAndShipments_solutions_" + carrier.getId().toString() + ".xml");
 					new Plotter( problem, bestSolution ).plot( config.controler().getOutputDirectory()+ "/solution_" + carrier.getId().toString() + ".png", carrier.getId().toString() );
 				}
-				new CarrierPlanXmlWriterV2(carriers).write( config.controler().getOutputDirectory()+ "servicesAndShipments_jsprit_plannedCarriers.xml") ;
 				break;
 			case ovgu:
 
@@ -265,11 +257,17 @@ public class RunFreight {
 					// in principle, matsim should generate routes in prepare for sim, i.e. just sequences of activities and legs should be enough at this point.
 					// it may, however, not work in that way for carrier because it comes from outside, then we need to fix it in the core, not here.
 
+					CarrierPlan carrierPlanServicesAndShipments = MatsimOvguFactory.createPlan(carrier, finalRoutes) ;
+					NetworkRouter.routePlan(carrierPlanServicesAndShipments,netBasedCosts) ;
+					carrier.setSelectedPlan(carrierPlanServicesAndShipments) ;
+
+
 				}
 
 				break;
 		}
 
+		new CarrierPlanXmlWriterV2(carriers).write( config.controler().getOutputDirectory()+ "servicesAndShipments_plannedCarriers.xml") ;
 
 
 		//--------- now start a MATsim run:

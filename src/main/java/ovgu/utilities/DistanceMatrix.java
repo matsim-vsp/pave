@@ -47,6 +47,7 @@ public class DistanceMatrix {
 		
 	 public float getTravelTime(RouteElement from, RouteElement to){	 
 		return Settings.regionMultiplier*this.getDistanceMatrix()[from.getPositionDistanceMatrix()][to.getPositionDistanceMatrix()];
-	}	
+	}
+
 
 }

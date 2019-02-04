@@ -37,19 +37,19 @@ public class RouteHandler {
 			System.out.println("");
 			System.out.println("Route " + route);
 
-			for (int c = 0; c < routes.get(route).size(); c++) {
+			for (int trip = 0; trip < routes.get(route).size(); trip++) {
 
 				System.out.println(
 
-						routes.get(route).get(c).getId() + " " + routes.get(route).get(c).getPositionDistanceMatrix()
-								+ "     ;WaitingTime;   " + (routes.get(route).get(c).getWaitingTime()) + "     ;TravelTimeTo;    "
-								+ (routes.get(route).get(c).getTravelTimeTo()) + "     ;BeginService;   "
-								+ (routes.get(route).get(c).getServiceBegin()) + "     ;EndService;   "
-								+ (routes.get(route).get(c).getServiceEnd()) + "     ;TravelTimeFrom;    "
-								+ (routes.get(route).get(c).getTravelTimeFrom()) + "	;TimeWindow.KEY;    "
-								+ (routes.get(route).get(c).getTimeWindowKey()) + "     ;TimeWindow(begin - end);   "
-								+ (routes.get(route).get(c).getStartTimeWindow()) + "-"
-								+ (routes.get(route).get(c).getEndTimeWindow()));
+						"tripId; " + routes.get(route).get(trip).getId()
+							  + " ;positionDistanceVector; " + routes.get(route).get(trip).getPositionDistanceMatrix()
+							  + "     ;WaitingTime;   " + (routes.get(route).get(trip).getWaitingTime())
+							  + "     ;TravelTimeTo;    " + (routes.get(route).get(trip).getTravelTimeTo())
+							  + "     ;BeginService;   " + (routes.get(route).get(trip).getServiceBegin())
+							  + "     ;EndService;   " + (routes.get(route).get(trip).getServiceEnd())
+							  + "     ;TravelTimeFrom;    " + (routes.get(route).get(trip).getTravelTimeFrom())
+							  + "	;TimeWindow.KEY;    " + (routes.get(route).get(trip).getTimeWindowKey())
+							  + "     ;TimeWindow(begin - end);   " + (routes.get(route).get(trip).getStartTimeWindow()) + "-" + (routes.get(route).get(trip).getEndTimeWindow()));
 			}
 		}
 	}
