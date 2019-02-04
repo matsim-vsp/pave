@@ -47,9 +47,9 @@ public class ALNS {
 		
 		double performance = performance(backupRoutes);
 		double temperature = performance * Settings.temperatureControlParameter / Math.log(2);
-		double backupPerformance = performance + performance(currentRoutes) + (peneltyTerm * openRequests.size());
-		double bestPerformance = performance + performance(currentRoutes) + (peneltyTerm * openRequests.size());
-		double currentPerformance = performance + performance(currentRoutes) + (peneltyTerm * openRequests.size());
+		double backupPerformance = performance  + (peneltyTerm * openRequests.size());
+		double bestPerformance = performance  + (peneltyTerm * openRequests.size());
+		double currentPerformance;
 		int reasonForAcceptance;
 
 		HashSet<Double> objectiveValues = new HashSet<Double>();
