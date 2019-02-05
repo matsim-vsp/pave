@@ -25,15 +25,19 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.data.Vehicle;
 import org.matsim.contrib.dvrp.schedule.Schedule;
+import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
 import org.matsim.contrib.freight.carrier.Carrier;
 import org.matsim.contrib.freight.carrier.CarrierPlan;
 import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
+import org.matsim.contrib.freight.carrier.CarrierVehicle;
 import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
 import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.carrier.ScheduledTour;
@@ -41,6 +45,9 @@ import org.matsim.contrib.taxi.data.TaxiRequest;
 import org.matsim.contrib.taxi.optimizer.BestDispatchFinder;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
+import org.matsim.contrib.util.PartialSort;
+import org.matsim.contrib.util.StraightLineKnnFinder;
+import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.util.TravelTime;
 
@@ -59,6 +66,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	private FreightTourCalculator tourCalculator;
 
 	private Network network;
+
+	private ArrayList<Link> depotLinks;
 	
 	/**
 	 * 
@@ -81,6 +90,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 				// a) call runTourPlanning() method
 				// b) let this.freightActivities() be either empty or uninitiated
 		this.freightActivities = convertCarrierPlansToTaskList(tourCalculator.getCarriers());
+		
 	}
 	
 	private List<List<StayTask>> convertCarrierPlansToTaskList(Carriers carriers) {
@@ -125,10 +135,44 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		return getRandomPFAVTour();
 	}
 
+//	private List<StayTask> getDispatchedTourForVehicle(Vehicle vehicle){
+//		
+//		List<Id<Link>> list = new ArrayList<Id<Link>>();
+//		
+//		StraightLineKnnFinder<Link, Charger> straightLineKnnFinder = new StraightLineKnnFinder(2, l -> (Link) l, CHARGER_TO_LINK);
+////		List<Charger> nearestChargers = straightLineKnnFinder.findNearest(stopLocation, chargingInfrastructure.getChargers().values().stream().filter(charger -> ev.getChargingTypes().contains(charger.getChargerType())));
+//		
+//		
+//		Coord objectCoord = Schedules.getLastLinkInSchedule(vehicle).getCoord();
+//		Stream<Id<Link>> neighbours = list.stream();
+//		
+//		PartialSort<Id<Link>> nearestRequestSort = new PartialSort<Id<Link>>(3);
+//
+//		for(Link l : this.depotLinks) {
+//			nearestRequestSort.add(l.getId(), DistanceUtils.calculateDistance(objectCoord, l.getCoord()));
+//		}
+//		
+//		List<>nearestRequestSort.kSmallestElements();
+//		
+////		PartialSort.kSmallestElements(3, neighbours,
+////				n -> DistanceUtils.calculateSquaredDistance(objectCoord, neighbourToLink.apply(n).getCoord()));
+//	}
+	
 	public void runTourPlanning(TravelTime travelTime) {
 		this.tourCalculator.run(travelTime);
 		log.info("overriding list of PFAV schedules...");
 		this.freightActivities = convertCarrierPlansToTaskList(tourCalculator.getCarriers());
+		
+		this.depotLinks = new ArrayList<Link>();
+		for(Carrier carrier : this.tourCalculator.getCarriers().getCarriers().values()) {
+			for(CarrierVehicle veh : carrier.getCarrierCapabilities().getCarrierVehicles()) {
+				if(! this.depotLinks.contains(veh.getLocation())){
+					this.depotLinks.add(network.getLinks().get(veh.getLocation()));			// this is the depot link id .... TODO: check if that is correct!
+				} 
+			}
+		}
+		
+		
 	}
 	
 	
