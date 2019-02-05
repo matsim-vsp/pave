@@ -98,19 +98,7 @@ class RunFreight {
 		/*
 		 * Some Preparation for MATSim
 		 */
-		Config config = ConfigUtils.createConfig();
-		config.setContext(scenarioUrl);
-		config.network().setInputFile("grid9x9.xml");
-		
-		config.controler().setOutputDirectory("./output/freight");
-		config.controler().setOverwriteFileSetting( OverwriteFileSetting.deleteDirectoryIfExists );
-		new OutputDirectoryHierarchy( config.controler().getOutputDirectory(), config.controler().getRunId(), config.controler().getOverwriteFileSetting() ) ;
-		config.controler().setOverwriteFileSetting( OverwriteFileSetting.overwriteExistingFiles );
-		// (the directory structure is needed for jsprit output, which is before the controler starts.  Maybe there is a better alternative ...)
-	
-		config.global().setRandomSeed(4177);
-		
-		config.controler().setLastIteration(1);
+		Config config = prepareConfig();
 		Scenario scenario = ScenarioUtils.createScenario(config);
 		
 		OutputDirectoryLogging.initLoggingWithOutputDirectory(config.controler().getOutputDirectory() +"/Logs");
@@ -281,6 +269,26 @@ class RunFreight {
 
 		log.info("#### Finished ####");
 
+	}
+
+	/**
+	 * @return
+	 */
+	private static Config prepareConfig() {
+		Config config = ConfigUtils.createConfig();
+		config.setContext(scenarioUrl);
+		config.network().setInputFile("grid9x9.xml");
+		
+		config.controler().setOutputDirectory("./output/freight");
+		config.controler().setOverwriteFileSetting( OverwriteFileSetting.deleteDirectoryIfExists );
+		new OutputDirectoryHierarchy( config.controler().getOutputDirectory(), config.controler().getRunId(), config.controler().getOverwriteFileSetting() ) ;
+		config.controler().setOverwriteFileSetting( OverwriteFileSetting.overwriteExistingFiles );
+		// (the directory structure is needed for jsprit output, which is before the controler starts.  Maybe there is a better alternative ...)
+	
+		config.global().setRandomSeed(4177);
+		
+		config.controler().setLastIteration(1);
+		return config;
 	}
 
 	/**
