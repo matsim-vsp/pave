@@ -267,7 +267,7 @@ class RunFreight {
 				break;
 		}
 
-		new CarrierPlanXmlWriterV2(carriers).write( config.controler().getOutputDirectory()+ "servicesAndShipments_plannedCarriers.xml") ;
+		new CarrierPlanXmlWriterV2(carriers).write( config.controler().getOutputDirectory()+ "/servicesAndShipments_plannedCarriers.xml") ;
 
 
 		//--------- now start a MATsim run:
