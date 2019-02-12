@@ -72,7 +72,7 @@ public class FreightTourCalculator {
 
 	private int timeSlice = 1800;
 	
-	
+	//TODO: inject this or at least pass it through from somewhere else
 	private static final String INPUT_NETWORK = "input/Scenarios/mielec/network.xml"; 
 	
 	public FreightTourCalculator(Network network, Carriers carriers, CarrierVehicleTypes vTypes) {

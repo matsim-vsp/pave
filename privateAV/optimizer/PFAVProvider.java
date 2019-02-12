@@ -48,7 +48,6 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 	private TaxiConfigGroup taxiCfg;
 	private Fleet fleet;
 	private TaxiScheduleInquiry scheduler;
-	private EventsManager events;
 //	private MobsimTimer timer;
 	private TravelTime travelTime;
 //	private TravelDisutility travelDisutility;
@@ -58,7 +57,7 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 	public PFAVProvider(TaxiConfigGroup taxiCfg, Fleet fleet,
 			TaxiScheduleInquiry scheduler, MobsimTimer timer,
 			@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
-			@Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, EventsManager events) {
+			@Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime) {
 			this.taxiCfg = taxiCfg;
 			this.fleet = fleet;
 			this.scheduler = scheduler;
@@ -66,7 +65,6 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 //			this.network = network;
 			this.travelTime = travelTime;
 //			this.travelDisutility = new TimeAsTravelDisutility(travelTime);
-			this.events = events;
 	}
 
 	@Override
@@ -81,7 +79,7 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 		
 		
 		return new PFAVOptimizer(taxiCfg, fleet, (PFAVScheduler) scheduler,
-				new RuleBasedTaxiOptimizerParams(optimizerConfig), events);
+				new RuleBasedTaxiOptimizerParams(optimizerConfig));
 	}
 	
 }

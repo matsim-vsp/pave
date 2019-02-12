@@ -33,6 +33,8 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
+import privateAV.modules.PFAVModeModule;
+import privateAV.modules.PFAVQSimModule;
 
 /**
  * @author tschlenther
@@ -81,7 +83,14 @@ public class RunPFAVScenario {
 		// setup controler
 		Controler controler = new Controler(scenario);
 		controler.addOverridingModule(new DvrpModule());
-		controler.addOverridingModule(new TaxiModule());
+//		controler.addOverridingModule(new TaxiModule());
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				install(new PFAVModeModule(taxiCfg, scenario));
+				installQSimModule(new PFAVQSimModule(taxiCfg));
+			}
+		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));
 
 

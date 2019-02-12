@@ -41,7 +41,7 @@ public class PFAVOptimizer implements TaxiOptimizer, IterationStartsListener {
 	private Fleet fleet;
 	private PFAVScheduler scheduler;
 	private DefaultTaxiOptimizerParams params;
-	private EventsManager eventsManager;
+//	private EventsManager eventsManager;
 	private boolean printDetailedWarnings;
 	
 	/**
@@ -50,7 +50,7 @@ public class PFAVOptimizer implements TaxiOptimizer, IterationStartsListener {
 	private final int FREIGHTTOUR_PLANNING_INTERVAL = 5;
 	
 	@Inject
-	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, TaxiScheduleInquiry scheduler, EventsManager eventsManager) {
+	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, TaxiScheduleInquiry scheduler) {
 		
 		if(!(scheduler instanceof PFAVScheduler)) {
 			throw new IllegalArgumentException("this OptimizerPRovider can only work with a scheduler of type " + PFAVScheduler.class);
@@ -61,18 +61,18 @@ public class PFAVOptimizer implements TaxiOptimizer, IterationStartsListener {
 		
 		this.fleet = fleet;
 		this.scheduler = (PFAVScheduler) scheduler;
-		this.eventsManager = eventsManager;
+//		this.eventsManager = eventsManager;
 		
 		this.printDetailedWarnings = taxiCfg.isPrintDetailedWarnings();
 	}
 	
 	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, PFAVScheduler scheduler,
-			DefaultTaxiOptimizerParams params, 	EventsManager eventsManager) {
+			DefaultTaxiOptimizerParams params) {
 		
 		this.fleet = fleet;
 		this.scheduler = scheduler;
 		this.params = params;
-		this.eventsManager = eventsManager;
+//		this.eventsManager = eventsManager;
 		
 		this.printDetailedWarnings = taxiCfg.isPrintDetailedWarnings();
 	}
