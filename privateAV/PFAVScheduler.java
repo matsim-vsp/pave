@@ -6,28 +6,23 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.dvrp.data.Fleet;
-import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelDataImpl;
 import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
-import org.matsim.contrib.dvrp.schedule.DriveTask;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
 import org.matsim.contrib.dvrp.schedule.Task;
-import org.matsim.contrib.dvrp.schedule.Task.TaskStatus;
 import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
 import org.matsim.contrib.dvrp.tracker.OnlineDriveTaskTracker;
-import org.matsim.contrib.dvrp.tracker.TaskTrackers;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
-import org.matsim.contrib.taxi.data.TaxiRequest;
-import org.matsim.contrib.taxi.data.TaxiRequest.TaxiRequestStatus;
-import org.matsim.contrib.taxi.optimizer.DefaultTaxiOptimizerProvider;
-import org.matsim.contrib.taxi.run.Taxi;
+import org.matsim.contrib.taxi.passenger.TaxiRequest;
+import org.matsim.contrib.taxi.passenger.TaxiRequest.TaxiRequestStatus;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
 import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
@@ -43,16 +38,11 @@ import org.matsim.core.router.FastAStarEuclideanFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
-import org.matsim.core.utils.misc.Time;
-
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import freight.manager.ConvertFreightTourForDvrp;
 import freight.manager.ListBasedFreightTourManager;
 import freight.manager.ListBasedFreightTourManagerImpl;
-import freight.manager.PrivateAVFreightTourManager;
-import freight.manager.SimpleFreightTourManager;
 import privateAV.schedule.PFAVServiceDriveTask;
 import privateAV.schedule.PFAVServiceTask;
 import privateAV.schedule.PFAVStartTask;
@@ -80,9 +70,9 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	 * @param travelDisutility
 	 */
 	@Inject
-	public PFAVScheduler(TaxiConfigGroup taxiCfg, @Taxi Fleet fleet, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
+	public PFAVScheduler(TaxiConfigGroup taxiCfg, Fleet fleet, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
 			MobsimTimer timer, @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
-			@Named(DefaultTaxiOptimizerProvider.TAXI_OPTIMIZER) TravelDisutility travelDisutility){
+			TravelDisutility travelDisutility){
 		
 		DEPOT_LINK = network.getLinks().get(Id.createLinkId("560"));
 		this.taxiCfg = taxiCfg;
@@ -96,7 +86,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		delegate = new TaxiScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility);
 	}
 	
-	public void stopCruisingVehicle(Vehicle vehicle) {
+	public void stopCruisingVehicle(DvrpVehicle vehicle) {
 		if (!taxiCfg.isVehicleDiversion()) {
 			throw new RuntimeException("Diversion must be on");
 		}
@@ -114,7 +104,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 	
 
-	public void updateBeforeNextTask(Vehicle vehicle) {
+	public void updateBeforeNextTask(DvrpVehicle vehicle) {
 		Schedule schedule = vehicle.getSchedule();
 		// Assumption: there is no delay as long as the schedule has not been started (PLANNED)
 		if (schedule.getStatus() != ScheduleStatus.STARTED) {
@@ -159,46 +149,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 	}
 
-	private void insertFreightSchedule(Vehicle vehicle, Schedule freightTour, TaxiDropoffTask currentTask) {
-
-		//schedule just got updated.. current task should be a dropOff, nextTast should be a STAY task
-		Schedule schedule = vehicle.getSchedule();
-		
-		
-		if( ((TaxiTask) Schedules.getNextTask(schedule)).getTaxiTaskType() != TaxiTaskType.STAY) {
-			throw new IllegalStateException(
-					"if a freight tour shall be inserted - the next vehicle task must be STAY. That is not the case for vehicle " + vehicle.getId() + " at " + timer.getTimeOfDay());
-		} else {
-			
-			//remove the stay task
-			schedule.removeLastTask();
-			
-			StayTaskImpl previousTask = (StayTaskImpl) freightTour.getTasks().get(0);
-			
-			
-			//add EmptyDriveTask
-			VrpPathWithTravelData pathToStart = VrpPaths.calcAndCreatePath(currentTask.getLink(), previousTask.getLink(), currentTask.getEndTime(), router, travelTime);
-			schedule.addTask(new TaxiEmptyDriveTask(pathToStart));
-			//add start task
-			
-			schedule.addTask(freightTour.getTasks().get(0));
-			
-			for(int i= 1; i<freightTour.getTaskCount(); i++) {
-				Task currentFreightTask = freightTour.getTasks().get(i);
-				if(currentFreightTask instanceof StayTaskImpl) {
-					StayTaskImpl stayTask = (StayTaskImpl) currentFreightTask;
-					VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(previousTask.getLink(), stayTask.getLink(), previousTask.getEndTime(), router, travelTime);
-					schedule.addTask(new PFAVServiceDriveTask(path));
-					schedule.addTask(currentFreightTask);
-					previousTask = stayTask;
-				} else {
-					throw new IllegalStateException();
-				}
-			}
-		}
-	}
-	
-	private void scheduleFreightTour(Vehicle vehicle, List<StayTask> freightActivities) {
+	private void scheduleFreightTour(DvrpVehicle vehicle, List<StayTask> freightActivities) {
 		
 		//schedule just got updated.. current task should be a dropOff, nextTast should be a STAY task
 		Schedule schedule = vehicle.getSchedule();
@@ -250,7 +201,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 	
 	
-	public void scheduleRequest(Vehicle vehicle, TaxiRequest request) {
+	public void scheduleRequest(DvrpVehicle vehicle, TaxiRequest request) {
 		if (request.getStatus() != TaxiRequestStatus.UNPLANNED) {
 			throw new IllegalStateException();
 		}
@@ -282,7 +233,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 	
 
-	private void appendResultingTasksAfterPickup(Vehicle vehicle) {
+	private void appendResultingTasksAfterPickup(DvrpVehicle vehicle) {
 		appendOccupiedDriveAndDropoff(vehicle.getSchedule());
 		appendStayTask(vehicle);
 	}
@@ -303,7 +254,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		schedule.addTask(new TaxiDropoffTask(t4, t5, req));
 	}
 	
-	private void appendStayTask(Vehicle vehicle) {
+	private void appendStayTask(DvrpVehicle vehicle) {
 		Schedule schedule = vehicle.getSchedule();
 		double tBegin = schedule.getEndTime();
 		double tEnd = Math.max(tBegin, vehicle.getServiceEndTime());// even 0-second WAIT
@@ -312,7 +263,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 	
 
-	public void cancelFreightTour(Vehicle veh) {
+	public void cancelFreightTour(DvrpVehicle veh) {
 		// TODO: cancel the freight tour and make vehicle return to depot. insert STAY task at the depot
 		//		- first check if freight tour is started in the first place! otherwise throw exception!
 		throw new RuntimeException("currently not implemented");
@@ -394,27 +345,27 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	
 	
 	
-	public boolean isIdle(Vehicle vehicle) {
+	public boolean isIdle(DvrpVehicle vehicle) {
 		return delegate.isIdle(vehicle);
 	}
 
-	public LinkTimePair getImmediateDiversionOrEarliestIdleness(Vehicle veh) {
+	public LinkTimePair getImmediateDiversionOrEarliestIdleness(DvrpVehicle veh) {
 		return delegate.getImmediateDiversionOrEarliestIdleness(veh);
 	}
 
-	public LinkTimePair getEarliestIdleness(Vehicle veh) {
+	public LinkTimePair getEarliestIdleness(DvrpVehicle veh) {
 		return delegate.getEarliestIdleness(veh);
 	}
 
-	public LinkTimePair getImmediateDiversion(Vehicle veh) {
+	public LinkTimePair getImmediateDiversion(DvrpVehicle veh) {
 		return delegate.getImmediateDiversion(veh);
 	}
 
-	public void stopVehicle(Vehicle vehicle) {
+	public void stopVehicle(DvrpVehicle vehicle) {
 		delegate.stopVehicle(vehicle);
 	}
 
-	public void updateTimeline(Vehicle vehicle) {
+	public void updateTimeline(DvrpVehicle vehicle) {
 		delegate.updateTimeline(vehicle);
 	}
 	

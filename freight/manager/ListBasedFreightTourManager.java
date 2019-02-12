@@ -20,7 +20,7 @@ package freight.manager;
 
 import java.util.List;
 
-import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 
 /**
@@ -32,6 +32,6 @@ public interface ListBasedFreightTourManager {
 	
 	public List<StayTask> getRandomPFAVTour();
 	
-	public List<StayTask> getBestPFAVTourForVehicle(Vehicle vehicle);
+	public List<StayTask> getBestPFAVTourForVehicle(DvrpVehicle vehicle);
 
 }

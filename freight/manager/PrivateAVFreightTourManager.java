@@ -2,7 +2,7 @@ package freight.manager;
 
 import java.util.List;
 
-import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 
 public interface PrivateAVFreightTourManager  {
@@ -11,6 +11,6 @@ public interface PrivateAVFreightTourManager  {
 	
 	public Schedule getRandomAVFreightTour();
 	
-	public Schedule getBestAVFreightTourForVehicle(Vehicle vehicle);
+	public Schedule getBestAVFreightTourForVehicle(DvrpVehicle vehicle);
 	
 }

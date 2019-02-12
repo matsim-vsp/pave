@@ -21,11 +21,10 @@ package privateAV.optimizer;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.MapConfiguration;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.dvrp.data.Fleet;
+import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.router.TimeAsTravelDisutility;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
-import org.matsim.contrib.taxi.data.validator.TaxiRequestValidator;
 import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
 import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
@@ -49,7 +48,6 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 	private TaxiConfigGroup taxiCfg;
 	private Fleet fleet;
 	private TaxiScheduleInquiry scheduler;
-	private TaxiRequestValidator requestValidator;
 	private EventsManager events;
 //	private MobsimTimer timer;
 	private TravelTime travelTime;
@@ -60,8 +58,7 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 	public PFAVProvider(TaxiConfigGroup taxiCfg, Fleet fleet,
 			TaxiScheduleInquiry scheduler, MobsimTimer timer,
 			@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
-			@Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
-			TaxiRequestValidator requestValidator, EventsManager events) {
+			@Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, EventsManager events) {
 			this.taxiCfg = taxiCfg;
 			this.fleet = fleet;
 			this.scheduler = scheduler;
@@ -69,7 +66,6 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 //			this.network = network;
 			this.travelTime = travelTime;
 //			this.travelDisutility = new TimeAsTravelDisutility(travelTime);
-			this.requestValidator = requestValidator;
 			this.events = events;
 	}
 
@@ -85,7 +81,7 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 		
 		
 		return new PFAVOptimizer(taxiCfg, fleet, (PFAVScheduler) scheduler,
-				new RuleBasedTaxiOptimizerParams(optimizerConfig), requestValidator, events);
+				new RuleBasedTaxiOptimizerParams(optimizerConfig), events);
 	}
 	
 }

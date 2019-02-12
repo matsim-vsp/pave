@@ -20,7 +20,7 @@ package privateAV.schedule;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
 import org.matsim.contrib.freight.carrier.FreightConstants;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
@@ -34,7 +34,7 @@ import privateAV.vrpagent.PFAVActionCreator;
 public class PFAVStartTask extends StayTaskImpl implements TaxiTask {
 
 	double earliestStartTime = 0.0;
-	Id<Vehicle> vehicle = null;
+	Id<DvrpVehicle> vehicle = null;
 	
 	/**
 	 * @param beginTime
@@ -46,12 +46,6 @@ public class PFAVStartTask extends StayTaskImpl implements TaxiTask {
 		// TODO Auto-generated constructor stub
 	}
 	
-	@Override
-	public void setBeginTime(double beginTime) {
-		System.out.println("setting start time of freight start task for vehicle " + this.vehicle + " to " + beginTime);
-		super.setBeginTime(beginTime);
-	}
-
 	/**
 	 * if not set at some point, this will return 0.0
 	 * @return
@@ -64,7 +58,7 @@ public class PFAVStartTask extends StayTaskImpl implements TaxiTask {
 		this.earliestStartTime = earliestStartTime;
 	}
 
-	public void setVehicle(Id<Vehicle> vehicle) {
+	public void setVehicle(Id<DvrpVehicle> vehicle) {
 		this.vehicle = vehicle;
 	}
 	

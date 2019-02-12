@@ -25,8 +25,10 @@ import java.util.List;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.dvrp.data.Vehicle;
-import org.matsim.contrib.dvrp.data.VehicleImpl;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicleImpl;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicleSpecification;
+import org.matsim.contrib.dvrp.fleet.ImmutableDvrpVehicleSpecification;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelDataImpl;
 import org.matsim.contrib.dvrp.path.VrpPaths;
@@ -107,7 +109,7 @@ public class ConvertFreightTourForDvrp {
 	
 	public static Schedule convertOnlyActivitiesToSchedule(ScheduledTour freightTour, Network network) {
 		
-		Schedule dvrpSchedule = new ScheduleImpl(convertVehicle(freightTour, network));
+		Schedule dvrpSchedule = new ScheduleImpl(convertFreightVehicle2DvrpVehicleSpecifiation(freightTour, network));
 		
 		Iterator<TourElement> it = freightTour.getTour().getTourElements().iterator();
 		
@@ -170,7 +172,7 @@ public class ConvertFreightTourForDvrp {
 				
 				/*drive back to depot
 				* should this really be an empty drive? because the vehicle inside still is configured for freight purpose
-				* and the vehicle NEEDS to be reconfigured in depot before returnin to 'normal/private' duty
+				* and the vehicle NEEDS to be reconfigured in depot before return to 'normal/private' duty
 				*/
 //				task = new TaxiEmptyDriveTask(path)
 				
@@ -185,8 +187,9 @@ public class ConvertFreightTourForDvrp {
 	}
 	
 	
-	private static Vehicle convertVehicle(ScheduledTour freightTour, Network network) {
-		/*TODO: capacity could be retrieved from the service-Activities.... or just set to any value 
+	private static DvrpVehicleSpecification convertFreightVehicle2DvrpVehicleSpecifiation(ScheduledTour freightTour, Network network) {
+		/*TODO: capacity could be retrieved from the service-Activities.... or just set to any value
+		 * TODO : do we really need any other attribute than start link here at all? 
 		 */
 		
 		CarrierVehicle freightVehicle = freightTour.getVehicle();
@@ -195,16 +198,22 @@ public class ConvertFreightTourForDvrp {
 		String vehID = freightVehicle.getVehicleId().toString();
 		int capacity = 0;
 		
-		Vehicle dvrpVehicle = new VehicleImpl(Id.create(vehID,Vehicle.class), network.getLinks().get(freightTour.getTour().getStartLinkId()), capacity , tStart, tEnd);		
 		
-		return dvrpVehicle;
+		DvrpVehicleSpecification specification = ImmutableDvrpVehicleSpecification.newBuilder()
+													.startLinkId(freightTour.getTour().getStartLinkId())
+													.serviceBeginTime(tStart)
+													.serviceEndTime(tEnd)
+													.id(Id.create(vehID, DvrpVehicle.class))
+													.capacity(capacity)
+													.build();
+		
+		return specification;
 	}
 
 
 	public static Schedule convert2(ScheduledTour freightSchedule, Network network, LeastCostPathCalculator router, TravelTime traveltime) {
 		Start startAct = freightSchedule.getTour().getStart();
-		
-		Schedule dvrpSchedule = new ScheduleImpl(convertVehicle(freightSchedule, network));
+		Schedule dvrpSchedule = new ScheduleImpl(convertFreightVehicle2DvrpVehicleSpecifiation(freightSchedule, network));
 		
 		double beginStart = startAct.getExpectedArrival();
 		PFAVStartTask startTask = new PFAVStartTask(beginStart, beginStart + startAct.getDuration(),

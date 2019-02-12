@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.freight.carrier.Carrier;
@@ -112,7 +112,7 @@ public class SimpleFreightTourManager implements PrivateAVFreightTourManager {
 	 * at the moment, a random schedule is returned
 	 */
 	@Override
-	public Schedule getBestAVFreightTourForVehicle(Vehicle vehicle) {
+	public Schedule getBestAVFreightTourForVehicle(DvrpVehicle vehicle) {
 		return getRandomAVFreightTour();
 	}
 

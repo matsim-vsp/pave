@@ -36,9 +36,11 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Population;
-import org.matsim.contrib.dvrp.data.Fleet;
-import org.matsim.contrib.dvrp.data.Vehicle;
-import org.matsim.contrib.dvrp.data.VehicleImpl;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicleImpl;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicleSpecification;
+import org.matsim.contrib.dvrp.fleet.Fleet;
+import org.matsim.contrib.dvrp.fleet.ImmutableDvrpVehicleSpecification;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.controler.events.BeforeMobsimEvent;
@@ -54,7 +56,7 @@ import com.google.inject.name.Named;
 @Singleton
 public class PFAVFleetGenerator implements Fleet, BeforeMobsimListener {
 
-	private Map<Id<Vehicle>,Vehicle> vehiclesForIteration;
+	private Map<Id<DvrpVehicle>,DvrpVehicle> vehiclesForIteration;
 
 	private final Population population;
 	
@@ -76,7 +78,7 @@ public class PFAVFleetGenerator implements Fleet, BeforeMobsimListener {
 	
 	
 	@Override
-	public Map<Id<Vehicle>, ? extends Vehicle> getVehicles() {
+	public Map<Id<DvrpVehicle>, ? extends DvrpVehicle> getVehicles() {
 		return vehiclesForIteration;
 	}
 
@@ -94,9 +96,15 @@ public class PFAVFleetGenerator implements Fleet, BeforeMobsimListener {
 				if (pe instanceof Leg){
 					if (((Leg) pe).getMode().equals(mode)){
 						vehicleStartLink = ((Leg) pe).getRoute().getStartLinkId();
-						Id<Vehicle> vehicleId = Id.create(p.getId().toString()+"_av", Vehicle.class);
-						Vehicle veh = new VehicleImpl(vehicleId, network.getLinks().get(vehicleStartLink), 4, 0, 30*3600);
-						vehiclesForIteration.put(veh.getId(), veh);
+						Id<DvrpVehicle> vehicleId = Id.create(p.getId().toString()+"_av", DvrpVehicle.class);
+						DvrpVehicleSpecification specification = ImmutableDvrpVehicleSpecification.newBuilder()
+																	.serviceBeginTime(0.)
+																	.serviceEndTime(0.)
+																	.startLinkId(vehicleStartLink)
+																	.id(vehicleId)
+																	.build();
+						DvrpVehicle veh = new DvrpVehicleImpl(specification , network.getLinks().get(vehicleStartLink));
+						vehiclesForIteration.put(vehicleId, veh);
 						break;
 					}
 				}
@@ -104,13 +112,4 @@ public class PFAVFleetGenerator implements Fleet, BeforeMobsimListener {
 		}
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.matsim.contrib.dvrp.data.Fleet#resetSchedules()
-	 */
-	@Override
-	public void resetSchedules() {
-		// TODO Auto-generated method stub
-		
-	}
 }

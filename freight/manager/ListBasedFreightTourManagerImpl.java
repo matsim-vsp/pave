@@ -29,7 +29,7 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.dvrp.data.Vehicle;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.schedule.StayTask;
@@ -41,7 +41,6 @@ import org.matsim.contrib.freight.carrier.CarrierVehicle;
 import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
 import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.carrier.ScheduledTour;
-import org.matsim.contrib.taxi.data.TaxiRequest;
 import org.matsim.contrib.taxi.optimizer.BestDispatchFinder;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
@@ -130,7 +129,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 * at the moment, a random tour is returned
 	 */
 	@Override
-	public List<StayTask> getBestPFAVTourForVehicle(Vehicle vehicle) {
+	public List<StayTask> getBestPFAVTourForVehicle(DvrpVehicle vehicle) {
 		// TODO Auto-generated method stub
 		return getRandomPFAVTour();
 	}
