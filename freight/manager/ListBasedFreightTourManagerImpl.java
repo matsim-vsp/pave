@@ -19,34 +19,19 @@
 package freight.manager;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
-import org.matsim.contrib.dvrp.schedule.Schedule;
-import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.schedule.StayTask;
-import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
 import org.matsim.contrib.freight.carrier.Carrier;
 import org.matsim.contrib.freight.carrier.CarrierPlan;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
 import org.matsim.contrib.freight.carrier.CarrierVehicle;
 import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
 import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.carrier.ScheduledTour;
-import org.matsim.contrib.taxi.optimizer.BestDispatchFinder;
-import org.matsim.contrib.taxi.schedule.TaxiStayTask;
-import org.matsim.contrib.taxi.schedule.TaxiTask;
-import org.matsim.contrib.util.PartialSort;
-import org.matsim.contrib.util.StraightLineKnnFinder;
-import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.util.TravelTime;
 
@@ -60,12 +45,9 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 	private final static Logger log = Logger.getLogger(ListBasedFreightTourManagerImpl.class);
 	
-	private List<List<StayTask>> freightActivities = new ArrayList<List<StayTask>>();
-	
+	private List<List<StayTask>> freightTours = new ArrayList<List<StayTask>>();
 	private FreightTourCalculator tourCalculator;
-
 	private Network network;
-
 	private ArrayList<Link> depotLinks;
 	
 	/**
@@ -77,8 +59,9 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		
 		//TODO:maybe switch that off here and 
 		// a) call runTourPlanning() method
-		// b) let this.freightActivities() be either empty or uninitiated
-		this.freightActivities = convertCarrierPlansToTaskList(tourCalculator.getCarriers());
+		// b) let this.freightTours() be either empty or uninitiated
+		// since the tour planning should be called whenever a IterationStartsEvent is thrown
+		this.freightTours = convertCarrierPlansToTaskList(tourCalculator.getCarriers());
 	}
 	
 	public ListBasedFreightTourManagerImpl(Network network, Carriers carriers, CarrierVehicleTypes vehTypes) {
@@ -87,8 +70,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		
 		//TODO:maybe switch that off here and 
 				// a) call runTourPlanning() method
-				// b) let this.freightActivities() be either empty or uninitiated
-		this.freightActivities = convertCarrierPlansToTaskList(tourCalculator.getCarriers());
+				// b) let this.freightTours() be either empty or uninitiated
+		this.freightTours = convertCarrierPlansToTaskList(tourCalculator.getCarriers());
 		
 	}
 	
@@ -113,7 +96,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 */
 	@Override
 	public List<List<StayTask>> getPFAVTours() {
-		return this.freightActivities;
+		return this.freightTours;
 	}
 
 	/* (non-Javadoc)
@@ -121,8 +104,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 */
 	@Override
 	public List<StayTask> getRandomPFAVTour() {
-		if (this.freightActivities.size() == 0) return null;
-		return( this.freightActivities.remove(( MatsimRandom.getRandom().nextInt(this.freightActivities.size()) )) );
+		if (this.freightTours.size() == 0) return null;
+		return( this.freightTours.remove(( MatsimRandom.getRandom().nextInt(this.freightTours.size()) )) );
 	}
 
 	/**
@@ -130,7 +113,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 */
 	@Override
 	public List<StayTask> getBestPFAVTourForVehicle(DvrpVehicle vehicle) {
-		// TODO Auto-generated method stub
+		// TODO: dispatch tours
 		return getRandomPFAVTour();
 	}
 
@@ -160,7 +143,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	public void runTourPlanning(TravelTime travelTime) {
 		this.tourCalculator.run(travelTime);
 		log.info("overriding list of PFAV schedules...");
-		this.freightActivities = convertCarrierPlansToTaskList(tourCalculator.getCarriers());
+		this.freightTours = convertCarrierPlansToTaskList(tourCalculator.getCarriers());
 		
 		this.depotLinks = new ArrayList<Link>();
 		for(Carrier carrier : this.tourCalculator.getCarriers().getCarriers().values()) {
@@ -170,8 +153,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 				} 
 			}
 		}
-		
-		
 	}
 	
 	

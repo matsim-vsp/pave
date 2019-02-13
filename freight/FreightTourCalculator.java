@@ -172,8 +172,9 @@ public class FreightTourCalculator {
 		
 		int nrOfCarriers = 2;
 		int nrOfVehPerCarrierPerVehType = 3;
-		
-		Carriers carriers = FreightSetUp.createCarriersWithRandomDepotAnd10Services(vTypes.getVehicleTypes().values(), FleetSize.FINITE, network, nrOfCarriers, nrOfVehPerCarrierPerVehType);
+		int nrOfServicesPerCarrier = 100;
+
+		Carriers carriers = FreightSetUp.createCarriersWithRandomDepotAndServices(vTypes.getVehicleTypes().values(), FleetSize.FINITE, network, nrOfCarriers, nrOfVehPerCarrierPerVehType, nrOfServicesPerCarrier);
 		
 		FreightTourCalculator calculator = new FreightTourCalculator(network, carriers, vTypes);
 		

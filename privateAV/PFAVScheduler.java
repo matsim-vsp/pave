@@ -80,9 +80,9 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				travelDisutility, travelTime);
 		this.travelTime = travelTime;
 		this.timer = timer;
-		
+
 		this.freightManager = new ListBasedFreightTourManagerImpl(network, PFAVUtils.DEFAULT_CARRIERS_FILE, PFAVUtils.DEFAULT_VEHTYPES_FILE);
-		
+
 		delegate = new TaxiScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility);
 	}
 	
@@ -125,13 +125,14 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		case DROPOFF:
 			
 				if(currentTask instanceof PFAVServiceTask) break;
-				
-				log.info("Vehicle " + vehicle.getId() + " requests a freight tour");
+//				log.info("Vehicle " + vehicle.getId() + " requests a freight tour");
 				List<StayTask> freightTour = freightManager.getBestPFAVTourForVehicle(vehicle); 
 				if(freightTour != null) {
 					scheduleFreightTour(vehicle, freightTour);
+					//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
 				} else {
-//					log.info("+++++ vehicle " + vehicle.getId() + " requested a freight tour but the manager returned NULL ++++++");
+					//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
+					log.info("+++++ vehicle " + vehicle.getId() + " requested a freight tour but the manager returned NULL ++++++");
 				}
 			break;
 			

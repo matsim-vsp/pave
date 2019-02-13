@@ -24,7 +24,7 @@ import org.matsim.vehicles.EngineInformation.FuelType;
 
 public class FreightSetUp {
 
-	public static Carriers createCarriersWithRandomDepotAnd10Services(Collection<CarrierVehicleType> vehicleTypes, FleetSize fleetSize, Network network, int numberOfCarriers, int nrOfVehPerCarrierPerVehType) {
+	public static Carriers createCarriersWithRandomDepotAndServices(Collection<CarrierVehicleType> vehicleTypes, FleetSize fleetSize, Network network, int numberOfCarriers, int nrOfVehPerCarrierPerVehType, int nrOfServicesPerCarrier) {
 		Carriers carriers = new Carriers();
 		
 		for(int i=1; i <=numberOfCarriers; i++) {
@@ -37,7 +37,7 @@ public class FreightSetUp {
 			}
 			
 			Carrier carrier= CarrierImpl.newInstance(Id.create("carrier"+i, Carrier.class));		
-			for(int z = 0; z< 10; z++) {
+			for(int z = 0; z< nrOfServicesPerCarrier; z++) {
 				carrier.getServices().add(createMatsimService(""+z, getRandomLinkId(network), 1));
 			}
 
@@ -55,7 +55,7 @@ public class FreightSetUp {
 		CarrierVehicleType type = createPrivateFreightAVVehicleType();
 		vTypes.add(type);
 			
-		return createCarriersWithRandomDepotAnd10Services(vTypes, fleetSize, network, numberOfCarriers, nrOfVehiclesPerCarrierPerVehType);
+		return createCarriersWithRandomDepotAndServices(vTypes, fleetSize, network, numberOfCarriers, nrOfVehiclesPerCarrierPerVehType, 10);
 	}
 	
 	
