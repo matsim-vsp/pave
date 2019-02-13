@@ -132,7 +132,7 @@ public class FreightTourCalculator {
 		return carriers;
 	}
 	
-	public void writeCarriers(String outputDir) {
+	void writeCarriers(String outputDir) {
 		CarrierPlanXmlWriterV2 planwriter = new CarrierPlanXmlWriterV2(carriers);
 		planwriter.write(outputDir);
 	}
