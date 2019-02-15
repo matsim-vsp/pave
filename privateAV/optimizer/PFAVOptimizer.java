@@ -1,14 +1,10 @@
 package privateAV.optimizer;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.inject.Inject;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.events.PersonStuckEvent;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.optimizer.Request;
@@ -21,34 +17,19 @@ import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 import org.matsim.contrib.taxi.schedule.TaxiTask.TaxiTaskType;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
-import org.matsim.core.api.experimental.events.EventsManager;
-import org.matsim.core.controler.events.BeforeMobsimEvent;
-import org.matsim.core.controler.events.IterationStartsEvent;
-import org.matsim.core.controler.listener.BeforeMobsimListener;
-import org.matsim.core.controler.listener.IterationStartsListener;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
-
-import com.google.inject.Inject;
-
-import freight.manager.PrivateAVFreightTourManager;
-import freight.manager.SimpleFreightTourManager;
 import privateAV.PFAVScheduler;
 
-public class PFAVOptimizer implements TaxiOptimizer, IterationStartsListener {
+public class PFAVOptimizer implements TaxiOptimizer {
 
 	private static final Logger log = Logger.getLogger(PFAVScheduler.class);
 	
 	private Fleet fleet;
 	private PFAVScheduler scheduler;
 	private DefaultTaxiOptimizerParams params;
-//	private EventsManager eventsManager;
+	//TODO: use the setting for log messages
 	private boolean printDetailedWarnings;
-	
-	/**
-	 * the freight contrib will be run before every iteration where iterationNumber % FREIGHTTOUR_PLANNING_INTERVAL == 0 
-	 */
-	private final int FREIGHTTOUR_PLANNING_INTERVAL = 5;
-	
+
 	@Inject
 	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, TaxiScheduleInquiry scheduler) {
 		
@@ -76,7 +57,7 @@ public class PFAVOptimizer implements TaxiOptimizer, IterationStartsListener {
 		
 		this.printDetailedWarnings = taxiCfg.isPrintDetailedWarnings();
 	}
-	
+
 	//TODO if vehicle is working on freight tour and arrival at owner is delayed, cancel freight tour and go back to depot
 //	public void vehicleEnteredNextLink(DvrpVehicle vehicle, Link nextLink) {
 ////		scheduler.updateTimeline(vehicle);// TODO comment this out...
@@ -149,7 +130,7 @@ public class PFAVOptimizer implements TaxiOptimizer, IterationStartsListener {
 			}
 		}
 	}
-	
+
 	private boolean isCurrentlyOnOrWillPerformPerformFreightTour(DvrpVehicle veh) {
 		// TODO Auto-generated method stub
 		return false;
@@ -158,17 +139,5 @@ public class PFAVOptimizer implements TaxiOptimizer, IterationStartsListener {
 	private boolean isWaitStayOrEmptyDrive(TaxiTask task) {
 		return task.getTaxiTaskType() == TaxiTaskType.STAY || task.getTaxiTaskType() == TaxiTaskType.EMPTY_DRIVE;
 	}
-
-	@Override
-	public void notifyIterationStarts(IterationStartsEvent event) {
-		// TODO: 1) : run the freight contrib? read in a carrier plan file? => don't initialize the freightTourManager with a set of tours !?
-		// TODO: 2) : let the freight contrib run again periodically? => yes, since we need to give it appropiate travel times, which we only have after a few iterations..
-		if(event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0) {
-			log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
-			scheduler.calculateFreightTours();
-		}
-	}
-
-
 
 }

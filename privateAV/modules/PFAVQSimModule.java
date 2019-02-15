@@ -2,6 +2,7 @@ package privateAV.modules;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import freight.manager.ListBasedFreightTourManager;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
@@ -82,12 +83,15 @@ public class PFAVQSimModule extends AbstractDvrpModeQSimModule {
                     @Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
                     private TravelTime travelTime;
 
+                    @Inject
+                    ListBasedFreightTourManager tourManager;
+
                     @Override
                     public TaxiScheduleInquiry get() {
                         Fleet fleet = getModalInstance(Fleet.class);
                         TravelDisutility travelDisutility = getModalInstance(
                                 TravelDisutilityFactory.class).createTravelDisutility(travelTime);
-                        return new PFAVScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility);
+                        return new PFAVScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility, tourManager);
                     }
                 }).asEagerSingleton();
 

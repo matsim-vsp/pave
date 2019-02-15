@@ -18,68 +18,81 @@
  * *********************************************************************** */
 package freight.manager;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import freight.FreightTourCalculatorImpl;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.schedule.StayTask;
-import org.matsim.contrib.freight.carrier.Carrier;
-import org.matsim.contrib.freight.carrier.CarrierPlan;
-import org.matsim.contrib.freight.carrier.CarrierVehicle;
-import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
-import org.matsim.contrib.freight.carrier.Carriers;
-import org.matsim.contrib.freight.carrier.ScheduledTour;
+import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
+import org.matsim.contrib.freight.carrier.*;
+import org.matsim.core.controler.events.IterationEndsEvent;
+import org.matsim.core.controler.events.IterationStartsEvent;
+import org.matsim.core.controler.listener.IterationEndsListener;
+import org.matsim.core.controler.listener.IterationStartsListener;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.util.TravelTime;
 
-import freight.FreightTourCalculator;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author tschlenther
  *
  */
-public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourManager {
+public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourManager, IterationStartsListener, IterationEndsListener {
 
 	private final static Logger log = Logger.getLogger(ListBasedFreightTourManagerImpl.class);
 	
-	private List<List<StayTask>> freightTours = new ArrayList<List<StayTask>>();
-	private FreightTourCalculator tourCalculator;
+    /**
+     * the freight contrib will be run before every iteration where iterationNumber % FREIGHTTOUR_PLANNING_INTERVAL == 0- \n
+	 * if FREIGHTTOUR_PLANNING_INTERVAL is set to 0 or any negative integer, the freight contrib will run only before iteration 0.
+     */
+    private final int FREIGHTTOUR_PLANNING_INTERVAL = 1;
+	private List<List<StayTask>> freightTours = new ArrayList<>();
+	@Inject
+	@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
 	private Network network;
-	private ArrayList<Link> depotLinks;
-	
+	@Inject
+	@Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
+	private TravelTime travelTime;
+    private ArrayList<Link> depotLinks;
+    private Carriers carriers;
+    private CarrierVehicleTypes vehicleTypes;
+
 	/**
-	 * 
+	 *
 	 */
-	public ListBasedFreightTourManagerImpl(Network network, String pathToCarriersFile, String pathToVehTypesFile) {
-		this.network = network;
-		this.tourCalculator = new FreightTourCalculator(network, pathToCarriersFile, pathToVehTypesFile);
-		
-		//TODO:maybe switch that off here and 
-		// a) call runTourPlanning() method
-		// b) let this.freightTours() be either empty or uninitiated
-		// since the tour planning should be called whenever a IterationStartsEvent is thrown
-		this.freightTours = convertCarrierPlansToTaskList(tourCalculator.getCarriers());
+	public ListBasedFreightTourManagerImpl(String pathToCarriersFile, String pathToVehTypesFile) {
+
+		this.carriers = readCarriers(pathToCarriersFile);
+        this.vehicleTypes = readVehicleTypes(pathToVehTypesFile);
+		log.info("loading carrier vehicle types..");
+		new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(vehicleTypes);
 	}
-	
-	public ListBasedFreightTourManagerImpl(Network network, Carriers carriers, CarrierVehicleTypes vehTypes) {
-		this.network = network;
-		this.tourCalculator = new FreightTourCalculator(network, carriers, vehTypes);
-		
-		//TODO:maybe switch that off here and 
-				// a) call runTourPlanning() method
-				// b) let this.freightTours() be either empty or uninitiated
-		this.freightTours = convertCarrierPlansToTaskList(tourCalculator.getCarriers());
-		
+
+	private CarrierVehicleTypes readVehicleTypes(String input) {
+		CarrierVehicleTypes vTypes = new CarrierVehicleTypes();
+		CarrierVehicleTypeReader reader = new CarrierVehicleTypeReader(vTypes);
+		reader.readFile(input);
+		return vTypes;
 	}
-	
+
+	private Carriers readCarriers(String file){
+		Carriers carriers = new Carriers();
+		CarrierPlanXmlReaderV2 reader = new CarrierPlanXmlReaderV2(carriers);
+		reader.readFile(file);
+		return carriers;
+	}
+
 	private List<List<StayTask>> convertCarrierPlansToTaskList(Carriers carriers) {
 		
 		log.info("start converting carrier plans to taxi tasks..");
 		
-		List<List<StayTask>> freightTours = new ArrayList<List<StayTask>>();
+		List<List<StayTask>> freightTours = new ArrayList<>();
 		
 		for(Carrier carrier : carriers.getCarriers().values()) {
 			CarrierPlan plan = carrier.getSelectedPlan();
@@ -87,7 +100,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 				freightTours.add(ConvertFreightTourForDvrp.convertToList(freightTour, this.network));
 			}
 		}
-		
 		return freightTours;
 	}
 
@@ -140,13 +152,18 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 ////				n -> DistanceUtils.calculateSquaredDistance(objectCoord, neighbourToLink.apply(n).getCoord()));
 //	}
 	
-	public void runTourPlanning(TravelTime travelTime) {
-		this.tourCalculator.run(travelTime);
+	private void runTourPlanning() {
+
+	    FreightTourCalculatorImpl tourCalculator = new FreightTourCalculatorImpl();
+
+        //TODO: I'm not sure whether the travelTime object represents the current travel times of current iteration as it is injected...
+        this.carriers = tourCalculator.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime);
+
 		log.info("overriding list of PFAV schedules...");
-		this.freightTours = convertCarrierPlansToTaskList(tourCalculator.getCarriers());
+		this.freightTours = convertCarrierPlansToTaskList(carriers);
 		
 		this.depotLinks = new ArrayList<Link>();
-		for(Carrier carrier : this.tourCalculator.getCarriers().getCarriers().values()) {
+		for(Carrier carrier : carriers.getCarriers().values()) {
 			for(CarrierVehicle veh : carrier.getCarrierCapabilities().getCarrierVehicles()) {
 				if(! this.depotLinks.contains(veh.getLocation())){
 					this.depotLinks.add(network.getLinks().get(veh.getLocation()));			// this is the depot link id .... TODO: check if that is correct!
@@ -154,8 +171,37 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 			}
 		}
 	}
-	
-	
+
+    @Override
+    public void notifyIterationStarts(IterationStartsEvent event){
+		if(FREIGHTTOUR_PLANNING_INTERVAL < 1){
+			if(event.getIteration() < 1){
+				runTourPlanning();
+				return;
+			}
+		} else if(event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0){
+			log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
+			runTourPlanning();
+		}
+    }
+
+	void writeCarriers(String outputDir) {
+		CarrierPlanXmlWriterV2 planWriter = new CarrierPlanXmlWriterV2(carriers);
+		planWriter.write(outputDir);
+	}
+
+	/**
+	 * Notifies all observers of the Controler that a iteration is finished
+	 *
+	 * @param event
+	 */
+	@Override
+	public void notifyIterationEnds(IterationEndsEvent event) {
+		String dir = event.getServices().getConfig().controler().getOutputDirectory() + "carriers_it" + event.getIteration() + ".xml";
+		log.info("writing carrier file of iteration " + event.getIteration() + " to " + dir);
+		writeCarriers(dir);
+	}
+
 	//folgendes kommt aus dem RuleBasedOptimizer
 	//Fragen/AUfgaben
 	//TODO

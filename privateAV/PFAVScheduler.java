@@ -1,7 +1,8 @@
 package privateAV;
 
-import java.util.List;
-
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import freight.manager.ListBasedFreightTourManager;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -13,23 +14,17 @@ import org.matsim.contrib.dvrp.path.VrpPathWithTravelDataImpl;
 import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.schedule.Schedule;
+import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
 import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
-import org.matsim.contrib.dvrp.schedule.Task;
-import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
 import org.matsim.contrib.dvrp.tracker.OnlineDriveTaskTracker;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
 import org.matsim.contrib.taxi.passenger.TaxiRequest;
 import org.matsim.contrib.taxi.passenger.TaxiRequest.TaxiRequestStatus;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
-import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
-import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
-import org.matsim.contrib.taxi.schedule.TaxiOccupiedDriveTask;
-import org.matsim.contrib.taxi.schedule.TaxiPickupTask;
-import org.matsim.contrib.taxi.schedule.TaxiStayTask;
-import org.matsim.contrib.taxi.schedule.TaxiTask;
+import org.matsim.contrib.taxi.schedule.*;
 import org.matsim.contrib.taxi.schedule.TaxiTask.TaxiTaskType;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
@@ -38,14 +33,11 @@ import org.matsim.core.router.FastAStarEuclideanFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
-import freight.manager.ListBasedFreightTourManager;
-import freight.manager.ListBasedFreightTourManagerImpl;
 import privateAV.schedule.PFAVServiceDriveTask;
 import privateAV.schedule.PFAVServiceTask;
 import privateAV.schedule.PFAVStartTask;
+
+import java.util.List;
 
 public class PFAVScheduler implements TaxiScheduleInquiry {
 
@@ -58,6 +50,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	private MobsimTimer timer;
 	private TaxiConfigGroup taxiCfg;
 
+//	@Inject
 	ListBasedFreightTourManager freightManager;
 	
 	/**
@@ -65,24 +58,21 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	 * @param network
 	 * @param fleet
 	 * @param timer
-	 * @param params
 	 * @param travelTime
 	 * @param travelDisutility
 	 */
 	@Inject
 	public PFAVScheduler(TaxiConfigGroup taxiCfg, Fleet fleet, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
 			MobsimTimer timer, @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
-			TravelDisutility travelDisutility){
-		
+			TravelDisutility travelDisutility, ListBasedFreightTourManager tourManager){
+
+		this.freightManager = tourManager;
 		DEPOT_LINK = network.getLinks().get(Id.createLinkId("560"));
 		this.taxiCfg = taxiCfg;
 		this.router = new FastAStarEuclideanFactory(taxiCfg.getAStarEuclideanOverdoFactor()).createPathCalculator(network,
 				travelDisutility, travelTime);
 		this.travelTime = travelTime;
 		this.timer = timer;
-
-		this.freightManager = new ListBasedFreightTourManagerImpl(network, PFAVUtils.DEFAULT_CARRIERS_FILE, PFAVUtils.DEFAULT_VEHTYPES_FILE);
-
 		delegate = new TaxiScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility);
 	}
 	
@@ -98,7 +88,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		LinkTimePair stopPoint = tracker.getDiversionPoint();
 		tracker.divertPath(
 				new VrpPathWithTravelDataImpl(stopPoint.time, 0, new Link[] { stopPoint.link }, new double[] { 0 }));
-
 		appendStayTask(vehicle);
 		
 	}
@@ -112,41 +101,39 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 
 		updateTimeline(vehicle);
-
 		TaxiTask currentTask = (TaxiTask)schedule.getCurrentTask();
-	
+
 		switch(currentTask.getTaxiTaskType()) {
-		
-		case PICKUP:
-			if (!taxiCfg.isDestinationKnown()) {
-				appendResultingTasksAfterPickup(vehicle);
-			}
-			break;
-		case DROPOFF:
-			
-				if(currentTask instanceof PFAVServiceTask) break;
-//				log.info("Vehicle " + vehicle.getId() + " requests a freight tour");
-				List<StayTask> freightTour = freightManager.getBestPFAVTourForVehicle(vehicle); 
-				if(freightTour != null) {
-					scheduleFreightTour(vehicle, freightTour);
-					//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
-				} else {
-					//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
-					log.info("+++++ vehicle " + vehicle.getId() + " requested a freight tour but the manager returned NULL ++++++");
+			case PICKUP:
+				if (!taxiCfg.isDestinationKnown()) {
+					appendResultingTasksAfterPickup(vehicle);
 				}
-			break;
-			
-		case STAY: {
-			break;
-		}
-		case EMPTY_DRIVE:
-			break;
-		case OCCUPIED_DRIVE: 
-			break;
-		default:{
-			throw new IllegalStateException();
-		}	
-			
+				break;
+			case DROPOFF:
+
+					if(currentTask instanceof PFAVServiceTask) break;
+	//				log.info("Vehicle " + vehicle.getId() + " requests a freight tour");
+					List<StayTask> freightTour = freightManager.getBestPFAVTourForVehicle(vehicle);
+					if(freightTour != null) {
+						scheduleFreightTour(vehicle, freightTour);
+						//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
+					} else {
+						//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
+	//					log.info("+++++ vehicle " + vehicle.getId() + " requested a freight tour but the manager returned NULL ++++++");
+					}
+				break;
+
+			case STAY: {
+				break;
+
+			}
+			case EMPTY_DRIVE:
+				break;
+			case OCCUPIED_DRIVE:
+				break;
+			default:{
+				throw new IllegalStateException();
+			}
 		}
 	}
 
@@ -196,12 +183,10 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 //				}
 				previousTask = currentTask;
 			}
-			
 		}
 		log.info("vehicle " + vehicle.getId() + " got assigned to a freight schedule");
 	}
-	
-	
+
 	public void scheduleRequest(DvrpVehicle vehicle, TaxiRequest request) {
 		if (request.getStatus() != TaxiRequestStatus.UNPLANNED) {
 			throw new IllegalStateException();
@@ -210,7 +195,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		Schedule schedule = vehicle.getSchedule();
 		TaxiTask lastTask = (TaxiTask)Schedules.getLastTask(schedule);
 
-		if( ((TaxiTask) lastTask).getTaxiTaskType() != TaxiTaskType.STAY ) {
+		if( lastTask.getTaxiTaskType() != TaxiTaskType.STAY ) {
 			throw new IllegalStateException();
 		} else {
 			
@@ -230,20 +215,18 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 
 			}
 		}
-		
 	}
-	
 
 	private void appendResultingTasksAfterPickup(DvrpVehicle vehicle) {
 		appendOccupiedDriveAndDropoff(vehicle.getSchedule());
 		appendStayTask(vehicle);
 	}
 	
-	protected void appendOccupiedDriveAndDropoff(Schedule schedule) {
+	private void appendOccupiedDriveAndDropoff(Schedule schedule) {
 		TaxiPickupTask pickupStayTask = (TaxiPickupTask)Schedules.getLastTask(schedule);
 
 		// add DELIVERY after SERVE
-		TaxiRequest req = ((TaxiPickupTask)pickupStayTask).getRequest();
+		TaxiRequest req = (pickupStayTask).getRequest();
 		Link reqFromLink = req.getFromLink();
 		Link reqToLink = req.getToLink();
 		double t3 = pickupStayTask.getEndTime();
@@ -270,19 +253,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		throw new RuntimeException("currently not implemented");
 	}
 	
-//	public SimpleFreightTourManager getFreightManager() {
-//		return this.freightManager;
-//	}
-	
-	public ListBasedFreightTourManager getFreightManager() {
-		return this.freightManager;
-	}
-	
-	public void calculateFreightTours() {
-		((ListBasedFreightTourManagerImpl) this.freightManager).runTourPlanning(travelTime);
-	}
-
-	
 	//---------------------------------------------------- DELEGATE METHODS --------------
 	
 //	@TODO: sort out methods / clean the code
@@ -308,7 +278,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	
 	
 	//this should be unnecessary - since the last task should always be a stay task
-	protected void divertDrive(TaxiEmptyDriveTask lastTask, VrpPathWithTravelData vrpPath) {
+	private void divertDrive(TaxiEmptyDriveTask lastTask, VrpPathWithTravelData vrpPath) {
 		if (!taxiCfg.isVehicleDiversion()) {
 			throw new IllegalStateException();
 		}
@@ -316,7 +286,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		((OnlineDriveTaskTracker)lastTask.getTaskTracker()).divertPath(vrpPath);
 	}
 	
-	protected void scheduleDrive(Schedule schedule, TaxiStayTask lastTask, VrpPathWithTravelData vrpPath) {
+	private void scheduleDrive(Schedule schedule, TaxiStayTask lastTask, VrpPathWithTravelData vrpPath) {
 		switch (lastTask.getStatus()) {
 			case PLANNED:
 				if (lastTask.getBeginTime() == vrpPath.getDepartureTime()) { // waiting for 0 seconds!!!

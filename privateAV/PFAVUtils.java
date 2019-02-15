@@ -26,7 +26,6 @@ public final class PFAVUtils {
 
 	public static final String DEFAULT_CARRIERS_FILE = "input/Scenarios/mielec/freight/neu/carrierPlans_routed_finite2_100services.xml";
 	public static final String DEFAULT_VEHTYPES_FILE =  "input/Scenarios/mielec/freight/neu/vehTypes_routed_finite2.xml";
-
 	public static final int DEFAULT_DVRPVEHICLE_CAPACITY = 4;
 	
 }

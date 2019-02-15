@@ -18,67 +18,54 @@
  * *********************************************************************** */
 package freight;
 
-import java.util.Iterator;
-
-import org.matsim.api.core.v01.Id;
-import org.matsim.contrib.freight.carrier.Carrier;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
-import org.matsim.contrib.freight.carrier.CarrierImpl;
-import org.matsim.contrib.freight.carrier.CarrierPlanReader;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
-import org.matsim.contrib.freight.carrier.CarrierVehicleType;
-import org.matsim.contrib.freight.carrier.Carriers;
-import org.matsim.contrib.freight.carrier.ScheduledTour;
-import org.matsim.contrib.freight.carrier.Tour;
-import org.matsim.contrib.freight.carrier.Tour.TourElement;
-
-import com.graphhopper.jsprit.core.problem.solution.route.activity.TourActivity;
+import org.matsim.contrib.freight.carrier.*;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.router.util.TravelTimeUtils;
 
 /**
  * @author tschlenther
  *
  */
 public class CarrierCreator {
-	Carriers carriers;
-	
-	public CarrierCreator() {
-		
-	}
-	
-	
-	public Carriers parseCarriersFile(String path) {
-		new CarrierPlanXmlReaderV2(this.carriers).readFile(path);
-		return this.carriers;
-	}
-	
-	public void test() {
-		Iterator<ScheduledTour> it = this.carriers.getCarriers().get(Id.create("1", Carrier.class)).getPlans().get(0).getScheduledTours().iterator();
-		ScheduledTour schedTour = it.next();
-		schedTour.getDeparture();
-		schedTour.getVehicle();
-		Tour tour = schedTour.getTour();
-		tour.getStart().getTimeWindow();
-		
-		tour.getStartLinkId();
-		Iterator<TourElement> tElementIt = tour.getTourElements().iterator();
-		
-		while(tElementIt.hasNext()) {
-			TourElement element = tElementIt.next();
-			
-			if(element instanceof TourActivity) {
-				
-				((TourActivity) element).getOperationTime();
-				((TourActivity) element).getEndTime();
-				
-				
-			}
-		}
-		
-//		CarrierVehicleType avCarrierVehType = new CarrierVehicleType();
-//		
-//		Carrier carrier = CarrierImpl.newInstance(Id.create("dummyCarrier", Carrier.class));
-//		carrier.getCarrierCapabilities().setFleetSize(FleetSize.FINITE);
-//		carrier.getCarrierCapabilities().getCarrierVehicles().add(e)
+
+	private static final FleetSize FLEET_SIZE = FleetSize.INFINITE;
+	private static final int NR_OF_CARRIERS = 2;
+	private static final int NR_OF_VEH_PER_CARRIER_PER_VEH_TYPE = 5;
+	private static final int NR_OF_SERVICES_PER_CARRIER = 100;
+
+	private static final String OUTDIR = "input/Scenarios/mielec/freight/upToDate/";
+
+	private static final String INPUT_NETWORK = OUTDIR + "../../" + "network.xml";
+	private static final String OUTPUT_CARRIERS = OUTDIR + NR_OF_CARRIERS + "carriers_a_" +
+															NR_OF_VEH_PER_CARRIER_PER_VEH_TYPE + "vehicles_" +
+															FLEET_SIZE + ".xml";
+	private static final String OUT_VTYPES = OUTDIR + "PFAV" + "vehicleTypes.xml";
+
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+
+		Network network = NetworkUtils.createNetwork();
+		new MatsimNetworkReader(network).readFile(INPUT_NETWORK);
+
+		CarrierVehicleType privateAVCarrierVehType = FreightSetUp.createPrivateFreightAVVehicleType();
+		CarrierVehicleTypes vTypes = new CarrierVehicleTypes();
+		vTypes.getVehicleTypes().put(privateAVCarrierVehType.getId(), privateAVCarrierVehType);
+
+		Carriers carriers = FreightSetUp.createCarriersWithRandomDepotAndServices(vTypes.getVehicleTypes().values(), FLEET_SIZE, network, NR_OF_CARRIERS, NR_OF_VEH_PER_CARRIER_PER_VEH_TYPE, NR_OF_SERVICES_PER_CARRIER);
+
+		FreightTourCalculatorImpl calculator = new FreightTourCalculatorImpl();
+		TravelTime travelTime = TravelTimeUtils.createFreeSpeedTravelTime();
+		calculator.runTourPlanningForCarriers(carriers, vTypes, network, travelTime);
+		CarrierPlanXmlWriterV2 planWriter = new CarrierPlanXmlWriterV2(carriers);
+		planWriter.write(OUTPUT_CARRIERS);
+		new CarrierVehicleTypeWriter(vTypes).write(OUT_VTYPES);
 	}
 	
 }

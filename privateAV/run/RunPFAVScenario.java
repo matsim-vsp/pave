@@ -18,15 +18,12 @@
 
 package privateAV.run;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
 import org.matsim.contrib.taxi.run.TaxiConfigConsistencyChecker;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
-import org.matsim.contrib.taxi.run.TaxiModule;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
@@ -36,16 +33,19 @@ import org.matsim.core.scenario.ScenarioUtils;
 import privateAV.modules.PFAVModeModule;
 import privateAV.modules.PFAVQSimModule;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * @author tschlenther
  *
  */
 public class RunPFAVScenario {
 
-	public static final String CONFIG_FILE_RULEBASED = "input/Scenarios/mielec/mielec_taxi_config_rulebased.xml";
-	public static final String CONFIG_FILE_ASSIGNMENT = "/input/Scenarios/mielec/mielec_taxi_config_assigment.xml";
-	public static final String CARRIERS_FILE = "input/Scenarios/mielec/freight/carrierPlans_routed.xml";
-	public static final String OUTPUT_DIR = "output/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
+	static final String CONFIG_FILE_RULEBASED = "input/Scenarios/mielec/mielec_taxi_config_rulebased.xml";
+	static final String CONFIG_FILE_ASSIGNMENT = "/input/Scenarios/mielec/mielec_taxi_config_assigment.xml";
+	static final String CARRIERS_FILE = "input/Scenarios/mielec/freight/carrierPlans_routed.xml";
+	static final String OUTPUT_DIR = "output/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
 
 	/**
 	 * @param args
@@ -58,7 +58,7 @@ public class RunPFAVScenario {
 		String date = simpleDateFormat.format(new Date());	
 		
 		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
-		
+		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		/*
 		 * very important: we assume that destination of trips are known in advance.
 		 * that leads to the occupiedDriveTask and the TaxiDropoffTask to be inserted at the same time as the PickUpTask (when the request gets scheduled).
