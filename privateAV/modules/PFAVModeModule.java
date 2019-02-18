@@ -13,16 +13,19 @@ import org.matsim.contrib.taxi.util.stats.TaxiStatsDumper;
 import org.matsim.core.controler.IterationCounter;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
-import privateAV.PFAVUtils;
 
 public class PFAVModeModule extends AbstractDvrpModeModule {
+    private final String CARRIERS_FILE;
+    private final String VEHTYPES_FILE;
     private final TaxiConfigGroup taxiCfg;
     private Scenario scenario;
 
-    public PFAVModeModule(TaxiConfigGroup taxiCfg, Scenario scenario) {
+    public PFAVModeModule(TaxiConfigGroup taxiCfg, Scenario scenario, String carriersFile, String vehTypesFile) {
         super(taxiCfg.getMode());
         this.taxiCfg = taxiCfg;
         this.scenario = scenario;
+        this.CARRIERS_FILE = carriersFile;
+        this.VEHTYPES_FILE = vehTypesFile;
     }
 
     @Override
@@ -39,7 +42,7 @@ public class PFAVModeModule extends AbstractDvrpModeModule {
                         getter.get(IterationCounter.class))));
 
         //TODO: get those files from some kind of config group or pass it to the module as parameter
-        ListBasedFreightTourManagerImpl tourManager = new ListBasedFreightTourManagerImpl(PFAVUtils.DEFAULT_CARRIERS_FILE, PFAVUtils.DEFAULT_VEHTYPES_FILE);
+        ListBasedFreightTourManagerImpl tourManager = new ListBasedFreightTourManagerImpl(this.CARRIERS_FILE, this.VEHTYPES_FILE);
 
         installQSimModule(new AbstractDvrpModeQSimModule(getMode()){
             @Override

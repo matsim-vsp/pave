@@ -24,20 +24,26 @@ import freight.FreightTourCalculatorImpl;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import org.matsim.contrib.dvrp.path.VrpPath;
+import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
+import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.schedule.StayTask;
+import org.matsim.contrib.dvrp.schedule.Tasks;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.util.StraightLineKnnFinder;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.events.IterationStartsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.controler.listener.IterationStartsListener;
 import org.matsim.core.gbl.MatsimRandom;
+import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelTime;
+import privateAV.PFAVUtils;
+import privateAV.vehicle.PFAVehicle;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author tschlenther
@@ -52,6 +58,9 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 * if FREIGHTTOUR_PLANNING_INTERVAL is set to 0 or any negative integer, the freight contrib will run only before iteration 0.
      */
     private final int FREIGHTTOUR_PLANNING_INTERVAL = 1;
+
+    Map<Link, List<List<StayTask>>> startLinkToFreightTour = new HashMap<>();
+
 	private List<List<StayTask>> freightTours = new ArrayList<>();
 	@Inject
 	@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
@@ -59,7 +68,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	@Inject
 	@Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
 	private TravelTime travelTime;
-    private ArrayList<Link> depotLinks;
+
     private Carriers carriers;
     private CarrierVehicleTypes vehicleTypes;
 
@@ -121,65 +130,100 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	}
 
 	/**
-	 * at the moment, a random tour is returned
+	 *
 	 */
 	@Override
-	public List<StayTask> getBestPFAVTourForVehicle(DvrpVehicle vehicle) {
-		// TODO: dispatch tours
-		return getRandomPFAVTour();
+	public List<StayTask> getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
+		return getDispatchedTourForVehicle(vehicle, router);
 	}
 
-//	private List<StayTask> getDispatchedTourForVehicle(Vehicle vehicle){
-//		
-//		List<Id<Link>> list = new ArrayList<Id<Link>>();
-//		
-//		StraightLineKnnFinder<Link, Charger> straightLineKnnFinder = new StraightLineKnnFinder(2, l -> (Link) l, CHARGER_TO_LINK);
-////		List<Charger> nearestChargers = straightLineKnnFinder.findNearest(stopLocation, chargingInfrastructure.getChargers().values().stream().filter(charger -> ev.getChargingTypes().contains(charger.getChargerType())));
-//		
-//		
-//		Coord objectCoord = Schedules.getLastLinkInSchedule(vehicle).getCoord();
-//		Stream<Id<Link>> neighbours = list.stream();
-//		
-//		PartialSort<Id<Link>> nearestRequestSort = new PartialSort<Id<Link>>(3);
-//
-//		for(Link l : this.depotLinks) {
-//			nearestRequestSort.add(l.getId(), DistanceUtils.calculateDistance(objectCoord, l.getCoord()));
-//		}
-//		
-//		List<>nearestRequestSort.kSmallestElements();
-//		
-////		PartialSort.kSmallestElements(3, neighbours,
-////				n -> DistanceUtils.calculateSquaredDistance(objectCoord, neighbourToLink.apply(n).getCoord()));
-//	}
-	
+	private List<StayTask> getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router){
+		StraightLineKnnFinder<Link,Link> finder = new StraightLineKnnFinder<>(3,link1-> link1 , link2 -> link2 );
+		// at the moment, we need to assume that on one link there can only be one depot/carrier! this is because we need a mapping in this direction for the following piece of code
+		List<Link> nearestDepots = finder.findNearest(Tasks.getEndLink(vehicle.getSchedule().getCurrentTask()),startLinkToFreightTour.keySet().stream());
+
+		//TODO: probably create a representation of the freightTour - something like FreightTourData - that contains the List<StayTask> and the duration, maybe the start and end link explicitly
+		//TODO: test this dispatch algorithm
+
+		for (Link l : nearestDepots){
+			Iterator<List<StayTask>> freightTourIterator = this.startLinkToFreightTour.get(l).iterator();
+			while(freightTourIterator.hasNext()){
+				List<StayTask> freightTour = freightTourIterator.next();
+				if(isEnoughTimeLeftToPerformFreightTour(vehicle, freightTour, router)){
+					freightTourIterator.remove();
+					return freightTour;
+				}
+			}
+		}
+		return null;
+	}
+
+	private boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, List<StayTask> freightTour, LeastCostPathCalculator router) {
+
+		//the next activity of the vehicle owner is the last for the day, so we can always perform the freight tour
+
+		//TODO: implement a global end time point for freigh tours ? so somehting like: after 8 p.m. no one should deliver anything anymore ??
+		if(Double.isInfinite(vehicle.getOwnerActEndTimes().peek())){
+	   		vehicle.getOwnerActEndTimes().remove();
+	   		return true;
+	   }
+
+	    StayTask currentTask = (StayTask) vehicle.getSchedule().getCurrentTask();
+	    StayTask start = freightTour.get(0);
+
+	    //in the tour, the retool task at the depot is not included (yet) (this is because the freight contrib strangely computes the arrival time at the depot to 0)
+		// see ConvertFreightTourForDvrp.convertToList
+	    StayTask lastServiceTask = freightTour.get(freightTour.size()-1);
+	    double tourDuration = lastServiceTask.getEndTime() - start.getBeginTime();
+
+
+        VrpPath pathFromCurrTaskToDepot = VrpPaths.calcAndCreatePath(currentTask.getLink(), start.getLink(), currentTask.getEndTime(), router, travelTime);
+
+		VrpPath pathFromLastServiceToDepot = VrpPaths.calcAndCreatePath(lastServiceTask.getLink(), start.getLink(), lastServiceTask.getEndTime(), router, travelTime);
+
+		double departureTimeFromDepot =  ((VrpPathWithTravelData) pathFromLastServiceToDepot).getArrivalTime() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
+		VrpPath pathFromDepot = VrpPaths.calcAndCreatePath(start.getLink(), currentTask.getLink(),departureTimeFromDepot, router, travelTime);
+
+        double totalTimeNeededToPerformFreightTour = ((VrpPathWithTravelData) pathFromCurrTaskToDepot).getTravelTime() +
+                                                        tourDuration +
+														((VrpPathWithTravelData) pathFromLastServiceToDepot).getTravelTime() +
+                                                        ((VrpPathWithTravelData) pathFromDepot).getTravelTime();
+
+
+        if(vehicle.getOwnerActEndTimes().peek() >= currentTask.getEndTime() + totalTimeNeededToPerformFreightTour + PFAVUtils.TIME_BUFFER){
+        	vehicle.getOwnerActEndTimes().remove();
+            return true;
+        }
+		return false;
+	}
+
+
 	private void runTourPlanning() {
 
 	    FreightTourCalculatorImpl tourCalculator = new FreightTourCalculatorImpl();
 
         //TODO: I'm not sure whether the travelTime object represents the current travel times of current iteration as it is injected...
+		// no it does not ! tschlenther, 16.feb'
         this.carriers = tourCalculator.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime);
 
 		log.info("overriding list of PFAV schedules...");
-		this.freightTours = convertCarrierPlansToTaskList(carriers);
-		
-		this.depotLinks = new ArrayList<Link>();
-		for(Carrier carrier : carriers.getCarriers().values()) {
-			for(CarrierVehicle veh : carrier.getCarrierCapabilities().getCarrierVehicles()) {
-				if(! this.depotLinks.contains(veh.getLocation())){
-					this.depotLinks.add(network.getLinks().get(veh.getLocation()));			// this is the depot link id .... TODO: check if that is correct!
-				} 
+		List<List<StayTask>> allFreightTours = convertCarrierPlansToTaskList(carriers);
+
+		for(List<StayTask> freightTour : allFreightTours){
+			Link start = freightTour.get(0).getLink();
+			if(this.startLinkToFreightTour.containsKey(start)){
+				this.startLinkToFreightTour.get(start).add(freightTour);
+			} else{
+				List<List<StayTask>> allDepotTours = new ArrayList<>();
+				allDepotTours.add(freightTour);
+				this.startLinkToFreightTour.put(start,allDepotTours);
 			}
 		}
 	}
 
     @Override
     public void notifyIterationStarts(IterationStartsEvent event){
-		if(FREIGHTTOUR_PLANNING_INTERVAL < 1){
-			if(event.getIteration() < 1){
-				runTourPlanning();
-				return;
-			}
-		} else if(event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0){
+		if( (FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) ||  (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0) ){
 			log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
 			runTourPlanning();
 		}
@@ -201,36 +245,4 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		log.info("writing carrier file of iteration " + event.getIteration() + " to " + dir);
 		writeCarriers(dir);
 	}
-
-	//folgendes kommt aus dem RuleBasedOptimizer
-	//Fragen/AUfgaben
-	//TODO
-	/*
-	 * 1) kann/will ich auch sone registry benutzen?
-	 * 2) baue eine Map ein: Carrier zu ihren Depots bzw. führe Liste über die location von depots
-	 * 3) finde die nächsten 3?! Depots zum Fahrzeug
-	 * 4) iteriere drüber und frage ob es eine Tour gibt, die das Fahrzeug schafft bis Herrchen wieder da ist / gegebene Rückkehrzeit 
-	 */
-	
-//	
-//	// vehicle-initiated scheduling
-//		private void scheduleIdleVehiclesImpl(Collection<TaxiRequest> unplannedRequests) {
-//			Iterator<Vehicle> vehIter = idleTaxiRegistry.vehicles().iterator();
-//			while (vehIter.hasNext() && !unplannedRequests.isEmpty()) {
-//				Vehicle veh = vehIter.next();
-//				Link link = ((TaxiStayTask)veh.getSchedule().getCurrentTask()).getLink();
-//
-//				Stream<TaxiRequest> selectedReqs = unplannedRequests.size() > params.nearestRequestsLimit
-//						? unplannedRequestRegistry.findNearestRequests(link.getToNode(), params.nearestRequestsLimit)
-//						: unplannedRequests.stream();
-//
-//				BestDispatchFinder.Dispatch<TaxiRequest> best = dispatchFinder.findBestRequestForVehicle(veh, selectedReqs);
-//
-//				scheduler.scheduleRequest(best.vehicle, best.destination, best.path);
-//
-//				unplannedRequests.remove(best.destination);
-//				unplannedRequestRegistry.removeRequest(best.destination);
-//			}
-//		}
-
 }

@@ -117,7 +117,6 @@ public class PFAVOptimizer implements TaxiOptimizer {
 	public void nextTask(DvrpVehicle vehicle) {
 		scheduler.updateBeforeNextTask(vehicle);
 		Task newCurrentTask = vehicle.getSchedule().nextTask();
-
 	}
 
 	@Override

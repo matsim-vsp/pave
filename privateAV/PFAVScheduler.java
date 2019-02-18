@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import freight.manager.ListBasedFreightTourManager;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
@@ -34,8 +33,8 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import privateAV.schedule.PFAVServiceDriveTask;
-import privateAV.schedule.PFAVServiceTask;
 import privateAV.schedule.PFAVStartTask;
+import privateAV.vehicle.PFAVehicle;
 
 import java.util.List;
 
@@ -44,13 +43,11 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	private static final Logger log = Logger.getLogger(PFAVScheduler.class);
 	
 	private TaxiScheduler delegate;
-	private Link DEPOT_LINK;
 	private LeastCostPathCalculator router;
 	private TravelTime travelTime;
 	private MobsimTimer timer;
 	private TaxiConfigGroup taxiCfg;
 
-//	@Inject
 	ListBasedFreightTourManager freightManager;
 	
 	/**
@@ -67,7 +64,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 			TravelDisutility travelDisutility, ListBasedFreightTourManager tourManager){
 
 		this.freightManager = tourManager;
-		DEPOT_LINK = network.getLinks().get(Id.createLinkId("560"));
 		this.taxiCfg = taxiCfg;
 		this.router = new FastAStarEuclideanFactory(taxiCfg.getAStarEuclideanOverdoFactor()).createPathCalculator(network,
 				travelDisutility, travelTime);
@@ -94,6 +90,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	
 
 	public void updateBeforeNextTask(DvrpVehicle vehicle) {
+
 		Schedule schedule = vehicle.getSchedule();
 		// Assumption: there is no delay as long as the schedule has not been started (PLANNED)
 		if (schedule.getStatus() != ScheduleStatus.STARTED) {
@@ -110,16 +107,21 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				}
 				break;
 			case DROPOFF:
-
-					if(currentTask instanceof PFAVServiceTask) break;
-	//				log.info("Vehicle " + vehicle.getId() + " requests a freight tour");
-					List<StayTask> freightTour = freightManager.getBestPFAVTourForVehicle(vehicle);
-					if(freightTour != null) {
-						scheduleFreightTour(vehicle, freightTour);
-						//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
-					} else {
-						//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
-	//					log.info("+++++ vehicle " + vehicle.getId() + " requested a freight tour but the manager returned NULL ++++++");
+					if(currentTask instanceof TaxiDropoffTask){
+						if(vehicle instanceof PFAVehicle){
+//						log.info("Vehicle " + vehicle.getId() + " requests a freight tour");
+							List<StayTask> freightTour = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
+							if(freightTour != null) {
+								scheduleFreightTour(vehicle, freightTour);
+								//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
+							} else {
+								//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
+								//					log.info("+++++ vehicle " + vehicle.getId() + " requested a freight tour but the manager returned NULL ++++++");
+							}
+						} else {
+							//in future, there could be usecases where we have both, DvrpVehicles (supertype) and PFAVehicles, so we would not throw an axception here and just keep going
+							throw  new RuntimeException("currently, all DvrpVehicles should be of type PFAVehicle");
+						}
 					}
 				break;
 
@@ -173,14 +175,17 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				
 				schedule.addTask(currentTask);
 				
-//				//we need the vehicle to drive back to the depot after the freight tour
-//				if(i == freightActivities.size() - 1) {
-//					//assumes that first activity in the freightActivities is at the depot (should be the Start activity)
-//					Link depotLink = freightActivities.get(0).getLink();
-//					path = VrpPaths.calcAndCreatePath(currentTask.getLink(), depotLink, currentTask.getEndTime(), router, travelTime);
-//					schedule.addTask(new TaxiEmptyDriveTask(path));
-//					appendStayTask(vehicle);
-//				}
+				//we need the vehicle to drive back to the depot after the freight tour
+				if(i == freightActivities.size() - 1) {
+					//assumes that first activity in the freightActivities is at the depot (should be the Start activity)
+					Link depotLink = freightActivities.get(0).getLink();
+					path = VrpPaths.calcAndCreatePath(currentTask.getLink(), depotLink, currentTask.getEndTime(), router, travelTime);
+					schedule.addTask(new TaxiEmptyDriveTask(path));
+					//TODO: maybe implement RETOOL-Task (instead of PFAVStartTask)
+					//insert stay task that represents retooling at the depot
+					schedule.addTask(new TaxiStayTask(path.getArrivalTime(), path.getArrivalTime() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES, depotLink));
+					appendStayTask(vehicle);
+				}
 				previousTask = currentTask;
 			}
 		}
@@ -246,17 +251,15 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		schedule.addTask(new TaxiStayTask(tBegin, tEnd, link));		
 	}
 	
-
 	public void cancelFreightTour(DvrpVehicle veh) {
 		// TODO: cancel the freight tour and make vehicle return to depot. insert STAY task at the depot
 		//		- first check if freight tour is started in the first place! otherwise throw exception!
 		throw new RuntimeException("currently not implemented");
 	}
-	
+
 	//---------------------------------------------------- DELEGATE METHODS --------------
 	
 //	@TODO: sort out methods / clean the code
-	
 	
 	//-------------------------------COPIES
 
@@ -311,11 +314,8 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 	}
 	
-	
 	//-------------------------TRUE DELEGATES-----------------------------------
-	
-	
-	
+
 	public boolean isIdle(DvrpVehicle vehicle) {
 		return delegate.isIdle(vehicle);
 	}
@@ -339,96 +339,5 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	public void updateTimeline(DvrpVehicle vehicle) {
 		delegate.updateTimeline(vehicle);
 	}
-	
-//	public void updateTimeline(Vehicle vehicle) {
-//		Schedule schedule = vehicle.getSchedule();
-//		if (schedule.getStatus() != ScheduleStatus.STARTED) {
-//			return;
-//		}
-//
-//		double predictedEndTime = TaskTrackers.predictEndTime(schedule.getCurrentTask(), timer.getTimeOfDay());
-//		updateTimelineImpl(vehicle, predictedEndTime);
-//	}
-//
-//	private void updateTimelineImpl(Vehicle vehicle, double newEndTime) {
-//		Schedule schedule = vehicle.getSchedule();
-//		Task currentTask = schedule.getCurrentTask();
-//		if (currentTask.getEndTime() == newEndTime) {
-//			return;
-//		}
-//
-//		currentTask.setEndTime(newEndTime);
-//
-//		List<? extends Task> tasks = schedule.getTasks();
-//		int startIdx = currentTask.getTaskIdx() + 1;
-//		double newBeginTime = newEndTime;
-//
-//		for (int i = startIdx; i < tasks.size(); i++) {
-//			TaxiTask task = (TaxiTask)tasks.get(i);
-//			
-//			if(task instanceof PFAVStartTask) {
-//				System.out.println("about to update the times of the freight start task of vehicle " + vehicle.getId());
-//			}
-//			
-//			double calcEndTime = calcNewEndTime(vehicle, task, newBeginTime);
-//
-//			if (calcEndTime == Time.UNDEFINED_TIME) {
-//				schedule.removeTask(task);
-//				i--;
-//			} else if (calcEndTime < newBeginTime) {// 0 s is fine (e.g. last 'wait')
-//				throw new IllegalStateException();
-//			} else {
-//				if(task.getStatus() != TaskStatus.PLANNED) {
-//					System.out.println("!++++++problem");
-//				}
-//				task.setBeginTime(newBeginTime);
-//				task.setEndTime(calcEndTime);
-//				newBeginTime = calcEndTime;
-//			}
-//		}
-//	}
-
-//	protected double calcNewEndTime(Vehicle vehicle, TaxiTask task, double newBeginTime) {
-//			switch (task.getTaxiTaskType()) {
-//				case STAY: {
-//					if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
-//						// even if endTime=beginTime, do not remove this task!!! A taxi schedule should end with WAIT
-//						return Math.max(newBeginTime, vehicle.getServiceEndTime());
-//					} else {
-//						// if this is not the last task then some other task (e.g. DRIVE or PICKUP)
-//						// must have been added at time submissionTime <= t
-//						double oldEndTime = task.getEndTime();
-//						if (oldEndTime <= newBeginTime) {// may happen if the previous task is delayed
-//							return Time.UNDEFINED_TIME;// remove the task
-//						} else {
-//							return oldEndTime;
-//						}
-//					}
-//				}
-//
-//				case EMPTY_DRIVE:
-//				case OCCUPIED_DRIVE: {
-//					// cannot be shortened/lengthen, therefore must be moved forward/backward
-//					VrpPathWithTravelData path = (VrpPathWithTravelData)((DriveTask)task).getPath();
-//					// TODO one may consider recalculation of SP!!!!
-//					return newBeginTime + path.getTravelTime();
-//				}
-//
-//				case PICKUP: {
-//					double t0 = ((TaxiPickupTask)task).getRequest().getEarliestStartTime();
-//					// the actual pickup starts at max(t, t0)
-//					return Math.max(newBeginTime, t0) + taxiCfg.getPickupDuration();
-//				}
-//				case DROPOFF: {
-//					// cannot be shortened/lengthen, therefore must be moved forward/backward
-//					return newBeginTime + taxiCfg.getDropoffDuration();
-//				}
-//
-//				default:
-//					throw new IllegalStateException();
-//			}
-//		}
-
-
 
 }

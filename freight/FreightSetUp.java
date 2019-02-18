@@ -61,7 +61,7 @@ public class FreightSetUp {
 	
 	public static CarrierVehicleType createPrivateFreightAVVehicleType() {
 		return CarrierVehicleType.Builder.newInstance(Id.create("PFAV", VehicleType.class))
-				.setCapacity(PFAVUtils.DEFAULT_DVRPVEHICLE_CAPACITY)
+				.setCapacity(PFAVUtils.DEFAULT_PFAV_CAPACITY)
 				.setMaxVelocity(13.3)
 				.setCostPerDistanceUnit(0.0001)
 				.setCostPerTimeUnit(0.001)

@@ -18,6 +18,7 @@
  * *********************************************************************** */
 package privateAV.vrpagent;
 
+import com.google.inject.Inject;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.passenger.PassengerEngine;
 import org.matsim.contrib.dvrp.passenger.SinglePassengerDropoffActivity;
@@ -27,7 +28,6 @@ import org.matsim.contrib.dvrp.tracker.OnlineTrackerListener;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentLogic;
 import org.matsim.contrib.dvrp.vrpagent.VrpLegFactory;
 import org.matsim.contrib.dynagent.DynAction;
-import org.matsim.contrib.dynagent.DynActivity;
 import org.matsim.contrib.dynagent.DynAgent;
 import org.matsim.contrib.dynagent.IdleDynActivity;
 import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
@@ -37,9 +37,6 @@ import org.matsim.contrib.taxi.schedule.TaxiPickupTask;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 import org.matsim.core.mobsim.framework.MobsimTimer;
-
-import com.google.inject.Inject;
-
 import privateAV.schedule.PFAVServiceTask;
 import privateAV.schedule.PFAVStartTask;
 
@@ -54,7 +51,7 @@ public class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 	public static final String STAY_ACTIVITY_TYPE = "TaxiStay";
 	
 	public static final String SERVICE_ACTIVITY_TYPE = "service";
-	public static final String START_ACTIVITY_TYPE = "start";
+	public static final String START_ACTIVITY_TYPE = "retool";
 
 	private final PassengerEngine passengerEngine;
 	private final VrpLegFactory legFactory;

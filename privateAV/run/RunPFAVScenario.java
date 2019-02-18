@@ -30,6 +30,7 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
+import privateAV.PFAVUtils;
 import privateAV.modules.PFAVModeModule;
 import privateAV.modules.PFAVQSimModule;
 
@@ -44,7 +45,7 @@ public class RunPFAVScenario {
 
 	static final String CONFIG_FILE_RULEBASED = "input/Scenarios/mielec/mielec_taxi_config_rulebased.xml";
 	static final String CONFIG_FILE_ASSIGNMENT = "/input/Scenarios/mielec/mielec_taxi_config_assigment.xml";
-	static final String CARRIERS_FILE = "input/Scenarios/mielec/freight/carrierPlans_routed.xml";
+
 	static final String OUTPUT_DIR = "output/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
 
 	/**
@@ -69,9 +70,12 @@ public class RunPFAVScenario {
 		
 		Config config = ConfigUtils.loadConfig(CONFIG_FILE_RULEBASED, new DvrpConfigGroup(), taxiCfg);
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
-		config.controler().setLastIteration(1);
+		config.controler().setLastIteration(0);
 		config.controler().setOutputDirectory(OUTPUT_DIR);
-		
+
+		//TODO
+		config.plans().setInputFile("plans_only_taxi_4.0_slightly_modified.xml");
+
 		
 		config.addConfigConsistencyChecker(new TaxiConfigConsistencyChecker());
 		config.checkConsistency();
@@ -87,7 +91,7 @@ public class RunPFAVScenario {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(taxiCfg, scenario));
+				install(new PFAVModeModule(taxiCfg, scenario, PFAVUtils.DEFAULT_CARRIERS_FILE, PFAVUtils.DEFAULT_VEHTYPES_FILE));
 				installQSimModule(new PFAVQSimModule(taxiCfg));
 			}
 		});
