@@ -43,10 +43,12 @@ import java.util.Date;
  */
 public class RunPFAVScenario {
 
-	static final String CONFIG_FILE_RULEBASED = "input/Scenarios/mielec/mielec_taxi_config_rulebased.xml";
-	static final String CONFIG_FILE_ASSIGNMENT = "/input/Scenarios/mielec/mielec_taxi_config_assigment.xml";
+	private static final String CONFIG_FILE_RULEBASED = "input/Scenarios/mielec/mielec_taxi_config_rulebased.xml";
+	private static final String CONFIG_FILE_ASSIGNMENT = "/input/Scenarios/mielec/mielec_taxi_config_assigment.xml";
 
-	static final String OUTPUT_DIR = "output/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
+	private static final String SMALL_CARRIERS_FILE = "C:/Users/Work/git/freightAV/input/Scenarios/mielec/freight/neu/carrierPlans_routed_finite2.xml";
+
+	private static final String OUTPUT_DIR = "output/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
 
 	/**
 	 * @param args
@@ -91,7 +93,7 @@ public class RunPFAVScenario {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(taxiCfg, scenario, PFAVUtils.DEFAULT_CARRIERS_FILE, PFAVUtils.DEFAULT_VEHTYPES_FILE));
+				install(new PFAVModeModule(taxiCfg, scenario, SMALL_CARRIERS_FILE, PFAVUtils.DEFAULT_VEHTYPES_FILE));
 				installQSimModule(new PFAVQSimModule(taxiCfg));
 			}
 		});

@@ -36,14 +36,21 @@ import java.util.List;
  *
  */
 public class ConvertFreightTourForDvrp {
-	
-	
-	public static List<StayTask> convertToList(ScheduledTour freightTour, Network network){
+
+	/**
+	 * @param freightTour
+	 * @param network
+	 * @return a list that contains the start task and all service tasks in the ScheduledTour (not the end task!). The legs in the ScheduledTour do not contain useful route information.
+	 * Furthermore, we want to route with up to date travel times within the mobsim anyways (as we are looking on dvrp vehicles).
+	 * Consequently, we only convert the (service) activities here and construct the paths/legs later.
+	 * @see FreightTourManagerImpl
+	 */
+	static List<StayTask> convertToList(ScheduledTour freightTour, Network network) {
 	
 		//as far as it seems, the Start and End activities are not part of ScheduledTour.getTour.getTourElements();
 		//otherwise, this method could be shortened by two thirds
-		
-		List<StayTask> dvrpList = new ArrayList<StayTask>();
+
+		List<StayTask> dvrpList = new ArrayList<>();
 		
 		double tBegin = freightTour.getTour().getStart().getExpectedArrival();
 		double tEnd = tBegin + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
@@ -58,7 +65,8 @@ public class ConvertFreightTourForDvrp {
 			TourElement currentElement = freightTour.getTour().getTourElements().get(i);
 			
 			if(currentElement instanceof ServiceActivity) {
-				tBegin = ((ServiceActivity) currentElement).getExpectedArrival();
+				//currently we need to add PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES, since we added this already to the start act duration
+				tBegin = ((ServiceActivity) currentElement).getExpectedArrival() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
 				tEnd = tBegin + ((ServiceActivity) currentElement).getDuration();
 				location = network.getLinks().get(((ServiceActivity) currentElement).getLocation());
 				dvrpList.add(new PFAVServiceTask(tBegin, tEnd, location, ((ServiceActivity) currentElement).getService()));

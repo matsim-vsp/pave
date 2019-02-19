@@ -70,7 +70,9 @@ public class FreightTourCalculatorImpl implements FreightTourCalculator {
 	
 				//get the CarrierPlan
 			CarrierPlan carrierPlanServicesAndShipments = MatsimJspritFactory.createPlan(carrier, bestSolution) ;
-			
+
+
+			//TO-DO: we don't need to rout the plan, do we?
 				//calculate the route
 			NetworkRouter.routePlan(carrierPlanServicesAndShipments,netBasedCosts) ;
 			carrier.setSelectedPlan(carrierPlanServicesAndShipments) ;

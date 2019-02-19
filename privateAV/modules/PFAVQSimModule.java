@@ -2,7 +2,7 @@ package privateAV.modules;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import freight.manager.ListBasedFreightTourManager;
+import freight.manager.FreightTourManager;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
@@ -84,7 +84,7 @@ public class PFAVQSimModule extends AbstractDvrpModeQSimModule {
                     private TravelTime travelTime;
 
                     @Inject
-                    ListBasedFreightTourManager tourManager;
+                    FreightTourManager tourManager;
 
                     @Override
                     public TaxiScheduleInquiry get() {
