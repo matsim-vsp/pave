@@ -20,7 +20,7 @@ package freight.manager;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import freight.FreightTourCalculatorImpl;
+import freight.FreightTourCalculation;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -31,7 +31,6 @@ import org.matsim.contrib.dvrp.schedule.*;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
-import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.util.StraightLineKnnFinder;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.events.IterationStartsEvent;
@@ -68,7 +67,6 @@ public class FreightTourManagerImpl implements FreightTourManager, IterationStar
 	@Inject
 	@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
 	private Network network;
-	@Inject
 
 
 	/* TODO:
@@ -76,7 +74,7 @@ public class FreightTourManagerImpl implements FreightTourManager, IterationStar
 	 * 	- one that i can hand over (or inject into) the freight calculator before the mobsim
 	 * 	- one that is up to date within the mobsim (the DVRP_ESTIMATED !?) that helps rerouting the legs contained in the freight tour
 	 */
-
+	@Inject
 	@Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
 	private TravelTime travelTime;
 
@@ -204,14 +202,9 @@ public class FreightTourManagerImpl implements FreightTourManager, IterationStar
 				precedingDriveTask = new PFAVServiceDriveTask(path);
 				schedule.addTask(precedingDriveTask);
 			} else {
-				TaxiEmptyDriveTask driveBackToDepot = new TaxiEmptyDriveTask(depotPaths[1]);
-				schedule.addTask(driveBackToDepot);
-
-				//insert stay task that represents retooling at the depot
-				schedule.addTask(new TaxiStayTask(driveBackToDepot.getEndTime(), driveBackToDepot.getEndTime() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES, driveBackToDepot.getPath().getToLink()));
-
 				//insert EmptyDriveTask back to owner's activity link
-				schedule.addTask(new TaxiEmptyDriveTask(depotPaths[2]));
+				VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(depotPaths[1].getFromLink(), depotPaths[1].getToLink(), currentTask.getEndTime(), router, travelTime);
+				schedule.addTask(new PFAVServiceDriveTask(path));
 			}
 		}
 		return schedule;
@@ -230,48 +223,61 @@ public class FreightTourManagerImpl implements FreightTourManager, IterationStar
 	    StayTask currentTask = (StayTask) vehicle.getSchedule().getCurrentTask();
 	    StayTask start = freightTour.get(0);
 
-	    //in the tour, the retool task at the depot is not included (yet) (this is because the freight contrib strangely computes the arrival time at the depot to 0)
-		// see {@see ConvertFreightTourForDvrp.convertToList}
-		StayTask lastServiceTask = freightTour.get(freightTour.size() - 1);
 
+		//TODO delete log.info's
 		VrpPathWithTravelData pathFromCurrTaskToDepot = VrpPaths.calcAndCreatePath(currentTask.getLink(), start.getLink(), currentTask.getEndTime(), router, travelTime);
+		VrpPathWithTravelData path = pathFromCurrTaskToDepot;
+		System.out.println("path to depot: " + path.getDepartureTime() + ";" + path.getArrivalTime() + ";" + path.getTravelTime());
 
-		double tourDuration = lastServiceTask.getEndTime() - start.getBeginTime();
-		double departureTimeFromLastService = currentTask.getEndTime() + pathFromCurrTaskToDepot.getTravelTime() + tourDuration;
-		VrpPathWithTravelData pathFromLastServiceToDepot = VrpPaths.calcAndCreatePath(lastServiceTask.getLink(), start.getLink(), departureTimeFromLastService, router, travelTime);
+		double tourDuration = freightTour.get(freightTour.size() - 1).getEndTime() - start.getBeginTime();
+		System.out.println("tourDuration: " + tourDuration);
 
-		double departureTimeFromDepot = pathFromLastServiceToDepot.getArrivalTime() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
-		VrpPathWithTravelData pathFromDepot = VrpPaths.calcAndCreatePath(start.getLink(), currentTask.getLink(), departureTimeFromDepot, router, travelTime);
+		double departureTimeFromDepot = pathFromCurrTaskToDepot.getArrivalTime() + tourDuration;
+		System.out.println("departureTimeFromDepot " + departureTimeFromDepot);
+
+		VrpPathWithTravelData pathFromDepotBackToOwner = VrpPaths.calcAndCreatePath(start.getLink(), currentTask.getLink(), departureTimeFromDepot, router, travelTime);
+		path = pathFromDepotBackToOwner;
+		System.out.println("path from depot: " + path.getDepartureTime() + ";" + path.getArrivalTime() + ";" + path.getTravelTime());
 
 		double totalTimeNeededToPerformFreightTour = pathFromCurrTaskToDepot.getTravelTime() +
 				tourDuration +
-				pathFromLastServiceToDepot.getTravelTime() +
-				pathFromDepot.getTravelTime();
-
+				pathFromDepotBackToOwner.getTravelTime();
+		System.out.println("totalTimeNeededToPerformFreightTour " + totalTimeNeededToPerformFreightTour);
 		// is enough time to perform the freight tour?
 		//if endTime is infinite, the next activity of the vehicle owner is the last for the day, so we can always perform the freight tour
 		//TODO: implement a global end time point for freight tours ? so somehting like: after 8 p.m. no one should deliver anything anymore ??
 		Double actEndTime = vehicle.getOwnerActEndTimes().peek();
 		if (actEndTime == null) {
-			throw new IllegalStateException("there should be an activity in thagent's plan after the taxi leg !");
+			throw new IllegalStateException("there should be an activity in the agent's plan after the taxi leg !");
 		} else if (Double.isInfinite(actEndTime) || actEndTime >= currentTask.getEndTime() + totalTimeNeededToPerformFreightTour + PFAVUtils.TIME_BUFFER) {
 			vehicle.getOwnerActEndTimes().remove();
-			return new VrpPathWithTravelData[]{pathFromCurrTaskToDepot, pathFromLastServiceToDepot, pathFromDepot};
+			return new VrpPathWithTravelData[]{pathFromCurrTaskToDepot, pathFromDepotBackToOwner};
 		}
 		return null;
 	}
 
 
+	//dirty zwischenloesung
+	@Override
+	public void routeCarrierPlans(LeastCostPathCalculator router) {
+		log.info("route the carriers");
+		FreightTourCalculation.routeCarriersSelectedPlans(this.carriers, router, this.network, this.travelTime);
+		log.info("done.");
+		initializeAndFillMapFreightToursToStartLinks();
+	}
+
 	@Override
 	public void runTourPlanning() {
 
-	    FreightTourCalculatorImpl tourCalculator = new FreightTourCalculatorImpl();
-
-        //TODO: I'm not sure whether the travelTime object represents the current travel times of current iteration as it is injected...
+		//TODO: I'm not sure whether the travelTime object represents the current travel times of current iteration as it is injected...
 		// no it does not ! tschlenther, 16.feb'
-        this.carriers = tourCalculator.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime);
+		this.carriers = FreightTourCalculation.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime);
+		initializeAndFillMapFreightToursToStartLinks();
+	}
 
+	private void initializeAndFillMapFreightToursToStartLinks() {
 		log.info("overriding list of PFAV schedules...");
+		this.startLinkToFreightTour = new HashMap<>();
 		List<List<StayTask>> allFreightTours = convertCarrierPlansToTaskList(carriers);
 
 		for(List<StayTask> freightTour : allFreightTours){
@@ -286,7 +292,7 @@ public class FreightTourManagerImpl implements FreightTourManager, IterationStar
 		}
 	}
 
-    @Override
+	@Override
     public void notifyIterationStarts(IterationStartsEvent event){
 		if( (FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) ||  (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0) ){
 			log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
@@ -302,7 +308,7 @@ public class FreightTourManagerImpl implements FreightTourManager, IterationStar
 	@Override
 	public void notifyIterationEnds(IterationEndsEvent event) {
 		if ((FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) || (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
-			String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "carriers_it" + event.getIteration() + ".xml";
+			String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/carriers_it" + event.getIteration() + ".xml";
 			log.info("writing carrier file of iteration " + event.getIteration() + " to " + dir);
 			writeCarriers(dir);
 		}

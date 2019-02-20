@@ -32,7 +32,8 @@ import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts.Builder;
-import org.matsim.contrib.freight.jsprit.NetworkRouter;
+import org.matsim.contrib.freight.router.TimeAndSpacePlanRouter;
+import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelTime;
 
 import java.util.Collection;
@@ -40,20 +41,18 @@ import java.util.Collection;
 /**
  * @author martins-turner, tschlenther
  *
- * TODO: make the logic of this class static again!?
- *
  */
-public class FreightTourCalculatorImpl implements FreightTourCalculator {
+public class FreightTourCalculation {
 
-	private static final Logger log = Logger.getLogger(FreightTourCalculatorImpl.class);
+	private static final Logger log = Logger.getLogger(FreightTourCalculation.class);
 
-	private int timeSlice = 1800;
+	private static final int TIMESLICE = 1800;
 
-	public Carriers runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime) {
-		log.info("time slice is set to " + this.timeSlice);
+	public static Carriers runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime) {
+		log.info("time slice is set to " + TIMESLICE);
 
 		Builder netBuilder = NetworkBasedTransportCosts.Builder.newInstance( network, vehicleTypes.getVehicleTypes().values() );
-		netBuilder.setTimeSliceWidth(timeSlice) ; // !!!! otherwise it will not do anything.
+		netBuilder.setTimeSliceWidth(TIMESLICE); // !!!! otherwise it will not do anything.
 		netBuilder.setTravelTime(travelTime);
 		final NetworkBasedTransportCosts netBasedCosts = netBuilder.build() ;
 
@@ -72,21 +71,24 @@ public class FreightTourCalculatorImpl implements FreightTourCalculator {
 			CarrierPlan carrierPlanServicesAndShipments = MatsimJspritFactory.createPlan(carrier, bestSolution) ;
 
 
-			//TO-DO: we don't need to rout the plan, do we?
-				//calculate the route
-			NetworkRouter.routePlan(carrierPlanServicesAndShipments,netBasedCosts) ;
+			//TODO: we don't need to route the plan, do we?
+			//TODO: here, another route is used than for the PFAVehicles.. this leads to different travel times: fix this!!
+			//calculate the route
+//			NetworkRouter.routePlan(carrierPlanServicesAndShipments,netBasedCosts) ;
+
+//			//let's use the router that we hand through all the way from the scheduler over the freightTourManager to here
+//			new TimeAndSpacePlanRouter(router, network, travelTime).run(carrierPlanServicesAndShipments);
+
 			carrier.setSelectedPlan(carrierPlanServicesAndShipments) ;
 			
 		}
 		return carriers;
 	}
-	
-	public int getTimeSlice() {
-		return this.timeSlice;
-	}
-	
-	public void setTimeSlice(int timeSlice) {
-		this.timeSlice = timeSlice;
+
+	public static void routeCarriersSelectedPlans(Carriers carriers, LeastCostPathCalculator router, Network network, TravelTime travelTime) {
+		for (Carrier carrier : carriers.getCarriers().values()) {
+			new TimeAndSpacePlanRouter(router, network, travelTime).run(carrier.getSelectedPlan());
+		}
 	}
 
 }

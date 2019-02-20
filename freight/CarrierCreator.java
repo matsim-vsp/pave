@@ -60,9 +60,8 @@ public class CarrierCreator {
 
 		Carriers carriers = FreightSetUp.createCarriersWithRandomDepotAndServices(vTypes.getVehicleTypes().values(), FLEET_SIZE, network, NR_OF_CARRIERS, NR_OF_VEH_PER_CARRIER_PER_VEH_TYPE, NR_OF_SERVICES_PER_CARRIER);
 
-		FreightTourCalculatorImpl calculator = new FreightTourCalculatorImpl();
 		TravelTime travelTime = TravelTimeUtils.createFreeSpeedTravelTime();
-		calculator.runTourPlanningForCarriers(carriers, vTypes, network, travelTime);
+		FreightTourCalculation.runTourPlanningForCarriers(carriers, vTypes, network, travelTime);
 		CarrierPlanXmlWriterV2 planWriter = new CarrierPlanXmlWriterV2(carriers);
 		planWriter.write(OUTPUT_CARRIERS);
 		new CarrierVehicleTypeWriter(vTypes).write(OUT_VTYPES);

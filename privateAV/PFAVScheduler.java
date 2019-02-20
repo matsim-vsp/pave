@@ -61,13 +61,16 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 						 MobsimTimer timer, @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
 						 TravelDisutility travelDisutility, FreightTourManager tourManager) {
 
-		this.freightManager = tourManager;
 		this.taxiCfg = taxiCfg;
 		this.router = new FastAStarEuclideanFactory(taxiCfg.getAStarEuclideanOverdoFactor()).createPathCalculator(network,
 				travelDisutility, travelTime);
 		this.travelTime = travelTime;
 		this.timer = timer;
 		delegate = new TaxiScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility);
+
+		this.freightManager = tourManager;
+		freightManager.routeCarrierPlans(router);
+
 	}
 	
 	public void stopCruisingVehicle(DvrpVehicle vehicle) {
@@ -114,7 +117,8 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 								//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
 							} else {
 								//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
-								//					log.info("+++++ vehicle " + vehicle.getId() + " requested a freight tour but the manager returned NULL ++++++");
+
+								//log.info("+++++ vehicle " + vehicle.getId() + " requested a freight tour but the manager returned NULL ++++++");
 							}
 						} else {
 							//in future, there could be usecases where we have both, DvrpVehicles (supertype) and PFAVehicles, so we would not throw an axception here and just keep going
