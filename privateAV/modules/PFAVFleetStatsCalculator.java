@@ -46,16 +46,18 @@ public class PFAVFleetStatsCalculator implements FleetStatsCalculator, BeforeMob
                     }
                 }
             }
-            Id<DvrpVehicle> vehicleId = Id.create(p.getId().toString() + "_av", DvrpVehicle.class);
-            PFAVSpecification specification = PFAVSpecification.newBuilder()
-                    .serviceBeginTime(0.)
-                    .serviceEndTime(36 * 3600)
-                    .startLinkId(vehicleStartLink)
-                    .id(vehicleId)
-                    .capacity(PFAVUtils.DEFAULT_PFAV_CAPACITY)
-                    .actEndTimes(actEndTimesAfterModeLegs)
-                    .build();
-            vehiclesForIteration.add(specification);
+            if (vehicleStartLink != null) {
+                Id<DvrpVehicle> vehicleId = Id.create(p.getId().toString() + "_av", DvrpVehicle.class);
+                PFAVSpecification specification = PFAVSpecification.newBuilder()
+                        .serviceBeginTime(0.)
+                        .serviceEndTime(36 * 3600)
+                        .startLinkId(vehicleStartLink)
+                        .id(vehicleId)
+                        .capacity(PFAVUtils.DEFAULT_PFAV_CAPACITY)
+                        .actEndTimes(actEndTimesAfterModeLegs)
+                        .build();
+                vehiclesForIteration.add(specification);
+            }
         }
         for(PFAVSpecification sp : vehiclesForIteration){
             if(oldVehicles.contains(sp.getId())){

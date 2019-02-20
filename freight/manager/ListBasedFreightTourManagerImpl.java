@@ -58,7 +58,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
      */
     private final int FREIGHTTOUR_PLANNING_INTERVAL = 1;
 
-    Map<Link, List<List<StayTask>>> startLinkToFreightTour = new HashMap<>();
+	private Map<Link, List<List<StayTask>>> startLinkToFreightTour = new HashMap<>();
 
 	private List<List<StayTask>> freightTours = new ArrayList<>();
 	@Inject
@@ -174,10 +174,13 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 */
 	private boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, List<StayTask> freightTour, LeastCostPathCalculator router) {
 
-		//the next activity of the vehicle owner is the last for the day, so we can always perform the freight tour
 
 		//TODO: implement a global end time point for freigh tours ? so somehting like: after 8 p.m. no one should deliver anything anymore ??
-		if (Double.isInfinite(vehicle.getOwnerActEndTimes().peek())) {
+		Double timeWhenOwnerNeedsVehicle = vehicle.getOwnerActEndTimes().peek();
+		if (timeWhenOwnerNeedsVehicle == null) {
+			throw new IllegalStateException("could not derive must return time of vehicle " + vehicle.getId() + " out of vehicle specification");
+		} else if (Double.isInfinite(timeWhenOwnerNeedsVehicle)) {
+			//the next activity of the vehicle owner is the last for the day, so we can always perform the freight tour
 			vehicle.getOwnerActEndTimes().remove();
 			return true;
 		}
@@ -190,7 +193,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 
 		VrpPathWithTravelData pathFromCurrTaskToDepot = VrpPaths.calcAndCreatePath(currentTask.getLink(), start.getLink(), currentTask.getEndTime(), router, travelTime);
-
 		VrpPathWithTravelData pathFromDepot = VrpPaths.calcAndCreatePath(end.getLink(), currentTask.getLink(), end.getEndTime(), router, travelTime);
 
 
@@ -200,7 +202,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 				pathFromDepot.getTravelTime();
 
 
-		if (vehicle.getOwnerActEndTimes().peek() >= currentTask.getEndTime() + totalTimeNeededToPerformFreightTour + PFAVUtils.TIME_BUFFER) {
+		if (timeWhenOwnerNeedsVehicle >= currentTask.getEndTime() + totalTimeNeededToPerformFreightTour + PFAVUtils.TIME_BUFFER) {
 			vehicle.getOwnerActEndTimes().remove();
 			return true;
 		}
@@ -213,7 +215,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
         FreightTourCalculatorImpl tourCalculator = new FreightTourCalculatorImpl();
 
         //TODO: I'm not sure whether the travelTime object represents the current travel times of current iteration as it is injected...
-		// no it does not ! tschlenther, 16.feb'
+		// no it does not ! tschlenther, 16.feb' 19
+		// yes i think it does - at least we see a reaction in the chessboard scenario, tschlenther 20. feb' 19
         this.carriers = tourCalculator.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime);
 
 		log.info("overriding list of PFAV schedules...");
@@ -247,7 +250,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	@Override
 	public void notifyIterationEnds(IterationEndsEvent event) {
 		if ((FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) || (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
-            String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "carriers_it" + event.getIteration() + ".xml";
+			String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/carriers_it" + event.getIteration() + ".xml";
 			log.info("writing carrier file of iteration " + event.getIteration() + " to " + dir);
 			writeCarriers(dir);
 		}
