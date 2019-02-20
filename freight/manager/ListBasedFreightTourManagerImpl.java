@@ -24,14 +24,14 @@ import freight.FreightTourCalculatorImpl;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.dvrp.path.VrpPath;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
-import org.matsim.contrib.dvrp.schedule.*;
+import org.matsim.contrib.dvrp.schedule.StayTask;
+import org.matsim.contrib.dvrp.schedule.Tasks;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.freight.carrier.*;
-import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
-import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.util.StraightLineKnnFinder;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.events.IterationStartsEvent;
@@ -41,9 +41,6 @@ import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelTime;
 import privateAV.PFAVUtils;
-import privateAV.schedule.PFAVServiceDriveTask;
-import privateAV.schedule.PFAVStartTask;
-import privateAV.vehicle.PFAVSpecification;
 import privateAV.vehicle.PFAVehicle;
 
 import java.util.*;
@@ -52,9 +49,9 @@ import java.util.*;
  * @author tschlenther
  *
  */
-public class FreightTourManagerImpl implements FreightTourManager, IterationStartsListener, IterationEndsListener {
+public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourManager, IterationStartsListener, IterationEndsListener {
 
-	private final static Logger log = Logger.getLogger(FreightTourManagerImpl.class);
+    private final static Logger log = Logger.getLogger(ListBasedFreightTourManagerImpl.class);
 	
     /**
      * the freight contrib will be run before every iteration where iterationNumber % FREIGHTTOUR_PLANNING_INTERVAL == 0- \n
@@ -62,21 +59,13 @@ public class FreightTourManagerImpl implements FreightTourManager, IterationStar
      */
     private final int FREIGHTTOUR_PLANNING_INTERVAL = 1;
 
-	private Map<Link, List<List<StayTask>>> startLinkToFreightTour = new HashMap<>();
+    Map<Link, List<List<StayTask>>> startLinkToFreightTour = new HashMap<>();
 
 	private List<List<StayTask>> freightTours = new ArrayList<>();
 	@Inject
 	@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
 	private Network network;
     @Inject
-
-
-    /* TODO:
-     * actually, i would need two travelTime objects here.
-     * 	- one that i can hand over (or inject into) the freight calculator before the mobsim
-     * 	- one that is up to date within the mobsim (the DVRP_ESTIMATED !?) that helps rerouting the legs contained in the freight tour
-     */
-
     @Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
     private TravelTime travelTime;
 
@@ -86,7 +75,7 @@ public class FreightTourManagerImpl implements FreightTourManager, IterationStar
 	/**
 	 *
 	 */
-	public FreightTourManagerImpl(String pathToCarriersFile, String pathToVehTypesFile) {
+    public ListBasedFreightTourManagerImpl(String pathToCarriersFile, String pathToVehTypesFile) {
 
 		this.carriers = readCarriers(pathToCarriersFile);
         this.vehicleTypes = readVehicleTypes(pathToVehTypesFile);
@@ -123,7 +112,18 @@ public class FreightTourManagerImpl implements FreightTourManager, IterationStar
 		return freightTours;
 	}
 
-	@Deprecated
+    /* (non-Javadoc)
+     * @see freight.manager.ListBasedFreightTourManager#getAVFreightTours()
+     */
+    @Override
+    public List<List<StayTask>> getPFAVTours() {
+        return this.freightTours;
+    }
+
+    /* (non-Javadoc)
+     * @see freight.manager.ListBasedFreightTourManager#getRandomAVFreightTour()
+     */
+    @Override
 	public List<StayTask> getRandomPFAVTour() {
 		if (this.freightTours.size() == 0) return null;
 		return( this.freightTours.remove(( MatsimRandom.getRandom().nextInt(this.freightTours.size()) )) );
@@ -133,11 +133,11 @@ public class FreightTourManagerImpl implements FreightTourManager, IterationStar
 	 *
 	 */
 	@Override
-	public Schedule getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
+    public List<StayTask> getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
 		return getDispatchedTourForVehicle(vehicle, router);
 	}
 
-	private Schedule getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
+    private List<StayTask> getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
 		StraightLineKnnFinder<Link,Link> finder = new StraightLineKnnFinder<>(3,link1-> link1 , link2 -> link2 );
 		// at the moment, we need to assume that on one link there can only be one depot/carrier! this is because we need a mapping in this direction for the following piece of code
 		List<Link> nearestDepots = finder.findNearest(Tasks.getEndLink(vehicle.getSchedule().getCurrentTask()),startLinkToFreightTour.keySet().stream());
@@ -149,121 +149,56 @@ public class FreightTourManagerImpl implements FreightTourManager, IterationStar
 			Iterator<List<StayTask>> freightTourIterator = this.startLinkToFreightTour.get(l).iterator();
 			while(freightTourIterator.hasNext()){
 				List<StayTask> freightTour = freightTourIterator.next();
-				VrpPathWithTravelData[] depotPaths = getDepotPathsIfThereIsEnoughTimeToPerformFreightTour(vehicle, freightTour, router);
-				if (depotPaths != null) {
+                if (isEnoughTimeLeftToPerformFreightTour(vehicle, freightTour, router)) {
 					freightTourIterator.remove();
-					return computeResultingSchedule(vehicle, freightTour, depotPaths, router);
+                    return freightTour;
 				}
 			}
 		}
 		return null;
 	}
 
-	/**
-	 * to know the reason why i don't manipulate the vehicle's schedule directly, please see scheduleFreightTour() in {@link privateAV.PFAVScheduler}
-	 *
-	 * @param vehicle
-	 * @param freightTour
-	 * @param depotPaths
-	 * @param router
-	 * @return
-	 * @see privateAV.PFAVScheduler
-	 */
-	private Schedule computeResultingSchedule(PFAVehicle vehicle, List<StayTask> freightTour, VrpPathWithTravelData[] depotPaths, LeastCostPathCalculator router) {
+    private boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, List<StayTask> freightTour, LeastCostPathCalculator router) {
 
-		//we need to build the vehicle specification for the schedule. later, this schedule (and dummy specification) will be dumped anyways
-		PFAVSpecification sp = PFAVSpecification.newBuilder().
-				id(vehicle.getId())
-				.capacity(vehicle.getCapacity())
-				.serviceBeginTime(vehicle.getServiceBeginTime())
-				.serviceEndTime(vehicle.getServiceEndTime())
-				.actEndTimes(vehicle.getOwnerActEndTimes())
-				.startLinkId(depotPaths[0].getFromLink().getId()).build();
+        //the next activity of the vehicle owner is the last for the day, so we can always perform the freight tour
 
-		Schedule schedule = new ScheduleImpl(sp);
-
-		//insert the empty drive to the depot at first position
-		DriveTask precedingDriveTask = new TaxiEmptyDriveTask(depotPaths[0]);
-		schedule.addTask(precedingDriveTask);
-
-		for (int i = 0; i < freightTour.size(); i++) {
-			StayTask currentTask = freightTour.get(i);
-
-			double duration = currentTask.getEndTime() - currentTask.getBeginTime();
-			currentTask.setBeginTime(precedingDriveTask.getEndTime());
-			currentTask.setEndTime(precedingDriveTask.getEndTime() + duration);
-
-			if (currentTask instanceof PFAVStartTask) {
-				((PFAVStartTask) currentTask).setVehicle(vehicle.getId());
-			}
-			schedule.addTask(currentTask);
-
-
-			if (i < freightTour.size() - 1) {
-				VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(currentTask.getLink(), freightTour.get(i + 1).getLink(), currentTask.getEndTime(), router, travelTime);
-				precedingDriveTask = new PFAVServiceDriveTask(path);
-				schedule.addTask(precedingDriveTask);
-			} else {
-                TaxiEmptyDriveTask driveBackToDepot = new TaxiEmptyDriveTask(depotPaths[1]);
-                schedule.addTask(driveBackToDepot);
-
-                //insert stay task that represents retooling at the depot
-                schedule.addTask(new TaxiStayTask(driveBackToDepot.getEndTime(), driveBackToDepot.getEndTime() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES, driveBackToDepot.getPath().getToLink()));
-
-				//insert EmptyDriveTask back to owner's activity link
-                schedule.addTask(new TaxiEmptyDriveTask(depotPaths[2]));
-			}
-		}
-		return schedule;
-	}
-
-	/**
-	 * if there is enough time left to perform the freight tour
-	 * returns an Array containing the path from current task link to depot, the path from last service task to depot, and the path from depot to activity linkk of owner
-	 * else returns null#
-	 * <p>
-	 * we return the paths here instead of a boolean for efficiency purpose:
-	 * we would compute these paths in the scheduler again if there is enough time
-	 */
-	private VrpPathWithTravelData[] getDepotPathsIfThereIsEnoughTimeToPerformFreightTour(PFAVehicle vehicle, List<StayTask> freightTour, LeastCostPathCalculator router) {
+        //TODO: implement a global end time point for freigh tours ? so somehting like: after 8 p.m. no one should deliver anything anymore ??
+        if (Double.isInfinite(vehicle.getOwnerActEndTimes().peek())) {
+            vehicle.getOwnerActEndTimes().remove();
+            return true;
+        }
 
 	    StayTask currentTask = (StayTask) vehicle.getSchedule().getCurrentTask();
 	    StayTask start = freightTour.get(0);
 
         //in the tour, the retool task at the depot is not included (yet) (this is because the freight contrib strangely computes the arrival time at the depot to 0)
-        // see {@see ConvertFreightTourForDvrp.convertToList}
+        // see ConvertFreightTourForDvrp.convertToList
         StayTask lastServiceTask = freightTour.get(freightTour.size() - 1);
-
-		VrpPathWithTravelData pathFromCurrTaskToDepot = VrpPaths.calcAndCreatePath(currentTask.getLink(), start.getLink(), currentTask.getEndTime(), router, travelTime);
-
         double tourDuration = lastServiceTask.getEndTime() - start.getBeginTime();
-        double departureTimeFromLastService = currentTask.getEndTime() + pathFromCurrTaskToDepot.getTravelTime() + tourDuration;
-        VrpPathWithTravelData pathFromLastServiceToDepot = VrpPaths.calcAndCreatePath(lastServiceTask.getLink(), start.getLink(), departureTimeFromLastService, router, travelTime);
 
-        double departureTimeFromDepot = pathFromLastServiceToDepot.getArrivalTime() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
-        VrpPathWithTravelData pathFromDepot = VrpPaths.calcAndCreatePath(start.getLink(), currentTask.getLink(), departureTimeFromDepot, router, travelTime);
 
-		double totalTimeNeededToPerformFreightTour = pathFromCurrTaskToDepot.getTravelTime() +
-				tourDuration +
-                pathFromLastServiceToDepot.getTravelTime() +
-                pathFromDepot.getTravelTime();
+        VrpPath pathFromCurrTaskToDepot = VrpPaths.calcAndCreatePath(currentTask.getLink(), start.getLink(), currentTask.getEndTime(), router, travelTime);
 
-		// is enough time to perform the freight tour?
-		//if endTime is infinite, the next activity of the vehicle owner is the last for the day, so we can always perform the freight tour
-		//TODO: implement a global end time point for freight tours ? so somehting like: after 8 p.m. no one should deliver anything anymore ??
-		Double actEndTime = vehicle.getOwnerActEndTimes().peek();
-		if (actEndTime == null) {
-            throw new IllegalStateException("there should be an activity in thagent's plan after the taxi leg !");
-		} else if (Double.isInfinite(actEndTime) || actEndTime >= currentTask.getEndTime() + totalTimeNeededToPerformFreightTour + PFAVUtils.TIME_BUFFER) {
-			vehicle.getOwnerActEndTimes().remove();
-            return new VrpPathWithTravelData[]{pathFromCurrTaskToDepot, pathFromLastServiceToDepot, pathFromDepot};
-		}
-		return null;
+        VrpPath pathFromLastServiceToDepot = VrpPaths.calcAndCreatePath(lastServiceTask.getLink(), start.getLink(), lastServiceTask.getEndTime(), router, travelTime);
+
+        double departureTimeFromDepot = ((VrpPathWithTravelData) pathFromLastServiceToDepot).getArrivalTime() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
+        VrpPath pathFromDepot = VrpPaths.calcAndCreatePath(start.getLink(), currentTask.getLink(), departureTimeFromDepot, router, travelTime);
+
+        double totalTimeNeededToPerformFreightTour = ((VrpPathWithTravelData) pathFromCurrTaskToDepot).getTravelTime() +
+                tourDuration +
+                ((VrpPathWithTravelData) pathFromLastServiceToDepot).getTravelTime() +
+                ((VrpPathWithTravelData) pathFromDepot).getTravelTime();
+
+
+        if (vehicle.getOwnerActEndTimes().peek() >= currentTask.getEndTime() + totalTimeNeededToPerformFreightTour + PFAVUtils.TIME_BUFFER) {
+            vehicle.getOwnerActEndTimes().remove();
+            return true;
+        }
+        return false;
 	}
 
 
-	@Override
-	public void runTourPlanning() {
+    private void runTourPlanning() {
 
         FreightTourCalculatorImpl tourCalculator = new FreightTourCalculatorImpl();
 
