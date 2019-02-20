@@ -29,10 +29,10 @@ import java.util.List;
  *
  */
 public interface ListBasedFreightTourManager {
-    public List<List<StayTask>> getPFAVTours();
+    List<List<StayTask>> getPFAVTours();
 
-    public List<StayTask> getRandomPFAVTour();
+    List<StayTask> getRandomPFAVTour();
 
-    public List<StayTask> getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router);
+    List<StayTask> getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router);
 
 }
