@@ -32,6 +32,7 @@ public class PFAVFleetStatsCalculator implements FleetStatsCalculator, BeforeMob
     public void notifyBeforeMobsim(BeforeMobsimEvent event) {
         List<PFAVSpecification> vehiclesForIteration = new ArrayList<>();
         for(Person p : this.population.getPersons().values()) {
+
             Id<Link> vehicleStartLink = null;
             Queue<Double>  actEndTimesAfterModeLegs = new LinkedList<>();
 
@@ -45,18 +46,16 @@ public class PFAVFleetStatsCalculator implements FleetStatsCalculator, BeforeMob
                     }
                 }
             }
-            if (vehicleStartLink != null) { //we need a PFAVehicle
-                Id<DvrpVehicle> vehicleId = Id.create(p.getId().toString() + "_av", DvrpVehicle.class);
-                PFAVSpecification specification = PFAVSpecification.newBuilder()
-                        .serviceBeginTime(0.)
-                        .serviceEndTime(36 * 3600)
-                        .startLinkId(vehicleStartLink)
-                        .id(vehicleId)
-                        .capacity(PFAVUtils.DEFAULT_PFAV_CAPACITY)
-                        .actEndTimes(actEndTimesAfterModeLegs)
-                        .build();
-                vehiclesForIteration.add(specification);
-            }
+            Id<DvrpVehicle> vehicleId = Id.create(p.getId().toString() + "_av", DvrpVehicle.class);
+            PFAVSpecification specification = PFAVSpecification.newBuilder()
+                    .serviceBeginTime(0.)
+                    .serviceEndTime(36 * 3600)
+                    .startLinkId(vehicleStartLink)
+                    .id(vehicleId)
+                    .capacity(PFAVUtils.DEFAULT_PFAV_CAPACITY)
+                    .actEndTimes(actEndTimesAfterModeLegs)
+                    .build();
+            vehiclesForIteration.add(specification);
         }
         for(PFAVSpecification sp : vehiclesForIteration){
             if(oldVehicles.contains(sp.getId())){

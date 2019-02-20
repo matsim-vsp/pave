@@ -32,5 +32,4 @@ public interface FreightTourManager {
 
 	void runTourPlanning();
 
-	void routeCarrierPlans(LeastCostPathCalculator router);
 }
