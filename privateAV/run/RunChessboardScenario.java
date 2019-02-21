@@ -46,17 +46,35 @@ import java.util.Date;
  */
 public class RunChessboardScenario {
 
-    private static final String NETWORK_FILE = "network_speed10.xml";
-    private static final String CARRIERS_FILE = "scenarios/chessboard/chessboard_carriers.xml";
-    private static final String VEHTYPES_FILE = "scenarios/chessboard/chessboard_vehicleTypes.xml";
     private static final String CONFIG_FILE = "scenarios/chessboard/chessboard_config.xml";
+    private static final String NETWORK_FILE = "network_speed10.xml";
+
+    private static final boolean SIMULATE_CASE1 = false;
+
+    private static final String CARRIERS_FILE_CASE1 = "scenarios/chessboard/chessboard_carriersCase1.xml";
+    private static final String VEHTYPES_FILE_CASE1 = "scenarios/chessboard/chessboard_vehicleTypesCase1.xml";
+
+    private static final String CARRIERS_FILE_CASE2 = "scenarios/chessboard/secondCase/chessboard_carriersCase2.xml";
+    private static final String VEHTYPES_FILE_CASE2 = "scenarios/chessboard/secondCase/chessboard_vehicleTypesCase2.xml";
     ;
     private static final String OUTPUT_DIR = "output/travelTimeTest/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
+
 
     /**
      * @param args
      */
     public static void main(String[] args) {
+
+        String carriersFile;
+        String vehTypesFile;
+
+        if (SIMULATE_CASE1) {
+            carriersFile = CARRIERS_FILE_CASE1;
+            vehTypesFile = VEHTYPES_FILE_CASE1;
+        } else {
+            carriersFile = CARRIERS_FILE_CASE2;
+            vehTypesFile = VEHTYPES_FILE_CASE2;
+        }
 
         TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
         taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
@@ -85,8 +103,13 @@ public class RunChessboardScenario {
 
         // load scenario
         Scenario scenario = ScenarioUtils.loadScenario(config);
+
         //create population
-        createPersons(scenario.getPopulation());
+        if (SIMULATE_CASE1) {
+            createpersonsForCase1(scenario.getPopulation());
+        } else {
+            createpersonsForCase2(scenario.getPopulation());
+        }
 
         // setup controler
         Controler controler = new Controler(scenario);
@@ -95,7 +118,7 @@ public class RunChessboardScenario {
         controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
-                install(new PFAVModeModule(taxiCfg, scenario, CARRIERS_FILE, VEHTYPES_FILE));
+                install(new PFAVModeModule(taxiCfg, scenario, carriersFile, vehTypesFile));
                 installQSimModule(new PFAVQSimModule(taxiCfg));
             }
         });
@@ -105,7 +128,7 @@ public class RunChessboardScenario {
         controler.run();
     }
 
-    private static void createPersons(Population population) {
+    private static void createpersonsForCase1(Population population) {
         PopulationFactory factory = population.getFactory();
         {
             Person person = factory.createPerson(Id.createPersonId("1"));
@@ -158,6 +181,86 @@ public class RunChessboardScenario {
                 homeLink = 17;
                 workLink = 128;
                 endHomeTime = 8 * 3600;
+            }
+
+            Activity home = factory.createActivityFromLinkId("home", Id.createLinkId(homeLink));
+            home.setEndTime(endHomeTime);
+            home.setMaximumDuration(6 * 3600);
+            plan.addActivity(home);
+
+            plan.addLeg(factory.createLeg("car"));
+
+            Activity work = factory.createActivityFromLinkId("work", Id.createLinkId(workLink));
+            work.setEndTime(18 * 3600);
+            work.setStartTime(6 * 3600);
+            plan.addActivity(work);
+//
+//			plan.addLeg(factory.createLeg("taxi"));
+//
+//			Activity home2 = factory.createActivityFromLinkId("home", Id.createLinkId(homeLink));
+//			home2.setStartTime(18 * 3600);
+//			home2.setEndTime(20 * 3600);
+//			plan.addActivity(home2);
+
+            person.addPlan(plan);
+            population.addPerson(person);
+        }
+
+    }
+
+    private static void createpersonsForCase2(Population population) {
+        PopulationFactory factory = population.getFactory();
+        {
+            Person person = factory.createPerson(Id.createPersonId("1"));
+            Plan plan = factory.createPlan();
+
+            Id<Link> home1LinkId = Id.createLinkId("1");
+            Id<Link> home2LinkId = Id.createLinkId("1");
+            Id<Link> workLinkId = Id.createLinkId("5");
+            Activity home = factory.createActivityFromLinkId("home", home1LinkId);
+            home.setEndTime(6 * 3600);
+            plan.addActivity(home);
+
+            Leg leg = factory.createLeg("taxi");
+            plan.addLeg(leg);
+
+            Activity work = factory.createActivityFromLinkId("work", workLinkId);
+            work.setEndTime(18 * 3600);
+            work.setStartTime(6 * 3600);
+            plan.addActivity(work);
+
+            leg = factory.createLeg("taxi");
+            plan.addLeg(leg);
+
+            Activity home2 = factory.createActivityFromLinkId("home", home2LinkId);
+            home2.setStartTime(18 * 3600);
+            home2.setEndTime(20 * 3600);
+            plan.addActivity(home2);
+
+            person.addPlan(plan);
+            population.addPerson(person);
+        }
+        for (int i = 2; i <= 100; i++) {
+            Person person = factory.createPerson(Id.createPersonId(i));
+            Plan plan = factory.createPlan();
+
+
+            int homeLink;
+            int workLink;
+            double endHomeTime = 5.5 * 3600;
+            double rnd = MatsimRandom.getRandom().nextDouble();
+            if (rnd <= 0.33) {
+                homeLink = 32;
+                workLink = 36;
+//                endHomeTime = 6 * 3600;
+            } else if (rnd > 0.33 && rnd <= 0.66) {
+                homeLink = 33;
+                workLink = 36;
+//                endHomeTime = 8.5 * 3600;
+            } else {
+                homeLink = 34;
+                workLink = 36;
+//                endHomeTime = 8 * 3600;
             }
 
             Activity home = factory.createActivityFromLinkId("home", Id.createLinkId(homeLink));
