@@ -42,5 +42,4 @@ public final class PFAVUtils {
 	 */
     public static final double TIME_BUFFER = 5 * 3600;
 
-	public static final boolean SCHEDULER_INITIATES_CARRIER_ROUTING = false;
 }

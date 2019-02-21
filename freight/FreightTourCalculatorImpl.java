@@ -33,8 +33,6 @@ import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts.Builder;
 import org.matsim.contrib.freight.jsprit.NetworkRouter;
-import org.matsim.contrib.freight.router.TimeAndSpacePlanRouter;
-import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelTime;
 
 import java.util.Collection;
@@ -51,7 +49,7 @@ public class FreightTourCalculatorImpl implements FreightTourCalculator {
 
     private int timeSlice = 1800;
 
-	public Carriers runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime, boolean doRouting) {
+	public Carriers runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime) {
         log.info("time slice is set to " + this.timeSlice);
 
 		Builder netBuilder = NetworkBasedTransportCosts.Builder.newInstance( network, vehicleTypes.getVehicleTypes().values() );
@@ -74,22 +72,17 @@ public class FreightTourCalculatorImpl implements FreightTourCalculator {
 			CarrierPlan carrierPlan = MatsimJspritFactory.createPlan(carrier, bestSolution);
 
 
-			//calculate the route - we need this because otherwise we only have the duration of the service task and don ot have a clue about tour duration
+			/* calculate the route - we need this because otherwise we only have the duration of the service task and do not have a clue about tour duration
+			 * BUT: the routes themselves cannot be used later. please also see ConvertFreightForDvrp.convertToList()
+			 */
 
 			//if we use this default method, a router is created by leastCostPathCalculatorFactory.createPathCalculator(network, travelDisutility, travelTime);
-			if (doRouting) {
-				NetworkRouter.routePlan(carrierPlan, netBasedCosts);
-			}
-
+			NetworkRouter.routePlan(carrierPlan, netBasedCosts);
 
 			carrier.setSelectedPlan(carrierPlan);
 			
 		}
 		return carriers;
-	}
-
-	public void routePlan(CarrierPlan plan, LeastCostPathCalculator router, Network network, TravelTime traveltime) {
-		new TimeAndSpacePlanRouter(router, network, traveltime).run(plan);
 	}
 
     public int getTimeSlice() {

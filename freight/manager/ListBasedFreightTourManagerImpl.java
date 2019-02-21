@@ -212,25 +212,13 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	}
 
 
-	public void routeSelectedCarrierPlans(LeastCostPathCalculator router) {
-		FreightTourCalculatorImpl calculator = new FreightTourCalculatorImpl();
-		for (Carrier carrier : this.carriers.getCarriers().values()) {
-			calculator.routePlan(carrier.getSelectedPlan(), router, network, travelTime);
-		}
-		initAndMapStartLinkOfToursToTour();
-	}
-
 	private void runTourPlanning() {
 		FreightTourCalculatorImpl tourCalculator = new FreightTourCalculatorImpl();
 
-		//TODO: I'm not sure whether the travelTime object represents the current travel times of current iteration as it is injected...
-		// no it does not ! tschlenther, 16.feb' 19
-		// yes i think it does - at least we see a reaction in the chessboard scenario, tschlenther 20. feb' 19
-		this.carriers = tourCalculator.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime, !PFAVUtils.SCHEDULER_INITIATES_CARRIER_ROUTING);
+		//the travel times we hand over contain the travel times of last mobsim iteration as long as we use the OfflineEstimator (set via TaxiConfigGroup)
+		this.carriers = tourCalculator.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime);
 
-		if (!PFAVUtils.SCHEDULER_INITIATES_CARRIER_ROUTING) {
-			initAndMapStartLinkOfToursToTour();
-		}
+		initAndMapStartLinkOfToursToTour();
 	}
 
 	private void initAndMapStartLinkOfToursToTour() {

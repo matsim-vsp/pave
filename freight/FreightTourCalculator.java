@@ -7,6 +7,6 @@ import org.matsim.core.router.util.TravelTime;
 
 public interface FreightTourCalculator {
 
-    Carriers runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime, boolean doRouting);
+    Carriers runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime);
 
 }
