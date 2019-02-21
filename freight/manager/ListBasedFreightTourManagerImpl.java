@@ -45,6 +45,8 @@ import privateAV.vehicle.PFAVehicle;
 import java.util.*;
 
 /**
+ * maybe i need to implement MobsimInitializedListener in order to get up to date travel times ?
+ *
  * @author tschlenther
  *
  */
@@ -210,16 +212,31 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	}
 
 
-    private void runTourPlanning() {
+	public void routeSelectedCarrierPlans(LeastCostPathCalculator router) {
+		FreightTourCalculatorImpl calculator = new FreightTourCalculatorImpl();
+		for (Carrier carrier : this.carriers.getCarriers().values()) {
+			calculator.routePlan(carrier.getSelectedPlan(), router, network, travelTime);
+		}
+		initAndMapStartLinkOfToursToTour();
+	}
 
-        FreightTourCalculatorImpl tourCalculator = new FreightTourCalculatorImpl();
+	private void runTourPlanning() {
+		FreightTourCalculatorImpl tourCalculator = new FreightTourCalculatorImpl();
 
-        //TODO: I'm not sure whether the travelTime object represents the current travel times of current iteration as it is injected...
+		//TODO: I'm not sure whether the travelTime object represents the current travel times of current iteration as it is injected...
 		// no it does not ! tschlenther, 16.feb' 19
 		// yes i think it does - at least we see a reaction in the chessboard scenario, tschlenther 20. feb' 19
-        this.carriers = tourCalculator.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime);
+		this.carriers = tourCalculator.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime, !PFAVUtils.SCHEDULER_INITIATES_CARRIER_ROUTING);
 
+		if (!PFAVUtils.SCHEDULER_INITIATES_CARRIER_ROUTING) {
+			initAndMapStartLinkOfToursToTour();
+		}
+	}
+
+	private void initAndMapStartLinkOfToursToTour() {
 		log.info("overriding list of PFAV schedules...");
+		this.startLinkToFreightTour = new HashMap<>();
+
 		List<List<StayTask>> allFreightTours = convertCarrierPlansToTaskList(carriers);
 
 		for(List<StayTask> freightTour : allFreightTours){
@@ -234,7 +251,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		}
 	}
 
-    @Override
+	@Override
     public void notifyIterationStarts(IterationStartsEvent event){
 		if( (FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) ||  (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0) ){
 			log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");

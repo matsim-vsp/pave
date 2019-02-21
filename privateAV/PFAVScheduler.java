@@ -3,6 +3,7 @@ package privateAV;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import freight.manager.ListBasedFreightTourManager;
+import freight.manager.ListBasedFreightTourManagerImpl;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -70,6 +71,10 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		this.travelTime = travelTime;
 		this.timer = timer;
 		delegate = new TaxiScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility);
+
+		if (PFAVUtils.SCHEDULER_INITIATES_CARRIER_ROUTING) {
+			((ListBasedFreightTourManagerImpl) freightManager).routeSelectedCarrierPlans(router);
+		}
 	}
 	
 	public void stopCruisingVehicle(DvrpVehicle vehicle) {

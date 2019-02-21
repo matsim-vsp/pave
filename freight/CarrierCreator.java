@@ -62,7 +62,7 @@ public class CarrierCreator {
 
 		FreightTourCalculatorImpl calculator = new FreightTourCalculatorImpl();
 		TravelTime travelTime = TravelTimeUtils.createFreeSpeedTravelTime();
-		calculator.runTourPlanningForCarriers(carriers, vTypes, network, travelTime);
+		calculator.runTourPlanningForCarriers(carriers, vTypes, network, travelTime, true);
 		CarrierPlanXmlWriterV2 planWriter = new CarrierPlanXmlWriterV2(carriers);
 		planWriter.write(OUTPUT_CARRIERS);
 		new CarrierVehicleTypeWriter(vTypes).write(OUT_VTYPES);

@@ -41,4 +41,6 @@ public final class PFAVUtils {
 	 * the amount of time that the vehicle plans to arrive before it's owner ends the activity
 	 */
     public static final double TIME_BUFFER = 5 * 3600;
+
+	public static final boolean SCHEDULER_INITIATES_CARRIER_ROUTING = false;
 }
