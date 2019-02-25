@@ -45,7 +45,6 @@ import privateAV.vehicle.PFAVehicle;
 import java.util.*;
 
 /**
- * maybe i need to implement MobsimInitializedListener in order to get up to date travel times ?
  *
  * @author tschlenther
  *
@@ -58,6 +57,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
      * the freight contrib will be run before every iteration where iterationNumber % FREIGHTTOUR_PLANNING_INTERVAL == 0- \n
 	 * if FREIGHTTOUR_PLANNING_INTERVAL is set to 0 or any negative integer, the freight contrib will run only before iteration 0.
      */
+    //TODO make configurable
     private final int FREIGHTTOUR_PLANNING_INTERVAL = 1;
 
 	private Map<Link, List<List<StayTask>>> startLinkToFreightTour = new HashMap<>();
@@ -126,12 +126,24 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
      */
     @Override
 	public List<StayTask> getRandomPFAVTour() {
-		if (this.freightTours.size() == 0) return null;
-		return( this.freightTours.remove(( MatsimRandom.getRandom().nextInt(this.freightTours.size()) )) );
+        if (this.startLinkToFreightTour.size() == 0) return null;
+        Link depot = this.startLinkToFreightTour.keySet().toArray(new Link[startLinkToFreightTour.size()])[MatsimRandom.getRandom().nextInt(this.startLinkToFreightTour.size())];
+
+        List<StayTask> tour = this.startLinkToFreightTour.get(depot).remove(MatsimRandom.getRandom().nextInt(this.startLinkToFreightTour.get(depot).size()));
+
+        //if no tour at the depot is left, delete depot
+        if (this.startLinkToFreightTour.get(depot).isEmpty()) {
+            this.startLinkToFreightTour.remove(depot);
+        }
+        return tour;
 	}
 
 	/**
-	 *
+     *returns the list of all freight activities converted to taxi task that represent the best matching freight tour for the given vehicle.
+     * at the moment, the dispatch logic does the following:
+     * look for the closest three depots. ask either one, if a tour is available that the vehicle can handle before it needs to be back at it's owner's place.
+     * as soon as a fitting tour is found, return it and delete from the manager's to do list for the iteration.
+     * @param vehicle that requests a freight tozr.
 	 */
 	@Override
     public List<StayTask> getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
@@ -146,17 +158,23 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		//TODO: probably create a representation of the freightTour - something like FreightTourData - that contains the List<StayTask> and the duration, maybe the start and end link explicitly
 		//TODO: test this spatial dispatch algorithm
 
+        List<StayTask> matchingFreightTour = null;
 		for (Link l : nearestDepots){
 			Iterator<List<StayTask>> freightTourIterator = this.startLinkToFreightTour.get(l).iterator();
 			while(freightTourIterator.hasNext()){
 				List<StayTask> freightTour = freightTourIterator.next();
                 if (isEnoughTimeLeftToPerformFreightTour(vehicle, freightTour, router)) {
 					freightTourIterator.remove();
-                    return freightTour;
+                    matchingFreightTour = freightTour;
+                    break;
 				}
 			}
-		}
-		return null;
+            if (matchingFreightTour != null) {
+                if (startLinkToFreightTour.get(l).isEmpty()) startLinkToFreightTour.remove(l);
+                break;
+            }
+        }
+        return matchingFreightTour;
 	}
 
 	/**
@@ -218,16 +236,16 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		//the travel times we hand over contain the travel times of last mobsim iteration as long as we use the OfflineEstimator (set via TaxiConfigGroup)
 		this.carriers = tourCalculator.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime);
 
-		initAndMapStartLinkOfToursToTour();
-	}
+        log.info("overriding list of freight tours...");
+        this.freightTours = convertCarrierPlansToTaskList(carriers);
+        mapStartLinkOfToursToTour();
+    }
 
-	private void initAndMapStartLinkOfToursToTour() {
-		log.info("overriding list of PFAV schedules...");
+    private void mapStartLinkOfToursToTour() {
+        log.info("initialising mapping of freight tours to link id's");
 		this.startLinkToFreightTour = new HashMap<>();
 
-		List<List<StayTask>> allFreightTours = convertCarrierPlansToTaskList(carriers);
-
-		for(List<StayTask> freightTour : allFreightTours){
+        for (List<StayTask> freightTour : this.freightTours) {
 			Link start = freightTour.get(0).getLink();
 			if(this.startLinkToFreightTour.containsKey(start)){
 				this.startLinkToFreightTour.get(start).add(freightTour);
@@ -241,10 +259,12 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 	@Override
     public void notifyIterationStarts(IterationStartsEvent event){
-		if( (FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) ||  (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0) ){
-			log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
-			runTourPlanning();
-		}
+        if( (FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) ||  (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0) ){
+            log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
+            runTourPlanning();
+        } else {
+            mapStartLinkOfToursToTour();
+        }
     }
 
 	/**
