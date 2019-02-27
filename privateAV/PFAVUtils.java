@@ -24,8 +24,8 @@ package privateAV;
  */
 public final class PFAVUtils {
 
-	public static final String DEFAULT_CARRIERS_FILE = "input/Scenarios/mielec/freight/upToDate/2carriers_a_5vehicles_INFINITE.xml";
-	public static final String DEFAULT_VEHTYPES_FILE =  "input/Scenarios/mielec/freight/upToDate/PFAVvehicleTypes.xml";
+	public static final String DEFAULT_CARRIERS_FILE = "input/mielecScenario/freight/upToDate/2carriers_a_5vehicles_INFINITE.xml";
+	public static final String DEFAULT_VEHTYPES_FILE =  "input/mielecScenario/freight/upToDate/PFAVvehicleTypes.xml";
 
 	/**
 	 *

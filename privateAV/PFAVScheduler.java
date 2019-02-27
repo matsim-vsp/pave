@@ -32,10 +32,11 @@ import org.matsim.core.router.FastAStarEuclideanFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+import privateAV.schedule.PFAVRetoolTask;
 import privateAV.schedule.PFAVServiceDriveTask;
-import privateAV.schedule.PFAVStartTask;
 import privateAV.vehicle.PFAVehicle;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PFAVScheduler implements TaxiScheduleInquiry {
@@ -47,6 +48,8 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	private TravelTime travelTime;
 	private MobsimTimer timer;
 	private TaxiConfigGroup taxiCfg;
+
+	private List<DvrpVehicle> vehiclesOnFreightTour = new ArrayList();
 
     ListBasedFreightTourManager freightManager;
 	
@@ -123,6 +126,10 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 							//in future, there could be usecases where we have both, DvrpVehicles (supertype) and PFAVehicles, so we would not throw an axception here and just keep going
 							throw  new RuntimeException("currently, all DvrpVehicles should be of type PFAVehicle");
 						}
+					} else if(currentTask instanceof PFAVRetoolTask && schedule.getTasks().get(currentTask.getTaskIdx() + 1) instanceof TaxiEmptyDriveTask){
+							if(! this.vehiclesOnFreightTour.contains(vehicle)) throw new IllegalStateException("freight tour of vehicle " +
+									vehicle.getId() + "ends and scheduler did not even mark it as being on freight tour");
+							this.vehiclesOnFreightTour.remove(vehicle);
 					}
 				break;
 
@@ -153,44 +160,43 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 			schedule.removeLastTask();
 
             StayTask previousTask = (StayTaskImpl) schedule.getCurrentTask();
-
+            Link ownerLink = previousTask.getLink();
             for (int i = 0; i < freightActivities.size(); i++) {
                 StayTask currentTask = freightActivities.get(i);
 
                 VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(previousTask.getLink(), currentTask.getLink(), previousTask.getEndTime(), router, travelTime);
 
+                //alternatively one could say if(currentTask instanceof PFAVRetoolTask) cause these should be only at the ends of the tour
                 if (i == 0 || i == freightActivities.size() - 1) {
                     schedule.addTask(new TaxiEmptyDriveTask(path));
                 } else {
                     schedule.addTask(new PFAVServiceDriveTask(path));
-
                 }
 
                 double duration = currentTask.getEndTime() - currentTask.getBeginTime();
                 currentTask.setBeginTime(path.getArrivalTime());
                 currentTask.setEndTime(path.getArrivalTime() + duration);
 
-                if (currentTask instanceof PFAVStartTask) {
-                    ((PFAVStartTask) currentTask).setVehicle(vehicle.getId());
+                if (currentTask instanceof PFAVRetoolTask) {
+                    ((PFAVRetoolTask) currentTask).setVehicle(vehicle.getId());
                 }
 
                 schedule.addTask(currentTask);
 
-                //we need the vehicle to drive back to the depot after the freight tour
+                //we need the vehicle to drive back to it's owner after the freight tour and wait there
                 if (i == freightActivities.size() - 1) {
                     //assumes that first activity in the freightActivities is at the depot (should be the Start activity)
                     Link depotLink = freightActivities.get(0).getLink();
-                    path = VrpPaths.calcAndCreatePath(currentTask.getLink(), depotLink, currentTask.getEndTime(), router, travelTime);
+                    path = VrpPaths.calcAndCreatePath(depotLink, ownerLink, currentTask.getEndTime(), router, travelTime);
                     schedule.addTask(new TaxiEmptyDriveTask(path));
-                    //TODO: maybe implement RETOOL-Task (instead of PFAVStartTask)
-                    //insert stay task that represents retooling at the depot
-                    schedule.addTask(new TaxiStayTask(path.getArrivalTime(), path.getArrivalTime() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES, depotLink));
                     appendStayTask(vehicle);
                 }
                 previousTask = currentTask;
             }
+            //mark this vehicle's state as "on freight tour"
+            this.vehiclesOnFreightTour.add(vehicle);
+			log.info("vehicle " + vehicle.getId() + " got assigned to a freight schedule");
 		}
-		log.info("vehicle " + vehicle.getId() + " got assigned to a freight schedule");
 	}
 
 	public void scheduleRequest(DvrpVehicle vehicle, TaxiRequest request) {
@@ -250,6 +256,10 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		double tEnd = Math.max(tBegin, vehicle.getServiceEndTime());// even 0-second WAIT
 		Link link = Schedules.getLastLinkInSchedule(vehicle);
 		schedule.addTask(new TaxiStayTask(tBegin, tEnd, link));		
+	}
+
+	public boolean isCurrentlyOnOrWillPerformPerformFreightTour(DvrpVehicle veh) {
+		return this.vehiclesOnFreightTour.contains(veh);
 	}
 	
 	public void cancelFreightTour(DvrpVehicle veh) {

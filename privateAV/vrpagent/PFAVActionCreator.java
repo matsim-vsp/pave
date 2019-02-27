@@ -38,7 +38,7 @@ import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import privateAV.schedule.PFAVServiceTask;
-import privateAV.schedule.PFAVStartTask;
+import privateAV.schedule.PFAVRetoolTask;
 
 /**
  * @author tschlenther
@@ -51,7 +51,7 @@ public class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 	public static final String STAY_ACTIVITY_TYPE = "TaxiStay";
 	
 	public static final String SERVICE_ACTIVITY_TYPE = "service";
-	public static final String START_ACTIVITY_TYPE = "retool";
+	public static final String RETOOL_ACTIVITY_TYPE = "retool";
 
 	private final PassengerEngine passengerEngine;
 	private final VrpLegFactory legFactory;
@@ -92,6 +92,8 @@ public class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 						DROPOFF_ACTIVITY_TYPE);
 			} else if( task instanceof PFAVServiceTask) {
 				return new PFAVServiceActivity(SERVICE_ACTIVITY_TYPE, (PFAVServiceTask) task);
+			} else if(task instanceof PFAVRetoolTask) {
+				return new IdleDynActivity(RETOOL_ACTIVITY_TYPE, task::getEndTime);
 			} else {
 				throw new IllegalStateException();
 			}
@@ -99,8 +101,6 @@ public class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 		case STAY:
 			if(task instanceof TaxiStayTask) {
 				return new IdleDynActivity(STAY_ACTIVITY_TYPE, task::getEndTime);
-			} else if(task instanceof PFAVStartTask) {
-				return new IdleDynActivity(START_ACTIVITY_TYPE, task::getEndTime);
 			} else {
 				throw new IllegalStateException();
 			}

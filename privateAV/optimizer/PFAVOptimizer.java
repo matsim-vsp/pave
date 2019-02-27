@@ -77,7 +77,7 @@ public class PFAVOptimizer implements TaxiOptimizer {
 			if (veh == null) {
 				throw new RuntimeException("Vehicle " + personalAV.toString() + "does not exist.");
 			}
-			if(isCurrentlyOnOrWillPerformPerformFreightTour(veh)) {
+			if(scheduler.isCurrentlyOnOrWillPerformPerformFreightTour(veh)) {
 				scheduler.cancelFreightTour(veh);
 			} else {
 				if (!isWaitStayOrEmptyDrive((TaxiTask)veh.getSchedule().getCurrentTask())) {
@@ -128,11 +128,6 @@ public class PFAVOptimizer implements TaxiOptimizer {
 				scheduler.updateTimeline(v);
 			}
 		}
-	}
-
-	private boolean isCurrentlyOnOrWillPerformPerformFreightTour(DvrpVehicle veh) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	private boolean isWaitStayOrEmptyDrive(TaxiTask task) {

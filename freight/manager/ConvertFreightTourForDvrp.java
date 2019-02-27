@@ -27,8 +27,8 @@ import org.matsim.contrib.freight.carrier.Tour.ServiceActivity;
 import org.matsim.contrib.freight.carrier.Tour.TourElement;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import privateAV.PFAVUtils;
+import privateAV.schedule.PFAVRetoolTask;
 import privateAV.schedule.PFAVServiceTask;
-import privateAV.schedule.PFAVStartTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,9 +49,8 @@ public class ConvertFreightTourForDvrp {
 	 */
 	static List<StayTask> convertToList(ScheduledTour freightTour, Network network) {
 
-        //as far as it seems, the Start and End activities are not part of ScheduledTour.getTour.getTourElements();
+        //the Start and End activities are not part of ScheduledTour.getTour.getTourElements();
         //otherwise, this method could be shortened by two thirds
-
         List<StayTask> dvrpList = new ArrayList<>();
 
         //we actually get the begin time by deriving it out of the first leg in the tour. in the freight activity itself, the begin time is always set to the 'opening time' or 0
@@ -62,11 +61,9 @@ public class ConvertFreightTourForDvrp {
 
         Link location = network.getLinks().get(freightTour.getTour().getStart().getLocation());
 
-        dvrpList.add(new PFAVStartTask(tBegin, tEnd, location));
+        dvrpList.add(new PFAVRetoolTask(tBegin, tEnd, location));
 
-        for (int i = 0; i < freightTour.getTour().getTourElements().size(); i++) {
-            TourElement currentElement = freightTour.getTour().getTourElements().get(i);
-
+        for (TourElement currentElement : freightTour.getTour().getTourElements()) {
             if (currentElement instanceof ServiceActivity) {
                 //currently we need to add PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES, since we added this already to the start act duration
                 tBegin = ((ServiceActivity) currentElement).getExpectedArrival() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
@@ -78,11 +75,11 @@ public class ConvertFreightTourForDvrp {
 
         //for the times set at the end activity, see comments above. we need this workaround here
         int size = freightTour.getTour().getTourElements().size();
-        tBegin = ((Tour.Leg) freightTour.getTour().getTourElements().get(size - 1)).getExpectedDepartureTime() +
-                ((Tour.Leg) freightTour.getTour().getTourElements().get(size - 1)).getExpectedTransportTime();
+        tBegin = ((Tour.Leg) freightTour.getTour().getTourElements().get(size - 1)).getExpectedDepartureTime();
+//                + ((Tour.Leg) freightTour.getTour().getTourElements().get(size - 1)).getExpectedTransportTime();
         tEnd = tBegin + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
         location = network.getLinks().get(freightTour.getTour().getEnd().getLocation());
-        dvrpList.add(new TaxiStayTask(tBegin, tEnd, location));
+        dvrpList.add(new PFAVRetoolTask(tBegin, tEnd, location));
 
 		return dvrpList;
 		
