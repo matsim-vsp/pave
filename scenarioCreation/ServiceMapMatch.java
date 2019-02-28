@@ -29,7 +29,6 @@ import org.matsim.api.core.v01.network.NetworkWriter;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.filter.NetworkFilterManager;
-import org.matsim.core.network.filter.NetworkLinkFilter;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.geotools.MGC;
@@ -37,7 +36,9 @@ import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ServiceMapMatch {
 
@@ -154,33 +155,4 @@ public class ServiceMapMatch {
             this.carrierMap.put(geom,carrier);
         }
     }
-
-
-
-
-
-//        LOGGER.info("Reading CORINE landcover shape file . . .");
-//    Collection<SimpleFeature> landCoverFeatures = ShapeFileReader.getAllFeatures(corineLandCoverShapeFile);
-//
-//        this.simplifyGeometries = simplifyGeometries;
-//        if (this.simplifyGeometries) LOGGER.warn("Geometries will be simplified such that number of vertices in each geometry is less than 1000. " +
-//            "This is likely to speed up the process.");
-//
-//        for (SimpleFeature landCoverZone : landCoverFeatures) {
-//        int landCoverId = Integer.valueOf( (String) landCoverZone.getAttribute(LandCoverUtils.CORINE_LANDCOVER_TAG_ID));
-//        List<LandCoverUtils.LandCoverActivityType> acts = landCoverUtils.getActivityTypesFromZone(landCoverId);
-//
-//        for (LandCoverUtils.LandCoverActivityType activityTypeFromLandCover : acts ) {
-//            List<Geometry> geoms = activityTypes2ListOfLandCoverZones.get(activityTypeFromLandCover);
-//            if (geoms==null) {
-//                geoms = new ArrayList<>();
-//            }
-//
-//            Geometry geomToAdd = (Geometry)landCoverZone.getDefaultGeometry();
-//            if (this.simplifyGeometries) geomToAdd = GeometryUtils.getSimplifiedGeom(geomToAdd);
-//
-//            geoms.add(  geomToAdd );
-//            activityTypes2ListOfLandCoverZones.put(activityTypeFromLandCover, geoms);
-//        }
-//    }
 }
