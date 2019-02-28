@@ -42,10 +42,4 @@ public final class PFAVUtils {
 	 */
     public static final double TIME_BUFFER = 5 * 3600;
 
-	/**
-	 * determines whether the freight contrib is started before the first mobsim run.
-	 *
-	 * @see freight.manager.ListBasedFreightTourManagerImpl
-	 */
-	public static final boolean DO_TOUR_PLANNING_BEFORE_FIRST_ITERATION = true;
 }

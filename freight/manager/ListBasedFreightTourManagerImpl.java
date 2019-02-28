@@ -20,7 +20,6 @@ package freight.manager;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.graphhopper.jsprit.core.problem.solution.VehicleRoutingProblemSolution;
 import freight.FreightTourCalculatorImpl;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
@@ -74,8 +73,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
     private Carriers carriers;
     private CarrierVehicleTypes vehicleTypes;
 
-	private Map<Carrier, VehicleRoutingProblemSolution> carrierToBestSolution = new HashMap<>();
-
 	/**
 	 *
 	 */
@@ -85,10 +82,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
         this.vehicleTypes = readVehicleTypes(pathToVehTypesFile);
 		log.info("loading carrier vehicle types..");
 		new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(vehicleTypes);
-
-		for (Carrier c : carriers.getCarriers().values()) {
-			this.carrierToBestSolution.put(c, null);
-		}
 	}
 
 	private CarrierVehicleTypes readVehicleTypes(String input) {
@@ -201,10 +194,11 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 */
 	private boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, List<StayTask> freightTour, LeastCostPathCalculator router) {
 
+
 		//TODO: implement a global end time point for freigh tours ? so somehting like: after 8 p.m. no one should deliver anything anymore ??
 		Double timeWhenOwnerNeedsVehicle = vehicle.getOwnerActEndTimes().peek();
 		if (timeWhenOwnerNeedsVehicle == null) {
-			throw new IllegalStateException("could not derive must-return-time of vehicle " + vehicle.getId() + " out of vehicle specification");
+			throw new IllegalStateException("could not derive must return time of vehicle " + vehicle.getId() + " out of vehicle specification");
 		} else if (Double.isInfinite(timeWhenOwnerNeedsVehicle)) {
 			//the next activity of the vehicle owner is the last for the day, so we can always perform the freight tour
 			vehicle.getOwnerActEndTimes().remove();
@@ -240,24 +234,11 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		FreightTourCalculatorImpl tourCalculator = new FreightTourCalculatorImpl();
 
 		//the travel times we hand over contain the travel times of last mobsim iteration as long as we use the OfflineEstimator (set via TaxiConfigGroup)
-//		this.carriers = tourCalculator.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime);
-
-		this.freightTours = new ArrayList<>();
+		this.carriers = tourCalculator.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime);
 
 		log.info("overriding list of freight tours...");
-		//save the new vest VehicleRoutingProblemSolution for each carrier, then iterate over the ScheduledTours in the new plan and convert them to a list of PFAVTasks
-		for (Carrier c : this.carrierToBestSolution.keySet()) {
-			VehicleRoutingProblemSolution newBestSolution = tourCalculator.runTourPlanningForCarrier(c, this.vehicleTypes, this.network, this.travelTime, this.carrierToBestSolution.get(c));
-			this.carrierToBestSolution.put(c, newBestSolution);
-			CarrierPlan plan = c.getSelectedPlan();
-			for (ScheduledTour freightTour : plan.getScheduledTours()) {
-				freightTours.add(ConvertFreightTourForDvrp.convertToList(freightTour, this.network));
-			}
-		}
-
-//        this.freightTours = convertCarrierPlansToTaskList(carriers);
-//        mapStartLinkOfToursToTour();
-
+		this.freightTours = convertCarrierPlansToTaskList(carriers);
+		mapStartLinkOfToursToTour();
     }
 
     private void mapStartLinkOfToursToTour() {
@@ -278,8 +259,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 	@Override
     public void notifyIterationStarts(IterationStartsEvent event){
-		if ((FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1 && PFAVUtils.DO_TOUR_PLANNING_BEFORE_FIRST_ITERATION)
-				|| (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
+		if ((FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) || (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
             log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
             runTourPlanning();
         } else {

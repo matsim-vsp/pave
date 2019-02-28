@@ -154,4 +154,30 @@ public class ServiceMapMatch {
             this.carrierMap.put(geom,carrier);
         }
     }
+
+
+//        LOGGER.info("Reading CORINE landcover shape file . . .");
+//    Collection<SimpleFeature> landCoverFeatures = ShapeFileReader.getAllFeatures(corineLandCoverShapeFile);
+//
+//        this.simplifyGeometries = simplifyGeometries;
+//        if (this.simplifyGeometries) LOGGER.warn("Geometries will be simplified such that number of vertices in each geometry is less than 1000. " +
+//            "This is likely to speed up the process.");
+//
+//        for (SimpleFeature landCoverZone : landCoverFeatures) {
+//        int landCoverId = Integer.valueOf( (String) landCoverZone.getAttribute(LandCoverUtils.CORINE_LANDCOVER_TAG_ID));
+//        List<LandCoverUtils.LandCoverActivityType> acts = landCoverUtils.getActivityTypesFromZone(landCoverId);
+//
+//        for (LandCoverUtils.LandCoverActivityType activityTypeFromLandCover : acts ) {
+//            List<Geometry> geoms = activityTypes2ListOfLandCoverZones.get(activityTypeFromLandCover);
+//            if (geoms==null) {
+//                geoms = new ArrayList<>();
+//            }
+//
+//            Geometry geomToAdd = (Geometry)landCoverZone.getDefaultGeometry();
+//            if (this.simplifyGeometries) geomToAdd = GeometryUtils.getSimplifiedGeom(geomToAdd);
+//
+//            geoms.add(  geomToAdd );
+//            activityTypes2ListOfLandCoverZones.put(activityTypeFromLandCover, geoms);
+//        }
+//    }
 }
