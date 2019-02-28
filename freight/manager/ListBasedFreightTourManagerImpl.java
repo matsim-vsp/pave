@@ -71,6 +71,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
     private TravelTime travelTime;
 
     private Carriers carriers;
+    private Carriers carriersWithOnlyUsedTours;
     private CarrierVehicleTypes vehicleTypes;
 
 	/**
@@ -99,16 +100,30 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	}
 
 	private List<List<StayTask>> convertCarrierPlansToTaskList(Carriers carriers) {
-		
+        if (PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE < 0 || PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE > 1)
+            throw new IllegalStateException("the sample size for the freight demand must be inbetween 0 and 1");
+
+        //here we create a carrier copy which only contains the freight tours used in the current iteration in order to write those out in form of a carriers.xml file
+
 		log.info("start converting carrier plans to taxi tasks..");
 		
 		List<List<StayTask>> freightTours = new ArrayList<>();
-		
+        carriersWithOnlyUsedTours = new Carriers();
 		for(Carrier carrier : carriers.getCarriers().values()) {
+            Collection<ScheduledTour> onlyUsedTours = new ArrayList<>();
+            Carrier copy = CarrierImpl.newInstance(carrier.getId());
+            carriersWithOnlyUsedTours.addCarrier(carrier);
 			CarrierPlan plan = carrier.getSelectedPlan();
 			for (ScheduledTour freightTour : plan.getScheduledTours()) {
-				freightTours.add(ConvertFreightTourForDvrp.convertToList(freightTour, this.network));
-			}
+                //we need to cut down here and not beforehand in the services, since the tour planning would otherwise result in longer and inaccurate tours
+                if (MatsimRandom.getRandom().nextDouble() <= PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE) {
+                    freightTours.add(ConvertFreightTourForDvrp.convertToList(freightTour, this.network));
+                    onlyUsedTours.add(freightTour);
+                }
+            }
+            CarrierPlan planWithOnlyUsedTours = new CarrierPlan(copy, onlyUsedTours);
+            copy.addPlan(planWithOnlyUsedTours);
+            carriersWithOnlyUsedTours.addCarrier(copy);
 		}
 		return freightTours;
 	}
@@ -275,13 +290,14 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	@Override
 	public void notifyIterationEnds(IterationEndsEvent event) {
 		if ((FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) || (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
-			String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/carriers_it" + event.getIteration() + ".xml";
+            String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/";
 			log.info("writing carrier file of iteration " + event.getIteration() + " to " + dir);
-			writeCarriers(dir);
+            writeCarriers(this.carriers, dir + "carriers_it" + event.getIteration() + ".xml");
+            writeCarriers(this.carriersWithOnlyUsedTours, dir + "carriersOnlyUsedTours_it" + event.getIteration() + ".xml");
 		}
 	}
 
-	private void writeCarriers(String outputDir) {
+    private void writeCarriers(Carriers carriers, String outputDir) {
 		CarrierPlanXmlWriterV2 planWriter = new CarrierPlanXmlWriterV2(carriers);
 		planWriter.write(outputDir);
 	}

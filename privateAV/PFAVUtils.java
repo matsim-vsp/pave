@@ -42,4 +42,9 @@ public final class PFAVUtils {
 	 */
     public static final double TIME_BUFFER = 5 * 3600;
 
+
+	/**
+	 *
+	 */
+	public static final double FREIGHT_DEMAND_SAMPLE_SIZE = 1.;
 }
