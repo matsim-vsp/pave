@@ -57,7 +57,7 @@ public class ServiceMapMatch {
     private Map<Geometry,Carrier> carrierMap = new HashMap();
 
 
-    public static final void main(String[] args){
+    public static void main(String[] args) {
         new ServiceMapMatch().run();
     }
 
@@ -86,8 +86,7 @@ public class ServiceMapMatch {
 
         NetworkFilterManager mng = new NetworkFilterManager(openBerlinNet);
         mng.addLinkFilter(l -> {
-            if (l.getAllowedModes().contains("car")) return true;
-            else return false;
+            return l.getAllowedModes().contains("car");
         });
         Network newNetOnlyCar = mng.applyFilters();
 
