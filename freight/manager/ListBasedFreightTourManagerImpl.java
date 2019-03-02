@@ -101,7 +101,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 	private List<List<StayTask>> convertCarrierPlansToTaskList(Carriers carriers) {
         if (PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE < 0 || PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE > 1)
-            throw new IllegalStateException("the sample size for the freight demand must be inbetween 0 and 1");
+			throw new IllegalStateException("the sample size for the freight demand must be in between 0 and 1");
 
         //here we create a carrier copy which only contains the freight tours used in the current iteration in order to write those out in form of a carriers.xml file
 

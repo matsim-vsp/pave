@@ -74,7 +74,7 @@ public class RunPFAVScenario {
 		}
 		
 		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
-		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
+		taxiCfg.setBreakSimulationIfNotAllRequestsServed(true);
 		/*
 		 * very important: we assume that destinations of trips are known in advance.
 		 * that leads to the occupiedDriveTask and the TaxiDropoffTask to be inserted at the same time as the PickUpTask (when the request gets scheduled).
@@ -112,52 +112,11 @@ public class RunPFAVScenario {
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));
 
-
 		// run simulation
 		controler.run();
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-////		config.plans().setInputFile("input/Scenarios/mielec/plans_only_taxi_ONEAGENT.xml");
-//		
-////		config.qsim().setStartTime(0);
-////		config.qsim().setSimStarttimeInterpretation(StarttimeInterpretation.onlyUseStarttime);
-//		config.qsim().setSnapshotStyle(SnapshotStyle.withHoles);
-////		config.global().setNumberOfThreads(8);
-//		config.addConfigConsistencyChecker(new TaxiConfigConsistencyChecker());
-//		config.checkConsistency();
-//		
-//		final Scenario scenario = ScenarioUtils.loadScenario(config);
-//		Controler controler = new Controler(scenario);
-//
-////		controler.addQSimModule(new FreightAVQSimModule(TSPrivateAVOptimizerProvider.class,PrivateAV4FreightScheduler.class));
-//		
-////		controler.addQSimModule(new PFAVQSimModule(PFAVProvider.class,PFAVScheduler.class));
-//		//null für direktes binden des optimizers ohne provider klasse
-//		
-//		controler.addQSimModule(new PFAVQSimModule(null,PFAVScheduler.class));
-//
-//		controler.addOverridingModule(new PFAVModule(scenario));
-//		//if PFAVProvider is used, we need to bind our optimizer as controller listener
-//		
-////		controler.addQSimModule(new PassengerEngineQSimModule(taxiCfg.getMode()));
-//		
-//		
-//		controler.addOverridingModule(DvrpModule.createModule(taxiCfg.getMode(),
-//				Collections.singleton(TaxiOptimizer.class)));
-//			
-//        controler.run();
+
 	}
-	
+
 	
 
 }
