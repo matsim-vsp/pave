@@ -21,6 +21,7 @@ package privateAV;
 /**
  * @author tschlenther
  *
+ * //TODO transfer (almost) all of this to config group
  */
 public final class PFAVUtils {
 
@@ -35,12 +36,12 @@ public final class PFAVUtils {
 	/**
 	 * the amount of time that is needed to rebuild/retool the vehicle. that means how much time is needed to change the module on top of the car body
 	 */
-	public static final double RETOOL_TIME_FOR_PFAVEHICLES = 10 * 60;
+    public static final double RETOOL_TIME_FOR_PFAVEHICLES = 15 * 60;
 
 	/**
 	 * the amount of time that the vehicle plans to arrive before it's owner ends the activity
 	 */
-    public static final double TIME_BUFFER = 5 * 3600;
+    public static final double TIME_BUFFER = 5 * 60;
 
 
 	/**
