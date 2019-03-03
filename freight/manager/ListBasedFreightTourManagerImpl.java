@@ -109,10 +109,10 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		
 		List<List<StayTask>> freightTours = new ArrayList<>();
         carriersWithOnlyUsedTours = new Carriers();
+        log.info(("number of carriers = " + carriers.getCarriers().size()));
 		for(Carrier carrier : carriers.getCarriers().values()) {
             Collection<ScheduledTour> onlyUsedTours = new ArrayList<>();
             Carrier copy = CarrierImpl.newInstance(carrier.getId());
-            carriersWithOnlyUsedTours.addCarrier(carrier);
 			CarrierPlan plan = carrier.getSelectedPlan();
 			for (ScheduledTour freightTour : plan.getScheduledTours()) {
                 //we need to cut down here and not beforehand in the services, since the tour planning would otherwise result in longer and inaccurate tours
@@ -122,9 +122,10 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
                 }
             }
             CarrierPlan planWithOnlyUsedTours = new CarrierPlan(copy, onlyUsedTours);
-            copy.addPlan(planWithOnlyUsedTours);
+            copy.setSelectedPlan(planWithOnlyUsedTours);
             carriersWithOnlyUsedTours.addCarrier(copy);
 		}
+        log.info("number of carriers with only used tours = " + carriersWithOnlyUsedTours.getCarriers().size());
 		return freightTours;
 	}
 
