@@ -29,9 +29,12 @@ import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
+import org.matsim.contrib.taxi.optimizer.rules.RuleBasedRequestInserter;
+import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
 import org.matsim.contrib.taxi.run.TaxiConfigConsistencyChecker;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
@@ -48,11 +51,13 @@ public class RunPFAVInBerlin {
 
     private static final String CONFIG_v53_1pct = "input/BerlinScenario/5.3/berlin-v5.3-1pct.config.xml";
     private static final String OUTPUTDIR = "output/Berlin/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
-    private static final String CARRIERS_FILE = "input/FrachtNachfrage/KEP/PFAVScenario/test_onlyOneCarrier.xml";
+    private static final String CARRIERS_FILE = "input/FrachtNachfrage/KEP/PFAVScenario/test_onlyOneCarrier_only100services.xml";
     private static final String VEHTYPES_FILE = "input/FrachtNachfrage/KEP/PFAVScenario/baseCaseVehicleTypes.xml";
+    //only for test purposes
+    private static final String SMALL_PLANS_FILE = "input/FrachtNachfrage/KEP/PFAVScenario/baseCaseVehicleTypes.xml";
     private static final int LAST_ITERATION = 0;
     private static final double PERCENTAGE_OF_PFAV_OWNERS = 0.05;
-    private static final double DOWN_SAMPLE_SIZE = 0.1;
+    private static final double DOWN_SAMPLE_SIZE = 0.01;
     private static Logger log = Logger.getLogger(RunPFAVInBerlin.class);
     private static Set<Id<Person>> PFAV_owners = new HashSet<>();
 
@@ -75,8 +80,17 @@ public class RunPFAVInBerlin {
         taxiCfg.setPickupDuration(120);
         taxiCfg.setDropoffDuration(60);
         taxiCfg.setTaxisFile("something");
-        config.addModule(taxiCfg);
+
+        ConfigGroup optimizerCfg = new ConfigGroup("optimizer");
+        optimizerCfg.addParam("type", "RULE_BASED");
+        optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.GOAL, RuleBasedRequestInserter.Goal.MIN_WAIT_TIME.toString());
+        optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.NEAREST_REQUESTS_LIMIT, "99999");
+        optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.NEAREST_VEHICLES_LIMIT, "99999");
+        optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.CELL_SIZE, "1000"); //according to RuleBasedTaxiOptimizerParams 1000m was tested for Berlin
+        taxiCfg.setOptimizerConfigGroup(optimizerCfg);
+
         String mode = taxiCfg.getMode();
+        config.addModule(taxiCfg);
 
         config.addModule(new DvrpConfigGroup());
 
@@ -92,12 +106,15 @@ public class RunPFAVInBerlin {
         config.addConfigConsistencyChecker(new TaxiConfigConsistencyChecker());
         config.checkConsistency();
 
+        //only for test purposes
+        config.plans().setInputFile("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml.gz");
+
         Scenario scenario = berlin.prepareScenario();
 
         log.warn("number of persons : " + scenario.getPopulation().getPersons().size());
-        convertAgentsToPFAVOwners(scenario);
-        log.warn("number of PFAV owners : " + PFAV_owners.size());
-        downsample(scenario.getPopulation().getPersons(), DOWN_SAMPLE_SIZE);
+//        convertAgentsToPFAVOwners(scenario);
+//        log.warn("number of PFAV owners : " + PFAV_owners.size());
+//        downsample(scenario.getPopulation().getPersons(), DOWN_SAMPLE_SIZE);
 
         // setup controler
         Controler controler = berlin.prepareControler(new DvrpModule());

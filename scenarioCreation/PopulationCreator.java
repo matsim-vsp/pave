@@ -35,17 +35,16 @@ import java.util.Map;
 public class PopulationCreator {
 
     public static void main(String[] args) {
-//      Scenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
-//        PopulationReader reader = new PopulationReader(scenario);
-//        reader.readFile("C:/Users/Work/svn/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.2-1pct/output-berlin-v5.2-1pct/ITERS/it.500/berlin-v5.2-1pct.500.plans.xml.gz");
-//        new PopulationWriter(convertAgentsToPFAVOwners(scenario)).write("C:/Users/Work/git/freightAV/input/Plans/berlin1pctScenario_5pctCarLegsNowPFAV.xml.gz");
-
         Scenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
         PopulationReader reader = new PopulationReader(scenario);
+        reader.readFile("C:/Users/Work/svn/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.2-1pct/output-berlin-v5.2-1pct/ITERS/it.500/berlin-v5.2-1pct.500.plans.xml.gz");
 
-        reader.readFile("C:/Users/Work/git/freightAV/input/Plans/berlin1pctScenario_5pctCarLegsNowPFAV.xml.gz");
+//        Scenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
+//        PopulationReader reader = new PopulationReader(scenario);
+//
+//        reader.readFile("C:/Users/Work/git/freightAV/input/Plans/berlin1pctScenario_5pctCarLegsNowPFAV.xml.gz");
 
-        new PopulationWriter(cutPopulationTo100ForEachMode(scenario.getPopulation())).write("C:/Users/Work/git/freightAV/input/Plans/berlin100PersonsPerMode.xml.gz");
+        new PopulationWriter(cutPopulationTo100ForEachMode(convertAgentsToPFAVOwners(scenario))).write("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml.gz");
     }
 
     public static Population convertAgentsToPFAVOwners(Scenario scenario) {
