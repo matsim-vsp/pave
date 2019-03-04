@@ -68,8 +68,7 @@ public class PFAVOptimizer implements TaxiOptimizer {
 	public void requestSubmitted(Request request) {
 		
 		TaxiRequest req = (TaxiRequest) request;
-//		if(isValidRequest(req)) {
-			
+
 			//get the vehicle
 			Id<DvrpVehicle> personalAV = Id.create(req.getPassengerId().toString() + "_av", DvrpVehicle.class);
 			DvrpVehicle veh = fleet.getVehicles().get(personalAV);
@@ -87,31 +86,10 @@ public class PFAVOptimizer implements TaxiOptimizer {
 					scheduler.stopCruisingVehicle(veh);
 				}
 			}
-			
 			scheduler.scheduleRequest(veh, req);
-//		}
-		
 
-	}
 
-//	private boolean isValidRequest(TaxiRequest request) {
-//	Set<String> violations = requestValidator.validateTaxiRequest(request);
-//		
-//		if (!violations.isEmpty()) {
-//			String causes = violations.stream().collect(Collectors.joining(", "));
-//			if (printDetailedWarnings) log.warn("Request " + request.getId() + " will not be served. The agent will get stuck. Causes: " + causes);
-//			request.setRejected(true);
-//			eventsManager.processEvent(
-//					new TaxiRequestRejectedEvent(request.getSubmissionTime(), request.getId(), causes));
-//			eventsManager.processEvent(
-//					new PersonStuckEvent(request.getSubmissionTime(), request.getPassenger().getId(),
-//							request.getFromLink().getId(), request.getPassenger().getMode()));
-//			return false;
-//		}
-//		
-//		return true;
-//	}
-
+    }
 
 	@Override
 	public void nextTask(DvrpVehicle vehicle) {
@@ -121,7 +99,7 @@ public class PFAVOptimizer implements TaxiOptimizer {
 
 	@Override
 	public void notifyMobsimBeforeSimStep(MobsimBeforeSimStepEvent e) {
-		// TODO update timeline only if the algo really wants to reschedule in this time step,
+        // TODO i think we do not need this !! DELETE this in order to speed up simulation
 		// perhaps by checking if there are any unplanned requests??
 		if (params.doUpdateTimelines) {
 			for (DvrpVehicle v : fleet.getVehicles().values()) {

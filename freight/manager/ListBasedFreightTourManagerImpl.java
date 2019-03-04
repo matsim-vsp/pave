@@ -172,7 +172,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		List<Link> nearestDepots = finder.findNearest(Tasks.getEndLink(vehicle.getSchedule().getCurrentTask()),startLinkToFreightTour.keySet().stream());
 
 		//TODO: probably create a representation of the freightTour - something like FreightTourData - that contains the List<StayTask> and the duration, maybe the start and end link explicitly
-		//TODO: test this spatial dispatch algorithm
+        //TODO: test this spatial dispatch algorithm, especially: is the nearestDepots list sorted??
 
         List<StayTask> matchingFreightTour = null;
 		for (Link l : nearestDepots){

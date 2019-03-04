@@ -36,8 +36,9 @@ import privateAV.schedule.PFAVRetoolTask;
 import privateAV.schedule.PFAVServiceDriveTask;
 import privateAV.vehicle.PFAVehicle;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PFAVScheduler implements TaxiScheduleInquiry {
 
@@ -49,7 +50,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	private MobsimTimer timer;
 	private TaxiConfigGroup taxiCfg;
 
-	private List<DvrpVehicle> vehiclesOnFreightTour = new ArrayList();
+	private Set<DvrpVehicle> vehiclesOnFreightTour = new HashSet();
 
     ListBasedFreightTourManager freightManager;
 	

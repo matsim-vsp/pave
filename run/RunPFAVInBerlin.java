@@ -133,7 +133,7 @@ public class RunPFAVInBerlin {
     }
 
 
-    public static void convertAgentsToPFAVOwners(Scenario scenario) {
+    private static void convertAgentsToPFAVOwners(Scenario scenario) {
         log.info("start converting car legs to taxi legs with the probability " + PERCENTAGE_OF_PFAV_OWNERS);
         final Random rnd = MatsimRandom.getLocalInstance();
         for (Person p : scenario.getPopulation().getPersons().values()) {
