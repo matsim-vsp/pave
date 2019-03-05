@@ -128,8 +128,8 @@ public class RunPFAVInBerlin {
         Scenario scenario = berlin.prepareScenario();
 
         log.warn("number of persons : " + scenario.getPopulation().getPersons().size());
-//        convertAgentsToPFAVOwners(scenario);
-//        log.warn("number of PFAV owners : " + PFAV_owners.size());
+        convertAgentsToPFAVOwners(scenario);
+        log.warn("number of PFAV owners : " + PFAV_owners.size());
 //        downsample(scenario.getPopulation().getPersons(), DOWN_SAMPLE_SIZE);
 
         // setup controler
@@ -158,7 +158,7 @@ public class RunPFAVInBerlin {
                 PFAV_owners.add(p.getId());
                 for (PlanElement pe : p.getSelectedPlan().getPlanElements()) {
                     if (pe instanceof Leg) {
-                        ((Leg) pe).setMode("taxi");
+                        if (((Leg) pe).getMode().equals("car")) ((Leg) pe).setMode("taxi");
                     }
                 }
             }
