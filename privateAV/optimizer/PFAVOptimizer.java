@@ -100,7 +100,7 @@ public class PFAVOptimizer implements TaxiOptimizer {
 	@Override
 	public void notifyMobsimBeforeSimStep(MobsimBeforeSimStepEvent e) {
         // TODO i think we do not need this !! DELETE this in order to speed up simulation
-		// perhaps by checking if there are any unplanned requests??
+		// in fact, doUpdateTimelines is currently always false, since we use RuleBasedOptimizerParams, see PFAVProvider and constructor of RuleBasedOptimizerParams
 		if (params.doUpdateTimelines) {
 			for (DvrpVehicle v : fleet.getVehicles().values()) {
 				scheduler.updateTimeline(v);

@@ -34,6 +34,7 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import privateAV.schedule.PFAVRetoolTask;
 import privateAV.schedule.PFAVServiceDriveTask;
+import privateAV.schedule.PFAVServiceTask;
 import privateAV.vehicle.PFAVehicle;
 
 import java.util.HashSet;
@@ -92,7 +93,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		appendStayTask(vehicle);
 		
 	}
-	
+
 
 	public void updateBeforeNextTask(DvrpVehicle vehicle) {
 
@@ -112,31 +113,31 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				}
 				break;
 			case DROPOFF:
-					if(currentTask instanceof TaxiDropoffTask){
-						if(vehicle instanceof PFAVehicle){
+				if (currentTask instanceof TaxiDropoffTask) {
+					if (vehicle instanceof PFAVehicle) {
 //						log.info("Vehicle " + vehicle.getId() + " requests a freight tour");
-                            List<StayTask> freightTour = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
-							if(freightTour != null) {
-								scheduleFreightTour(vehicle, freightTour);
-								//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
-							} else {
-								//TODO: should we throw some kind of event here, to make analysis easier/possible (on how many freightTour requests there were etc.)
-                                //					log.info("+++++ vehicle " + vehicle.getId() + " requested a freight tour but the manager returned NULL ++++++");
-							}
-						} else {
-							//in future, there could be usecases where we have both, DvrpVehicles (supertype) and PFAVehicles, so we would not throw an axception here and just keep going
-							throw  new RuntimeException("currently, all DvrpVehicles should be of type PFAVehicle");
-						}
-					} else if(currentTask instanceof PFAVRetoolTask && schedule.getTasks().get(currentTask.getTaskIdx() + 1) instanceof TaxiEmptyDriveTask){
-							if(! this.vehiclesOnFreightTour.contains(vehicle)) throw new IllegalStateException("freight tour of vehicle " +
-									vehicle.getId() + "ends and scheduler did not even mark it as being on freight tour");
-							this.vehiclesOnFreightTour.remove(vehicle);
+						requestFreightTour(vehicle);
+					} else {
+						//in future, there could be usecases where we have both, DvrpVehicles (supertype) and PFAVehicles, so we would not throw an axception here and just keep going
+						throw new RuntimeException("currently, all DvrpVehicles should be of type PFAVehicle");
 					}
+				} else if (currentTask instanceof PFAVRetoolTask && Schedules.getNextTask(schedule) instanceof TaxiEmptyDriveTask) {
+					//we are at the end of a freight tour (otherwise next task would be instanceof PFAVServiceDriveTask
+					if (!this.vehiclesOnFreightTour.contains(vehicle)) throw new IllegalStateException("freight tour of vehicle " +
+							vehicle.getId() + "ends and scheduler did not even mark it as being on freight tour");
+					this.vehiclesOnFreightTour.remove(vehicle);
+					//remove the must return time from vehicle specification (as vehicle will now return)
+					((PFAVehicle) vehicle).getOwnerActEndTimes().remove();
+				} else if (currentTask instanceof PFAVServiceTask
+						&& Schedules.getNextTask(schedule) instanceof TaxiEmptyDriveTask
+						&& !PFAVUtils.IMMEDIATE_RETURN_AFTER_FREIGHT_TOUR) {
+					//vehicle just performed the last service task and can now demand the next freight tour
+					requestFreightTour(vehicle);
+				}
 				break;
 
 			case STAY: {
 				break;
-
 			}
 			case EMPTY_DRIVE:
 				break;
@@ -148,55 +149,87 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 	}
 
-    private void scheduleFreightTour(DvrpVehicle vehicle, List<StayTask> freightActivities) {
-		
+	private void requestFreightTour(DvrpVehicle vehicle) {
+		List<StayTask> freightTour = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
+		if (freightTour != null) {
+			scheduleFreightTour(vehicle, freightTour);
+			//TODO: should we throw some kind of event here? to make analysis easier/possible (on how many freightTour requests there were etc.)
+		} else {
+			//TODO: should we throw some kind of event here? to make analysis easier/possible (on how many freightTour requests there were etc.)
+//					log.info("+++++ vehicle " + vehicle.getId() + " requested a freight tour but the manager returned NULL ++++++");
+		}
+	}
+
+	private void scheduleFreightTour(DvrpVehicle vehicle, List<StayTask> freightActivities) {
 		//schedule just got updated.. current task should be a dropOff, nextTast should be a STAY task
 		Schedule schedule = vehicle.getSchedule();
-		
-		if( ((TaxiTask) Schedules.getNextTask(schedule)).getTaxiTaskType() != TaxiTaskType.STAY) {
-			throw new IllegalStateException(
-					"if a freight tour shall be inserted - the next vehicle task has to be STAY. That is not the case for vehicle " + vehicle.getId() + " at time " + timer.getTimeOfDay());
-		} else {
-			//remove the stay task
-			schedule.removeLastTask();
 
-            StayTask previousTask = (StayTaskImpl) schedule.getCurrentTask();
-            Link ownerLink = previousTask.getLink();
-            for (int i = 0; i < freightActivities.size(); i++) {
-                StayTask currentTask = freightActivities.get(i);
+		cleanScheduleBeforeInsertingFreightTour(vehicle, schedule);
 
-                VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(previousTask.getLink(), currentTask.getLink(), previousTask.getEndTime(), router, travelTime);
+		StayTask previousTask = (StayTaskImpl) schedule.getCurrentTask();
+		Link ownerLink = previousTask.getLink();
+		for (int i = 0; i < freightActivities.size(); i++) {
+			StayTask currentTask = freightActivities.get(i);
 
-                //alternatively one could say if(currentTask instanceof PFAVRetoolTask) cause these should be only at the ends of the tour
-                if (i == 0 || i == freightActivities.size() - 1) {
-                    schedule.addTask(new TaxiEmptyDriveTask(path));
-                } else {
-                    schedule.addTask(new PFAVServiceDriveTask(path));
-                }
+			VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(previousTask.getLink(), currentTask.getLink(), previousTask.getEndTime(), router, travelTime);
 
-                double duration = currentTask.getEndTime() - currentTask.getBeginTime();
-                currentTask.setBeginTime(path.getArrivalTime());
-                currentTask.setEndTime(path.getArrivalTime() + duration);
+			//alternatively one could say: if(currentTask instanceof PFAVRetoolTask) cause these should be only at the ends of the tour
+			if (i == 0 || i == freightActivities.size() - 1) {
+				schedule.addTask(new TaxiEmptyDriveTask(path));
+			} else {
+				schedule.addTask(new PFAVServiceDriveTask(path));
+			}
 
-                if (currentTask instanceof PFAVRetoolTask) {
-                    ((PFAVRetoolTask) currentTask).setVehicle(vehicle.getId());
-                }
+			double duration = currentTask.getEndTime() - currentTask.getBeginTime();
+			currentTask.setBeginTime(path.getArrivalTime());
+			currentTask.setEndTime(path.getArrivalTime() + duration);
 
-                schedule.addTask(currentTask);
+			if (currentTask instanceof PFAVRetoolTask) {
+				((PFAVRetoolTask) currentTask).setVehicle(vehicle.getId());
+			}
+			schedule.addTask(currentTask);
 
-                //we need the vehicle to drive back to it's owner after the freight tour and wait there
-                if (i == freightActivities.size() - 1) {
-                    //assumes that first activity in the freightActivities is at the depot (should be the Start activity)
-                    Link depotLink = freightActivities.get(0).getLink();
-                    path = VrpPaths.calcAndCreatePath(depotLink, ownerLink, currentTask.getEndTime(), router, travelTime);
-                    schedule.addTask(new TaxiEmptyDriveTask(path));
-                    appendStayTask(vehicle);
-                }
-                previousTask = currentTask;
-            }
-            //mark this vehicle's state as "on freight tour"
-            this.vehiclesOnFreightTour.add(vehicle);
-			log.info("vehicle " + vehicle.getId() + " got assigned to a freight schedule");
+			/*always insert the drive task back to the owner although another freight tour might be performed before.
+			/*we need to have the last link in the schedule point to the owner's activity to be able to compute whether there is enough time
+			/*to perform the freight tour in the manager
+			 */
+			if (i == freightActivities.size() - 1) {
+
+				//assumes that last activity in the freightActivities is at the depot (should be the End activity)
+				Link depotLink = freightActivities.get(i).getLink();
+				path = VrpPaths.calcAndCreatePath(depotLink, ownerLink, currentTask.getEndTime(), router, travelTime);
+				schedule.addTask(new TaxiEmptyDriveTask(path));
+			}
+			previousTask = currentTask;
+		}
+		appendStayTask(vehicle);
+		//mark this vehicle's state as "on freight tour"
+		this.vehiclesOnFreightTour.add(vehicle);
+		log.info("vehicle " + vehicle.getId() + " got assigned to a freight schedule");
+	}
+
+	private void cleanScheduleBeforeInsertingFreightTour(DvrpVehicle vehicle, Schedule schedule) {
+		switch (((TaxiTask) Schedules.getNextTask(schedule)).getTaxiTaskType()) {
+			case STAY:
+				//vehicle requested freight tour after passenger dropoff
+				//remove the stay task at the owner's activity location
+				schedule.removeLastTask();
+				break;
+			case EMPTY_DRIVE:
+				/*TODO: calling same method 4 times feels dirty - extract method !?
+				 *we cannot use delegate.removeAwaitingRequests cause this method inserts another stay task
+				 *
+				 *vehicle requested freight tour after having performed another one
+				 *we have to remove the following awaiting tasks in the schedule
+				 */
+				schedule.removeLastTask();    //empty drive to depot
+				schedule.removeLastTask();    //retool task at depot
+				schedule.removeLastTask(); // empty drive to owner
+				schedule.removeLastTask(); // stay at owner's activity location
+				break;
+			default:
+				throw new IllegalStateException(
+						"if a freight tour shall be inserted - the next vehicle task has to be STAY or EMPTY_DRIVE. That is not the case for vehicle " + vehicle.getId() + " at time " + timer.getTimeOfDay());
 		}
 	}
 

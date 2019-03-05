@@ -34,5 +34,4 @@ public interface ListBasedFreightTourManager {
     List<StayTask> getRandomPFAVTour();
 
     List<StayTask> getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router);
-
 }

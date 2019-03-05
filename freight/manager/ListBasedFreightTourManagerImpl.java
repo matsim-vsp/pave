@@ -27,6 +27,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
+import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.schedule.Tasks;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
@@ -168,7 +169,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
     private List<StayTask> getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
 		StraightLineKnnFinder<Link,Link> finder = new StraightLineKnnFinder<>(3,link1-> link1 , link2 -> link2 );
-		// at the moment, we need to assume that on one link there can only be one depot/carrier! this is because we need a mapping in this direction for the following piece of code
 		List<Link> nearestDepots = finder.findNearest(Tasks.getEndLink(vehicle.getSchedule().getCurrentTask()),startLinkToFreightTour.keySet().stream());
 
 		//TODO: probably create a representation of the freightTour - something like FreightTourData - that contains the List<StayTask> and the duration, maybe the start and end link explicitly
@@ -210,7 +210,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 */
 	private boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, List<StayTask> freightTour, LeastCostPathCalculator router) {
 
-
 		//TODO: implement a global end time point for freigh tours ? so somehting like: after 8 p.m. no one should deliver anything anymore ??
 		Double timeWhenOwnerNeedsVehicle = vehicle.getOwnerActEndTimes().peek();
 		if (timeWhenOwnerNeedsVehicle == null) {
@@ -225,21 +224,21 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		StayTask start = freightTour.get(0);
 		StayTask end = freightTour.get(freightTour.size() - 1);
 
+
 		double tourDuration = end.getEndTime() - start.getBeginTime();
 
-
 		VrpPathWithTravelData pathFromCurrTaskToDepot = VrpPaths.calcAndCreatePath(currentTask.getLink(), start.getLink(), currentTask.getEndTime(), router, travelTime);
-		VrpPathWithTravelData pathFromDepot = VrpPaths.calcAndCreatePath(end.getLink(), currentTask.getLink(), end.getEndTime(), router, travelTime);
 
+		//last link in the schedule always should be at the owner's location
+		VrpPathWithTravelData pathFromDepotToOwner = VrpPaths.calcAndCreatePath(end.getLink(), Schedules.getLastLinkInSchedule(vehicle), end.getEndTime(), router, travelTime);
 
 		//TODO check this again
 		double totalTimeNeededToPerformFreightTour = pathFromCurrTaskToDepot.getTravelTime() +
 				tourDuration +
-				pathFromDepot.getTravelTime();
-
+				pathFromDepotToOwner.getTravelTime();
 
 		if (timeWhenOwnerNeedsVehicle >= currentTask.getEndTime() + totalTimeNeededToPerformFreightTour + PFAVUtils.TIME_BUFFER) {
-			vehicle.getOwnerActEndTimes().remove();
+//			vehicle.getOwnerActEndTimes().remove();  => this is moved to the scheduler in order to make several freight tour performances in a row possible
 			return true;
 		}
 		return false;
