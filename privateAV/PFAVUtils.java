@@ -50,6 +50,11 @@ public final class PFAVUtils {
 	public static final double FREIGHT_DEMAND_SAMPLE_SIZE = 1.;
 
 	/**
+	 * defines whether the freight tour manager triggers the JSprit run in iteration 0
+	 */
+	public static final boolean RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION = true;
+
+	/**
 	 * defines whether a TaxiEmptyDriveTask from the depot back to the owner is inserted when the freight tour gets scheduled.
 	 * when true, the vehicle will immediately return to it's owner's activity location and wait there.
 	 * if false, it might perform another freight tour after having performed the last PFAVServiceTask.

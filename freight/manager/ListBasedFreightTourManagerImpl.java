@@ -274,7 +274,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 	@Override
     public void notifyIterationStarts(IterationStartsEvent event){
-		if ((FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) || (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
+        if ((FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1 && PFAVUtils.RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION)
+                || (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
             log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
             runTourPlanning();
         } else {
