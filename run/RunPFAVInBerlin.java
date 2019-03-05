@@ -63,8 +63,24 @@ public class RunPFAVInBerlin {
 
 
     public static void main(String[] args) {
+        String configPath, output, carriers, vehTypes;
+        int maxIter;
 
-        RunBerlinScenario berlin = new RunBerlinScenario(CONFIG_v53_1pct, null);
+        if (args.length > 0) {
+            configPath = args[0];
+            carriers = args[1];
+            vehTypes = args[2];
+            output = args[3];
+            maxIter = Integer.valueOf(args[4]);
+        } else {
+            configPath = CONFIG_v53_1pct;
+            carriers = CARRIERS_FILE;
+            vehTypes = VEHTYPES_FILE;
+            output = OUTPUTDIR;
+            maxIter = LAST_ITERATION;
+        }
+
+        RunBerlinScenario berlin = new RunBerlinScenario(configPath, null);
 
         Config config = berlin.prepareConfig();
 
@@ -97,8 +113,8 @@ public class RunPFAVInBerlin {
         config.strategy().setFractionOfIterationsToDisableInnovation(1);        //  ???
 
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
-        config.controler().setLastIteration(LAST_ITERATION);
-        config.controler().setOutputDirectory(OUTPUTDIR);
+        config.controler().setLastIteration(maxIter);
+        config.controler().setOutputDirectory(output);
 
         config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
         config.qsim().setNumberOfThreads(1);
@@ -106,8 +122,8 @@ public class RunPFAVInBerlin {
         config.addConfigConsistencyChecker(new TaxiConfigConsistencyChecker());
         config.checkConsistency();
 
-        //only for test purposes
-        config.plans().setInputFile("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml.gz");
+//        //only for test purposes
+//        config.plans().setInputFile("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml.gz");
 
         Scenario scenario = berlin.prepareScenario();
 
@@ -121,7 +137,7 @@ public class RunPFAVInBerlin {
         controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
-                install(new PFAVModeModule(taxiCfg, scenario, CARRIERS_FILE, VEHTYPES_FILE));
+                install(new PFAVModeModule(taxiCfg, scenario, carriers, vehTypes));
                 installQSimModule(new PFAVQSimModule(taxiCfg));
             }
         });
