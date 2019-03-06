@@ -7,6 +7,7 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicleImpl;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicleSpecification;
 import org.matsim.contrib.util.LinkProvider;
 
+import java.util.LinkedList;
 import java.util.Queue;
 
 public class PFAVehicle extends DvrpVehicleImpl {
@@ -15,7 +16,8 @@ public class PFAVehicle extends DvrpVehicleImpl {
 
     public PFAVehicle(PFAVSpecification specification, Link startLink) {
         super(specification, startLink);
-        this.ownerActEndTimes = specification.ownerActEndTimes;
+        this.ownerActEndTimes = new LinkedList<>();
+        ownerActEndTimes.addAll(specification.ownerActEndTimes);
     }
 
     public static DvrpVehicleImpl createWithLinkProvider(DvrpVehicleSpecification specification, LinkProvider<Id<Link>> linkProvider) {

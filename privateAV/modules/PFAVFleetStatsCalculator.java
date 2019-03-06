@@ -36,13 +36,15 @@ public class PFAVFleetStatsCalculator implements FleetStatsCalculator, BeforeMob
             Id<Link> vehicleStartLink = null;
             Queue<Double>  actEndTimesAfterModeLegs = new LinkedList<>();
 
+
+            //TODO: test this
             Plan plan = p.getSelectedPlan();
             for (int i = 0; i < plan.getPlanElements().size(); i++) {
                 PlanElement pe = plan.getPlanElements().get(i);
                 if (pe instanceof Leg) {
                     if (((Leg) pe).getMode().equals(mode)) {
                         if(vehicleStartLink == null) vehicleStartLink = ((Leg) pe).getRoute().getStartLinkId();
-                        actEndTimesAfterModeLegs.add(((Activity) plan.getPlanElements().get(i+1)).getEndTime());
+                        actEndTimesAfterModeLegs.add(getActivityEndTimeOfNextNonStageActivity(plan, i + 1));
                     }
                 }
             }
@@ -71,6 +73,18 @@ public class PFAVFleetStatsCalculator implements FleetStatsCalculator, BeforeMob
         for(Id<DvrpVehicle> id : oldVehicles){
             fleetSpecification.removeVehicleSpecification(id);
         }
+    }
+
+    private double getActivityEndTimeOfNextNonStageActivity(Plan plan, int startIndex) {
+        for (int i = startIndex; i < plan.getPlanElements().size(); i++) {
+            PlanElement pe = plan.getPlanElements().get(i);
+            if (pe instanceof Activity) {
+                if (!((Activity) pe).getType().contains("interaction")) {
+                    return ((Activity) pe).getEndTime();
+                }
+            }
+        }
+        return Double.NEGATIVE_INFINITY;
     }
 
     @Override
