@@ -34,6 +34,7 @@ import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts.Builder;
 import org.matsim.contrib.freight.jsprit.NetworkRouter;
 import org.matsim.core.router.util.TravelTime;
+import privateAV.PFAVUtils;
 
 import java.util.Collection;
 
@@ -65,6 +66,13 @@ public class FreightTourCalculatorImpl implements FreightTourCalculator {
 	
 				// get the algorithm out-of-the-box, search solution and get the best one.
 			VehicleRoutingAlgorithm algorithm = new SchrimpfFactory().createAlgorithm(problem);
+
+			algorithm.setMaxIterations(PFAVUtils.NR_OF_JSPRIT_ITERATIONS);
+//			algorithm.setPrematureAlgorithmTermination();
+
+			//TODO: add Initial solution - the one from last run => tried this but this lead to the FreightReactionToTravelTimesTest failing...
+//			algorithm.addInitialSolution();
+
 			Collection<VehicleRoutingProblemSolution> solutions = algorithm.searchSolutions();
 			VehicleRoutingProblemSolution bestSolution = Solutions.bestOf(solutions);
 	

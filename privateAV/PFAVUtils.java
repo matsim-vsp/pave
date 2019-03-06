@@ -21,7 +21,7 @@ package privateAV;
 /**
  * @author tschlenther
  *
- * //TODO transfer (almost) all of this to config group
+ * //TODO transfer (almost) all of this to a new type of config group
  */
 public final class PFAVUtils {
 
@@ -39,7 +39,7 @@ public final class PFAVUtils {
     public static final double RETOOL_TIME_FOR_PFAVEHICLES = 15 * 60;
 
 	/**
-	 * the amount of time that the vehicle plans to arrive before it's owner ends the activity
+	 * the amount of time that the vehicle wants to arrive before it's owner ends the activity
 	 */
     public static final double TIME_BUFFER = 5 * 60;
 
@@ -53,6 +53,11 @@ public final class PFAVUtils {
 	 * defines whether the freight tour manager triggers the JSprit run in iteration 0
 	 */
 	public static final boolean RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION = true;
+
+	/**
+	 * defines the number of iterations in the tour planning algorithm, see {@link freight.calculator.FreightTourCalculatorImpl}
+	 */
+	public static final int NR_OF_JSPRIT_ITERATIONS = 200;
 
 	/**
 	 * defines whether a TaxiEmptyDriveTask from the depot back to the owner is inserted when the freight tour gets scheduled.
