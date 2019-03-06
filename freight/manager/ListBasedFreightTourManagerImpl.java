@@ -216,7 +216,9 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 			throw new IllegalStateException("could not derive must return time of vehicle " + vehicle.getId() + " out of vehicle specification");
 		} else if (Double.isInfinite(timeWhenOwnerNeedsVehicle)) {
 			//the next activity of the vehicle owner is the last for the day, so we can always perform the freight tour
-			vehicle.getOwnerActEndTimes().remove();
+//			vehicle.getOwnerActEndTimes().remove(); => this is moved to the scheduler in order to make several freight tour performances in a row possible
+
+			log.info("tour duration is irrelevant for vehicle " + vehicle.getId() + " because owner needs the vehicle back at time " + timeWhenOwnerNeedsVehicle);
 			return true;
 		}
 
@@ -239,6 +241,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 		if (timeWhenOwnerNeedsVehicle >= currentTask.getEndTime() + totalTimeNeededToPerformFreightTour + PFAVUtils.TIME_BUFFER) {
 //			vehicle.getOwnerActEndTimes().remove();  => this is moved to the scheduler in order to make several freight tour performances in a row possible
+			log.info("tour duration = " + totalTimeNeededToPerformFreightTour + " seems to be okay for vehicle " + vehicle.getId() + " starting at time " + currentTask.getEndTime());
+			log.warn("the owner wants the vehicle back at time " + timeWhenOwnerNeedsVehicle);
 			return true;
 		}
 		return false;

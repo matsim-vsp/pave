@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import freight.manager.ListBasedFreightTourManager;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
@@ -12,11 +13,8 @@ import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelDataImpl;
 import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
-import org.matsim.contrib.dvrp.schedule.Schedule;
+import org.matsim.contrib.dvrp.schedule.*;
 import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
-import org.matsim.contrib.dvrp.schedule.Schedules;
-import org.matsim.contrib.dvrp.schedule.StayTask;
-import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
 import org.matsim.contrib.dvrp.tracker.OnlineDriveTaskTracker;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
@@ -54,7 +52,8 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	private Set<DvrpVehicle> vehiclesOnFreightTour = new HashSet();
 
     ListBasedFreightTourManager freightManager;
-	
+	private Set<Id<DvrpVehicle>> requestedVehicles = new HashSet<>();
+
 	/**
 	 * @param taxiCfg
 	 * @param network
@@ -110,6 +109,10 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 			case PICKUP:
 				if (!taxiCfg.isDestinationKnown()) {
 					appendResultingTasksAfterPickup(vehicle);
+					if (!requestedVehicles.contains(vehicle.getId())) {
+						throw new RuntimeException("vehicle performed a passenger pick up but was not on the requested vehicles list..");
+					}
+					requestedVehicles.remove(vehicle.getId());
 				}
 				break;
 			case DROPOFF:
@@ -127,7 +130,11 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 							vehicle.getId() + "ends and scheduler did not even mark it as being on freight tour");
 					this.vehiclesOnFreightTour.remove(vehicle);
 					//remove the must return time from vehicle specification (as vehicle will now return)
-					((PFAVehicle) vehicle).getOwnerActEndTimes().remove();
+					log.warn("vehicle " + vehicle.getId() + " returns to it's owner at time=" + timer.getTimeOfDay() + ". actEndTimes size before removal= "
+							+ ((PFAVehicle) vehicle).getOwnerActEndTimes().size());
+					log.warn("removed time = " + ((PFAVehicle) vehicle).getOwnerActEndTimes().remove());
+					log.warn("actEndTimes size after removal= "
+							+ ((PFAVehicle) vehicle).getOwnerActEndTimes().size());
 				} else if (currentTask instanceof PFAVServiceTask
 						&& Schedules.getNextTask(schedule) instanceof TaxiEmptyDriveTask
 						&& !PFAVUtils.IMMEDIATE_RETURN_AFTER_FREIGHT_TOUR) {
@@ -152,7 +159,16 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	private void requestFreightTour(DvrpVehicle vehicle) {
 		List<StayTask> freightTour = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
 		if (freightTour != null) {
-			scheduleFreightTour(vehicle, freightTour);
+
+
+			if (!requestedVehicles.contains(vehicle.getId())) {
+				scheduleFreightTour(vehicle, freightTour);
+			} else {
+				//TODO: move the check (whether the owner already requested the PFAV) further up to updateBeforeNextTask(). it is here only for test purposes...
+				//especially because the freight tour will now not be performed but the manager has already deleted it from it's set
+				log.warn("vehicle " + vehicle.getId() + " thinks that it can manage a freight tour in time but the owner has already requested the vehicle.");
+			}
+
 			//TODO: should we throw some kind of event here? to make analysis easier/possible (on how many freightTour requests there were etc.)
 		} else {
 			//TODO: should we throw some kind of event here? to make analysis easier/possible (on how many freightTour requests there were etc.)
@@ -209,6 +225,12 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 
 	private void cleanScheduleBeforeInsertingFreightTour(DvrpVehicle vehicle, Schedule schedule) {
+		String scheduleStr = "";
+		for (Task t : schedule.getTasks()) {
+			scheduleStr += t.toString() + "\n";
+		}
+		log.warn("schedule " + schedule.toString() + " before clean up: \n" + scheduleStr);
+
 		switch (((TaxiTask) Schedules.getNextTask(schedule)).getTaxiTaskType()) {
 			case STAY:
 				//vehicle requested freight tour after passenger dropoff
@@ -231,6 +253,12 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				throw new IllegalStateException(
 						"if a freight tour shall be inserted - the next vehicle task has to be STAY or EMPTY_DRIVE. That is not the case for vehicle " + vehicle.getId() + " at time " + timer.getTimeOfDay());
 		}
+
+		scheduleStr = "";
+		for (Task t : schedule.getTasks()) {
+			scheduleStr += t.toString() + "\n";
+		}
+		log.warn("schedule " + schedule.toString() + " after clean up: \n" + scheduleStr);
 	}
 
 	public void scheduleRequest(DvrpVehicle vehicle, TaxiRequest request) {
@@ -261,6 +289,8 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 
 			}
 		}
+
+		requestedVehicles.add(vehicle.getId());
 	}
 
 	private void appendResultingTasksAfterPickup(DvrpVehicle vehicle) {

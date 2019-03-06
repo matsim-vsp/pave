@@ -36,7 +36,6 @@ public class PFAVServiceTask extends StayTaskImpl implements TaxiTask {
 	 * @param beginTime
 	 * @param endTime
 	 * @param link
-	 * @param name
 	 */
 	public PFAVServiceTask(double beginTime, double endTime, Link link, CarrierService service) {
 		super(beginTime, endTime, link, FreightConstants.DELIVERY);
