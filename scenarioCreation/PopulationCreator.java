@@ -44,7 +44,7 @@ public class PopulationCreator {
 //
 //        reader.readFile("C:/Users/Work/git/freightAV/input/Plans/berlin1pctScenario_5pctCarLegsNowPFAV.xml.gz");
 
-        new PopulationWriter(cutPopulationTo100ForEachMode(convertAgentsToPFAVOwners(scenario))).write("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml.gz");
+        new PopulationWriter(cutPopulationTo100ForEachMode(convertAgentsToPFAVOwners(scenario))).write("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml");
     }
 
     public static Population convertAgentsToPFAVOwners(Scenario scenario) {
@@ -54,7 +54,8 @@ public class PopulationCreator {
                 //TODO: i only care about the selected plans, right?
                 for (PlanElement pe : p.getSelectedPlan().getPlanElements()) {
                     if (pe instanceof Leg) {
-                        ((Leg) pe).setMode("taxi");
+                        if (((Leg) pe).getMode().equals("car"))
+                            ((Leg) pe).setMode("taxi");
                     }
                 }
             }

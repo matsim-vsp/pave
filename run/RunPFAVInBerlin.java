@@ -129,7 +129,7 @@ public class RunPFAVInBerlin {
         config.checkConsistency();
 
 //        //only for test purposes
-//        config.plans().setInputFile("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml.gz");
+//        config.plans().setInputFile("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml");
 
         Scenario scenario = berlin.prepareScenario();
 

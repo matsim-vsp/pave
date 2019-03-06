@@ -44,7 +44,7 @@ public class PFAVFleetStatsCalculator implements FleetStatsCalculator, BeforeMob
                 if (pe instanceof Leg) {
                     if (((Leg) pe).getMode().equals(mode)) {
                         if(vehicleStartLink == null) vehicleStartLink = ((Leg) pe).getRoute().getStartLinkId();
-                        actEndTimesAfterModeLegs.add(getActivityEndTimeOfNextNonStageActivity(plan, i + 1));
+                        actEndTimesAfterModeLegs.add(getActivityEndTimeOfNextNonStageActivity(plan, i));
                     }
                 }
             }
@@ -76,11 +76,28 @@ public class PFAVFleetStatsCalculator implements FleetStatsCalculator, BeforeMob
     }
 
     private double getActivityEndTimeOfNextNonStageActivity(Plan plan, int startIndex) {
+        Leg lastLeg = null;
         for (int i = startIndex; i < plan.getPlanElements().size(); i++) {
+            //last activity in the plan, agent does not need the vehicle back before end of iteration
+            if (i == plan.getPlanElements().size() - 1) return Double.POSITIVE_INFINITY;
             PlanElement pe = plan.getPlanElements().get(i);
+            if (pe instanceof Leg)
+                lastLeg = (Leg) pe;
             if (pe instanceof Activity) {
+                //filter stage activities
                 if (!((Activity) pe).getType().contains("interaction")) {
-                    return ((Activity) pe).getEndTime();
+                    //activity could be something like leisure in open berlin scenario which does not have an end time set
+                    Activity act = (Activity) pe;
+                    if (act.getMaximumDuration() == Double.NEGATIVE_INFINITY) {
+                        if (act.getEndTime() == Double.NEGATIVE_INFINITY) {
+                            throw new RuntimeException("cannot compute must return time for PFAVehicle of person " + plan.getPerson().getId() + " for activity " + act.toString());
+                        }
+                        return act.getEndTime();
+                    }
+                    if (act.getEndTime() == Double.NEGATIVE_INFINITY) {
+                        return lastLeg.getDepartureTime() + lastLeg.getRoute().getTravelTime() + act.getMaximumDuration();
+                    }
+                    return Math.min(((Activity) pe).getEndTime(), lastLeg.getDepartureTime() + lastLeg.getRoute().getTravelTime() + act.getMaximumDuration());
                 }
             }
         }
