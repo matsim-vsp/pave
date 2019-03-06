@@ -66,7 +66,7 @@ public class PFAVQSimModule extends AbstractDvrpModeQSimModule {
                 TaxiScheduleInquiry taxiScheduler = getModalInstance(TaxiScheduleInquiry.class);
                 TravelDisutility travelDisutility = getModalInstance(
                         TravelDisutilityFactory.class).createTravelDisutility(travelTime);
-                return new PFAVProvider(taxiCfg, fleet, taxiScheduler, timer , network,  travelTime).get();
+                return new PFAVProvider(taxiCfg, fleet, taxiScheduler, timer, network, travelTime, events).get();
             }
         });
 

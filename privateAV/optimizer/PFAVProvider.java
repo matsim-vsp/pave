@@ -31,6 +31,7 @@ import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
 import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
+import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.router.util.TravelTime;
 import privateAV.PFAVScheduler;
@@ -43,23 +44,26 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 	private TaxiConfigGroup taxiCfg;
 	private Fleet fleet;
 	private TaxiScheduleInquiry scheduler;
-//	private MobsimTimer timer;
+	private MobsimTimer timer;
 	private TravelTime travelTime;
+	private EventsManager eventsManager;
 //	private TravelDisutility travelDisutility;
 //	private Network network;
 
 	@Inject
 	public PFAVProvider(TaxiConfigGroup taxiCfg, Fleet fleet,
-			TaxiScheduleInquiry scheduler, MobsimTimer timer,
-			@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
-			@Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime) {
+						TaxiScheduleInquiry scheduler, MobsimTimer timer,
+						@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
+						@Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
+						EventsManager eventsManager) {
 			this.taxiCfg = taxiCfg;
 			this.fleet = fleet;
 			this.scheduler = scheduler;
-//			this.timer = timer;
+		this.timer = timer;
 //			this.network = network;
 			this.travelTime = travelTime;
 //			this.travelDisutility = new TimeAsTravelDisutility(travelTime);
+		this.eventsManager = eventsManager;
 	}
 
 	@Override
@@ -74,7 +78,7 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 		
 		
 		return new PFAVOptimizer(taxiCfg, fleet, (PFAVScheduler) scheduler,
-				new RuleBasedTaxiOptimizerParams(optimizerConfig));
+				new RuleBasedTaxiOptimizerParams(optimizerConfig), eventsManager, timer);
 	}
 	
 }

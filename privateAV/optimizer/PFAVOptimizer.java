@@ -17,13 +17,18 @@ import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 import org.matsim.contrib.taxi.schedule.TaxiTask.TaxiTaskType;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
+import org.matsim.core.api.experimental.events.EventsManager;
+import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 import privateAV.PFAVScheduler;
+import privateAV.events.PFAVOwnerWaitsForVehicleEvent;
 
 public class PFAVOptimizer implements TaxiOptimizer {
 
 	private static final Logger log = Logger.getLogger(PFAVScheduler.class);
-	
+	private final EventsManager eventsManager;
+	private final MobsimTimer timer;
+
 	private Fleet fleet;
 	private PFAVScheduler scheduler;
 	private DefaultTaxiOptimizerParams params;
@@ -31,8 +36,8 @@ public class PFAVOptimizer implements TaxiOptimizer {
 	private boolean printDetailedWarnings;
 
 	@Inject
-	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, TaxiScheduleInquiry scheduler) {
-		
+	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, TaxiScheduleInquiry scheduler, EventsManager eventsManager, MobsimTimer timer) {
+
 		if(!(scheduler instanceof PFAVScheduler)) {
 			throw new IllegalArgumentException("this OptimizerPRovider can only work with a scheduler of type " + PFAVScheduler.class);
 		} 
@@ -42,27 +47,23 @@ public class PFAVOptimizer implements TaxiOptimizer {
 		
 		this.fleet = fleet;
 		this.scheduler = (PFAVScheduler) scheduler;
-//		this.eventsManager = eventsManager;
+		this.eventsManager = eventsManager;
+		this.timer = timer;
 		
 		this.printDetailedWarnings = taxiCfg.isPrintDetailedWarnings();
 	}
 	
 	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, PFAVScheduler scheduler,
-			DefaultTaxiOptimizerParams params) {
+						 DefaultTaxiOptimizerParams params, EventsManager eventsManager, MobsimTimer timer) {
 		
 		this.fleet = fleet;
 		this.scheduler = scheduler;
 		this.params = params;
-//		this.eventsManager = eventsManager;
+		this.eventsManager = eventsManager;
+		this.timer = timer;
 		
 		this.printDetailedWarnings = taxiCfg.isPrintDetailedWarnings();
 	}
-
-	//TODO if vehicle is working on freight tour and arrival at owner is delayed, cancel freight tour and go back to depot
-//	public void vehicleEnteredNextLink(DvrpVehicle vehicle, Link nextLink) {
-////		scheduler.updateTimeline(vehicle);// TODO comment this out...
-//
-//	}
 
 	@Override
 	public void requestSubmitted(Request request) {
@@ -77,7 +78,12 @@ public class PFAVOptimizer implements TaxiOptimizer {
 				throw new RuntimeException("Vehicle " + personalAV.toString() + "does not exist.");
 			}
 			if(scheduler.isCurrentlyOnOrWillPerformPerformFreightTour(veh)) {
-				scheduler.cancelFreightTour(veh);
+
+				log.warn("agent " + req.getPassengerId() + " created request for it's own vehicle " + personalAV + " which is still on a freight tour." +
+						" currently, freight tours do nit get canceled...");
+				eventsManager.processEvent(new PFAVOwnerWaitsForVehicleEvent(timer.getTimeOfDay(), personalAV, req.getPassengerId()));
+//				scheduler.cancelFreightTour(veh);
+
 			} else {
 				if (!isWaitStayOrEmptyDrive((TaxiTask)veh.getSchedule().getCurrentTask())) {
 					throw new RuntimeException("Vehicle " + personalAV.toString() + "is not idle.");
