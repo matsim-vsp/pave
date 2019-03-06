@@ -1,4 +1,4 @@
-package freight;
+package freight.calculator;
 
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;

@@ -18,6 +18,7 @@
  * *********************************************************************** */
 package freight;
 
+import freight.calculator.FreightTourCalculatorImpl;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
 import org.matsim.contrib.freight.carrier.*;

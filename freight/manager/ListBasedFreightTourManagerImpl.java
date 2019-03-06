@@ -20,7 +20,7 @@ package freight.manager;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import freight.FreightTourCalculatorImpl;
+import freight.calculator.FreightTourCalculatorImpl;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
