@@ -35,6 +35,7 @@ import org.matsim.contrib.taxi.run.TaxiConfigConsistencyChecker;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
@@ -110,7 +111,11 @@ public class RunPFAVInBerlin {
 
         config.addModule(new DvrpConfigGroup());
 
-        config.strategy().setFractionOfIterationsToDisableInnovation(1);        //  ???
+        config.strategy().setFractionOfIterationsToDisableInnovation(0);        //  ???
+
+        PlanCalcScoreConfigGroup.ModeParams taxiModeParams = new PlanCalcScoreConfigGroup.ModeParams("taxi");
+        taxiModeParams.setMarginalUtilityOfTraveling(0.);       // car also has 0.0 ????
+        config.planCalcScore().addModeParams(taxiModeParams);
 
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         config.controler().setLastIteration(maxIter);
