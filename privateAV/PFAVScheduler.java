@@ -35,9 +35,7 @@ import privateAV.schedule.PFAVServiceDriveTask;
 import privateAV.schedule.PFAVServiceTask;
 import privateAV.vehicle.PFAVehicle;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class PFAVScheduler implements TaxiScheduleInquiry {
 
@@ -52,7 +50,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	private Set<DvrpVehicle> vehiclesOnFreightTour = new HashSet();
 
     ListBasedFreightTourManager freightManager;
-	private Set<Id<DvrpVehicle>> requestedVehicles = new HashSet<>();
+	private Map<Id<DvrpVehicle>, Double> requestedVehicles = new HashMap<>();
 
 	/**
 	 * @param taxiCfg
@@ -109,11 +107,11 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 			case PICKUP:
 				if (!taxiCfg.isDestinationKnown()) {
 					appendResultingTasksAfterPickup(vehicle);
-					if (!requestedVehicles.contains(vehicle.getId())) {
-						throw new RuntimeException("vehicle performed a passenger pick up but was not on the requested vehicles list..");
-					}
-					requestedVehicles.remove(vehicle.getId());
 				}
+				if (!requestedVehicles.keySet().contains(vehicle.getId())) {
+					throw new RuntimeException("vehicle performed a passenger pick up but was not on the requested vehicles list..");
+				}
+				requestedVehicles.remove(vehicle.getId());
 				break;
 			case DROPOFF:
 				if (currentTask instanceof TaxiDropoffTask) {
@@ -124,6 +122,11 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 						//in future, there could be usecases where we have both, DvrpVehicles (supertype) and PFAVehicles, so we would not throw an axception here and just keep going
 						throw new RuntimeException("currently, all DvrpVehicles should be of type PFAVehicle");
 					}
+				} else if (currentTask instanceof PFAVServiceTask
+						&& Schedules.getNextTask(schedule) instanceof TaxiEmptyDriveTask
+						&& !PFAVUtils.IMMEDIATE_RETURN_AFTER_FREIGHT_TOUR) {
+					//vehicle just performed the last service task and can now demand the next freight tour
+					requestFreightTour(vehicle);
 				} else if (currentTask instanceof PFAVRetoolTask && Schedules.getNextTask(schedule) instanceof TaxiEmptyDriveTask) {
 					//we are at the end of a freight tour (otherwise next task would be instanceof PFAVServiceDriveTask
 					if (!this.vehiclesOnFreightTour.contains(vehicle)) throw new IllegalStateException("freight tour of vehicle " +
@@ -135,11 +138,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 					log.warn("removed time = " + ((PFAVehicle) vehicle).getOwnerActEndTimes().remove());
 					log.warn("actEndTimes size after removal= "
 							+ ((PFAVehicle) vehicle).getOwnerActEndTimes().size());
-				} else if (currentTask instanceof PFAVServiceTask
-						&& Schedules.getNextTask(schedule) instanceof TaxiEmptyDriveTask
-						&& !PFAVUtils.IMMEDIATE_RETURN_AFTER_FREIGHT_TOUR) {
-					//vehicle just performed the last service task and can now demand the next freight tour
-					requestFreightTour(vehicle);
 				}
 				break;
 
@@ -160,13 +158,15 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		List<StayTask> freightTour = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
 		if (freightTour != null) {
 
-
-			if (!requestedVehicles.contains(vehicle.getId())) {
+			log.info("vehicle " + vehicle.getId() + " requested a freight tour at " + timer.getTimeOfDay() + " and received one by the manager");
+			if (!requestedVehicles.keySet().contains(vehicle.getId())) {
 				scheduleFreightTour(vehicle, freightTour);
 			} else {
 				//TODO: move the check (whether the owner already requested the PFAV) further up to updateBeforeNextTask(). it is here only for test purposes...
 				//especially because the freight tour will now not be performed but the manager has already deleted it from it's set
-				log.warn("vehicle " + vehicle.getId() + " thinks that it can manage a freight tour in time but the owner has already requested the vehicle.");
+				log.warn("vehicle " + vehicle.getId() +
+						" thinks that it can manage a freight tour in time but the owner has already requested the vehicle with submission time = " + requestedVehicles.get(vehicle.getId()));
+				freightManager.getPFAVTours().add(freightTour);
 			}
 
 			//TODO: should we throw some kind of event here? to make analysis easier/possible (on how many freightTour requests there were etc.)
@@ -290,7 +290,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 			}
 		}
 
-		requestedVehicles.add(vehicle.getId());
+		requestedVehicles.put(vehicle.getId(), request.getSubmissionTime());
 	}
 
 	private void appendResultingTasksAfterPickup(DvrpVehicle vehicle) {
