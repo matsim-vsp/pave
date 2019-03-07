@@ -75,23 +75,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 
 	}
 	
-	public void stopCruisingVehicle(DvrpVehicle vehicle) {
-		if (!taxiCfg.isVehicleDiversion()) {
-			throw new RuntimeException("Diversion must be on");
-		}
-
-		Schedule schedule = vehicle.getSchedule();
-		TaxiEmptyDriveTask driveTask = (TaxiEmptyDriveTask)Schedules.getNextToLastTask(schedule);
-		schedule.removeLastTask();
-		OnlineDriveTaskTracker tracker = (OnlineDriveTaskTracker)driveTask.getTaskTracker();
-		LinkTimePair stopPoint = tracker.getDiversionPoint();
-		tracker.divertPath(
-				new VrpPathWithTravelDataImpl(stopPoint.time, 0, new Link[] { stopPoint.link }, new double[] { 0 }));
-		appendStayTask(vehicle);
-		
-	}
-
-
 	public void updateBeforeNextTask(DvrpVehicle vehicle) {
 
 		Schedule schedule = vehicle.getSchedule();
@@ -358,7 +341,23 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 			schedule.addTask(new TaxiEmptyDriveTask(vrpPath));
 		}
 	}
-	
+
+    public void stopCruisingVehicle(DvrpVehicle vehicle) {
+        if (!taxiCfg.isVehicleDiversion()) {
+            throw new RuntimeException("Diversion must be on");
+        }
+
+        Schedule schedule = vehicle.getSchedule();
+        TaxiEmptyDriveTask driveTask = (TaxiEmptyDriveTask) Schedules.getNextToLastTask(schedule);
+        schedule.removeLastTask();
+        OnlineDriveTaskTracker tracker = (OnlineDriveTaskTracker) driveTask.getTaskTracker();
+        LinkTimePair stopPoint = tracker.getDiversionPoint();
+        tracker.divertPath(
+                new VrpPathWithTravelDataImpl(stopPoint.time, 0, new Link[]{stopPoint.link}, new double[]{0}));
+        appendStayTask(vehicle);
+
+    }
+
 	//-------------------------TRUE DELEGATES-----------------------------------
 
 	public boolean isIdle(DvrpVehicle vehicle) {
