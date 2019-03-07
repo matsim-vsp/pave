@@ -26,7 +26,7 @@ package privateAV;
 public final class PFAVUtils {
 
 	public static final String DEFAULT_CARRIERS_FILE = "input/mielecScenario/freight/upToDate/2carriers_a_5vehicles_INFINITE.xml";
-	public static final String DEFAULT_VEHTYPES_FILE =  "input/mielecScenario/freight/upToDate/PFAVvehicleTypes.xml";
+	public static final String DEFAULT_VEHTYPES_FILE = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/mielecScenario/freight/upToDate/PFAVvehicleTypes.xml";
 
 	/**
 	 *
@@ -65,5 +65,5 @@ public final class PFAVUtils {
 	 * if false, it might perform another freight tour after having performed the last PFAVServiceTask.
 	 * TODO create JUnit test...
 	 */
-    public static boolean IMMEDIATE_RETURN_AFTER_FREIGHT_TOUR = true;
+	public static boolean IMMEDIATE_RETURN_AFTER_FREIGHT_TOUR = false;
 }
