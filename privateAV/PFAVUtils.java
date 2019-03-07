@@ -29,8 +29,7 @@ import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
  */
 public final class PFAVUtils {
 
-	public static final String DEFAULT_CARRIERS_FILE = "input/mielecScenario/freight/upToDate/2carriers_a_5vehicles_INFINITE.xml";
-	public static final String DEFAULT_VEHTYPES_FILE = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/mielecScenario/freight/upToDate/PFAVvehicleTypes.xml";
+	public static final String DEFAULT_VEHTYPES_FILE = "input/PFAVvehicleTypes.xml";
 
 	/**
 	 *
@@ -69,4 +68,13 @@ public final class PFAVUtils {
 	 * TODO create JUnit test...
 	 */
 	public static boolean IMMEDIATE_RETURN_AFTER_FREIGHT_TOUR = false;
+
+	public static TaxiDropoffTask getLastPassengerDropOff(Schedule schedule) {
+		for (int i = schedule.getTasks().size() - 1; i >= 0; i--) {
+			Task task = schedule.getTasks().get(i);
+			if (task instanceof TaxiDropoffTask) return (TaxiDropoffTask) task;
+		}
+		return null;
+	}
+
 }
