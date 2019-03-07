@@ -84,14 +84,14 @@ public class PFAVOptimizer implements TaxiOptimizer {
 				eventsManager.processEvent(new PFAVOwnerWaitsForVehicleEvent(timer.getTimeOfDay(), personalAV, req.getPassengerId()));
 //				scheduler.cancelFreightTour(veh);
 
-			} else {
-				if (!isWaitStayOrEmptyDrive((TaxiTask)veh.getSchedule().getCurrentTask())) {
-					throw new RuntimeException("Vehicle " + personalAV.toString() + "is not idle.");
-				}
-				if (((TaxiTask)veh.getSchedule().getCurrentTask()).getTaxiTaskType() == TaxiTaskType.EMPTY_DRIVE) {
-					scheduler.stopCruisingVehicle(veh);
-				}
-			}
+            } else if (!isWaitStayOrEmptyDrive((TaxiTask) veh.getSchedule().getCurrentTask())) {
+                throw new RuntimeException("Vehicle " + personalAV.toString() + "is not idle.");
+            }
+//			the following should not be necessary, as PFAV can only either be on a freight tour or waiting at owner's place/driving towards it.
+//			it acutally leads to a runtime exception if diversion is switched off, when vehicle is still on EmptyDrive after freight tour
+//				if (((TaxiTask)veh.getSchedule().getCurrentTask()).getTaxiTaskType() == TaxiTaskType.EMPTY_DRIVE) {
+//					scheduler.stopCruisingVehicle(veh);
+//				}
 			scheduler.scheduleRequest(veh, req);
 
 
