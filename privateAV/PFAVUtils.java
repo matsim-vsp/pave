@@ -43,7 +43,6 @@ public final class PFAVUtils {
 	 */
     public static final double TIME_BUFFER = 5 * 60;
 
-
 	/**
 	 *
 	 */
