@@ -183,7 +183,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		cleanScheduleBeforeInsertingFreightTour(vehicle, schedule);
 
 		StayTask previousTask = (StayTaskImpl) schedule.getCurrentTask();
-		Link ownerLink = previousTask.getLink();
 		for (int i = 0; i < freightActivities.size(); i++) {
 			StayTask currentTask = freightActivities.get(i);
 
@@ -213,6 +212,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 
 				//assumes that last activity in the freightActivities is at the depot (should be the End activity)
 				Link depotLink = freightActivities.get(i).getLink();
+                Link ownerLink = getLastPassengerDropOff(schedule).getLink();
 				path = VrpPaths.calcAndCreatePath(depotLink, ownerLink, currentTask.getEndTime(), router, travelTime);
 				schedule.addTask(new TaxiEmptyDriveTask(path));
 			}
@@ -223,6 +223,14 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		this.vehiclesOnFreightTour.add(vehicle);
 		log.info("vehicle " + vehicle.getId() + " got assigned to a freight schedule");
 	}
+
+    private TaxiDropoffTask getLastPassengerDropOff(Schedule schedule) {
+        for (int i = schedule.getTasks().size() - 1; i >= 0; i--) {
+            Task task = schedule.getTasks().get(i);
+            if (task instanceof TaxiDropoffTask) return (TaxiDropoffTask) task;
+        }
+        return null;
+    }
 
 	private void cleanScheduleBeforeInsertingFreightTour(DvrpVehicle vehicle, Schedule schedule) {
 		String scheduleStr = "";
