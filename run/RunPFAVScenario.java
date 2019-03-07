@@ -43,10 +43,10 @@ import java.util.Date;
  */
 public class RunPFAVScenario {
 
-    private static final String CONFIG_FILE_RULEBASED = "input/mielecScenario/mielec_taxi_config_rulebased.xml";
+	private static final String CONFIG_FILE_RULEBASED = "scenarios/mielec/mielec_taxi_config_rulebased.xml/";
     private static final String CONFIG_FILE_ASSIGNMENT = "input/mielecScenario/mielec_taxi_config_assigment.xml";
 
-    private static final String SMALL_CARRIERS_FILE = "input/mielecScenario/freight/neu/carrierPlans_routed_finite2.xml";
+	private static final String CARRIERS_FILE = "scenarios/mielec/freight/upToDate/2carriers_a_1vehicles_INFINITE.xml";
 
 	private static final String OUTPUT_DIR = "output/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
 
@@ -68,7 +68,7 @@ public class RunPFAVScenario {
 			output = args[3];
 		} else {
 			configFile = CONFIG_FILE_RULEBASED;
-			carriers = SMALL_CARRIERS_FILE;
+			carriers = CARRIERS_FILE;
 			vehTypes = PFAVUtils.DEFAULT_VEHTYPES_FILE;
 			output = OUTPUT_DIR;
 		}

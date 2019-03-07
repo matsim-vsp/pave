@@ -87,8 +87,8 @@ public class PFAVOptimizer implements TaxiOptimizer {
             } else if (!isWaitStayOrEmptyDrive((TaxiTask) veh.getSchedule().getCurrentTask())) {
                 throw new RuntimeException("Vehicle " + personalAV.toString() + "is not idle.");
             }
-//			the following should not be necessary, as PFAV can only either be on a freight tour or waiting at owner's place/driving towards it.
-//			it acutally leads to a runtime exception if diversion is switched off, when vehicle is still on EmptyDrive after freight tour
+//			the following should not be necessary, as PFAV can only either be on a freight tour or waiting at owner's activity location / driving towards it.
+//			it actually leads to a runtime exception if diversion is switched off, when vehicle is still on EmptyDrive after freight tour
 //				if (((TaxiTask)veh.getSchedule().getCurrentTask()).getTaxiTaskType() == TaxiTaskType.EMPTY_DRIVE) {
 //					scheduler.stopCruisingVehicle(veh);
 //				}

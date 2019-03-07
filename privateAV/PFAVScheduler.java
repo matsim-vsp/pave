@@ -127,17 +127,15 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 						&& !PFAVUtils.IMMEDIATE_RETURN_AFTER_FREIGHT_TOUR) {
 					//vehicle just performed the last service task and can now demand the next freight tour
 					requestFreightTour(vehicle);
-				} else if (currentTask instanceof PFAVRetoolTask && Schedules.getNextTask(schedule) instanceof TaxiEmptyDriveTask) {
+				} else if (currentTask instanceof PFAVRetoolTask && Schedules.getNextTask(schedule) instanceof TaxiStayTask) {
 					//we are at the end of a freight tour (otherwise next task would be instanceof PFAVServiceDriveTask
 					if (!this.vehiclesOnFreightTour.contains(vehicle)) throw new IllegalStateException("freight tour of vehicle " +
 							vehicle.getId() + "ends and scheduler did not even mark it as being on freight tour");
 					this.vehiclesOnFreightTour.remove(vehicle);
 					//remove the must return time from vehicle specification (as vehicle will now return)
-					log.warn("vehicle " + vehicle.getId() + " returns to it's owner at time=" + timer.getTimeOfDay() + ". actEndTimes size before removal= "
-							+ ((PFAVehicle) vehicle).getOwnerActEndTimes().size());
+					log.warn("vehicle " + vehicle.getId() + " returns to it's owner at time=" + timer.getTimeOfDay());
 					log.warn("removed time = " + ((PFAVehicle) vehicle).getOwnerActEndTimes().remove());
-					log.warn("actEndTimes size after removal= "
-							+ ((PFAVehicle) vehicle).getOwnerActEndTimes().size());
+					scheduleDriveToOwner(vehicle, schedule, (PFAVRetoolTask) currentTask);
 				}
 				break;
 
@@ -152,6 +150,17 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				throw new IllegalStateException();
 			}
 		}
+	}
+
+	private void scheduleDriveToOwner(DvrpVehicle vehicle, Schedule schedule, PFAVRetoolTask currentTask) {
+		TaxiTask lastTask = (TaxiTask) Schedules.getLastTask(schedule);
+		double departureTime = lastTask.getBeginTime();
+		VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(currentTask.getLink(),
+				PFAVUtils.getLastPassengerDropOff(schedule).getLink(),
+				departureTime, router, travelTime);
+
+		scheduleDrive(schedule, (TaxiStayTask) lastTask, path);
+		appendStayTask(vehicle);
 	}
 
 	private void requestFreightTour(DvrpVehicle vehicle) {
@@ -204,18 +213,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 			}
 			schedule.addTask(currentTask);
 
-			/*always insert the drive task back to the owner although another freight tour might be performed before.
-			/*we need to have the last link in the schedule point to the owner's activity to be able to compute whether there is enough time
-			/*to perform the freight tour in the manager
-			 */
-			if (i == freightActivities.size() - 1) {
-
-				//assumes that last activity in the freightActivities is at the depot (should be the End activity)
-				Link depotLink = freightActivities.get(i).getLink();
-                Link ownerLink = getLastPassengerDropOff(schedule).getLink();
-				path = VrpPaths.calcAndCreatePath(depotLink, ownerLink, currentTask.getEndTime(), router, travelTime);
-				schedule.addTask(new TaxiEmptyDriveTask(path));
-			}
 			previousTask = currentTask;
 		}
 		appendStayTask(vehicle);
@@ -223,14 +220,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		this.vehiclesOnFreightTour.add(vehicle);
 		log.info("vehicle " + vehicle.getId() + " got assigned to a freight schedule");
 	}
-
-    private TaxiDropoffTask getLastPassengerDropOff(Schedule schedule) {
-        for (int i = schedule.getTasks().size() - 1; i >= 0; i--) {
-            Task task = schedule.getTasks().get(i);
-            if (task instanceof TaxiDropoffTask) return (TaxiDropoffTask) task;
-        }
-        return null;
-    }
 
 	private void cleanScheduleBeforeInsertingFreightTour(DvrpVehicle vehicle, Schedule schedule) {
 		String scheduleStr = "";
@@ -246,7 +235,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				schedule.removeLastTask();
 				break;
 			case EMPTY_DRIVE:
-				/*TODO: calling same method 4 times feels dirty - extract method !?
+				/*TODO: calling same method 3 times feels dirty - extract method !?
 				 *we cannot use delegate.removeAwaitingRequests cause this method inserts another stay task
 				 *
 				 *vehicle requested freight tour after having performed another one
@@ -254,8 +243,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				 */
 				schedule.removeLastTask();    //empty drive to depot
 				schedule.removeLastTask();    //retool task at depot
-				schedule.removeLastTask(); // empty drive to owner
-				schedule.removeLastTask(); // stay at owner's activity location
+				schedule.removeLastTask();      //stay at depot
 				break;
 			default:
 				throw new IllegalStateException(
@@ -285,7 +273,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 			
 			VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(Schedules.getLastLinkInSchedule(vehicle), 
 					request.getFromLink(), departureTime, router, travelTime);
-			
+
 			scheduleDrive(schedule, (TaxiStayTask)lastTask, path);
 			
 			double pickupEndTime = Math.max(path.getArrivalTime(), request.getEarliestStartTime())
@@ -346,32 +334,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	
 	//-------------------------------COPIES
 
-	protected void divertOrAppendDrive(Schedule schedule, VrpPathWithTravelData vrpPath) {
-		TaxiTask lastTask = (TaxiTask)Schedules.getLastTask(schedule);
-		switch (lastTask.getTaxiTaskType()) {
-			case EMPTY_DRIVE:				
-				divertDrive((TaxiEmptyDriveTask)lastTask, vrpPath);
-				return;
-
-			case STAY:
-				scheduleDrive(schedule, (TaxiStayTask)lastTask, vrpPath);
-				return;
-
-			default:
-				throw new IllegalStateException();
-		}
-	}
-	
-	
-	//this should be unnecessary - since the last task should always be a stay task
-	private void divertDrive(TaxiEmptyDriveTask lastTask, VrpPathWithTravelData vrpPath) {
-		if (!taxiCfg.isVehicleDiversion()) {
-			throw new IllegalStateException();
-		}
-
-		((OnlineDriveTaskTracker)lastTask.getTaskTracker()).divertPath(vrpPath);
-	}
-	
 	private void scheduleDrive(Schedule schedule, TaxiStayTask lastTask, VrpPathWithTravelData vrpPath) {
 		switch (lastTask.getStatus()) {
 			case PLANNED:

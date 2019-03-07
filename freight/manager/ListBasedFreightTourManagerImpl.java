@@ -27,7 +27,6 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
-import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.schedule.Tasks;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
@@ -226,13 +225,15 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		StayTask start = freightTour.get(0);
 		StayTask end = freightTour.get(freightTour.size() - 1);
 
-
 		double tourDuration = end.getEndTime() - start.getBeginTime();
 
 		VrpPathWithTravelData pathFromCurrTaskToDepot = VrpPaths.calcAndCreatePath(currentTask.getLink(), start.getLink(), currentTask.getEndTime(), router, travelTime);
 
-		//last link in the schedule always should be at the owner's location
-		VrpPathWithTravelData pathFromDepotToOwner = VrpPaths.calcAndCreatePath(end.getLink(), Schedules.getLastLinkInSchedule(vehicle), end.getEndTime(), router, travelTime);
+		Link returnLink = PFAVUtils.getLastPassengerDropOff(vehicle.getSchedule()).getLink();
+		//owner link will be null if no dropOff has been performed yet. return to start link instead.
+		if (returnLink == null) returnLink = vehicle.getStartLink();
+
+		VrpPathWithTravelData pathFromDepotToOwner = VrpPaths.calcAndCreatePath(end.getLink(), returnLink, end.getEndTime(), router, travelTime);
 
 		//TODO check this again
 		double totalTimeNeededToPerformFreightTour = pathFromCurrTaskToDepot.getTravelTime() +

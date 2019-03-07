@@ -18,6 +18,10 @@
  * *********************************************************************** */
 package privateAV;
 
+import org.matsim.contrib.dvrp.schedule.Schedule;
+import org.matsim.contrib.dvrp.schedule.Task;
+import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
+
 /**
  * @author tschlenther
  *
