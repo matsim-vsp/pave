@@ -124,7 +124,20 @@ public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>,
                     //activity could be something like leisure in open berlin scenario which does not have an end time set
                     Activity act = (Activity) pe;
                     if (act.getEndTime() == Double.NEGATIVE_INFINITY) {
-                        return lastLeg.getDepartureTime();
+                        if (lastLeg.getDepartureTime() == Double.NEGATIVE_INFINITY) {
+                            if (act.getMaximumDuration() == Double.NEGATIVE_INFINITY) {
+                                throw new RuntimeException("cannot compute must return time for PFAVehicle of person " + plan.getPerson().getId() + " for activity " + act.toString());
+                            }
+                            //does the leg *before* the activity have a departure time and a travel time?
+                            Leg legBeforeAct = (Leg) plan.getPlanElements().get(i - 1);
+                            if (legBeforeAct.getDepartureTime() != Double.NEGATIVE_INFINITY && legBeforeAct.getRoute().getTravelTime() != Double.NEGATIVE_INFINITY) {
+                                return legBeforeAct.getDepartureTime() + legBeforeAct.getRoute().getTravelTime() + act.getMaximumDuration();
+                            }
+                            //no it does not, so we need to calculate the must return time by computing end time of the activity piece by piece
+                            return computeMustReturnTimeConsecutivelyFromTheStart(plan, i);
+                        } else {
+                            return lastLeg.getDepartureTime();
+                        }
                     } else {
                         return act.getEndTime();
                     }
@@ -132,6 +145,29 @@ public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>,
             }
         }
         throw new IllegalStateException("could not compute must return time for agent " + plan.getPerson().getId() + " before leg " + plan.getPlanElements().get(startIndex));
+    }
+
+    private double computeMustReturnTimeConsecutivelyFromTheStart(Plan plan, int i) {
+        double time = ((Activity) plan.getPlanElements().get(0)).getEndTime();
+        if (time == Double.NEGATIVE_INFINITY) throw new IllegalStateException("end time of first activity of agent " + plan.getPerson().getId()
+                + " is not set.");
+        for (int z = 1; z <= i; z++) {
+            PlanElement current = plan.getPlanElements().get(z);
+            if (current instanceof Activity) {
+                if (((Activity) current).getEndTime() != Double.NEGATIVE_INFINITY) {
+                    time = ((Activity) current).getEndTime();
+                } else {
+                    time += ((Activity) current).getMaximumDuration();
+                }
+            } else if (current instanceof Leg) {
+                if (((Leg) current).getDepartureTime() != Double.NEGATIVE_INFINITY) {
+                    time = ((Leg) current).getDepartureTime();
+                } else {
+                    time += ((Leg) current).getRoute().getTravelTime();
+                }
+            }
+        }
+        return time;
     }
 
     @Override

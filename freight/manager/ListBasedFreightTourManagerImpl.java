@@ -213,11 +213,11 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		Double timeWhenOwnerNeedsVehicle = vehicle.getOwnerActEndTimes().peek();
 		if (timeWhenOwnerNeedsVehicle == null) {
 			throw new IllegalStateException("could not derive must return time of vehicle " + vehicle.getId() + " out of vehicle specification");
-		} else if (Double.isInfinite(timeWhenOwnerNeedsVehicle)) {
-			//the next activity of the vehicle owner is the last for the day, so we can always perform the freight tour
-//			vehicle.getOwnerActEndTimes().remove(); => this is moved to the scheduler in order to make several freight tour performances in a row possible
-
-			log.info("tour duration is irrelevant for vehicle " + vehicle.getId() + " because owner needs the vehicle back at time " + timeWhenOwnerNeedsVehicle);
+        } else if (timeWhenOwnerNeedsVehicle == Double.NEGATIVE_INFINITY) {
+            log.warn("vehicle " + vehicle.getId() + " has a undefined must return time. this should not happen! no freight tour will be dispatched...");
+            return false;
+        } else if (timeWhenOwnerNeedsVehicle == Double.POSITIVE_INFINITY) {
+            log.info("tour duration is irrelevant for vehicle " + vehicle.getId() + " because owner needs the vehicle back at positive infinity");
 			return true;
 		}
 
