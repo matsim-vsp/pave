@@ -74,7 +74,7 @@ public class RunPFAVScenario {
 		}
 		
 		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
-		taxiCfg.setBreakSimulationIfNotAllRequestsServed(true);
+		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		/*
 		 * very important: we assume that destinations of trips are known in advance.
 		 * that leads to the occupiedDriveTask and the TaxiDropoffTask to be inserted at the same time as the PickUpTask (when the request gets scheduled).

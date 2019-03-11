@@ -21,6 +21,7 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 import privateAV.PFAVScheduler;
+import privateAV.PFAVUtils;
 import privateAV.events.PFAVOwnerWaitsForVehicleEvent;
 
 public class PFAVOptimizer implements TaxiOptimizer {
@@ -71,7 +72,7 @@ public class PFAVOptimizer implements TaxiOptimizer {
 		TaxiRequest req = (TaxiRequest) request;
 
 			//get the vehicle
-			Id<DvrpVehicle> personalAV = Id.create(req.getPassengerId().toString() + "_av", DvrpVehicle.class);
+		Id<DvrpVehicle> personalAV = Id.create(req.getPassengerId().toString() + PFAVUtils.PFAV_ID_SUFFIX, DvrpVehicle.class);
 			DvrpVehicle veh = fleet.getVehicles().get(personalAV);
 			
 			if (veh == null) {

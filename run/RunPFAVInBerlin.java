@@ -52,10 +52,10 @@ public class RunPFAVInBerlin {
 
     private static final String CONFIG_v53_1pct = "input/BerlinScenario/5.3/berlin-v5.3-1pct.config.xml";
     private static final String OUTPUTDIR = "output/Berlin/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
-    private static final String CARRIERS_FILE = "input/FrachtNachfrage/KEP/PFAVScenario/test_onlyOneCarrier_only100services.xml";
-    private static final String VEHTYPES_FILE = "input/FrachtNachfrage/KEP/PFAVScenario/baseCaseVehicleTypes.xml";
+    private static final String CARRIERS_FILE = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PFAVScenario/test_onlyOneCarrier_only100services.xml";
+    private static final String VEHTYPES_FILE = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PFAVScenario/baseCaseVehicleTypes.xml";
     //only for test purposes
-    private static final String SMALL_PLANS_FILE = "input/FrachtNachfrage/KEP/PFAVScenario/baseCaseVehicleTypes.xml";
+    private static final String SMALL_PLANS_FILE = "C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml";
     private static final int LAST_ITERATION = 0;
     private static final double PERCENTAGE_OF_PFAV_OWNERS = 0.05;
     private static final double DOWN_SAMPLE_SIZE = 0.01;
@@ -129,13 +129,13 @@ public class RunPFAVInBerlin {
         config.checkConsistency();
 
 //        //only for test purposes
-//        config.plans().setInputFile("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml");
+        config.plans().setInputFile(SMALL_PLANS_FILE);
 
         Scenario scenario = berlin.prepareScenario();
 
-        log.warn("number of persons : " + scenario.getPopulation().getPersons().size());
-        convertAgentsToPFAVOwners(scenario);
-        log.warn("number of PFAV owners : " + PFAV_owners.size());
+//        log.warn("number of persons : " + scenario.getPopulation().getPersons().size());
+//        convertAgentsToPFAVOwners(scenario);
+//        log.warn("number of PFAV owners : " + PFAV_owners.size());
 //        downsample(scenario.getPopulation().getPersons(), DOWN_SAMPLE_SIZE);
 
         // setup controler

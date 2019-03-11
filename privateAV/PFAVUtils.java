@@ -29,12 +29,14 @@ import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
  */
 public final class PFAVUtils {
 
+	public static final String PFAV_ID_SUFFIX = "_PFAV";
+
 	public static final String DEFAULT_VEHTYPES_FILE = "input/PFAVvehicleTypes.xml";
 
 	/**
 	 *
 	 */
-	public static final int DEFAULT_PFAV_CAPACITY = 4;
+	public static final int DEFAULT_PFAV_CAPACITY = 1;
 
 	/**
 	 * the amount of time that is needed to rebuild/retool the vehicle. that means how much time is needed to change the module on top of the car body
