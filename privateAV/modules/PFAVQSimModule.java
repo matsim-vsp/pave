@@ -86,12 +86,15 @@ public class PFAVQSimModule extends AbstractDvrpModeQSimModule {
                     @Inject
                     ListBasedFreightTourManager tourManager;
 
+                    @Inject
+                    private EventsManager events;
+
                     @Override
                     public TaxiScheduleInquiry get() {
                         Fleet fleet = getModalInstance(Fleet.class);
                         TravelDisutility travelDisutility = getModalInstance(
                                 TravelDisutilityFactory.class).createTravelDisutility(travelTime);
-                        return new PFAVScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility, tourManager);
+                        return new PFAVScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility, events, tourManager);
                     }
                 }).asEagerSingleton();
 
