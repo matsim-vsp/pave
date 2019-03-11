@@ -4,11 +4,15 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.dvrp.fleet.*;
+import org.matsim.contrib.dvrp.fleet.Fleet;
+import org.matsim.contrib.dvrp.fleet.FleetImpl;
+import org.matsim.contrib.dvrp.fleet.FleetSpecification;
+import org.matsim.contrib.dvrp.fleet.FleetSpecificationImpl;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
 import org.matsim.contrib.dvrp.run.ModalProviders;
+import org.matsim.contrib.dvrp.run.QSimScopeObjectListenerModule;
 import privateAV.vehicle.PFAVehicle;
 
 public class PFAVFleetModule extends AbstractDvrpModeModule {
@@ -23,8 +27,9 @@ public class PFAVFleetModule extends AbstractDvrpModeModule {
 
     @Override
     public void install() {
+        FleetSpecificationImpl fleetSpecification = new FleetSpecificationImpl();
         bindModal(FleetSpecification.class).toProvider(() -> {
-            return new FleetSpecificationImpl();
+            return fleetSpecification;
         }).asEagerSingleton();
 
         installQSimModule(new AbstractDvrpModeQSimModule(getMode()) {
@@ -49,7 +54,29 @@ public class PFAVFleetModule extends AbstractDvrpModeModule {
             }
         });
 
-        install(FleetStatsCalculatorModule.createModule(getMode(), PFAVFleetStatsCalculator.class,
-            getter -> new PFAVFleetStatsCalculator(getter.getModal(FleetSpecification.class), scenario, getMode())));
+        bindModal(PFAVFleetStatsCalculator.class).toProvider(modalProvider(getter ->
+                new PFAVFleetStatsCalculator(fleetSpecification, scenario, getMode()))).asEagerSingleton();
+        addControlerListenerBinding().to(modalKey(PFAVFleetStatsCalculator.class));
+
+        installQSimModule(QSimScopeObjectListenerModule.createSimplifiedModule(getMode(), Fleet.class, PFAVFleetStatsCalculator.class));
+
+//        installQSimModule(new AbstractDvrpModeQSimModule(getMode()) {
+//            @Override
+//            protected void configureQSim() {
+////                addModalQSimComponentBinding().to(modalKey(PFAVFleetStatsCalculator.class));
+//                addModalQSimComponentBinding().toProvider(modalProvider(
+//                        getter -> (MobsimInitializedListener) e -> getter.getModal(PFAVFleetStatsCalculator.class).objectCreated(getter.getModal(Fleet.class)))  );
+//            }
+//        });
+
+
+        //as PFAVFleetStatsCalculator is no MobsimListener, we cannot do the following
+//        install(QSimScopeObjectListenerModule.builder(PFAVFleetStatsCalculator.class)
+//                .mode(getMode())
+//                .objectClass(Fleet.class)
+//                .listenerCreator(
+//                        getter -> new PFAVFleetStatsCalculator(getter.getModal(FleetSpecification.class), scenario, getMode() ) )
+//                .build());
+
     }
 }

@@ -3,15 +3,11 @@ package privateAV.modules;
 import freight.manager.ListBasedFreightTourManager;
 import freight.manager.ListBasedFreightTourManagerImpl;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.contrib.dvrp.fleet.FleetStatsCalculatorModule;
 import org.matsim.contrib.dvrp.router.TimeAsTravelDisutility;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
 import org.matsim.contrib.dynagent.run.DynRoutingModule;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
-import org.matsim.contrib.taxi.util.stats.TaxiStatsDumper;
-import org.matsim.core.controler.IterationCounter;
-import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 
 public class PFAVModeModule extends AbstractDvrpModeModule {
@@ -37,9 +33,9 @@ public class PFAVModeModule extends AbstractDvrpModeModule {
         //we need our own FleetModule here
         install(new PFAVFleetModule(getMode(), scenario));
 
-        install(FleetStatsCalculatorModule.createModule(getMode(), TaxiStatsDumper.class,
-                getter -> new TaxiStatsDumper(taxiCfg, getter.get(OutputDirectoryHierarchy.class),
-                        getter.get(IterationCounter.class))));
+//        install(FleetStatsCalculatorModule.createModule(getMode(), TaxiStatsDumper.class,
+//                getter -> new TaxiStatsDumper(taxiCfg, getter.get(OutputDirectoryHierarchy.class),
+//                        getter.get(IterationCounter.class))));
 
         //TODO: get those files from some kind of config group or pass it to the module as parameter
         ListBasedFreightTourManagerImpl tourManager = new ListBasedFreightTourManagerImpl(this.CARRIERS_FILE, this.VEHTYPES_FILE);
