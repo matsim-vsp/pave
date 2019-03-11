@@ -40,7 +40,7 @@ public class PFAVOptimizer implements TaxiOptimizer {
 	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, TaxiScheduleInquiry scheduler, EventsManager eventsManager, MobsimTimer timer) {
 
 		if(!(scheduler instanceof PFAVScheduler)) {
-			throw new IllegalArgumentException("this OptimizerPRovider can only work with a scheduler of type " + PFAVScheduler.class);
+			throw new IllegalArgumentException("this OptimizerProvider can only work with a scheduler of type " + PFAVScheduler.class);
 		} 
 		
 		Configuration optimizerConfig = new MapConfiguration(taxiCfg.getOptimizerConfigGroup().getParams());

@@ -23,14 +23,12 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
-
 import privateAV.vrpagent.PFAVActionCreator;
 
 /**
  * @author tschlenther
  *
  */
-//TODO make PFAVRetoolTask out of this one
 public class PFAVRetoolTask extends StayTaskImpl implements TaxiTask {
 
 	double earliestStartTime = 0.0;

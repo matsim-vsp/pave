@@ -20,6 +20,7 @@
 
 package scenarioCreation;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.*;
 import org.matsim.core.config.ConfigUtils;
@@ -31,6 +32,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 
 public class PopulationCreator {
 
@@ -45,6 +47,32 @@ public class PopulationCreator {
 //        reader.readFile("C:/Users/Work/git/freightAV/input/Plans/berlin1pctScenario_5pctCarLegsNowPFAV.xml.gz");
 
         new PopulationWriter(cutPopulationTo100ForEachMode(convertAgentsToPFAVOwners(scenario))).write("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml");
+    }
+
+    private Population defineAndGet1000SpatialEquallyDistributedPFAVOwners(Population population) {
+        Population pfavOwners = ScenarioUtils.createScenario(ConfigUtils.createConfig()).getPopulation();
+        Random rand = MatsimRandom.getLocalInstance();
+        for (int i = 0; i < 1000; i++) {
+            boolean isCarUser = false;
+            while (!isCarUser) {
+                int randIdx = rand.nextInt(population.getPersons().size());
+                Id<Person> personID = (Id<Person>) population.getPersons().keySet().toArray()[randIdx];
+
+                for (PlanElement elem : population.getPersons().get(personID).getSelectedPlan().getPlanElements()) {
+                    if (elem instanceof Leg) {
+                        if (((Leg) elem).getMode().equals("car")) {
+                            isCarUser = true;
+                            ((Leg) elem).setMode("taxi");
+                        }
+                    }
+                }
+                if (isCarUser) {
+                    pfavOwners.addPerson(population.getPersons().get(personID));
+                    break;
+                }
+            }
+        }
+        return pfavOwners;
     }
 
     public static Population convertAgentsToPFAVOwners(Scenario scenario) {

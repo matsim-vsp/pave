@@ -18,19 +18,9 @@
  * *********************************************************************** */
 package privateAV.schedule;
 
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.population.Person;
-import org.matsim.contrib.dvrp.path.DivertedVrpPath;
-import org.matsim.contrib.dvrp.path.VrpPath;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
-import org.matsim.contrib.dvrp.schedule.AbstractTask;
-import org.matsim.contrib.dvrp.schedule.DriveTask;
 import org.matsim.contrib.dvrp.schedule.DriveTaskImpl;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
-import org.matsim.core.mobsim.framework.DriverAgent;
-import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
-import org.matsim.vehicles.Vehicle;
 
 /**
  * @author tschlenther
@@ -40,7 +30,6 @@ public class PFAVServiceDriveTask extends DriveTaskImpl implements TaxiTask {
 
 	public PFAVServiceDriveTask(VrpPathWithTravelData path) {
 		super(path);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

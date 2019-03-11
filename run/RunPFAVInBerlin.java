@@ -57,8 +57,8 @@ public class RunPFAVInBerlin {
     //only for test purposes
     private static final String SMALL_PLANS_FILE = "C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml";
     private static final int LAST_ITERATION = 0;
-    private static final double PERCENTAGE_OF_PFAV_OWNERS = 0.05;
-    private static final double DOWN_SAMPLE_SIZE = 0.01;
+    private static final double PERCENTAGE_OF_PFAV_OWNERS = 0.01;
+    private static final double DOWN_SAMPLE_SIZE = 0.5;
     private static Logger log = Logger.getLogger(RunPFAVInBerlin.class);
     private static Set<Id<Person>> PFAV_owners = new HashSet<>();
 
@@ -133,10 +133,12 @@ public class RunPFAVInBerlin {
 
         Scenario scenario = berlin.prepareScenario();
 
-//        log.warn("number of persons : " + scenario.getPopulation().getPersons().size());
-//        convertAgentsToPFAVOwners(scenario);
-//        log.warn("number of PFAV owners : " + PFAV_owners.size());
-//        downsample(scenario.getPopulation().getPersons(), DOWN_SAMPLE_SIZE);
+        log.warn("number of persons : " + scenario.getPopulation().getPersons().size());
+        convertAgentsToPFAVOwners(scenario);
+        log.warn("number of PFAV owners : " + PFAV_owners.size());
+
+        log.warn("------ SAMPLING POPULATION DOWN --------");
+        downsample(scenario.getPopulation().getPersons(), DOWN_SAMPLE_SIZE);
 
         // setup controler
         Controler controler = berlin.prepareControler(new DvrpModule());
