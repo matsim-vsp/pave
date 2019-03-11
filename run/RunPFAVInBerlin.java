@@ -129,7 +129,7 @@ public class RunPFAVInBerlin {
         config.checkConsistency();
 
 //        //only for test purposes
-        config.plans().setInputFile(SMALL_PLANS_FILE);
+//        config.plans().setInputFile(SMALL_PLANS_FILE);
 
         Scenario scenario = berlin.prepareScenario();
 

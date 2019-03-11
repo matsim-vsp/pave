@@ -21,7 +21,6 @@ public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>,
     private final Population population;
     private Set<Id<DvrpVehicle>> oldVehicles = new HashSet<Id<DvrpVehicle>>();
     private final String mode;
-    private Fleet fleet;
 
     public PFAVFleetStatsCalculator(FleetSpecification fleetSpecification, Scenario scenario, String mode){
         this.fleetSpecification = fleetSpecification;
@@ -135,15 +134,10 @@ public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>,
         throw new IllegalStateException("could not compute must return time for agent " + plan.getPerson().getId() + " before leg " + plan.getPlanElements().get(startIndex));
     }
 
-//    @Override
-//    public void updateStats(Fleet fleet) {
-//        oldVehicles.clear();
-//        oldVehicles.addAll(fleet.getVehicles().keySet());
-//    }
-
     @Override
     public void objectCreated(Fleet fleet) {
-        this.fleet = fleet;
+        this.oldVehicles.clear();
+        this.oldVehicles.addAll(fleet.getVehicles().keySet());
     }
 
 }
