@@ -1,4 +1,4 @@
-package privateAV.modules;
+package privateAV.vehicle;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;

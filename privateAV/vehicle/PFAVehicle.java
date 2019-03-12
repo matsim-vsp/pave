@@ -14,6 +14,8 @@ public class PFAVehicle extends DvrpVehicleImpl {
 
     Queue<Double> ownerActEndTimes;
 
+    //TODO: actually, the ownerActEndTimes are now contained twice, once in the specification, once in the vehicle.
+    // at least for debugging that is nice, but maybe the list should be removed from here..
     public PFAVehicle(PFAVSpecification specification, Link startLink) {
         super(specification, startLink);
         this.ownerActEndTimes = new LinkedList<>();

@@ -13,6 +13,7 @@ import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
 import org.matsim.contrib.dvrp.run.ModalProviders;
 import org.matsim.contrib.dvrp.run.QSimScopeObjectListenerModule;
+import privateAV.vehicle.PFAVFleetStatsCalculator;
 import privateAV.vehicle.PFAVehicle;
 
 public class PFAVFleetModule extends AbstractDvrpModeModule {
