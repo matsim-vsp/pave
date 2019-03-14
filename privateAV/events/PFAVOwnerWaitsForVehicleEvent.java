@@ -59,4 +59,11 @@ public class PFAVOwnerWaitsForVehicleEvent extends Event {
         return attr;
     }
 
+    public Id<DvrpVehicle> getVehicleId() {
+        return vehicleId;
+    }
+
+    public Id<Person> getOwner() {
+        return owner;
+    }
 }

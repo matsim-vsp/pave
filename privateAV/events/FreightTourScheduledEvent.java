@@ -24,36 +24,42 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import org.matsim.contrib.dvrp.schedule.DriveTaskImpl;
 import org.matsim.contrib.dvrp.schedule.StayTask;
+import org.matsim.contrib.dvrp.schedule.Task;
 import privateAV.vehicle.PFAVehicle;
 
 import java.util.List;
 import java.util.Map;
 
-public class FreightTourDispatchedEvent extends Event {
-    public static final String EVENT_TYPE = "freightTourDispatched";
+public class FreightTourScheduledEvent extends Event {
+    public static final String EVENT_TYPE = "freightTourScheduled";
 
     public static final String ATTRIBUTE_VEHICLE = "vehicle";
     public static final String ATTRIBUTE_REQUEST_LINK = "requestLink";
     public static final String ATTRIBUTE_FREIGHT_TOUR_DURATION = "freightTourDuration";
+    public static final String ATTRIBUTE_FREIGHT_TOUR_DISTANCE = "freightTourDistance";
     public static final String ATTRIBUTE_MUST_RETURN_TIME = "mustReturnTime";
 
     private final Id<DvrpVehicle> vehicleId;
-    private final Link requestLink;
+    private final Id<Link> requestLink;
     private final double freightTourDuration;
     private final double mustReturnTime;
+    private final double freightTourDistance;
+    private final List<Task> freightTour;
 
-
-    public FreightTourDispatchedEvent(PFAVehicle vehicle, Link requestLink, List<StayTask> freightTour, double timeOfDay) {
+    public FreightTourScheduledEvent(PFAVehicle vehicle, double timeOfDay, Id<Link> requestLink, double duration, double totalDistance, List<Task> freightTour) {
         super(timeOfDay);
         vehicleId = vehicle.getId();
         this.requestLink = requestLink;
-
-        StayTask start = freightTour.get(0);
-        StayTask end = freightTour.get(freightTour.size() - 1);
-        this.freightTourDuration = end.getEndTime() - start.getBeginTime();
         this.mustReturnTime = vehicle.getOwnerActEndTimes().peek();
+
+        this.freightTourDuration = duration;
+
+        this.freightTourDistance = totalDistance;
+        this.freightTour = freightTour;
     }
+
 
     /**
      * @return a unique, descriptive name for this event type, used to identify event types in files.
@@ -69,7 +75,32 @@ public class FreightTourDispatchedEvent extends Event {
         attr.put(ATTRIBUTE_VEHICLE, vehicleId + "");
         attr.put(ATTRIBUTE_REQUEST_LINK, requestLink + "");
         attr.put(ATTRIBUTE_FREIGHT_TOUR_DURATION, freightTourDuration + "");
+        attr.put(ATTRIBUTE_FREIGHT_TOUR_DISTANCE, freightTourDistance + "");
         attr.put(ATTRIBUTE_MUST_RETURN_TIME, mustReturnTime + "");
         return attr;
+    }
+
+    public Id<DvrpVehicle> getVehicleId() {
+        return vehicleId;
+    }
+
+    public Id<Link> getRequestLink() {
+        return requestLink;
+    }
+
+    public double getFreightTourDuration() {
+        return freightTourDuration;
+    }
+
+    public double getMustReturnTime() {
+        return mustReturnTime;
+    }
+
+    public double getFreightTourDistance() {
+        return freightTourDistance;
+    }
+
+    public List<Task> getFreightTour() {
+        return freightTour;
     }
 }

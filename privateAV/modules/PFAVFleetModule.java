@@ -1,5 +1,6 @@
 package privateAV.modules;
 
+import analysis.FreightTourDispatchAnalyzer;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Scenario;
@@ -61,23 +62,14 @@ public class PFAVFleetModule extends AbstractDvrpModeModule {
 
         installQSimModule(QSimScopeObjectListenerModule.createSimplifiedModule(getMode(), Fleet.class, PFAVFleetStatsCalculator.class));
 
-//        installQSimModule(new AbstractDvrpModeQSimModule(getMode()) {
-//            @Override
-//            protected void configureQSim() {
-////                addModalQSimComponentBinding().to(modalKey(PFAVFleetStatsCalculator.class));
-//                addModalQSimComponentBinding().toProvider(modalProvider(
-//                        getter -> (MobsimInitializedListener) e -> getter.getModal(PFAVFleetStatsCalculator.class).objectCreated(getter.getModal(Fleet.class)))  );
-//            }
-//        });
+        //analysis
+        FreightTourDispatchAnalyzer analyzer = new FreightTourDispatchAnalyzer();
 
+        bindModal(FreightTourDispatchAnalyzer.class).toInstance(analyzer);
+        addControlerListenerBinding().to(modalKey(FreightTourDispatchAnalyzer.class));
+        installQSimModule(QSimScopeObjectListenerModule.createSimplifiedModule(getMode(), Fleet.class, FreightTourDispatchAnalyzer.class));
 
-        //as PFAVFleetStatsCalculator is no MobsimListener, we cannot do the following
-//        install(QSimScopeObjectListenerModule.builder(PFAVFleetStatsCalculator.class)
-//                .mode(getMode())
-//                .objectClass(Fleet.class)
-//                .listenerCreator(
-//                        getter -> new PFAVFleetStatsCalculator(getter.getModal(FleetSpecification.class), scenario, getMode() ) )
-//                .build());
+        addEventHandlerBinding().toInstance(analyzer);
 
     }
 }
