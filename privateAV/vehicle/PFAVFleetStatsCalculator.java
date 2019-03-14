@@ -11,7 +11,6 @@ import org.matsim.contrib.dvrp.run.QSimScopeObjectListener;
 import org.matsim.core.controler.events.BeforeMobsimEvent;
 import org.matsim.core.controler.listener.BeforeMobsimListener;
 import privateAV.PFAVUtils;
-import privateAV.vehicle.PFAVSpecification;
 
 import java.util.*;
 
@@ -65,6 +64,9 @@ public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>,
                     }
                 }
             }
+            //add a time stamp representing the end of the day after the last taxi leg of the owner.
+            // meaning that the vehicle has time until end of simulation to perform freight tours
+            ((LinkedList<Double>) actEndTimesBeforeModeLegs).add(Double.POSITIVE_INFINITY);
             if (vehicleStartLink != null) {
                 Id<DvrpVehicle> vehicleId = Id.create(p.getId().toString() + PFAVUtils.PFAV_ID_SUFFIX, DvrpVehicle.class);
                 PFAVSpecification specification = PFAVSpecification.newBuilder()
