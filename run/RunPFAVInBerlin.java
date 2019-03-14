@@ -123,6 +123,10 @@ public class RunPFAVInBerlin {
         config.controler().setOutputDirectory(output);
 
         config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
+
+//        for test purposes
+//        config.qsim().setEndTime(15*3600);
+
         config.qsim().setNumberOfThreads(1);
 
         config.addConfigConsistencyChecker(new TaxiConfigConsistencyChecker());
