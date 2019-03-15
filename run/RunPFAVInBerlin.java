@@ -125,7 +125,7 @@ public class RunPFAVInBerlin {
         config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
 
 //        for test purposes
-//        config.qsim().setEndTime(15*3600);
+        config.qsim().setEndTime(12 * 3600);
 
         config.qsim().setNumberOfThreads(1);
 

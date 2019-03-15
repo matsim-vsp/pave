@@ -31,6 +31,7 @@ import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.schedule.Tasks;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.util.StraightLineKnnFinder;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.events.IterationStartsEvent;
@@ -53,12 +54,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
     private final static Logger log = Logger.getLogger(ListBasedFreightTourManagerImpl.class);
 	
-    /**
-     * the freight contrib will be run before every iteration where iterationNumber % FREIGHTTOUR_PLANNING_INTERVAL == 0- \n
-	 * if FREIGHTTOUR_PLANNING_INTERVAL is set to 0 or any negative integer, the freight contrib will run only before iteration 0.
-     */
-    //TODO make configurable
-    private final int FREIGHTTOUR_PLANNING_INTERVAL = 1;
 
 	private Map<Link, List<List<StayTask>>> startLinkToFreightTour = new HashMap<>();
 
@@ -158,7 +153,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
      *returns the list of all freight activities converted to taxi task that represent the best matching freight tour for the given vehicle.
      * at the moment, the dispatch logic does the following:
      * look for the closest three depots. ask either one, if a tour is available that the vehicle can handle before it needs to be back at it's owner's place.
-     * as soon as a fitting tour is found, return it and delete from the manager's to do list for the iteration.
+	 * as soon as a fitting tour is found, return it and delete it from the manager's to do list for the iteration.
      * @param vehicle that requests a freight tozr.
 	 */
 	@Override
@@ -168,7 +163,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
     private List<StayTask> getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
 		StraightLineKnnFinder<Link,Link> finder = new StraightLineKnnFinder<>(3,link1-> link1 , link2 -> link2 );
-		List<Link> nearestDepots = finder.findNearest(Tasks.getEndLink(vehicle.getSchedule().getCurrentTask()),startLinkToFreightTour.keySet().stream());
+		Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
+		List<Link> nearestDepots = finder.findNearest(requestLink, startLinkToFreightTour.keySet().stream());
 
 		//TODO: probably create a representation of the freightTour - something like FreightTourData - that contains the List<StayTask> and the duration, maybe the start and end link explicitly
         //TODO: test this spatial dispatch algorithm, especially: is the nearestDepots list sorted??
@@ -189,6 +185,12 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
                 break;
             }
         }
+		if (matchingFreightTour == null) {
+			//we could throw the FreightTourRequestDeniedEvent here and hand to it the depot list on which we had a look on as well as the amount of
+			//freight tours we looked at etc.
+			//BUT: we would need the eventsManager AND the MobsimTimer (for latter, we could normally also use currentTask.getEndTime() but that would be dirty somehow)
+//			events.processEvent(new FreightTourRequestDeniedEvent(vehicle, requestLink.getId(), time));
+		}
         return matchingFreightTour;
 	}
 
@@ -209,7 +211,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 */
 	private boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, List<StayTask> freightTour, LeastCostPathCalculator router) {
 
-		//TODO: implement a global end time point for freigh tours ? so somehting like: after 8 p.m. no one should deliver anything anymore ??
 		Double timeWhenOwnerNeedsVehicle = vehicle.getOwnerActEndTimes().peek();
 		if (timeWhenOwnerNeedsVehicle == null) {
 			throw new IllegalStateException("could not derive must return time of vehicle " + vehicle.getId() + " out of vehicle specification");
@@ -230,26 +231,39 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 		VrpPathWithTravelData pathFromCurrTaskToDepot = VrpPaths.calcAndCreatePath(currentTask.getLink(), start.getLink(), currentTask.getEndTime(), router, travelTime);
 
+//		check if there is enough time before latest start
+		if (pathFromCurrTaskToDepot.getArrivalTime() > PFAVUtils.FREIGHTTOUR_LATEST_START) return false;
+//		check if vehicle arrives before earliest start. calculate the waiting time in case.
+		double waitTimeAtDepot = 0;
+		if (pathFromCurrTaskToDepot.getArrivalTime() < PFAVUtils.FREIGHTTOUR_EARLIEST_START) {
+			waitTimeAtDepot = PFAVUtils.FREIGHTTOUR_EARLIEST_START - pathFromCurrTaskToDepot.getArrivalTime();
+		}
+
 		Link returnLink = PFAVUtils.getLastPassengerDropOff(vehicle.getSchedule()).getLink();
 		//owner link will be null if no dropOff has been performed yet. return to start link instead.
+		//actually this should not happen in the moment as the first call of the requestFreightTour() method in the scheduler always is triggered after a passenger dropoff
 		if (returnLink == null) returnLink = vehicle.getStartLink();
 
 		VrpPathWithTravelData pathFromDepotToOwner = VrpPaths.calcAndCreatePath(end.getLink(), returnLink, end.getEndTime(), router, travelTime);
 
-		//TODO check this again
 		double totalTimeNeededToPerformFreightTour = pathFromCurrTaskToDepot.getTravelTime() +
+				waitTimeAtDepot +
 				tourDuration +
 				pathFromDepotToOwner.getTravelTime();
 
 		if (timeWhenOwnerNeedsVehicle >= currentTask.getEndTime() + totalTimeNeededToPerformFreightTour + PFAVUtils.TIME_BUFFER) {
-//			vehicle.getOwnerActEndTimes().remove();  => this is moved to the scheduler in order to make several freight tour performances in a row possible
 			log.info("tour duration = " + totalTimeNeededToPerformFreightTour + " seems to be okay for vehicle " + vehicle.getId() + " starting at time " + currentTask.getEndTime());
 			log.warn("the owner wants the vehicle back at time " + timeWhenOwnerNeedsVehicle);
+
+			if (waitTimeAtDepot > 0) {
+				log.info("inserting wait task with duration= " + waitTimeAtDepot + " at the depot link " + start.getLink().getId() + " for vehicle " + vehicle.getId()
+						+ " in order to be consistent with earliest start time set to " + PFAVUtils.FREIGHTTOUR_EARLIEST_START);
+				freightTour.add(0, new TaxiStayTask(start.getBeginTime() - waitTimeAtDepot, start.getBeginTime(), start.getLink()));
+			}
 			return true;
 		}
 		return false;
 	}
-
 
 	private void runTourPlanning() {
 		FreightTourCalculatorImpl tourCalculator = new FreightTourCalculatorImpl();
@@ -280,8 +294,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 	@Override
     public void notifyIterationStarts(IterationStartsEvent event){
-        if ((FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1 && PFAVUtils.RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION)
-                || (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
+		if ((PFAVUtils.FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1 && PFAVUtils.RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION)
+				|| (event.getIteration() % PFAVUtils.FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
             log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
             runTourPlanning();
         } else {
@@ -296,7 +310,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 */
 	@Override
 	public void notifyIterationEnds(IterationEndsEvent event) {
-		if ((FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) || (event.getIteration() % FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
+		if ((PFAVUtils.FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) || (event.getIteration() % PFAVUtils.FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
             String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/";
 			log.info("writing carrier file of iteration " + event.getIteration() + " to " + dir);
             writeCarriers(this.carriers, dir + "carriers_it" + event.getIteration() + ".xml");

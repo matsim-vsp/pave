@@ -29,6 +29,19 @@ import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
  */
 public final class PFAVUtils {
 
+    /**
+     * represents the latest start time of a freight tour. that means, the retool task of a freight tour has to start before
+     * FREIGHTTOUR_LATEST_START. in the manager, the path to the depot is calculated. if the above mentioned condition is not fulfilled
+     * the freight tour will not be dispatched to the vehicle (with reason: not enough time to perform the tour)
+     */
+    public static final double FREIGHTTOUR_LATEST_START = 18 * 3600;
+
+    /**
+     * represents the earliest start time of a freight tour. that means, the retool task of a freight tour must not start before
+     * FREIGHTTOUR_EARLIEST_START. in the manager, the path to the depot is calculated. if needed, a stay task at the depot is inserted so that the PFAV waits in case.
+     */
+    public static final double FREIGHTTOUR_EARLIEST_START = 10 * 3600;
+
 	public static final String PFAV_ID_SUFFIX = "_PFAV";
 
 	public static final String DEFAULT_VEHTYPES_FILE = "input/PFAVvehicleTypes.xml";
@@ -48,10 +61,17 @@ public final class PFAVUtils {
 	 */
     public static final double TIME_BUFFER = 5 * 60;
 
-	/**
-	 *
+    /**
+     * can be used to cut down the amount of freight tours on the manager's to do list for the iteration.
+     * The set of freight tours remains constant until freight tour calculation is run for the next time, see FREIGHTTOUR_PLANNING_INTERVAL.
 	 */
 	public static final double FREIGHT_DEMAND_SAMPLE_SIZE = 1.;
+
+    /**
+     * the freight contrib will be run before every iteration where iterationNumber % FREIGHTTOUR_PLANNING_INTERVAL == 0- \n
+     * if FREIGHTTOUR_PLANNING_INTERVAL is set to 0 or any negative integer, the freight contrib will run only before iteration 0.
+     */
+    public static final int FREIGHTTOUR_PLANNING_INTERVAL = 1;
 
 	/**
 	 * defines whether the freight tour manager triggers the JSprit run in iteration 0
