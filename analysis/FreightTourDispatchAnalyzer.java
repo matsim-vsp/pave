@@ -99,15 +99,17 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
             }
         }
 
-        return new FreightTourDispatchData(event.getVehicleId(),
-                depotLink,
-                event.getRequestLink(),
-                event.getTime(),
-                event.getFreightTourDuration(),
-                event.getFreightTourDistance(),
-                emptyMeters,
-                distanceToDepot,
-                plannedTotalCapacityDemand);
+        return FreightTourDispatchData.newBuilder().
+                vehicleId(event.getVehicleId())
+                .depotLink(depotLink)
+                .requestLink(event.getRequestLink())
+                .dispatchTime(event.getTime())
+                .plannedTourDuration(event.getFreightTourDuration())
+                .plannedTourLength(event.getFreightTourDistance())
+                .plannedEmptyMeters(emptyMeters)
+                .distanceToDepot(distanceToDepot)
+                .plannedTotalCapacityDemand(plannedTotalCapacityDemand)
+                .build();
     }
 
     @Override

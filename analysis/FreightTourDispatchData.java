@@ -24,7 +24,8 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 
-//TODO: write a builder
+import java.util.Objects;
+
 public class FreightTourDispatchData {
 
     private final Id<DvrpVehicle> vehicleId;
@@ -43,70 +44,86 @@ public class FreightTourDispatchData {
     private double actualEmptyMeters = Double.NEGATIVE_INFINITY;
     private int actualServedCapacityDemand = Integer.MIN_VALUE;
 
-    public FreightTourDispatchData(Id<DvrpVehicle> vehicleId, Id<Link> depotLink, Id<Link> requestLink, double dispatchTime, double plannedTourDuration, double plannedTourLength, double plannedEmptyMeters, double distanceToDepot, int plannedTotalCapacityDemand) {
-        this.vehicleId = vehicleId;
-        this.depotLink = depotLink;
-        this.dispatchTime = dispatchTime;
-        this.requestLink = requestLink;
-        this.plannedTourDuration = plannedTourDuration;
-        this.plannedTourLength = plannedTourLength;
-        this.plannedEmptyMeters = plannedEmptyMeters;
-        this.distanceToDepot = distanceToDepot;
-        this.plannedTotalCapacityDemand = plannedTotalCapacityDemand;
+//    public FreightTourDispatchData(Id<DvrpVehicle> vehicleId, Id<Link> depotLink, Id<Link> requestLink, double dispatchTime, double plannedTourDuration, double plannedTourLength, double plannedEmptyMeters, double distanceToDepot, int plannedTotalCapacityDemand) {
+//        this.vehicleId = vehicleId;
+//        this.depotLink = depotLink;
+//        this.dispatchTime = dispatchTime;
+//        this.requestLink = requestLink;
+//        this.plannedTourDuration = plannedTourDuration;
+//        this.plannedTourLength = plannedTourLength;
+//        this.plannedEmptyMeters = plannedEmptyMeters;
+//        this.distanceToDepot = distanceToDepot;
+//        this.plannedTotalCapacityDemand = plannedTotalCapacityDemand;
+//    }
+
+    private FreightTourDispatchData(FreightTourDispatchData.Builder builder) {
+        this.vehicleId = Objects.requireNonNull(builder.vehicleId);
+        this.depotLink = Objects.requireNonNull(builder.depotLink);
+        this.dispatchTime = builder.dispatchTime;
+        this.requestLink = Objects.requireNonNull(builder.requestLink);
+        this.plannedTourDuration = builder.plannedTourDuration;
+        this.plannedTourLength = builder.plannedTourLength;
+        this.plannedEmptyMeters = builder.plannedEmptyMeters;
+        this.distanceToDepot = builder.distanceToDepot;
+        this.plannedTotalCapacityDemand = builder.plannedTotalCapacityDemand;
     }
 
-    public void addToActualTourLength(double metersToAdd) {
+    public static FreightTourDispatchData.Builder newBuilder() {
+        return new FreightTourDispatchData.Builder();
+    }
+
+    void addToActualTourLength(double metersToAdd) {
         if (this.actualTourLength == Double.NEGATIVE_INFINITY) actualTourLength = metersToAdd;
         else this.actualTourLength += metersToAdd;
     }
 
-    public void addToActualEmptyMeters(double metersToAdd) {
+    void addToActualEmptyMeters(double metersToAdd) {
         if (this.actualEmptyMeters == Double.NEGATIVE_INFINITY) this.actualEmptyMeters = metersToAdd;
         else this.actualEmptyMeters += metersToAdd;
     }
 
-    public void addToActualServedCapacityDemand(int actualServedCapacityDemandToAdd) {
+    void addToActualServedCapacityDemand(int actualServedCapacityDemandToAdd) {
         if (this.actualServedCapacityDemand == Integer.MIN_VALUE) this.actualServedCapacityDemand = actualServedCapacityDemandToAdd;
         else this.actualServedCapacityDemand += actualServedCapacityDemandToAdd;
     }
 
-    public double getPlannedTourDuration() {
+    double getPlannedTourDuration() {
         return plannedTourDuration;
     }
 
-    public double getActualTourDuration() {
+    double getActualTourDuration() {
         return actualTourDuration;
     }
 
-    public void setActualTourDuration(double actualTourDuration) {
+    void setActualTourDuration(double actualTourDuration) {
         this.actualTourDuration = actualTourDuration;
     }
 
-    public double getPlannedTourLength() {
+    double getPlannedTourLength() {
         return plannedTourLength;
     }
 
-    public double getActualTourLength() {
+    double getActualTourLength() {
         return actualTourLength;
     }
 
-    public double getPlannedEmptyMeters() {
+    double getPlannedEmptyMeters() {
         return plannedEmptyMeters;
     }
 
-    public double getActualEmptyMeters() {
+    double getActualEmptyMeters() {
         return actualEmptyMeters;
     }
 
-    public double getDistanceToDepot() {
+    double getDistanceToDepot() {
         return distanceToDepot;
     }
 
-    public int getPlannedTotalCapacityDemand() {
+    int getPlannedTotalCapacityDemand() {
         return plannedTotalCapacityDemand;
     }
 
-    public int getActualServedCapacityDemand() {
+    int getActualServedCapacityDemand() {
         return actualServedCapacityDemand;
     }
 
@@ -114,15 +131,81 @@ public class FreightTourDispatchData {
         return vehicleId;
     }
 
-    public double getDispatchTime() {
+    double getDispatchTime() {
         return dispatchTime;
     }
 
-    public Id<Link> getDepotLink() {
+    Id<Link> getDepotLink() {
         return depotLink;
     }
 
-    public Id<Link> getRequestLink() {
+    Id<Link> getRequestLink() {
         return requestLink;
+    }
+
+    public static final class Builder {
+        private Id<DvrpVehicle> vehicleId;
+        private double dispatchTime;
+
+        private Id<Link> depotLink;
+        private Id<Link> requestLink;
+
+        private double plannedTourDuration;
+        private double plannedTourLength;
+        private double plannedEmptyMeters;
+        private double distanceToDepot;
+        private int plannedTotalCapacityDemand;
+
+        private Builder() {
+        }
+
+        public FreightTourDispatchData.Builder vehicleId(Id<DvrpVehicle> val) {
+            vehicleId = val;
+            return this;
+        }
+
+        public FreightTourDispatchData.Builder dispatchTime(double val) {
+            dispatchTime = val;
+            return this;
+        }
+
+        public FreightTourDispatchData.Builder depotLink(Id<Link> val) {
+            depotLink = val;
+            return this;
+        }
+
+        public FreightTourDispatchData.Builder requestLink(Id<Link> val) {
+            requestLink = val;
+            return this;
+        }
+
+        public FreightTourDispatchData.Builder plannedTourDuration(double val) {
+            plannedTourDuration = val;
+            return this;
+        }
+
+        public FreightTourDispatchData.Builder plannedTourLength(double val) {
+            plannedTourLength = val;
+            return this;
+        }
+
+        public FreightTourDispatchData.Builder plannedEmptyMeters(double val) {
+            plannedEmptyMeters = val;
+            return this;
+        }
+
+        public FreightTourDispatchData.Builder distanceToDepot(double val) {
+            distanceToDepot = val;
+            return this;
+        }
+
+        public FreightTourDispatchData.Builder plannedTotalCapacityDemand(int val) {
+            plannedTotalCapacityDemand = val;
+            return this;
+        }
+
+        public FreightTourDispatchData build() {
+            return new FreightTourDispatchData(this);
+        }
     }
 }
