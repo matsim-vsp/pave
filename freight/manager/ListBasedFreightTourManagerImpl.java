@@ -18,9 +18,11 @@
  * *********************************************************************** */
 package freight.manager;
 
+import analysis.PFAVUnfinishedToursDumper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import freight.calculator.FreightTourCalculatorImpl;
+import freight.tour.PFAVTourData;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -53,11 +55,11 @@ import java.util.*;
 public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourManager, IterationStartsListener, IterationEndsListener {
 
     private final static Logger log = Logger.getLogger(ListBasedFreightTourManagerImpl.class);
-	
 
-	private Map<Link, List<List<StayTask>>> startLinkToFreightTour = new HashMap<>();
 
-	private List<List<StayTask>> freightTours = new ArrayList<>();
+	private Map<Link, List<PFAVTourData>> startLinkToFreightTour = new HashMap<>();
+
+	private List<PFAVTourData> freightTours = new ArrayList<>();
 	@Inject
 	@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
 	private Network network;
@@ -94,15 +96,15 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		return carriers;
 	}
 
-	private List<List<StayTask>> convertCarrierPlansToTaskList(Carriers carriers) {
+	private List<PFAVTourData> convertCarrierPlansToTaskList(Carriers carriers) {
         if (PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE < 0 || PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE > 1)
 			throw new IllegalStateException("the sample size for the freight demand must be in between 0 and 1");
 
         //here we create a carrier copy which only contains the freight tours used in the current iteration in order to write those out in form of a carriers.xml file
 
 		log.info("start converting carrier plans to taxi tasks..");
-		
-		List<List<StayTask>> freightTours = new ArrayList<>();
+
+		List<PFAVTourData> freightTours = new ArrayList<>();
         carriersWithOnlyUsedTours = new Carriers();
         log.info(("number of carriers = " + carriers.getCarriers().size()));
 		for(Carrier carrier : carriers.getCarriers().values()) {
@@ -112,7 +114,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 			for (ScheduledTour freightTour : plan.getScheduledTours()) {
                 //we need to cut down here and not beforehand in the services, since the tour planning would otherwise result in longer and inaccurate tours
                 if (MatsimRandom.getRandom().nextDouble() <= PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE) {
-                    freightTours.add(ConvertFreightTourForDvrp.convertToList(freightTour, this.network));
+					freightTours.add(ConvertFreightTourForDvrp.convertToPFAVTourData(freightTour, this.network));
                     onlyUsedTours.add(freightTour);
                 }
             }
@@ -128,7 +130,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
      * @see freight.manager.ListBasedFreightTourManager#getAVFreightTours()
      */
     @Override
-    public List<List<StayTask>> getPFAVTours() {
+	public List<PFAVTourData> getPFAVTours() {
         return this.freightTours;
     }
 
@@ -136,11 +138,11 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
      * @see freight.manager.ListBasedFreightTourManager#getRandomAVFreightTour()
      */
     @Override
-	public List<StayTask> getRandomPFAVTour() {
+	public PFAVTourData getRandomPFAVTour() {
         if (this.startLinkToFreightTour.size() == 0) return null;
         Link depot = this.startLinkToFreightTour.keySet().toArray(new Link[startLinkToFreightTour.size()])[MatsimRandom.getRandom().nextInt(this.startLinkToFreightTour.size())];
 
-        List<StayTask> tour = this.startLinkToFreightTour.get(depot).remove(MatsimRandom.getRandom().nextInt(this.startLinkToFreightTour.get(depot).size()));
+		PFAVTourData tour = this.startLinkToFreightTour.get(depot).remove(MatsimRandom.getRandom().nextInt(this.startLinkToFreightTour.get(depot).size()));
 
         //if no tour at the depot is left, delete depot
         if (this.startLinkToFreightTour.get(depot).isEmpty()) {
@@ -157,11 +159,11 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
      * @param vehicle that requests a freight tozr.
 	 */
 	@Override
-    public List<StayTask> getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
+	public PFAVTourData getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
 		return getDispatchedTourForVehicle(vehicle, router);
 	}
 
-    private List<StayTask> getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
+	private PFAVTourData getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
 		StraightLineKnnFinder<Link,Link> finder = new StraightLineKnnFinder<>(3,link1-> link1 , link2 -> link2 );
 		Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
 		List<Link> nearestDepots = finder.findNearest(requestLink, startLinkToFreightTour.keySet().stream());
@@ -169,15 +171,17 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		//TODO: probably create a representation of the freightTour - something like FreightTourData - that contains the List<StayTask> and the duration, maybe the start and end link explicitly
         //TODO: test this spatial dispatch algorithm, especially: is the nearestDepots list sorted??
 
-        List<StayTask> matchingFreightTour = null;
+		PFAVTourData matchingFreightTour = null;
 		for (Link l : nearestDepots){
-			Iterator<List<StayTask>> freightTourIterator = this.startLinkToFreightTour.get(l).iterator();
+			Iterator<PFAVTourData> freightTourIterator = this.startLinkToFreightTour.get(l).iterator();
 			while(freightTourIterator.hasNext()){
-				List<StayTask> freightTour = freightTourIterator.next();
-                if (isEnoughTimeLeftToPerformFreightTour(vehicle, freightTour, router)) {
+				PFAVTourData tourData = freightTourIterator.next();
+				if (isEnoughTimeLeftToPerformFreightTour(vehicle, tourData, router)) {
 					freightTourIterator.remove();
-                    matchingFreightTour = freightTour;
-                    break;
+					matchingFreightTour = tourData;
+					break;
+				} else {
+					tourData.incrementAmountOfRejections();
 				}
 			}
             if (matchingFreightTour != null) {
@@ -209,7 +213,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 * @param router
 	 * @return
 	 */
-	private boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, List<StayTask> freightTour, LeastCostPathCalculator router) {
+	private boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, PFAVTourData freightTour, LeastCostPathCalculator router) {
 
 		Double timeWhenOwnerNeedsVehicle = vehicle.getOwnerActEndTimes().peek();
 		if (timeWhenOwnerNeedsVehicle == null) {
@@ -224,12 +228,12 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		}
 
 		StayTask currentTask = (StayTask) vehicle.getSchedule().getCurrentTask();
-		StayTask start = freightTour.get(0);
-		StayTask end = freightTour.get(freightTour.size() - 1);
+		StayTask start = freightTour.getTourTasks().get(0);
+		StayTask end = freightTour.getTourTasks().get(freightTour.getTourTasks().size() - 1);
 
-		double tourDuration = end.getEndTime() - start.getBeginTime();
+		double tourDuration = freightTour.getPlannedTourDuration();
 
-		VrpPathWithTravelData pathFromCurrTaskToDepot = VrpPaths.calcAndCreatePath(currentTask.getLink(), start.getLink(), currentTask.getEndTime(), router, travelTime);
+		VrpPathWithTravelData pathFromCurrTaskToDepot = VrpPaths.calcAndCreatePath(currentTask.getLink(), freightTour.getDepotLink(), currentTask.getEndTime(), router, travelTime);
 
 //		check if there is enough time before latest start
 		if (pathFromCurrTaskToDepot.getArrivalTime() > PFAVUtils.FREIGHTTOUR_LATEST_START) return false;
@@ -241,10 +245,10 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 		Link returnLink = PFAVUtils.getLastPassengerDropOff(vehicle.getSchedule()).getLink();
 		//owner link will be null if no dropOff has been performed yet. return to start link instead.
-		//actually this should not happen in the moment as the first call of the requestFreightTour() method in the scheduler always is triggered after a passenger dropoff
+		//actually this should not happen in the moment, as the first call of the requestFreightTour() method in the scheduler always is triggered after a passenger dropoff
 		if (returnLink == null) returnLink = vehicle.getStartLink();
 
-		VrpPathWithTravelData pathFromDepotToOwner = VrpPaths.calcAndCreatePath(end.getLink(), returnLink, end.getEndTime(), router, travelTime);
+		VrpPathWithTravelData pathFromDepotToOwner = VrpPaths.calcAndCreatePath(freightTour.getDepotLink(), returnLink, end.getEndTime(), router, travelTime);
 
 		double totalTimeNeededToPerformFreightTour = pathFromCurrTaskToDepot.getTravelTime() +
 				waitTimeAtDepot +
@@ -256,9 +260,9 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 			log.warn("the owner wants the vehicle back at time " + timeWhenOwnerNeedsVehicle);
 
 			if (waitTimeAtDepot > 0) {
-				log.info("inserting wait task with duration= " + waitTimeAtDepot + " at the depot link " + start.getLink().getId() + " for vehicle " + vehicle.getId()
+				log.info("inserting wait task with duration= " + waitTimeAtDepot + " at the depot link " + freightTour.getDepotLink().getId() + " for vehicle " + vehicle.getId()
 						+ " in order to be consistent with earliest start time set to " + PFAVUtils.FREIGHTTOUR_EARLIEST_START);
-				freightTour.add(0, new TaxiStayTask(start.getBeginTime() - waitTimeAtDepot, start.getBeginTime(), start.getLink()));
+				freightTour.getTourTasks().add(0, new TaxiStayTask(start.getBeginTime() - waitTimeAtDepot, start.getBeginTime(), start.getLink()));
 			}
 			return true;
 		}
@@ -280,12 +284,12 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
         log.info("initialising mapping of freight tours to link id's");
 		this.startLinkToFreightTour = new HashMap<>();
 
-        for (List<StayTask> freightTour : this.freightTours) {
-			Link start = freightTour.get(0).getLink();
+		for (PFAVTourData freightTour : this.freightTours) {
+			Link start = freightTour.getDepotLink();
 			if(this.startLinkToFreightTour.containsKey(start)){
 				this.startLinkToFreightTour.get(start).add(freightTour);
 			} else{
-				List<List<StayTask>> allDepotTours = new ArrayList<>();
+				List<PFAVTourData> allDepotTours = new ArrayList<>();
 				allDepotTours.add(freightTour);
 				this.startLinkToFreightTour.put(start,allDepotTours);
 			}
@@ -315,6 +319,9 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 			log.info("writing carrier file of iteration " + event.getIteration() + " to " + dir);
             writeCarriers(this.carriers, dir + "carriers_it" + event.getIteration() + ".xml");
             writeCarriers(this.carriersWithOnlyUsedTours, dir + "carriersOnlyUsedTours_it" + event.getIteration() + ".xml");
+			List<PFAVTourData> unfinishedTours = new ArrayList<>();
+			this.startLinkToFreightTour.forEach((link, tours) -> unfinishedTours.addAll(tours));
+			new PFAVUnfinishedToursDumper(unfinishedTours).writeStats(dir + "notDispatchedTours_it" + event.getIteration() + ".csv");
 		}
 	}
 

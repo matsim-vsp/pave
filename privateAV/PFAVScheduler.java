@@ -3,6 +3,8 @@ package privateAV;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import freight.manager.ListBasedFreightTourManager;
+import freight.tour.DispatchedPFAVTourData;
+import freight.tour.PFAVTourData;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -157,22 +159,22 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 
 	private void requestFreightTour(DvrpVehicle vehicle, boolean isComingFromAnotherFreightTour) {
-		List<StayTask> freightTour = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
-		if (freightTour != null) {
+		PFAVTourData tourData = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
+		if (tourData != null) {
 			log.info("vehicle " + vehicle.getId() + " requested a freight tour at " + timer.getTimeOfDay() + " and received one by the manager");
 
 			if (isComingFromAnotherFreightTour) eventsManager.processEvent(new FreightTourCompletedEvent(vehicle, timer.getTimeOfDay()));
-			scheduleFreightTour(vehicle, freightTour);
+			scheduleFreightTour(vehicle, tourData);
 
 //			if (!requestedVehicles.keySet().contains(vehicle.getId())) {
 //				if(isComingFromAnotherFreightTour) eventsManager.processEvent(new FreightTourCompletedEvent(vehicle, timer.getTimeOfDay()));
-//				scheduleFreightTour(vehicle, freightTour);
+//				scheduleFreightTour(vehicle, tourData);
 //			} else {
 //				//TODO: move the check (whether the owner already requested the PFAV) further up to updateBeforeNextTask(). it is here only for test purposes...
 //				//especially because the freight tour will now not be performed but the manager has already deleted it from it's set
 //				log.warn("vehicle " + vehicle.getId() +
 //						" thinks that it can manage a freight tour in time but the owner has already requested the vehicle with submission time = " + requestedVehicles.get(vehicle.getId()));
-//				freightManager.getPFAVTours().add(freightTour);
+//				freightManager.getPFAVTours().add(tourData);
 //			}
 
 		} else {
@@ -182,36 +184,46 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 	}
 
-	private void scheduleFreightTour(DvrpVehicle vehicle, List<StayTask> freightActivities) {
+	private void scheduleFreightTour(DvrpVehicle vehicle, PFAVTourData tourData) {
 		//schedule just got updated.. current task should be a dropOff, nextTast should be a STAY task
 		Schedule schedule = vehicle.getSchedule();
 		Link requestLink = ((StayTaskImpl) vehicle.getSchedule().getCurrentTask()).getLink();
+		List<StayTask> freightActivities = tourData.getTourTasks();
 
 		cleanScheduleBeforeInsertingFreightTour(vehicle, schedule);
 
 		List<Task> freightTour = new ArrayList<>(); //for analysis
-		double totalDistance = 0.;    //for analysis
+		double totalDistance = 0.;  //for analysis
+		double emptyMeters = 0.;    //for analysis
+		double distanceToDepot = 0; //for analysis
 
 		StayTask previousTask = (StayTaskImpl) schedule.getCurrentTask();
-		double tourDuration = previousTask.getEndTime();
+		double tourDuration = previousTask.getEndTime();  //for analysis
+
 		for (int i = 0; i < freightActivities.size(); i++) {
 			StayTask currentTask = freightActivities.get(i);
 
 			VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(previousTask.getLink(), currentTask.getLink(), previousTask.getEndTime(), router, travelTime);
 
-			DriveTask driveTask;
-			//alternatively one could say: if(currentTask instanceof PFAVRetoolTask) cause these should be only at the ends of the tour
+			DriveTask driveTask = null;
+			//first activity could be PFAVRetoolTask or TaxiStayTask
 			if (i == 0 || i == freightActivities.size() - 1) {
 				driveTask = new TaxiEmptyDriveTask(path);
 			} else {
-				driveTask = new PFAVServiceDriveTask(path);
+				//if we inserted a stay task at the depot before the start of freight tour, we don't want to schedule a drive task, as vehicle is already at the depot
+				if (!(currentTask instanceof PFAVRetoolTask)) driveTask = new PFAVServiceDriveTask(path);
 			}
-			schedule.addTask(driveTask);
+			if (driveTask != null) {
+				schedule.addTask(driveTask);
 
-			freightTour.add(driveTask); //analysis
-			//do not compute the first link since it's not really travelled but just where we are inserted
-			for (int z = 1; z < driveTask.getPath().getLinkCount(); z++) {
-				totalDistance += driveTask.getPath().getLink(z).getLength(); //analysis
+				freightTour.add(driveTask); //analysis
+				//do not compute the first link since it's not really travelled but just where we are inserted
+				for (int z = 1; z < driveTask.getPath().getLinkCount(); z++) {
+					double distance = driveTask.getPath().getLink(z).getLength();
+					totalDistance += distance; //analysis
+					if (driveTask instanceof TaxiEmptyDriveTask) emptyMeters += distance;
+					if (i == 0) distanceToDepot += distance;
+				}
 			}
 
 			double duration = currentTask.getEndTime() - currentTask.getBeginTime();
@@ -230,9 +242,22 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		//mark this vehicle's state as "on freight tour"
 		this.vehiclesOnFreightTour.add(vehicle);
 		log.info("vehicle " + vehicle.getId() + " got assigned to a freight schedule");
-		//the following is only for analysis
 		tourDuration = previousTask.getEndTime() - tourDuration;
-		eventsManager.processEvent(new FreightTourScheduledEvent((PFAVehicle) vehicle, timer.getTimeOfDay(), requestLink.getId(), tourDuration, totalDistance, freightTour));
+
+		//the following is only for analysis
+		tourData.setPlannedTourDuration(tourDuration);
+		tourData.setPlannedTourLength(totalDistance);
+
+		DispatchedPFAVTourData dispatchData = DispatchedPFAVTourData.newBuilder()
+				.vehicle((PFAVehicle) vehicle)
+				.dispatchTime(timer.getTimeOfDay())
+				.requestLink(requestLink.getId())
+				.tourData(tourData)
+				.distanceToDepot(distanceToDepot)
+				.plannedEmptyMeters(emptyMeters)
+				.build();
+
+		eventsManager.processEvent(new FreightTourScheduledEvent(dispatchData));
 	}
 
 	private void cleanScheduleBeforeInsertingFreightTour(DvrpVehicle vehicle, Schedule schedule) {

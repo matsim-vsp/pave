@@ -22,7 +22,7 @@ package analysis;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.apache.commons.collections.map.HashedMap;
+import freight.tour.DispatchedPFAVTourData;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.ActivityEndEvent;
 import org.matsim.api.core.v01.events.LinkEnterEvent;
@@ -34,11 +34,6 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.run.QSimScopeObjectListener;
-import org.matsim.contrib.dvrp.schedule.DriveTaskImpl;
-import org.matsim.contrib.dvrp.schedule.Schedule;
-import org.matsim.contrib.dvrp.schedule.Schedules;
-import org.matsim.contrib.dvrp.schedule.Task;
-import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 import org.matsim.contrib.util.CSVLineBuilder;
 import org.matsim.contrib.util.CompactCSVWriter;
@@ -48,7 +43,6 @@ import org.matsim.core.utils.io.IOUtils;
 import privateAV.events.FreightTourCompletedEvent;
 import privateAV.events.FreightTourRequestDeniedEvent;
 import privateAV.events.FreightTourScheduledEvent;
-import privateAV.schedule.PFAVServiceTask;
 import privateAV.vrpagent.PFAVActionCreator;
 
 import java.util.HashMap;
@@ -63,62 +57,21 @@ import java.util.Set;
  */
 public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSimScopeObjectListener<Fleet>, LinkEnterEventHandler, ActivityEndEventHandler, IterationEndsListener {
 
-    private Map<Id<DvrpVehicle>, FreightTourDispatchData> begunFreightTours = new HashMap<>();
-    private Map<Id<DvrpVehicle>, Double> startTimes = new HashedMap();
-    private Set<FreightTourDispatchData> completedFreightTours = new HashSet<>();
+    private Map<Id<DvrpVehicle>, DispatchedPFAVTourData> begunFreightTours = new HashMap<>();
+    private Set<DispatchedPFAVTourData> completedFreightTours = new HashSet<>();
 
     private Fleet fleet;
-
 
     @Inject
     @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
     private Network network;
 
-    private static FreightTourDispatchData generateFreightTourDispatchData(FreightTourScheduledEvent event) {
-        double emptyMeters = 0.;
-        double distanceToDepot = 0;
-        int plannedTotalCapacityDemand = 0;
-        Id<Link> depotLink = null;
-        boolean firstEmptyDrive = true;
-
-        for (Task t : event.getFreightTour()) {
-            if (t instanceof TaxiEmptyDriveTask) {
-                DriveTaskImpl driveTask = (DriveTaskImpl) t;
-
-                //do not count the first link since it is not really driven
-                for (int z = 1; z < driveTask.getPath().getLinkCount(); z++) {
-                    emptyMeters += driveTask.getPath().getLink(z).getLength();
-                    if (firstEmptyDrive) {
-                        distanceToDepot += driveTask.getPath().getLink(z).getLength();
-                        depotLink = driveTask.getPath().getToLink().getId();
-                    }
-                }
-                firstEmptyDrive = false;
-            } else if (t instanceof PFAVServiceTask) {
-                plannedTotalCapacityDemand += ((PFAVServiceTask) t).getCarrierService().getCapacityDemand();
-            }
-        }
-
-        return FreightTourDispatchData.newBuilder().
-                vehicleId(event.getVehicleId())
-                .depotLink(depotLink)
-                .requestLink(event.getRequestLink())
-                .dispatchTime(event.getTime())
-                .plannedTourDuration(event.getFreightTourDuration())
-                .plannedTourLength(event.getFreightTourDistance())
-                .plannedEmptyMeters(emptyMeters)
-                .distanceToDepot(distanceToDepot)
-                .plannedTotalCapacityDemand(plannedTotalCapacityDemand)
-                .build();
-    }
-
     @Override
     public void handleEvent(final FreightTourScheduledEvent event) {
-        if (this.begunFreightTours.get(event.getVehicleId()) != null) {
+        if (this.begunFreightTours.get(event.getTourData().getVehicleId()) != null) {
             throw new IllegalStateException("a vehicle cannot perform two freight tours at the same time!");
         }
-        this.begunFreightTours.put(event.getVehicleId(), generateFreightTourDispatchData(event));
-        this.startTimes.put(event.getVehicleId(), event.getTime());
+        this.begunFreightTours.put(event.getTourData().getVehicleId(), event.getTourData());
     }
 
     @Override
@@ -128,14 +81,13 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
 
     @Override
     public void handleEvent(FreightTourCompletedEvent event) {
-        FreightTourDispatchData data = this.begunFreightTours.get(event.getVehicleId());
+        DispatchedPFAVTourData data = this.begunFreightTours.get(event.getVehicleId());
         if (data == null) {
             throw new RuntimeException("vehicle " + event.getVehicleId() + " completed a freight tour that has not begun?");
         }
-        data.setActualTourDuration(event.getTime() - this.startTimes.get(event.getVehicleId()));
+        data.setActualTourDuration(event.getTime() - data.getDispatchTime());
         this.completedFreightTours.add(data);
         this.begunFreightTours.remove(event.getVehicleId());
-        this.startTimes.remove(event.getVehicleId());
     }
 
     @Override
@@ -143,7 +95,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
         Link link = network.getLinks().get(event.getLinkId());
         if (this.begunFreightTours.keySet().contains(event.getVehicleId())) {
 
-            FreightTourDispatchData data = this.begunFreightTours.get(event.getVehicleId());
+            DispatchedPFAVTourData data = this.begunFreightTours.get(event.getVehicleId());
             data.addToActualTourLength(link.getLength());
 
             TaxiTask t = (TaxiTask) (fleet.getVehicles().get(event.getVehicleId())).getSchedule().getCurrentTask();
@@ -153,24 +105,28 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
         }
     }
 
+    // i use ActivityStartEvent instead of ActivityEndEvent, because i did get problems with the currentTask pointer of the schedule changing while
+    // i casted here in this method.... see below...
+    //for some reason, the current task in the vehicle's schedule is SOMETIMES already set to the next drive task, and SOMETIMES it is still pointing
+    //to the PFAVServiceTask... - i don't really understand why.... due to parallelisation ??
+    //tschlenther 14th of march '19
     @Override
     public void handleEvent(ActivityEndEvent event) {
+
         if (event.getActType().equals(PFAVActionCreator.SERVICE_ACTIVITY_TYPE)) {
             Id<DvrpVehicle> vehicleId = Id.create(event.getPersonId().toString(), DvrpVehicle.class);
 
-            //for some reason, the current task in the vehicle's schedule is SOMETIMES already set to the next drive task, and SOMETIMES it is still pointing
-            //to the PFAVServiceTask... - i don't really understand why.... due to parallelisation ??
-            //tschlenther 14th of march '19
-            Schedule schedule = this.fleet.getVehicles().get(vehicleId).getSchedule();
-            if (schedule.getCurrentTask() instanceof PFAVServiceTask) {
-                this.begunFreightTours.get(vehicleId)
-                        .addToActualServedCapacityDemand(((PFAVServiceTask) schedule.getCurrentTask()).getCarrierService().getCapacityDemand());
-            } else if (Schedules.getPreviousTask(schedule) instanceof PFAVServiceTask) {
-                this.begunFreightTours.get(vehicleId)
-                        .addToActualServedCapacityDemand(((PFAVServiceTask) (Schedules.getPreviousTask(schedule))).getCarrierService().getCapacityDemand());
-            } else {
-                throw new IllegalStateException("activityEndEvent does not fit to schedule status..");
-            }
+            this.begunFreightTours.get(vehicleId).notifyNextServiceTaskPerformed();
+//            Schedule schedule = this.fleet.getVehicles().get(vehicleId).getSchedule();
+//            if (schedule.getCurrentTask() instanceof PFAVServiceTask) {
+//                this.begunFreightTours.get(vehicleId)
+//                        .addToActualServedCapacityDemand(((PFAVServiceTask) schedule.getCurrentTask()).getCarrierService().getCapacityDemand());
+//            } else if (Schedules.getPreviousTask(schedule) instanceof PFAVServiceTask) {
+//                this.begunFreightTours.get(vehicleId)
+//                        .addToActualServedCapacityDemand(((PFAVServiceTask) (Schedules.getPreviousTask(schedule))).getCarrierService().getCapacityDemand());
+//            } else {
+//                throw new IllegalStateException("activityStartEvent does not fit to schedule status..");
+//            }
         }
     }
 
@@ -215,6 +171,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
         CSVLineBuilder lineBuilder = new CSVLineBuilder()
                 .add("VehicleID")
                 .add("DispatchTime")
+                .add("MustReturnTime")
                 .add("RequestLink")
                 .add("DepotLink")
                 .add("DistanceToDepot")
@@ -234,10 +191,11 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
     }
 
     private void writeCompletedToursData(CompactCSVWriter writer, String stringFormat, String dblFormat) {
-        for (FreightTourDispatchData data : this.completedFreightTours) {
+        for (DispatchedPFAVTourData data : this.completedFreightTours) {
             CSVLineBuilder lineBuilder = new CSVLineBuilder()
                     .add(data.getVehicleId().toString())
                     .addf(dblFormat, data.getDispatchTime())
+                    .addf(dblFormat, data.getMustReturnTime())
                     .addf(stringFormat, data.getRequestLink())
                     .addf(stringFormat, data.getDepotLink())
                     .addf(dblFormat, data.getDistanceToDepot())
@@ -260,7 +218,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
     }
 
     private void writeBegunToursData(CompactCSVWriter writer, String stringFormat, String dblFormat) {
-        for (FreightTourDispatchData data : this.begunFreightTours.values()) {
+        for (DispatchedPFAVTourData data : this.begunFreightTours.values()) {
             CSVLineBuilder lineBuilder = new CSVLineBuilder()
                     .add(data.getVehicleId().toString())
                     .addf(dblFormat, data.getDispatchTime())

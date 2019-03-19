@@ -18,6 +18,7 @@
  * *********************************************************************** */
 package freight.manager;
 
+import freight.tour.PFAVTourData;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.schedule.StayTask;
@@ -25,7 +26,6 @@ import org.matsim.contrib.freight.carrier.ScheduledTour;
 import org.matsim.contrib.freight.carrier.Tour;
 import org.matsim.contrib.freight.carrier.Tour.ServiceActivity;
 import org.matsim.contrib.freight.carrier.Tour.TourElement;
-import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import privateAV.PFAVUtils;
 import privateAV.schedule.PFAVRetoolTask;
 import privateAV.schedule.PFAVServiceTask;
@@ -47,11 +47,11 @@ public class ConvertFreightTourForDvrp {
 	 * Consequently, we only convert the (service) activities here and construct the paths/legs later.
      * @see ListBasedFreightTourManagerImpl
 	 */
-	static List<StayTask> convertToList(ScheduledTour freightTour, Network network) {
+    static PFAVTourData convertToPFAVTourData(ScheduledTour freightTour, Network network) {
 
         //the Start and End activities are not part of ScheduledTour.getTour.getTourElements();
         //otherwise, this method could be shortened by two thirds
-        List<StayTask> dvrpList = new ArrayList<>();
+        List<StayTask> taskList = new ArrayList<>();
 
         //we actually get the begin time by deriving it out of the first leg in the tour. in the freight activity itself, the begin time is always set to the 'opening time' or 0
         double tEnd = ((Tour.Leg) freightTour.getTour().getTourElements().get(0)).getExpectedDepartureTime();
@@ -59,17 +59,23 @@ public class ConvertFreightTourForDvrp {
         //since i (yet) don't know how to set the duration of the start act in the freight contrib it is actually 0. so we use our retool value derived out of our utils
         double tBegin = tEnd - PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
 
-        Link location = network.getLinks().get(freightTour.getTour().getStart().getLocation());
+        Link depotLink = network.getLinks().get(freightTour.getTour().getStart().getLocation());
 
-        dvrpList.add(new PFAVRetoolTask(tBegin, tEnd, location));
+        Link location = depotLink;
+        taskList.add(new PFAVRetoolTask(tBegin, tEnd, location));
+
+        int totalCapacityDemand = 0;
 
         for (TourElement currentElement : freightTour.getTour().getTourElements()) {
             if (currentElement instanceof ServiceActivity) {
                 //currently we need to add PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES, since we added this already to the start act duration
-                tBegin = ((ServiceActivity) currentElement).getExpectedArrival() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
-                tEnd = tBegin + ((ServiceActivity) currentElement).getDuration();
-                location = network.getLinks().get(((ServiceActivity) currentElement).getLocation());
-                dvrpList.add(new PFAVServiceTask(tBegin, tEnd, location, ((ServiceActivity) currentElement).getService()));
+                ServiceActivity serviceAct = (ServiceActivity) currentElement;
+
+                tBegin = serviceAct.getExpectedArrival() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
+                tEnd = tBegin + serviceAct.getDuration();
+                location = network.getLinks().get(serviceAct.getLocation());
+                totalCapacityDemand += serviceAct.getService().getCapacityDemand();
+                taskList.add(new PFAVServiceTask(tBegin, tEnd, location, serviceAct.getService()));
             }
         }
 
@@ -79,10 +85,10 @@ public class ConvertFreightTourForDvrp {
 //                + ((Tour.Leg) freightTour.getTour().getTourElements().get(size - 1)).getExpectedTransportTime();
         tEnd = tBegin + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
         location = network.getLinks().get(freightTour.getTour().getEnd().getLocation());
-        dvrpList.add(new PFAVRetoolTask(tBegin, tEnd, location));
+        taskList.add(new PFAVRetoolTask(tBegin, tEnd, location));
 
-		return dvrpList;
-		
+        double plannedTourDuration = tEnd - taskList.get(0).getBeginTime();
+        return new PFAVTourData(taskList, depotLink, plannedTourDuration, totalCapacityDemand);
 	}
 
 }

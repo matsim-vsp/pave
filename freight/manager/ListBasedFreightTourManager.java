@@ -18,7 +18,7 @@
  * *********************************************************************** */
 package freight.manager;
 
-import org.matsim.contrib.dvrp.schedule.StayTask;
+import freight.tour.PFAVTourData;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import privateAV.vehicle.PFAVehicle;
 
@@ -29,9 +29,9 @@ import java.util.List;
  *
  */
 public interface ListBasedFreightTourManager {
-    List<List<StayTask>> getPFAVTours();
+    List<PFAVTourData> getPFAVTours();
 
-    List<StayTask> getRandomPFAVTour();
+    PFAVTourData getRandomPFAVTour();
 
-    List<StayTask> getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router);
+    PFAVTourData getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router);
 }
