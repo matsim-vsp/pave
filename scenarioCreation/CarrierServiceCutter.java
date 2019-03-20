@@ -1,0 +1,47 @@
+/* *********************************************************************** *
+ * project: org.matsim.*
+ * Controler.java
+ *                                                                         *
+ * *********************************************************************** *
+ *                                                                         *
+ * copyright       : (C) 2007 by the members listed in the COPYING,        *
+ *                   LICENSE and WARRANTY file.                            *
+ * email           : info at matsim dot org                                *
+ *                                                                         *
+ * *********************************************************************** *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *   See also COPYING, LICENSE and WARRANTY file                           *
+ *                                                                         *
+ * *********************************************************************** */
+
+package scenarioCreation;
+
+import org.matsim.api.core.v01.Id;
+import org.matsim.contrib.freight.carrier.Carrier;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
+import org.matsim.contrib.freight.carrier.Carriers;
+
+public class CarrierServiceCutter {
+
+    private static final Id<Carrier> invetigatedCarrier = Id.create("0801_Neukölln", Carrier.class);
+
+    public static void main(String[] args) {
+
+        Carriers original = new Carriers();
+        CarrierPlanXmlReaderV2 reader = new CarrierPlanXmlReaderV2(original);
+        reader.readFile("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks.xml.gz");
+
+        for (Id<Carrier> id : original.getCarriers().keySet()) {
+            if (!(id.equals(Id.create(invetigatedCarrier, Carrier.class)))) {
+                original.getCarriers().get(id).getServices().clear();
+            }
+        }
+
+        new CarrierPlanXmlWriterV2(original).write("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/0801_Neukoelln.xml");
+    }
+}

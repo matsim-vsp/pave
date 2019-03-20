@@ -34,6 +34,8 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.gis.ShapeFileReader;
+import org.matsim.run.RunBerlinScenario;
+import org.matsim.vehicles.VehicleType;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.Collection;
@@ -41,17 +43,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ServiceMapMatch {
+    //    private final String inputNewNet = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/Network/berlin-v5.2-1pct.output_network.xml";
+    private static final String CONFIG_v53_1pct = "input/BerlinScenario/5.3/berlin-v5.3-1pct.config.xml";
+    private final String outputNewLinksNet = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/newUsedLinks.xml.gz";
+    private final String outputOldLinksNet = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/oldUsedLinks.xml.gz";
+    private final String inputOldNet = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PrivatkundenDirekt/network_Schroeder_slow.xml";
 
-    private final String outputNewLinksNet = "C:/Users/Work/git/freightAV/input/FrachtNachfrage/KEP/MapMatch/newUsedLinks.xml.gz";
-    private final String outputOldLinksNet = "C:/Users/Work/git/freightAV/input/FrachtNachfrage/KEP/MapMatch/oldUsedLinks.xml.gz";
+    private final String inputOldCarriers = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PrivatkundenDirekt/carriers_woSolution.xml.gz";
+    private final String outputNewCarriers = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks.xml.gz";
 
-    private final String inputNewNet = "C:/Users/Work/git/freightAV/input/Network/berlin-v5.2-1pct.output_network.xml";
-    private final String inputOldNet = "C:/Users/Work/git/freightAV/input/FrachtNachfrage/KEP/PrivatkundenDirekt/network_Schroeder_slow.xml";
+    private final String shapeFile = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Depots/PFAV_CarrierAreas.shp";
 
-    private final String inputOldCarriers = "C:/Users/Work/git/freightAV/input/FrachtNachfrage/KEP/PrivatkundenDirekt/carriers_woSolution.xml.gz";
-    private final String outputNewCarriers = "C:/Users/Work/git/freightAV/input/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_woVehicles.xml.gz";
-
-    private final String shapeFile = "C:/Users/Work/git/freightAV/input/Shape/Senatverwaltung/Prognoseraum_EPSG_25833.shp";
 
 
     private Map<Geometry,Carrier> carrierMap = new HashMap();
@@ -68,14 +70,13 @@ public class ServiceMapMatch {
         //should be referenced in GK 4 after having a look at the net in via
         Network oldSchroederNet = NetworkUtils.createNetwork();
         //is referenced in GK4
-        Network openBerlinNet = NetworkUtils.createNetwork();
-
+        Network openBerlinNet = new RunBerlinScenario(CONFIG_v53_1pct, null).prepareScenario().getNetwork();
 
         MatsimNetworkReader oldNetReader = new MatsimNetworkReader(oldSchroederNet);
-        MatsimNetworkReader openBerlinNetReader = new MatsimNetworkReader(openBerlinNet);
+//        MatsimNetworkReader openBerlinNetReader = new MatsimNetworkReader(openBerlinNet);
 
         oldNetReader.readFile(inputOldNet);
-        openBerlinNetReader.readFile(inputNewNet);
+//        openBerlinNetReader.readFile(inputNewNet);
 
         Carriers oldCarriers = new Carriers();
         CarrierPlanXmlReaderV2 carrierReader = new CarrierPlanXmlReaderV2(oldCarriers);
@@ -115,7 +116,7 @@ public class ServiceMapMatch {
         }
 
         Carriers newCarriers = new Carriers();
-        newCarriers.addCarrier(outOfGeomsCarrier);
+//        newCarriers.addCarrier(outOfGeomsCarrier);
         for(Carrier c : this.carrierMap.values()){
             newCarriers.addCarrier(c);
         }
@@ -147,37 +148,20 @@ public class ServiceMapMatch {
         for(SimpleFeature feature : allLORs){
             String key = (String) feature.getAttribute("SCHLUESSEL");
             String name = (String) feature.getAttribute("PRG_NAME");
+            Long depotLink = (Long) feature.getAttribute("DEPOT_LINK");
 
             Carrier carrier = CarrierImpl.newInstance(Id.create(key + "_" + name, Carrier.class));
+
+
+            carrier.getCarrierCapabilities().setFleetSize(CarrierCapabilities.FleetSize.INFINITE);
+            CarrierVehicle veh = CarrierVehicle.newInstance(Id.createVehicleId(key + "_" + name + "_v"),
+                    Id.createLinkId(depotLink));
+            veh.setVehicleType(CarrierVehicleType.Builder.newInstance(Id.create("Truck", VehicleType.class)).build());
+            carrier.getCarrierCapabilities().getCarrierVehicles().add(veh);
 
             Geometry geom = (Geometry) feature.getDefaultGeometry();
             this.carrierMap.put(geom,carrier);
         }
     }
 
-
-//        LOGGER.info("Reading CORINE landcover shape file . . .");
-//    Collection<SimpleFeature> landCoverFeatures = ShapeFileReader.getAllFeatures(corineLandCoverShapeFile);
-//
-//        this.simplifyGeometries = simplifyGeometries;
-//        if (this.simplifyGeometries) LOGGER.warn("Geometries will be simplified such that number of vertices in each geometry is less than 1000. " +
-//            "This is likely to speed up the process.");
-//
-//        for (SimpleFeature landCoverZone : landCoverFeatures) {
-//        int landCoverId = Integer.valueOf( (String) landCoverZone.getAttribute(LandCoverUtils.CORINE_LANDCOVER_TAG_ID));
-//        List<LandCoverUtils.LandCoverActivityType> acts = landCoverUtils.getActivityTypesFromZone(landCoverId);
-//
-//        for (LandCoverUtils.LandCoverActivityType activityTypeFromLandCover : acts ) {
-//            List<Geometry> geoms = activityTypes2ListOfLandCoverZones.get(activityTypeFromLandCover);
-//            if (geoms==null) {
-//                geoms = new ArrayList<>();
-//            }
-//
-//            Geometry geomToAdd = (Geometry)landCoverZone.getDefaultGeometry();
-//            if (this.simplifyGeometries) geomToAdd = GeometryUtils.getSimplifiedGeom(geomToAdd);
-//
-//            geoms.add(  geomToAdd );
-//            activityTypes2ListOfLandCoverZones.put(activityTypeFromLandCover, geoms);
-//        }
-//    }
 }

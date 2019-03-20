@@ -81,7 +81,7 @@ public final class PFAVUtils {
 	/**
 	 * defines the number of iterations in the tour planning algorithm, see {@link freight.calculator.FreightTourCalculatorImpl}
 	 */
-    public static final int NR_OF_JSPRIT_ITERATIONS = 100;
+    public static final int NR_OF_JSPRIT_ITERATIONS = 300;
 
 	/**
 	 * defines whether a TaxiEmptyDriveTask from the depot back to the owner is inserted when the freight tour gets scheduled.

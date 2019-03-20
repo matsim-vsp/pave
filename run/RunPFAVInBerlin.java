@@ -54,8 +54,12 @@ public class RunPFAVInBerlin {
     private static final String OUTPUTDIR = "output/Berlin/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
     private static final String CARRIERS_FILE = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PFAVScenario/test_onlyOneCarrier_only100services.xml";
     private static final String VEHTYPES_FILE = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PFAVScenario/baseCaseVehicleTypes.xml";
+
+    private static final String NETWORK_CHANGE_EVENTS = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Network/changeevents-v5.3.xml.gz";
+    
     //only for test purposes
     private static final String SMALL_PLANS_FILE = "C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml";
+
     private static final int LAST_ITERATION = 0;
     private static final double PERCENTAGE_OF_PFAV_OWNERS = 0.01;
     private static final double DOWN_SAMPLE_SIZE = 0.5;
@@ -64,7 +68,7 @@ public class RunPFAVInBerlin {
 
 
     public static void main(String[] args) {
-        String configPath, output, carriers, vehTypes;
+        String configPath, output, carriers, vehTypes, population, networkChangeEvents;
         int maxIter;
 
         if (args.length > 0) {
@@ -73,21 +77,23 @@ public class RunPFAVInBerlin {
             vehTypes = args[2];
             output = args[3];
             maxIter = Integer.valueOf(args[4]);
+            population = args[5];
+            networkChangeEvents = args[6];
         } else {
             configPath = CONFIG_v53_1pct;
             carriers = CARRIERS_FILE;
             vehTypes = VEHTYPES_FILE;
             output = OUTPUTDIR;
             maxIter = LAST_ITERATION;
+            population = SMALL_PLANS_FILE;
+            networkChangeEvents = NETWORK_CHANGE_EVENTS;
         }
 
         RunBerlinScenario berlin = new RunBerlinScenario(configPath, null);
-
         Config config = berlin.prepareConfig();
-
         TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
 
-        taxiCfg.setBreakSimulationIfNotAllRequestsServed(false); //for test purposes, set this to false in order to get error stack trace
+        taxiCfg.setBreakSimulationIfNotAllRequestsServed(true); //for test purposes, set this to false in order to get error stack trace
         /*
          * very important: we assume that destinations of trips are known in advance.
          * that leads to the occupiedDriveTask and the TaxiDropoffTask to be inserted at the same time as the PickUpTask (when the request gets scheduled).
@@ -123,26 +129,26 @@ public class RunPFAVInBerlin {
         config.controler().setOutputDirectory(output);
 
         config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
-
-//        for test purposes
-        config.qsim().setEndTime(12 * 3600);
-
         config.qsim().setNumberOfThreads(1);
+//        for test purposes
+//        config.qsim().setEndTime(12 * 3600);
+
+        config.network().setChangeEventsInputFile(networkChangeEvents);
+        config.network().setTimeVariantNetwork(true);
 
         config.addConfigConsistencyChecker(new TaxiConfigConsistencyChecker());
         config.checkConsistency();
 
-//        //only for test purposes
-//        config.plans().setInputFile(SMALL_PLANS_FILE);
+        config.plans().setInputFile(population);
 
         Scenario scenario = berlin.prepareScenario();
 
-        log.warn("number of persons : " + scenario.getPopulation().getPersons().size());
-        convertAgentsToPFAVOwners(scenario);
-        log.warn("number of PFAV owners : " + PFAV_owners.size());
-
-        log.warn("------ SAMPLING POPULATION DOWN --------");
-        downsample(scenario.getPopulation().getPersons(), DOWN_SAMPLE_SIZE);
+//        log.warn("number of persons : " + scenario.getPopulation().getPersons().size());
+//        convertAgentsToPFAVOwners(scenario);
+//        log.warn("number of PFAV owners : " + PFAV_owners.size());
+//
+//        log.warn("------ SAMPLING POPULATION DOWN --------");
+//        downsample(scenario.getPopulation().getPersons(), DOWN_SAMPLE_SIZE);
 
         // setup controler
         Controler controler = berlin.prepareControler(new DvrpModule());

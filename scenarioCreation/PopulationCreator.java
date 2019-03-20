@@ -28,6 +28,7 @@ import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.population.io.PopulationWriter;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.run.RunBerlinScenario;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,22 +38,37 @@ import java.util.Random;
 public class PopulationCreator {
 
     public static void main(String[] args) {
-        Scenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
-        PopulationReader reader = new PopulationReader(scenario);
-        reader.readFile("C:/Users/Work/svn/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.2-1pct/output-berlin-v5.2-1pct/ITERS/it.500/berlin-v5.2-1pct.500.plans.xml.gz");
+//        Scenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
+//        PopulationReader reader = new PopulationReader(scenario);
+//        reader.readFile("C:/Users/Work/svn/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.2-1pct/output-berlin-v5.2-1pct/ITERS/it.500/berlin-v5.2-1pct.500.plans.xml.gz");
 
 //        Scenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
 //        PopulationReader reader = new PopulationReader(scenario);
 //
 //        reader.readFile("C:/Users/Work/git/freightAV/input/Plans/berlin1pctScenario_5pctCarLegsNowPFAV.xml.gz");
 
-        new PopulationWriter(cutPopulationTo100ForEachMode(convertAgentsToPFAVOwners(scenario))).write("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml");
+//        new PopulationWriter(cutPopulationTo100ForEachMode(convertAgentsToPFAVOwners(scenario))).write("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml");
+
+        int nrOfPFAVOwners = 1000;
+        String dir = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/";
+        getXPFAVOWnersInBerlinScenarioAndWritePopulation(dir, "only" + nrOfPFAVOwners + "PFAVOwners.xml", nrOfPFAVOwners);
     }
 
-    private Population defineAndGet1000SpatialEquallyDistributedPFAVOwners(Population population) {
+    private static void getXPFAVOWnersInBerlinScenarioAndWritePopulation(String dir, String outPopulationFile, int nrOfOwners) {
+        String config = "input/BerlinScenario/5.3/berlin-v5.3-1pct.config.xml";
+        RunBerlinScenario berlin = new RunBerlinScenario(config, null);
+        Scenario scenario = berlin.prepareScenario();
+        PopulationWriter writer1 = new PopulationWriter(scenario.getPopulation());
+        writer1.write(dir + "originalPopulation.xml.gz");
+        Population onlyPFAVOwners = defineAndGetXSpatialEquallyDistributedPFAVOwners(scenario.getPopulation(), nrOfOwners);
+        PopulationWriter writer2 = new PopulationWriter(onlyPFAVOwners);
+        writer2.write(dir + outPopulationFile);
+    }
+
+    private static Population defineAndGetXSpatialEquallyDistributedPFAVOwners(Population population, int nrOfOwners) {
         Population pfavOwners = ScenarioUtils.createScenario(ConfigUtils.createConfig()).getPopulation();
         Random rand = MatsimRandom.getLocalInstance();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < nrOfOwners; i++) {
             boolean isCarUser = false;
             while (!isCarUser) {
                 int randIdx = rand.nextInt(population.getPersons().size());
@@ -60,7 +76,7 @@ public class PopulationCreator {
 
                 for (PlanElement elem : population.getPersons().get(personID).getSelectedPlan().getPlanElements()) {
                     if (elem instanceof Leg) {
-                        if (((Leg) elem).getMode().equals("car")) {
+                        if (((Leg) elem).getMode().equals("car") || ((Leg) elem).getMode().equals("ride")) {
                             isCarUser = true;
                             ((Leg) elem).setMode("taxi");
                         }
