@@ -120,6 +120,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
             }
             CarrierPlan planWithOnlyUsedTours = new CarrierPlan(copy, onlyUsedTours);
             copy.setSelectedPlan(planWithOnlyUsedTours);
+            copy.setCarrierCapabilities(carrier.getCarrierCapabilities());
             carriersWithOnlyUsedTours.addCarrier(copy);
 		}
         log.info("number of carriers with only used tours = " + carriersWithOnlyUsedTours.getCarriers().size());
@@ -144,9 +145,15 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 		PFAVTourData tour = this.startLinkToFreightTour.get(depot).remove(MatsimRandom.getRandom().nextInt(this.startLinkToFreightTour.get(depot).size()));
 
-        //if no tour at the depot is left, delete depot
-        if (this.startLinkToFreightTour.get(depot).isEmpty()) {
-            this.startLinkToFreightTour.remove(depot);
+        if (PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS) {
+            if (tour == null) {
+                return getRandomPFAVTour();
+            }
+        } else {
+            //if no tour at the depot is left, delete depot
+            if (this.startLinkToFreightTour.get(depot).isEmpty()) {
+                this.startLinkToFreightTour.remove(depot);
+            }
         }
         return tour;
 	}
@@ -172,8 +179,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
         //TODO: test this spatial dispatch algorithm, especially: is the nearestDepots list sorted??
 
 		PFAVTourData matchingFreightTour = null;
-		for (Link l : nearestDepots){
-			Iterator<PFAVTourData> freightTourIterator = this.startLinkToFreightTour.get(l).iterator();
+        for (Link depot : nearestDepots) {
+            Iterator<PFAVTourData> freightTourIterator = this.startLinkToFreightTour.get(depot).iterator();
 			while(freightTourIterator.hasNext()){
 				PFAVTourData tourData = freightTourIterator.next();
 				if (isEnoughTimeLeftToPerformFreightTour(vehicle, tourData, router)) {
@@ -185,7 +192,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 				}
 			}
             if (matchingFreightTour != null) {
-                if (startLinkToFreightTour.get(l).isEmpty()) startLinkToFreightTour.remove(l);
+                //if no tour at the depot is left, delete depot
+                if (startLinkToFreightTour.get(depot).isEmpty() && !PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS) startLinkToFreightTour.remove(depot);
                 break;
             }
         }
@@ -277,14 +285,30 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 		log.info("overriding list of freight tours...");
 		this.freightTours = convertCarrierPlansToTaskList(carriers);
+
+        log.info("initialising mapping of freight tours to link id's");
+        this.startLinkToFreightTour = new HashMap<>();
+
+//		if we allow empty depots, we need to initialise the manager's map of depot links to tours with empty lists.
+        if (PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS) mapDepotLinksToEmptyTourList();
+
+        //now fill the map with the freightTours that came out of the calculator
 		mapStartLinkOfToursToTour();
     }
 
-    private void mapStartLinkOfToursToTour() {
-        log.info("initialising mapping of freight tours to link id's");
-		this.startLinkToFreightTour = new HashMap<>();
+    private void mapDepotLinksToEmptyTourList() {
+        for (Carrier carrier : this.carriers.getCarriers().values()) {
+            for (CarrierVehicle v : carrier.getCarrierCapabilities().getCarrierVehicles()) {
+                this.startLinkToFreightTour.put(network.getLinks().get(v.getLocation()), new ArrayList<>());
+            }
+        }
+    }
 
-		for (PFAVTourData freightTour : this.freightTours) {
+
+    private void mapStartLinkOfToursToTour() {
+
+
+        for (PFAVTourData freightTour : this.freightTours) {
 			Link start = freightTour.getDepotLink();
 			if(this.startLinkToFreightTour.containsKey(start)){
 				this.startLinkToFreightTour.get(start).add(freightTour);

@@ -83,6 +83,15 @@ public final class PFAVUtils {
 	 */
     public static final int NR_OF_JSPRIT_ITERATIONS = 300;
 
+    /**
+     * this is a switch, which determines whether the manager is holding depots in it's map that have no tour (anymore) to serve.
+     * this is for usecases in which you look only at a subset of depots. in order to have a correct dispatch, you need to have
+     * a) one carrier per depot
+     * b) all depots in the initial carrier file
+     * c) only those carriers that you want to look at containing services
+     */
+    public static final boolean ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS = true;
+
 	/**
 	 * defines whether a TaxiEmptyDriveTask from the depot back to the owner is inserted when the freight tour gets scheduled.
 	 * when true, the vehicle will immediately return to it's owner's activity location and wait there.

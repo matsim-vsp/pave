@@ -109,7 +109,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 			case DROPOFF:
 				if (currentTask instanceof TaxiDropoffTask) {
 					if (vehicle instanceof PFAVehicle) {
-						log.info("Vehicle " + vehicle.getId() + " requests a freight tour");
 						requestFreightTour(vehicle, false);
 					} else {
 						//in future, there could be usecases where we have both, DvrpVehicles (supertype) and PFAVehicles, so we would not throw an axception here and just keep going
@@ -159,24 +158,12 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 
 	private void requestFreightTour(DvrpVehicle vehicle, boolean isComingFromAnotherFreightTour) {
+        log.info("Vehicle " + vehicle.getId() + " requests a freight tour at " + timer.getTimeOfDay());
 		PFAVTourData tourData = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
 		if (tourData != null) {
-			log.info("vehicle " + vehicle.getId() + " requested a freight tour at " + timer.getTimeOfDay() + " and received one by the manager");
-
+            log.info("vehicle " + vehicle.getId() + " requested a freight tour and received one by the manager");
 			if (isComingFromAnotherFreightTour) eventsManager.processEvent(new FreightTourCompletedEvent(vehicle, timer.getTimeOfDay()));
 			scheduleFreightTour(vehicle, tourData);
-
-//			if (!requestedVehicles.keySet().contains(vehicle.getId())) {
-//				if(isComingFromAnotherFreightTour) eventsManager.processEvent(new FreightTourCompletedEvent(vehicle, timer.getTimeOfDay()));
-//				scheduleFreightTour(vehicle, tourData);
-//			} else {
-//				//TODO: move the check (whether the owner already requested the PFAV) further up to updateBeforeNextTask(). it is here only for test purposes...
-//				//especially because the freight tour will now not be performed but the manager has already deleted it from it's set
-//				log.warn("vehicle " + vehicle.getId() +
-//						" thinks that it can manage a freight tour in time but the owner has already requested the vehicle with submission time = " + requestedVehicles.get(vehicle.getId()));
-//				freightManager.getPFAVTours().add(tourData);
-//			}
-
 		} else {
 			Link requestLink = ((StayTaskImpl) vehicle.getSchedule().getCurrentTask()).getLink();
 			eventsManager.processEvent(new FreightTourRequestDeniedEvent((PFAVehicle) vehicle, requestLink.getId(), timer.getTimeOfDay()));

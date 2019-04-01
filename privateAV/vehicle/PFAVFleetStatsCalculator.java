@@ -135,7 +135,7 @@ public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>,
                             if (legBeforeAct.getDepartureTime() != Double.NEGATIVE_INFINITY && legBeforeAct.getRoute().getTravelTime() != Double.NEGATIVE_INFINITY) {
                                 return legBeforeAct.getDepartureTime() + legBeforeAct.getRoute().getTravelTime() + act.getMaximumDuration();
                             }
-                            //no it does not, so we need to calculate the must return time by computing end time of the activity piece by piece
+                            //no it does not, so we need to calculate the must return time by computing end time of the activity element by element
                             return computeMustReturnTimeConsecutivelyFromTheStart(plan, i);
                         } else {
                             return lastLeg.getDepartureTime();
@@ -151,7 +151,7 @@ public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>,
 
     private double computeMustReturnTimeConsecutivelyFromTheStart(Plan plan, int i) {
         double time = ((Activity) plan.getPlanElements().get(0)).getEndTime();
-        if (time == Double.NEGATIVE_INFINITY) throw new IllegalStateException("end time of first activity of agent " + plan.getPerson().getId()
+        if (Double.isInfinite(time)) throw new IllegalStateException("end time of first activity of agent " + plan.getPerson().getId()
                 + " is not set.");
         for (int z = 1; z <= i; z++) {
             PlanElement current = plan.getPlanElements().get(z);
