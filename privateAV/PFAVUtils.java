@@ -85,10 +85,16 @@ public final class PFAVUtils {
 
     /**
      * this is a switch, which determines whether the manager is holding depots in it's map that have no tour (anymore) to serve.
-     * this is for usecases in which you look only at a subset of depots. in order to have a correct dispatch, you need to have
+     *
+     * set this to true for usecases in which you look only at a subset of depots. in order to have a correct dispatch, you need to have     *
      * a) one carrier per depot
      * b) all depots in the initial carrier file
      * c) only those carriers that you want to look at containing services
+     *
+     * set this to false if you want to enable long dispatch distances. setting this to false means that, over day time, the manager's set of depot
+     * shrinks. consequently, the spatial dispatch algorithm allows longer distance's to depot's as it considers the closest three depots that have a tour left to serve.
+     * For example: the closest two depots to a vehicle that has requested a tour are already fully served /have no tour left to serve...
+     *
      */
     public static final boolean ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS = true;
 
