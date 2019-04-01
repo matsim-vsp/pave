@@ -138,7 +138,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
     @Override
     public void notifyIterationEnds(IterationEndsEvent event) {
         String outDir = event.getServices().getConfig().controler().getOutputDirectory();
-        outDir += "ITERS/it." + event.getIteration() + "/FreightTourStats_it" + event.getIteration() + ".csv";
+        outDir += "/ITERS/it." + event.getIteration() + "/FreightTourStats_it" + event.getIteration() + ".csv";
 
         writeStats(outDir);
     }
