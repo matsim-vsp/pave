@@ -20,6 +20,7 @@ package freight.calculator;
 
 import com.graphhopper.jsprit.core.algorithm.VehicleRoutingAlgorithm;
 import com.graphhopper.jsprit.core.algorithm.box.SchrimpfFactory;
+import com.graphhopper.jsprit.core.algorithm.termination.VariationCoefficientTermination;
 import com.graphhopper.jsprit.core.problem.VehicleRoutingProblem;
 import com.graphhopper.jsprit.core.problem.solution.VehicleRoutingProblemSolution;
 import com.graphhopper.jsprit.core.util.Solutions;
@@ -68,9 +69,11 @@ public class FreightTourCalculatorImpl implements FreightTourCalculator {
 			VehicleRoutingAlgorithm algorithm = new SchrimpfFactory().createAlgorithm(problem);
 
 			algorithm.setMaxIterations(PFAVUtils.NR_OF_JSPRIT_ITERATIONS);
-//			algorithm.setPrematureAlgorithmTermination();
 
-			//TODO: add Initial solution - the one from last run => tried this but this lead to the FreightReactionToTravelTimesTest failing...
+            // variationCoefficient = stdDeviation/mean. so i set the threshold rather soft
+            algorithm.addTerminationCriterion(new VariationCoefficientTermination(50, 0.01));
+
+            //TODO: add Initial solution - the one from last run => i tried this but this lead to the FreightReactionToTravelTimesTest failing...
 //			algorithm.addInitialSolution();
 
 			Collection<VehicleRoutingProblemSolution> solutions = algorithm.searchSolutions();
