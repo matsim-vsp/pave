@@ -49,7 +49,7 @@ public class PopulationCreator {
 
 //        new PopulationWriter(cutPopulationTo100ForEachMode(convertAgentsToPFAVOwners(scenario))).write("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml");
 
-        int nrOfPFAVOwners = 1000;
+        int nrOfPFAVOwners = 10000;
         String dir = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/";
         getXPFAVOWnersInBerlinScenarioAndWritePopulation(dir, "only" + nrOfPFAVOwners + "PFAVOwners.xml", nrOfPFAVOwners);
     }

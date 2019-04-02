@@ -26,22 +26,38 @@ import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
 import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
 import org.matsim.contrib.freight.carrier.Carriers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CarrierServiceCutter {
 
-    private static final Id<Carrier> invetigatedCarrier = Id.create("0801_Neukölln", Carrier.class);
+    private static final List<Id<Carrier>> investigatedCarriers = new ArrayList<>();
 
     public static void main(String[] args) {
+
+        //Neukoelln
+//        investigatedCarriers.add( Id.create("0801_Neukölln", Carrier.class) );
+//        investigatedCarriers.add( Id.create("0802_Britz/Buckow", Carrier.class) );
+//        investigatedCarriers.add( Id.create("0803_Gropiusstadt", Carrier.class) );
+
+//        Tempelhof
+        investigatedCarriers.add(Id.create("0704_Tempelhof", Carrier.class));
+        investigatedCarriers.add(Id.create("0705_Mariendorf", Carrier.class));
+        investigatedCarriers.add(Id.create("0706_Marienfelde", Carrier.class));
+        investigatedCarriers.add(Id.create("0707_Lichtenrade", Carrier.class));
+
+
 
         Carriers original = new Carriers();
         CarrierPlanXmlReaderV2 reader = new CarrierPlanXmlReaderV2(original);
         reader.readFile("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks.xml.gz");
 
         for (Id<Carrier> id : original.getCarriers().keySet()) {
-            if (!(id.equals(Id.create(invetigatedCarrier, Carrier.class)))) {
+            if (!(investigatedCarriers.contains(id))) {
                 original.getCarriers().get(id).getServices().clear();
             }
         }
 
-        new CarrierPlanXmlWriterV2(original).write("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/0801_Neukoelln.xml");
+        new CarrierPlanXmlWriterV2(original).write("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/ganzNeukoelln.xml");
     }
 }
