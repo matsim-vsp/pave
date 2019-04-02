@@ -35,6 +35,7 @@ import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.util.StraightLineKnnFinder;
+import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.events.IterationStartsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
@@ -171,31 +172,36 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	}
 
 	private PFAVTourData getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
-		StraightLineKnnFinder<Link,Link> finder = new StraightLineKnnFinder<>(3,link1-> link1 , link2 -> link2 );
+		StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(PFAVUtils.AMOUNT_OF_DEPOTS_TO_CONSIDER, link1 -> link1, link2 -> link2);
 		Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
 		List<Link> nearestDepots = finder.findNearest(requestLink, startLinkToFreightTour.keySet().stream());
 
-		//TODO: probably create a representation of the freightTour - something like FreightTourData - that contains the List<StayTask> and the duration, maybe the start and end link explicitly
         //TODO: test this spatial dispatch algorithm, especially: is the nearestDepots list sorted??
 
 		PFAVTourData matchingFreightTour = null;
         for (Link depot : nearestDepots) {
             Iterator<PFAVTourData> freightTourIterator = this.startLinkToFreightTour.get(depot).iterator();
-			while(freightTourIterator.hasNext()){
-				PFAVTourData tourData = freightTourIterator.next();
-				if (isEnoughTimeLeftToPerformFreightTour(vehicle, tourData, router)) {
-					freightTourIterator.remove();
-					matchingFreightTour = tourData;
+			VrpPathWithTravelData pathFromCurrTaskToDepot = calcPathToDepot(vehicle, depot, router);
+			if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.DISTANCE_TO_DEPOT_THRESHOLD
+					&& pathFromCurrTaskToDepot.getTravelTime() <= PFAVUtils.TRAVELTIME_TO_DEPOT_THRESHOLD) {
+
+				while (freightTourIterator.hasNext()) {
+					PFAVTourData tourData = freightTourIterator.next();
+					if (isEnoughTimeLeftToPerformFreightTour(vehicle, pathFromCurrTaskToDepot, tourData, router)) {
+						freightTourIterator.remove();
+						matchingFreightTour = tourData;
+						break;
+					} else {
+						tourData.incrementAmountOfRejections();
+					}
+				}
+				if (matchingFreightTour != null) {
+					//if no tour at the depot is left, delete depot
+					if (startLinkToFreightTour.get(depot).isEmpty() && !PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS)
+						startLinkToFreightTour.remove(depot);
 					break;
-				} else {
-					tourData.incrementAmountOfRejections();
 				}
 			}
-            if (matchingFreightTour != null) {
-                //if no tour at the depot is left, delete depot
-                if (startLinkToFreightTour.get(depot).isEmpty() && !PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS) startLinkToFreightTour.remove(depot);
-                break;
-            }
         }
 		if (matchingFreightTour == null) {
 			//we could throw the FreightTourRequestDeniedEvent here and hand to it the depot list on which we had a look on as well as the amount of
@@ -206,11 +212,17 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
         return matchingFreightTour;
 	}
 
+	private VrpPathWithTravelData calcPathToDepot(PFAVehicle vehicle, Link depotLink, LeastCostPathCalculator router) {
+		StayTask currentTask = (StayTask) vehicle.getSchedule().getCurrentTask();
+		return VrpPaths.calcAndCreatePath(currentTask.getLink(), depotLink, currentTask.getEndTime(), router, travelTime);
+	}
+
+
 	/**
-	 * here we need to compute the paths to the depot and back from the depot to the owner to estimate the total amount needed for the tour.
-	 * those paths will again be computed by the scheduler. i tried to avoid computing these paths twice by moving all the schedule construction
+	 * here we need to compute the path tback from the depot to the owner to estimate the total amount needed for the tour.
+	 * this path will again be computed by the scheduler. i tried to avoid computing this twice by moving all the schedule construction
 	 * from the scheduleFreightTour() in the scheduler to here. this lead actually to 2 days of work, since the logic of the manager then needs to be
-	 * scheduleBased and in the end, the last path back to the owner needs to be computed twice anyways. this iss because here, we use the estimated arrival time
+	 * scheduleBased and in the end, the last path back to the owner needs to be computed twice anyways. this is because here, we use the estimated arrival time
 	 * of the freight tour computed by the freight contrib as the departure time for this trip. this is not the same time we would use later for the construction of
 	 * the schedule, as travel times / routes for the freight legs might have changed in the mean time (freight contrib runs outside of mobsim and does not use VrpPaths)
 	 * <p>
@@ -221,7 +233,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 * @param router
 	 * @return
 	 */
-	private boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, PFAVTourData freightTour, LeastCostPathCalculator router) {
+	private boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot,
+														 PFAVTourData freightTour, LeastCostPathCalculator router) {
 
 		Double timeWhenOwnerNeedsVehicle = vehicle.getOwnerActEndTimes().peek();
 		if (timeWhenOwnerNeedsVehicle == null) {
@@ -240,8 +253,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		StayTask end = freightTour.getTourTasks().get(freightTour.getTourTasks().size() - 1);
 
 		double tourDuration = freightTour.getPlannedTourDuration();
-
-		VrpPathWithTravelData pathFromCurrTaskToDepot = VrpPaths.calcAndCreatePath(currentTask.getLink(), freightTour.getDepotLink(), currentTask.getEndTime(), router, travelTime);
 
 //		check if there is enough time before latest start
 		if (pathFromCurrTaskToDepot.getArrivalTime() > PFAVUtils.FREIGHTTOUR_LATEST_START) return false;
@@ -306,8 +317,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 
     private void mapStartLinkOfToursToTour() {
-
-
         for (PFAVTourData freightTour : this.freightTours) {
 			Link start = freightTour.getDepotLink();
 			if(this.startLinkToFreightTour.containsKey(start)){
