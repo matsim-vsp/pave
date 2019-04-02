@@ -128,7 +128,7 @@ public class DispatchedPFAVTourData {
     }
 
     public double getPlannedTourLength() {
-        return getPlannedTourLength();
+        return plannedTourLength;
     }
 
     public int getPlannedTotalCapacityDemand() {
