@@ -63,7 +63,7 @@ public class PFAVUnfinishedToursDumper {
             CSVLineBuilder lineBuilder = new CSVLineBuilder()
                     .addf(stringFormat, data.getDepotLink())
                     .addf(dblFormat, data.getPlannedTourDuration())
-                    .addf(dblFormat, data.getPlannedTourLength())
+//                    .addf(dblFormat, data.getPlannedTourLength())
                     .addf("%d", data.getPlannedTotalCapacityDemand())
                     .addf("%d", data.getAmountOfRejections())
                     .add("-");

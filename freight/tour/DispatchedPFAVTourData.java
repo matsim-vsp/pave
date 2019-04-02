@@ -39,6 +39,7 @@ public class DispatchedPFAVTourData {
     private final double dispatchTime;
     private final Id<Link> requestLink;
 
+    private final double plannedTourLength;
     private final double plannedEmptyMeters;
     private final double distanceToDepot;
 
@@ -54,7 +55,7 @@ public class DispatchedPFAVTourData {
         this.dispatchTime = builder.dispatchTime;
         this.requestLink = Objects.requireNonNull(builder.requestLink);
 //        this.plannedTourDuration = builder.plannedTourDuration;
-//        this.plannedTourLength = builder.plannedTourLength;
+        this.plannedTourLength = builder.plannedTourLength;
         this.plannedEmptyMeters = builder.plannedEmptyMeters;
         this.distanceToDepot = builder.distanceToDepot;
 //        this.plannedTotalCapacityDemand = builder.plannedTotalCapacityDemand;
@@ -127,7 +128,7 @@ public class DispatchedPFAVTourData {
     }
 
     public double getPlannedTourLength() {
-        return tourData.getPlannedTourLength();
+        return getPlannedTourLength();
     }
 
     public int getPlannedTotalCapacityDemand() {
@@ -161,7 +162,7 @@ public class DispatchedPFAVTourData {
 
         //        private Id<Link> depotLink;
         //        private double plannedTourDuration;
-        //        private double plannedTourLength;
+        private double plannedTourLength;
         //private int plannedTotalCapacityDemand;
         private PFAVTourData data;
 
@@ -199,11 +200,11 @@ public class DispatchedPFAVTourData {
 //            return this;
 //        }
 //
-//        public DispatchedPFAVTourData.Builder plannedTourLength(double val) {
-//            plannedTourLength = val;
-//            return this;
-//        }
-//
+        public DispatchedPFAVTourData.Builder plannedTourLength(double val) {
+            plannedTourLength = val;
+            return this;
+        }
+
         public DispatchedPFAVTourData.Builder plannedEmptyMeters(double val) {
             plannedEmptyMeters = val;
             return this;

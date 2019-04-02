@@ -32,7 +32,6 @@ public class PFAVTourData {
     private final int plannedTotalCapacityDemand;
 
     private Double plannedTourDuration;
-    private Double plannedTourLength;
 
     private int amountOfRejections = 0;
 
@@ -42,7 +41,6 @@ public class PFAVTourData {
         this.tourTasks = Objects.requireNonNull(tourTasks);
         this.depotLink = Objects.requireNonNull(depotLinkId);
         this.plannedTourDuration = plannedTourDuration;
-        this.plannedTourLength = null;
         this.plannedTotalCapacityDemand = plannedTotalCapacityDemand;
     }
 
@@ -52,14 +50,6 @@ public class PFAVTourData {
 
     public void setPlannedTourDuration(Double plannedTourDuration) {
         this.plannedTourDuration = plannedTourDuration;
-    }
-
-    public double getPlannedTourLength() {
-        return plannedTourLength;
-    }
-
-    public void setPlannedTourLength(Double plannedTourLength) {
-        this.plannedTourLength = plannedTourLength;
     }
 
     public int getPlannedTotalCapacityDemand() {

@@ -158,7 +158,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 
 	private void requestFreightTour(DvrpVehicle vehicle, boolean isComingFromAnotherFreightTour) {
-        log.info("Vehicle " + vehicle.getId() + " requests a freight tour at " + timer.getTimeOfDay());
+        log.info("Vehicle " + vehicle.getId() + " requests a freight tour at " + timer.getTimeOfDay() + " on link " + ((StayTaskImpl) vehicle.getSchedule().getCurrentTask()).getLink().getId());
 		PFAVTourData tourData = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
 		if (tourData != null) {
             log.info("vehicle " + vehicle.getId() + " requested a freight tour and received one by the manager");
@@ -204,7 +204,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				schedule.addTask(driveTask);
 
 				freightTour.add(driveTask); //analysis
-				//do not compute the first link since it's not really travelled but just where we are inserted
+                //do not compute the first link since it's not really travelled but just where the vehicle is inserted
 				for (int z = 1; z < driveTask.getPath().getLinkCount(); z++) {
 					double distance = driveTask.getPath().getLink(z).getLength();
 					totalDistance += distance; //analysis
@@ -233,7 +233,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 
 		//the following is only for analysis
 		tourData.setPlannedTourDuration(tourDuration);
-		tourData.setPlannedTourLength(totalDistance);
+//		tourData.setPlannedTourLength(totalDistance);
 
 		DispatchedPFAVTourData dispatchData = DispatchedPFAVTourData.newBuilder()
 				.vehicle((PFAVehicle) vehicle)
@@ -242,6 +242,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				.tourData(tourData)
 				.distanceToDepot(distanceToDepot)
 				.plannedEmptyMeters(emptyMeters)
+                .plannedTourLength(totalDistance)
 				.build();
 
 		eventsManager.processEvent(new FreightTourScheduledEvent(dispatchData));
