@@ -43,6 +43,7 @@ public class DispatchedPFAVTourData {
     private final double plannedTourLength;
     private final double plannedEmptyMeters;
     private final double distanceToDepot;
+    private final double distanceBackToOwner;
 
     private double actualTourDuration = Double.NEGATIVE_INFINITY;
     private double actualTourLength = Double.NEGATIVE_INFINITY;
@@ -59,6 +60,7 @@ public class DispatchedPFAVTourData {
         this.plannedTourLength = builder.plannedTourLength;
         this.plannedEmptyMeters = builder.plannedEmptyMeters;
         this.distanceToDepot = builder.distanceToDepot;
+        this.distanceBackToOwner = builder.distanceBackToOwner;
 //        this.plannedTotalCapacityDemand = builder.plannedTotalCapacityDemand;
         this.tourData = builder.data;
     }
@@ -116,6 +118,10 @@ public class DispatchedPFAVTourData {
         return distanceToDepot;
     }
 
+    public double getDistanceBackToOwner() {
+        return distanceBackToOwner;
+    }
+
     public int getActualServedCapacityDemand() {
         return actualServedCapacityDemand;
     }
@@ -152,6 +158,7 @@ public class DispatchedPFAVTourData {
         return mustReturnLog;
     }
 
+
     public static final class Builder {
         private Id<DvrpVehicle> vehicleId;
         private MustReturnLinkTimePair mustReturnLog;
@@ -166,6 +173,7 @@ public class DispatchedPFAVTourData {
         private double plannedTourLength;
         //private int plannedTotalCapacityDemand;
         private PFAVTourData data;
+        private double distanceBackToOwner;
 
         private Builder() {
         }
@@ -216,11 +224,11 @@ public class DispatchedPFAVTourData {
             distanceToDepot = val;
             return this;
         }
-//
-//        public DispatchedPFAVTourData.Builder plannedTotalCapacityDemand(int val) {
-//            plannedTotalCapacityDemand = val;
-//            return this;
-//        }
+
+        public DispatchedPFAVTourData.Builder distanceBackToOwner(double returnDistance) {
+            distanceBackToOwner = returnDistance;
+            return this;
+        }
 
         public DispatchedPFAVTourData build() {
             return new DispatchedPFAVTourData(this);

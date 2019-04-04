@@ -217,6 +217,7 @@ public class RunChessboardScenario {
             Id<Link> home1LinkId = Id.createLinkId("1");
             Id<Link> home2LinkId = Id.createLinkId("1");
             Id<Link> workLinkId = Id.createLinkId("5");
+            Id<Link> workLinkId2 = Id.createLinkId("7");
             Activity home = factory.createActivityFromLinkId("home", home1LinkId);
             home.setEndTime(6 * 3600);
             plan.addActivity(home);
@@ -225,9 +226,17 @@ public class RunChessboardScenario {
             plan.addLeg(leg);
 
             Activity work = factory.createActivityFromLinkId("work", workLinkId);
-            work.setEndTime(18 * 3600);
+            work.setEndTime(16 * 3600);
             work.setStartTime(6 * 3600);
             plan.addActivity(work);
+
+            leg = factory.createLeg("car");
+            plan.addLeg(leg);
+
+            Activity work2 = factory.createActivityFromLinkId("work", workLinkId2);
+            work2.setEndTime(18 * 3600);
+            work2.setStartTime(7 * 3600);
+            plan.addActivity(work2);
 
             leg = factory.createLeg("taxi");
             plan.addLeg(leg);

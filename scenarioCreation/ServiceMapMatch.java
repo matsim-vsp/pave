@@ -37,6 +37,7 @@ import org.matsim.core.utils.gis.ShapeFileReader;
 import org.matsim.run.RunBerlinScenario;
 import org.matsim.vehicles.VehicleType;
 import org.opengis.feature.simple.SimpleFeature;
+import privateAV.PFAVUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -91,7 +92,6 @@ public class ServiceMapMatch {
         });
         Network newNetOnlyCar = mng.applyFilters();
 
-        Carrier outOfGeomsCarrier = CarrierImpl.newInstance(Id.create("outOfGeomCarrier", Carrier.class));
         for(Carrier carrier: oldCarriers.getCarriers().values()){
             //we only have services in this carriers file, no shipments
             for(CarrierService service : carrier.getServices()){
@@ -102,8 +102,7 @@ public class ServiceMapMatch {
                     handledOldLinksToNewLink.put(service.getLocationLinkId(), newLink);
 
                     Carrier newCarrier = getResponsibleCarrier(oldLinkC);
-                    if (newCarrier == null) newCarrier = outOfGeomsCarrier;
-                    handledNewLinksToCarrier.put(newLink, newCarrier);
+                    if (newCarrier != null) handledNewLinksToCarrier.put(newLink, newCarrier);
                 }
                 CarrierService newService =
                         CarrierService.Builder.newInstance(Id.create(service.getId(), CarrierService.class), newLink)
@@ -153,11 +152,17 @@ public class ServiceMapMatch {
             Carrier carrier = CarrierImpl.newInstance(Id.create(key + "_" + name, Carrier.class));
 
 
-            carrier.getCarrierCapabilities().setFleetSize(CarrierCapabilities.FleetSize.INFINITE);
-            CarrierVehicle veh = CarrierVehicle.newInstance(Id.createVehicleId(key + "_" + name + "_v"),
-                    Id.createLinkId(depotLink));
-            veh.setVehicleType(CarrierVehicleType.Builder.newInstance(Id.create("Truck", VehicleType.class)).build());
+            Id<VehicleType> typeId = Id.create("Truck", VehicleType.class);
+
+            CarrierVehicle veh = CarrierVehicle.Builder.newInstance(Id.createVehicleId(key + "_" + name + "_v"),
+                    Id.createLinkId(depotLink))
+                    .setEarliestStart(PFAVUtils.FREIGHTTOUR_EARLIEST_START).
+                            setLatestEnd(PFAVUtils.FREIGHTTOUR_LATEST_START)
+                    .setTypeId(typeId)
+                    .setType(CarrierVehicleType.Builder.newInstance(typeId).build())
+                    .build();
             carrier.getCarrierCapabilities().getCarrierVehicles().add(veh);
+            carrier.getCarrierCapabilities().setFleetSize(CarrierCapabilities.FleetSize.INFINITE);
 
             Geometry geom = (Geometry) feature.getDefaultGeometry();
             this.carrierMap.put(geom,carrier);

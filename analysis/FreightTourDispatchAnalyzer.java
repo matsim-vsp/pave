@@ -102,6 +102,8 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
             if (t.getTaxiTaskType().equals(TaxiTask.TaxiTaskType.EMPTY_DRIVE)) {
                 data.addToActualEmptyMeters(link.getLength());
             }
+
+            //TODO: also account for empty kilometers on the way back to owner!!!!
         }
     }
 
@@ -117,16 +119,6 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
             Id<DvrpVehicle> vehicleId = Id.create(event.getPersonId().toString(), DvrpVehicle.class);
 
             this.begunFreightTours.get(vehicleId).notifyNextServiceTaskPerformed();
-//            Schedule schedule = this.fleet.getVehicles().get(vehicleId).getSchedule();
-//            if (schedule.getCurrentTask() instanceof PFAVServiceTask) {
-//                this.begunFreightTours.get(vehicleId)
-//                        .addToActualServedCapacityDemand(((PFAVServiceTask) schedule.getCurrentTask()).getCarrierService().getCapacityDemand());
-//            } else if (Schedules.getPreviousTask(schedule) instanceof PFAVServiceTask) {
-//                this.begunFreightTours.get(vehicleId)
-//                        .addToActualServedCapacityDemand(((PFAVServiceTask) (Schedules.getPreviousTask(schedule))).getCarrierService().getCapacityDemand());
-//            } else {
-//                throw new IllegalStateException("activityStartEvent does not fit to schedule status..");
-//            }
         }
     }
 
@@ -176,6 +168,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
                 .add("RequestLink")
                 .add("DepotLink")
                 .add("DistanceToDepot")
+                .add("DistanceBackToOwner")
 
                 .add("PlannedTourDuration")
                 .add("ActualTourDuration")
@@ -201,6 +194,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
                     .addf(stringFormat, data.getRequestLink())
                     .addf(stringFormat, data.getDepotLink())
                     .addf(dblFormat, data.getDistanceToDepot())
+                    .addf(dblFormat, data.getDistanceBackToOwner())
 
                     .addf(dblFormat, data.getPlannedTourDuration())
                     .addf(dblFormat, data.getActualTourDuration())

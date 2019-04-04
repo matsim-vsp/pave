@@ -79,7 +79,7 @@ public class PFAVOptimizer implements TaxiOptimizer {
 			if(scheduler.isCurrentlyOnOrWillPerformPerformFreightTour(veh)) {
 
 				log.warn("agent " + req.getPassengerId() + " submitted request at time=" + req.getSubmissionTime() + " for it's own vehicle " + personalAV +
-						" which is still on a freight tour. currently, freight tours do not get canceled...");
+						" which is still on a freight tour (or maybe on the way back). currently, freight tours do not get canceled...");
 				eventsManager.processEvent(new PFAVOwnerWaitsForVehicleEvent(timer.getTimeOfDay(), personalAV, req.getPassengerId()));
 //				scheduler.cancelFreightTour(veh);
 
