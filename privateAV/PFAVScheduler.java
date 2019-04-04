@@ -104,7 +104,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				}
 				requestedVehicles.remove(vehicle.getId());
 				//remove the must return time from vehicle specification
-				log.warn("removed must return time = " + ((PFAVehicle) vehicle).getOwnerActEndTimes().remove() + " for vehicle " + vehicle.getId());
+                log.warn("removed must return log= " + ((PFAVehicle) vehicle).getMustReturnToOwnerLinkTimePairs().remove() + " from vehicle= " + vehicle.getId());
 				break;
 			case DROPOFF:
 				if (currentTask instanceof TaxiDropoffTask) {

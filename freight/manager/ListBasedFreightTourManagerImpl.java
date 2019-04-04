@@ -44,6 +44,7 @@ import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelTime;
 import privateAV.PFAVUtils;
+import privateAV.vehicle.MustReturnLinkTimePair;
 import privateAV.vehicle.PFAVehicle;
 
 import java.util.*;
@@ -219,7 +220,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 
 	/**
-	 * here we need to compute the path tback from the depot to the owner to estimate the total amount needed for the tour.
+	 * here we need to compute the path back from the depot to the owner to estimate the total amount needed for the tour.
 	 * this path will again be computed by the scheduler. i tried to avoid computing this twice by moving all the schedule construction
 	 * from the scheduleFreightTour() in the scheduler to here. this lead actually to 2 days of work, since the logic of the manager then needs to be
 	 * scheduleBased and in the end, the last path back to the owner needs to be computed twice anyways. this is because here, we use the estimated arrival time
@@ -233,10 +234,14 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 * @param router
 	 * @return
 	 */
-	private boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot,
+	@Override
+	public boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot,
 														 PFAVTourData freightTour, LeastCostPathCalculator router) {
 
-		Double timeWhenOwnerNeedsVehicle = vehicle.getOwnerActEndTimes().peek();
+		MustReturnLinkTimePair mustReturnToOwnerLog = vehicle.getMustReturnToOwnerLinkTimePairs().peek();
+//		Double timeWhenOwnerNeedsVehicle = vehicle.getOwnerActEndTimes().peek();
+		Double timeWhenOwnerNeedsVehicle = mustReturnToOwnerLog.getTime();
+		Link returnLink = network.getLinks().get(mustReturnToOwnerLog.getLinkId());
 		if (timeWhenOwnerNeedsVehicle == null) {
 			throw new IllegalStateException("could not derive must return time of vehicle " + vehicle.getId() + " out of vehicle specification");
         } else if (timeWhenOwnerNeedsVehicle == Double.NEGATIVE_INFINITY) {
@@ -262,10 +267,11 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 			waitTimeAtDepot = PFAVUtils.FREIGHTTOUR_EARLIEST_START - pathFromCurrTaskToDepot.getArrivalTime();
 		}
 
-		Link returnLink = PFAVUtils.getLastPassengerDropOff(vehicle.getSchedule()).getLink();
+//		Link returnLink = PFAVUtils.getLastPassengerDropOff(vehicle.getSchedule()).getLink();
+
 		//owner link will be null if no dropOff has been performed yet. return to start link instead.
 		//actually this should not happen in the moment, as the first call of the requestFreightTour() method in the scheduler always is triggered after a passenger dropoff
-		if (returnLink == null) returnLink = vehicle.getStartLink();
+//		if (returnLink == null) returnLink = vehicle.getStartLink();
 
 		VrpPathWithTravelData pathFromDepotToOwner = VrpPaths.calcAndCreatePath(freightTour.getDepotLink(), returnLink, end.getEndTime(), router, travelTime);
 

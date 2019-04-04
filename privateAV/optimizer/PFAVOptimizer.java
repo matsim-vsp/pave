@@ -14,8 +14,6 @@ import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
 import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
 import org.matsim.contrib.taxi.passenger.TaxiRequest;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
-import org.matsim.contrib.taxi.schedule.TaxiTask;
-import org.matsim.contrib.taxi.schedule.TaxiTask.TaxiTaskType;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
@@ -90,14 +88,8 @@ public class PFAVOptimizer implements TaxiOptimizer {
 //			else if (!isWaitStayOrEmptyDrive((TaxiTask) veh.getSchedule().getCurrentTask())) {
 //                throw new RuntimeException("Vehicle " + personalAV.toString() + " is not idle.");
 //            }
-//			the following should not be necessary, as PFAV can only either be on a freight tour or waiting at owner's activity location / driving towards it.
-//			it actually leads to a runtime exception if diversion is switched off, when vehicle is still on EmptyDrive after freight tour
-//			if (((TaxiTask)veh.getSchedule().getCurrentTask()).getTaxiTaskType() == TaxiTaskType.EMPTY_DRIVE) {
-//				scheduler.stopCruisingVehicle(veh);
-//			}
+
 			scheduler.scheduleRequest(veh, req);
-
-
     }
 
 	@Override
@@ -117,8 +109,8 @@ public class PFAVOptimizer implements TaxiOptimizer {
 		}
 	}
 
-	private boolean isWaitStayOrEmptyDrive(TaxiTask task) {
-		return task.getTaxiTaskType() == TaxiTaskType.STAY || task.getTaxiTaskType() == TaxiTaskType.EMPTY_DRIVE;
-	}
+//	private boolean isWaitStayOrEmptyDrive(TaxiTask task) {
+//		return task.getTaxiTaskType() == TaxiTaskType.STAY || task.getTaxiTaskType() == TaxiTaskType.EMPTY_DRIVE;
+//	}
 
 }

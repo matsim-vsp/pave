@@ -56,7 +56,7 @@ public class FreightTourScheduledEvent extends Event {
         attr.put(ATTRIBUTE_REQUEST_LINK, tourData.getRequestLink() + "");
         attr.put(ATTRIBUTE_FREIGHT_TOUR_DURATION, tourData.getPlannedTourDuration() + "");
         attr.put(ATTRIBUTE_FREIGHT_TOUR_DISTANCE, tourData.getPlannedTourLength() + "");
-        attr.put(ATTRIBUTE_MUST_RETURN_TIME, tourData.getMustReturnTime() + "");
+        attr.put(ATTRIBUTE_MUST_RETURN_TIME, tourData.getMustReturnLog() + "");
         return attr;
     }
 

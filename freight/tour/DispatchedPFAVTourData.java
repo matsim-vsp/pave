@@ -26,13 +26,14 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.schedule.Task;
 import privateAV.schedule.PFAVServiceTask;
+import privateAV.vehicle.MustReturnLinkTimePair;
 import privateAV.vehicle.PFAVehicle;
 
 import java.util.Objects;
 
 public class DispatchedPFAVTourData {
 
-    private final double mustReturnTime;
+    private final MustReturnLinkTimePair mustReturnLog;
 
     private final Id<DvrpVehicle> vehicleId;
     private PFAVTourData tourData;
@@ -50,7 +51,7 @@ public class DispatchedPFAVTourData {
 
     private DispatchedPFAVTourData(DispatchedPFAVTourData.Builder builder) {
         this.vehicleId = Objects.requireNonNull(builder.vehicleId);
-        this.mustReturnTime = Objects.requireNonNull(builder.mustReturnTime);
+        this.mustReturnLog = Objects.requireNonNull(builder.mustReturnLog);
 //        this.depotLink = Objects.requireNonNull(builder.depotLink);
         this.dispatchTime = builder.dispatchTime;
         this.requestLink = Objects.requireNonNull(builder.requestLink);
@@ -147,13 +148,13 @@ public class DispatchedPFAVTourData {
         return requestLink;
     }
 
-    public double getMustReturnTime() {
-        return mustReturnTime;
+    public MustReturnLinkTimePair getMustReturnLog() {
+        return mustReturnLog;
     }
 
     public static final class Builder {
         private Id<DvrpVehicle> vehicleId;
-        private Double mustReturnTime;
+        private MustReturnLinkTimePair mustReturnLog;
         private double dispatchTime;
 
         private Id<Link> requestLink;
@@ -171,7 +172,7 @@ public class DispatchedPFAVTourData {
 
         public DispatchedPFAVTourData.Builder vehicle(PFAVehicle val) {
             vehicleId = val.getId();
-            mustReturnTime = val.getOwnerActEndTimes().peek();
+            mustReturnLog = val.getMustReturnToOwnerLinkTimePairs().peek();
             return this;
         }
 

@@ -36,15 +36,15 @@ public class CarrierServiceCutter {
     public static void main(String[] args) {
 
         //Neukoelln
-//        investigatedCarriers.add( Id.create("0801_Neukölln", Carrier.class) );
-//        investigatedCarriers.add( Id.create("0802_Britz/Buckow", Carrier.class) );
-//        investigatedCarriers.add( Id.create("0803_Gropiusstadt", Carrier.class) );
+        investigatedCarriers.add(Id.create("0801_Neukölln", Carrier.class));
+        investigatedCarriers.add(Id.create("0802_Britz/Buckow", Carrier.class));
+        investigatedCarriers.add(Id.create("0803_Gropiusstadt", Carrier.class));
 
 //        Tempelhof
-        investigatedCarriers.add(Id.create("0704_Tempelhof", Carrier.class));
-        investigatedCarriers.add(Id.create("0705_Mariendorf", Carrier.class));
-        investigatedCarriers.add(Id.create("0706_Marienfelde", Carrier.class));
-        investigatedCarriers.add(Id.create("0707_Lichtenrade", Carrier.class));
+//        investigatedCarriers.add(Id.create("0704_Tempelhof", Carrier.class));
+//        investigatedCarriers.add(Id.create("0705_Mariendorf", Carrier.class));
+//        investigatedCarriers.add(Id.create("0706_Marienfelde", Carrier.class));
+//        investigatedCarriers.add(Id.create("0707_Lichtenrade", Carrier.class));
 
 
 

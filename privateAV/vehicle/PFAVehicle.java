@@ -12,14 +12,14 @@ import java.util.Queue;
 
 public class PFAVehicle extends DvrpVehicleImpl {
 
-    Queue<Double> ownerActEndTimes;
+    Queue<MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
 
     //TODO: actually, the ownerActEndTimes are now contained twice, once in the specification, once in the vehicle.
     // at least for debugging that is nice, but maybe the list should be removed from here..
     public PFAVehicle(PFAVSpecification specification, Link startLink) {
         super(specification, startLink);
-        this.ownerActEndTimes = new LinkedList<>();
-        ownerActEndTimes.addAll(specification.ownerActEndTimes);
+        this.mustReturnToOwnerLinkTimePairs = new LinkedList<>();
+        this.mustReturnToOwnerLinkTimePairs.addAll(specification.mustReturnToOwnerLinkTimePairs);
     }
 
     public static DvrpVehicleImpl createWithLinkProvider(DvrpVehicleSpecification specification, LinkProvider<Id<Link>> linkProvider) {
@@ -32,15 +32,15 @@ public class PFAVehicle extends DvrpVehicleImpl {
         }
     }
 
-    public Queue<Double> getOwnerActEndTimes() {
-        return this.ownerActEndTimes;
+    public Queue<MustReturnLinkTimePair> getMustReturnToOwnerLinkTimePairs() {
+        return this.mustReturnToOwnerLinkTimePairs;
     }
 
     @Override
     public String toString() {
-        String endTimes = "";
-        for (Double s : ownerActEndTimes) {
-            endTimes += s + ";";
+        String mustReturnLogs = "";
+        for (MustReturnLinkTimePair pair : mustReturnToOwnerLinkTimePairs) {
+            mustReturnLogs += pair.toString() + "; ";
         }
         return MoreObjects.toStringHelper(this)
                 .add("id", getId())
@@ -48,7 +48,7 @@ public class PFAVehicle extends DvrpVehicleImpl {
                 .add("capacity", getCapacity())
                 .add("serviceBeginTime", getStartLink())
                 .add("serviceEndTime", getServiceEndTime())
-                .add("ownerActEndTimes", endTimes)
+                .add("mustReturnLogs", mustReturnLogs)
                 .toString();
     }
 }

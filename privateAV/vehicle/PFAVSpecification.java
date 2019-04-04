@@ -6,6 +6,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicleSpecification;
 
+import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
 
@@ -24,11 +25,7 @@ public class PFAVSpecification implements DvrpVehicleSpecification {
     // time window
     private final double serviceBeginTime;
     private final double serviceEndTime;
-
-    /**
-     * activity end times of owner
-     */
-    Queue<Double> ownerActEndTimes;
+    public LinkedList<MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
 
     private PFAVSpecification(PFAVSpecification.Builder builder) {
         id = Objects.requireNonNull(builder.id);
@@ -36,7 +33,7 @@ public class PFAVSpecification implements DvrpVehicleSpecification {
         capacity = Objects.requireNonNull(builder.capacity);
         serviceBeginTime = Objects.requireNonNull(builder.serviceBeginTime);
         serviceEndTime = Objects.requireNonNull(builder.serviceEndTime);
-        ownerActEndTimes = Objects.requireNonNull(builder.actEndTimes);
+        mustReturnToOwnerLinkTimePairs = Objects.requireNonNull(builder.mustReturnToOwnerLinkTimePairs);
     }
 
     public static PFAVSpecification.Builder newBuilder() {
@@ -50,7 +47,7 @@ public class PFAVSpecification implements DvrpVehicleSpecification {
         builder.capacity = copy.getCapacity();
         builder.serviceBeginTime = copy.getServiceBeginTime();
         builder.serviceEndTime = copy.getServiceEndTime();
-        builder.actEndTimes = copy.ownerActEndTimes;
+        builder.mustReturnToOwnerLinkTimePairs = copy.mustReturnToOwnerLinkTimePairs;
         return builder;
     }
 
@@ -79,15 +76,15 @@ public class PFAVSpecification implements DvrpVehicleSpecification {
         return serviceEndTime;
     }
 
-    public Queue<Double> getOwnerActEndTimes() {
-        return ownerActEndTimes;
+    public LinkedList<MustReturnLinkTimePair> getMustReturnToOwnerLinkTimePairs() {
+        return mustReturnToOwnerLinkTimePairs;
     }
 
     @Override
     public String toString() {
-        String endTimes = "";
-        for (Double s : ownerActEndTimes) {
-            endTimes += s + ";";
+        String mustReturnLogs = "";
+        for (MustReturnLinkTimePair pair : mustReturnToOwnerLinkTimePairs) {
+            mustReturnLogs += pair.toString() + "; ";
         }
         return MoreObjects.toStringHelper(this)
                 .add("id", id)
@@ -95,12 +92,13 @@ public class PFAVSpecification implements DvrpVehicleSpecification {
                 .add("capacity", capacity)
                 .add("serviceBeginTime", serviceBeginTime)
                 .add("serviceEndTime", serviceEndTime)
-                .add("ownerActEndTimes", endTimes)
+                .add("mustReturnLogs", mustReturnLogs)
                 .toString();
     }
 
     public static final class Builder {
         public Queue<Double> actEndTimes;
+        public LinkedList<MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
         private Id<DvrpVehicle> id;
         private Id<Link> startLinkId;
         private Integer capacity;
@@ -137,6 +135,11 @@ public class PFAVSpecification implements DvrpVehicleSpecification {
 
         public PFAVSpecification.Builder actEndTimes(Queue<Double> list) {
             actEndTimes = list;
+            return this;
+        }
+
+        public PFAVSpecification.Builder mustReturnToOwnerLinkTimePairs(LinkedList<MustReturnLinkTimePair> list) {
+            mustReturnToOwnerLinkTimePairs = list;
             return this;
         }
 

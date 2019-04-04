@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import privateAV.vehicle.MustReturnLinkTimePair;
 import privateAV.vehicle.PFAVehicle;
 
 import java.util.Map;
@@ -34,18 +35,17 @@ public class FreightTourRequestDeniedEvent extends Event {
 
     public static final String ATTRIBUTE_VEHICLE = "vehicle";
     public static final String ATTRIBUTE_REQUEST_LINK = "requestLink";
-    public static final String ATTRIBUTE_MUST_RETURN_TIME = "mustReturnTime";
+    public static final String ATTRIBUTE_MUST_RETURN_LINK_TIME_PAIR = "mustReturnLinkTimePair";
 
     private final Id<DvrpVehicle> vehicleId;
     private final Id<Link> requestLink;
-    private final double mustReturnTime;
+    private final MustReturnLinkTimePair returnLog;
 
     public FreightTourRequestDeniedEvent(PFAVehicle vehicle, Id<Link> requestLink, double timeOfDay) {
         super(timeOfDay);
         vehicleId = vehicle.getId();
         this.requestLink = requestLink;
-        this.mustReturnTime = vehicle.getOwnerActEndTimes().peek();
-
+        this.returnLog = vehicle.getMustReturnToOwnerLinkTimePairs().peek();
     }
 
     /**
@@ -61,7 +61,7 @@ public class FreightTourRequestDeniedEvent extends Event {
         Map<String, String> attr = super.getAttributes();
         attr.put(ATTRIBUTE_VEHICLE, vehicleId + "");
         attr.put(ATTRIBUTE_REQUEST_LINK, requestLink + "");
-        attr.put(ATTRIBUTE_MUST_RETURN_TIME, mustReturnTime + "");
+        attr.put(ATTRIBUTE_MUST_RETURN_LINK_TIME_PAIR, returnLog.toString());
         return attr;
     }
 
@@ -73,7 +73,7 @@ public class FreightTourRequestDeniedEvent extends Event {
         return requestLink;
     }
 
-    public double getMustReturnTime() {
-        return mustReturnTime;
+    public MustReturnLinkTimePair getReturnLog() {
+        return returnLog;
     }
 }

@@ -19,6 +19,7 @@
 package freight.manager;
 
 import freight.tour.PFAVTourData;
+import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import privateAV.vehicle.PFAVehicle;
 
@@ -34,4 +35,7 @@ public interface ListBasedFreightTourManager {
     PFAVTourData getRandomPFAVTour();
 
     PFAVTourData getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router);
+
+    boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot,
+                                                 PFAVTourData freightTour, LeastCostPathCalculator router);
 }
