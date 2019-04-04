@@ -156,23 +156,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 	}
 
-	private void scheduleDriveToOwner(DvrpVehicle vehicle, Schedule schedule, PFAVRetoolTask currentTask) {
-		TaxiTask lastTask = (TaxiTask) Schedules.getLastTask(schedule);
-		double departureTime = lastTask.getBeginTime();
-
-		Id<Link> ownerLink = ((PFAVehicle) vehicle).getMustReturnToOwnerLinkTimePairs().peek().getLinkId();
-		if (ownerLink == null) {
-			ownerLink = PFAVUtils.getLastPassengerDropOff(vehicle.getSchedule()).getLink().getId();
-		}
-
-		VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(currentTask.getLink(),
-				network.getLinks().get(ownerLink),
-				departureTime, router, travelTime);
-
-		scheduleDrive(schedule, (TaxiStayTask) lastTask, path);
-		appendStayTask(vehicle);
-	}
-
 	private void requestFreightTour(DvrpVehicle vehicle, boolean isComingFromAnotherFreightTour) {
         log.info("Vehicle " + vehicle.getId() + " requests a freight tour at " + timer.getTimeOfDay() + " on link " + ((StayTaskImpl) vehicle.getSchedule().getCurrentTask()).getLink().getId());
 		PFAVTourData tourData = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
@@ -256,7 +239,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 
 		//the following is only for analysis
 		tourData.setPlannedTourDuration(tourDuration);
-//		tourData.setPlannedTourLength(totalDistance);
 
 		DispatchedPFAVTourData dispatchData = DispatchedPFAVTourData.newBuilder()
 				.vehicle((PFAVehicle) vehicle)
