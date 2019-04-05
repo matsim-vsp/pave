@@ -101,17 +101,17 @@ public final class PFAVUtils {
 
 	/**
 	 * the maximum distance to a depot that is accepted. that means, a vehicle that is further away (at the moment of the request)
-	 * than DISTANCE_TO_DEPOT_THRESHOLD from a depot, will not be dispatched to a starting from that depot.
+     * than MAX_DISTANCE_TO_DEPOT from a depot, will not be dispatched to a starting from that depot.
 	 */
 	//for open Berlin Scenario, we set this to 10 kilometers. please be aware that this might not be useful for other scenarios
-	public static final long DISTANCE_TO_DEPOT_THRESHOLD = 10000;
+    public static final long MAX_DISTANCE_TO_DEPOT = 10000;
 
 	/**
 	 * the maximum travel time to a depot that is accepted. that means, a vehicle for which the access drive takes longer than
-	 * TRAVELTIME_TO_DEPOT_THRESHOLD will not be dispatched to a starting from that depot.
+     * MAX_TRAVELTIME_TO_DEPOT will not be dispatched to a starting from that depot.
 	 */
 	//for open Berlin Scenario, we set this to 20 minutes. please be aware that this might not be useful for other scenarios
-	public static final double TRAVELTIME_TO_DEPOT_THRESHOLD = 20 * 60;
+    public static final double MAX_TRAVELTIME_TO_DEPOT = 20 * 60;
 
 	/**
 	 * defines the number of depots which are considered for the dispatch of a freight tour to a PFAV. in the dispatch algorithm, the closest
@@ -121,6 +121,12 @@ public final class PFAVUtils {
 	//for the current Open-Berlin-Scenario, we only look at one depot! to avoid having PFAV's seving that depot, which would normally serve another one,
 //			this parameter is set to 1. for other cases, e.g. a look on whole berlin, set this somewhat higher (2 or 3 might be a good start)
 	public static final int AMOUNT_OF_DEPOTS_TO_CONSIDER = 1;
+
+    /**
+     * this boolean determines whether the {@link freight.manager.ListBasedFreightTourManagerImpl} looks at the latest start of the last service in a tour
+     * and compares it with the approximated arrival time (computed by travel time to depot + planned tour duration til last service (derived out of freight tour))
+     */
+    public static final boolean CONSIDER_SERVICE_TIME_WINDOWS_FOR_DISPATCH = false;
 
 	/**
 	 * defines whether a TaxiEmptyDriveTask from the depot back to the owner is inserted when the freight tour gets scheduled.

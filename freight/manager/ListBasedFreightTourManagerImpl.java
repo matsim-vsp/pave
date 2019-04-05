@@ -183,8 +183,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
         for (Link depot : nearestDepots) {
             Iterator<PFAVTourData> freightTourIterator = this.startLinkToFreightTour.get(depot).iterator();
 			VrpPathWithTravelData pathFromCurrTaskToDepot = calcPathToDepot(vehicle, depot, router);
-			if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.DISTANCE_TO_DEPOT_THRESHOLD
-					&& pathFromCurrTaskToDepot.getTravelTime() <= PFAVUtils.TRAVELTIME_TO_DEPOT_THRESHOLD) {
+            if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.MAX_DISTANCE_TO_DEPOT
+                    && pathFromCurrTaskToDepot.getTravelTime() <= PFAVUtils.MAX_TRAVELTIME_TO_DEPOT) {
 
 				while (freightTourIterator.hasNext()) {
 					PFAVTourData tourData = freightTourIterator.next();
@@ -237,6 +237,11 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	@Override
 	public boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot,
 														 PFAVTourData freightTour, LeastCostPathCalculator router) {
+
+        //do we have the chance to be at the last service in time?
+        if (PFAVUtils.CONSIDER_SERVICE_TIME_WINDOWS_FOR_DISPATCH &&
+                freightTour.getLatestArrivalAtLastService() < pathFromCurrTaskToDepot.getArrivalTime() + freightTour.getTravelTimeToLastService())
+            return false;
 
 		MustReturnLinkTimePair mustReturnToOwnerLog = vehicle.getMustReturnToOwnerLinkTimePairs().peek();
 //		Double timeWhenOwnerNeedsVehicle = vehicle.getOwnerActEndTimes().peek();

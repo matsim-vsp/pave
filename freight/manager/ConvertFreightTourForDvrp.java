@@ -79,6 +79,8 @@ public class ConvertFreightTourForDvrp {
             }
         }
 
+        double travelTimeToLastService = taskList.get(taskList.size() - 1).getBeginTime();
+
         //for the times set at the end activity, see comments above. we need this workaround here
         int size = freightTour.getTour().getTourElements().size();
         tBegin = ((Tour.Leg) freightTour.getTour().getTourElements().get(size - 1)).getExpectedDepartureTime();
@@ -88,7 +90,7 @@ public class ConvertFreightTourForDvrp {
         taskList.add(new PFAVRetoolTask(tBegin, tEnd, location));
 
         double plannedTourDuration = tEnd - taskList.get(0).getBeginTime();
-        return new PFAVTourData(taskList, depotLink, plannedTourDuration, totalCapacityDemand);
+        return new PFAVTourData(taskList, depotLink, plannedTourDuration, travelTimeToLastService, totalCapacityDemand);
 	}
 
 }

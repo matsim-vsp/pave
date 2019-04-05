@@ -22,6 +22,7 @@ package freight.tour;
 
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.schedule.StayTask;
+import privateAV.schedule.PFAVServiceTask;
 
 import java.util.List;
 import java.util.Objects;
@@ -30,6 +31,7 @@ public class PFAVTourData {
 
     private final Link depotLink;
     private final int plannedTotalCapacityDemand;
+    private final double travelTimeToLastService;
 
     private Double plannedTourDuration;
 
@@ -37,10 +39,11 @@ public class PFAVTourData {
 
     private List<StayTask> tourTasks;
 
-    public PFAVTourData(List<StayTask> tourTasks, Link depotLinkId, double plannedTourDuration, int plannedTotalCapacityDemand) {
+    public PFAVTourData(List<StayTask> tourTasks, Link depotLinkId, double plannedTourDuration, double travelTimeToLastService, int plannedTotalCapacityDemand) {
         this.tourTasks = Objects.requireNonNull(tourTasks);
         this.depotLink = Objects.requireNonNull(depotLinkId);
         this.plannedTourDuration = plannedTourDuration;
+        this.travelTimeToLastService = travelTimeToLastService;
         this.plannedTotalCapacityDemand = plannedTotalCapacityDemand;
     }
 
@@ -71,4 +74,16 @@ public class PFAVTourData {
     public void incrementAmountOfRejections() {
         this.amountOfRejections++;
     }
+
+    public double getLatestArrivalAtLastService() {
+        if (!(tourTasks.get(tourTasks.size() - 2) instanceof PFAVServiceTask)) {
+            throw new IllegalStateException();
+        }
+        return ((PFAVServiceTask) tourTasks.get(tourTasks.size() - 2)).getCarrierService().getServiceStartTimeWindow().getEnd();
+    }
+
+    public double getTravelTimeToLastService() {
+        return this.travelTimeToLastService;
+    }
+
 }
