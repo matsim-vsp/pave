@@ -134,7 +134,7 @@ public final class PFAVUtils {
 	 * if false, it might perform another freight tour after having performed the last PFAVServiceTask.
 	 * TODO create JUnit test...
 	 */
-	public static boolean IMMEDIATE_RETURN_AFTER_FREIGHT_TOUR = false;
+    public static boolean ALLOW_MULTIPLE_TOURS_IN_A_ROW = true;
 
 	public static TaxiDropoffTask getLastPassengerDropOff(Schedule schedule) {
 		for (int i = schedule.getTasks().size() - 1; i >= 0; i--) {

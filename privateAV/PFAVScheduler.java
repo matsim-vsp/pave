@@ -119,7 +119,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 					}
 				} else if (currentTask instanceof PFAVServiceTask
 						&& Schedules.getNextTask(schedule) instanceof TaxiEmptyDriveTask
-						&& !PFAVUtils.IMMEDIATE_RETURN_AFTER_FREIGHT_TOUR) {
+						&& PFAVUtils.ALLOW_MULTIPLE_TOURS_IN_A_ROW) {
 					//vehicle just performed the last service task and can now demand the next freight tour if owner has not submitted a request yet
 					if (!requestedVehicles.keySet().contains(vehicle.getId())) {
 						requestFreightTour(vehicle, true);
