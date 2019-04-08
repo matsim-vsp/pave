@@ -18,8 +18,10 @@
  * *********************************************************************** */
 package privateAV.vrpagent;
 
+import org.matsim.api.core.v01.Id;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dynagent.FirstLastSimStepDynActivity;
-
+import org.matsim.contrib.freight.carrier.TimeWindow;
 import privateAV.schedule.PFAVServiceTask;
 
 /**
@@ -29,12 +31,17 @@ import privateAV.schedule.PFAVServiceTask;
 public class PFAVServiceActivity extends FirstLastSimStepDynActivity {
 
 	private final double departureTime;
+    private final TimeWindow timeWindow;
+    private final Id<DvrpVehicle> vehicleId;
+	
 	/**
 	 * @param activityType
 	 */
-	public PFAVServiceActivity(String activityType, PFAVServiceTask serviceTask) {
+    public PFAVServiceActivity(String activityType, PFAVServiceTask serviceTask, Id<DvrpVehicle> vehicleId) {
 		super(activityType);
 		this.departureTime = serviceTask.getEndTime();
+        timeWindow = serviceTask.getCarrierService().getServiceStartTimeWindow();
+        this.vehicleId = vehicleId;
 	}
 
 	/* (non-Javadoc)
@@ -50,5 +57,13 @@ public class PFAVServiceActivity extends FirstLastSimStepDynActivity {
 		// TODO do we want/need wo simulate something here
 		super.beforeFirstStep(now);
 	}
+
+    public TimeWindow getTimeWindow() {
+        return timeWindow;
+    }
+
+    public Id<DvrpVehicle> getVehicleId() {
+        return vehicleId;
+    }
 
 }

@@ -22,6 +22,7 @@ package freight.tour;
 
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.schedule.StayTask;
+import privateAV.schedule.PFAVRetoolTask;
 import privateAV.schedule.PFAVServiceTask;
 
 import java.util.List;
@@ -76,7 +77,7 @@ public class PFAVTourData {
     }
 
     public double getLatestArrivalAtLastService() {
-        if (!(tourTasks.get(tourTasks.size() - 2) instanceof PFAVServiceTask)) {
+        if (!(tourTasks.get(tourTasks.size() - 2) instanceof PFAVServiceTask) || !(tourTasks.get(tourTasks.size() - 1) instanceof PFAVRetoolTask)) {
             throw new IllegalStateException();
         }
         return ((PFAVServiceTask) tourTasks.get(tourTasks.size() - 2)).getCarrierService().getServiceStartTimeWindow().getEnd();

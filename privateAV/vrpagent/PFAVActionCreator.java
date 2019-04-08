@@ -37,8 +37,8 @@ import org.matsim.contrib.taxi.schedule.TaxiPickupTask;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 import org.matsim.core.mobsim.framework.MobsimTimer;
-import privateAV.schedule.PFAVServiceTask;
 import privateAV.schedule.PFAVRetoolTask;
+import privateAV.schedule.PFAVServiceTask;
 
 /**
  * @author tschlenther
@@ -91,7 +91,7 @@ public class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 				return new SinglePassengerDropoffActivity(passengerEngine, dynAgent, dst, dst.getRequest(),
 						DROPOFF_ACTIVITY_TYPE);
 			} else if( task instanceof PFAVServiceTask) {
-				return new PFAVServiceActivity(SERVICE_ACTIVITY_TYPE, (PFAVServiceTask) task);
+                return new PFAVServiceActivity(SERVICE_ACTIVITY_TYPE, (PFAVServiceTask) task, vehicle.getId());
 			} else if(task instanceof PFAVRetoolTask) {
 				return new IdleDynActivity(RETOOL_ACTIVITY_TYPE, task::getEndTime);
 			} else {
