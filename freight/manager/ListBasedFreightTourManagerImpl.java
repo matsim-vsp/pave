@@ -59,7 +59,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
     private final static Logger log = Logger.getLogger(ListBasedFreightTourManagerImpl.class);
 
 
-	private Map<Link, List<PFAVTourData>> startLinkToFreightTour = new HashMap<>();
+	private Map<Link, LinkedList<PFAVTourData>> depotToFreightTour = new HashMap<>();
 
 	private List<PFAVTourData> freightTours = new ArrayList<>();
 	@Inject
@@ -142,10 +142,11 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
      */
     @Override
 	public PFAVTourData getRandomPFAVTour() {
-        if (this.startLinkToFreightTour.size() == 0) return null;
-        Link depot = this.startLinkToFreightTour.keySet().toArray(new Link[startLinkToFreightTour.size()])[MatsimRandom.getRandom().nextInt(this.startLinkToFreightTour.size())];
+		if (this.depotToFreightTour.size() == 0) return null;
+		Link depot = this.depotToFreightTour.keySet().toArray(new Link[depotToFreightTour.size()])[MatsimRandom.getRandom().nextInt(this.depotToFreightTour.size())];
 
-		PFAVTourData tour = this.startLinkToFreightTour.get(depot).remove(MatsimRandom.getRandom().nextInt(this.startLinkToFreightTour.get(depot).size()));
+
+		PFAVTourData tour = (PFAVTourData) this.depotToFreightTour.get(depot).toArray()[MatsimRandom.getRandom().nextInt(this.depotToFreightTour.get(depot).size())];
 
         if (PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS) {
             if (tour == null) {
@@ -153,8 +154,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
             }
         } else {
             //if no tour at the depot is left, delete depot
-            if (this.startLinkToFreightTour.get(depot).isEmpty()) {
-                this.startLinkToFreightTour.remove(depot);
+			if (this.depotToFreightTour.get(depot).isEmpty()) {
+				this.depotToFreightTour.remove(depot);
             }
         }
         return tour;
@@ -175,13 +176,13 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	private PFAVTourData getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
 		StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(PFAVUtils.AMOUNT_OF_DEPOTS_TO_CONSIDER, link1 -> link1, link2 -> link2);
 		Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
-		List<Link> nearestDepots = finder.findNearest(requestLink, startLinkToFreightTour.keySet().stream());
+		List<Link> nearestDepots = finder.findNearest(requestLink, depotToFreightTour.keySet().stream());
 
         //TODO: test this spatial dispatch algorithm, especially: is the nearestDepots list sorted??
 
 		PFAVTourData matchingFreightTour = null;
         for (Link depot : nearestDepots) {
-            Iterator<PFAVTourData> freightTourIterator = this.startLinkToFreightTour.get(depot).iterator();
+			Iterator<PFAVTourData> freightTourIterator = this.depotToFreightTour.get(depot).iterator();
 			VrpPathWithTravelData pathFromCurrTaskToDepot = calcPathToDepot(vehicle, depot, router);
             if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.MAX_DISTANCE_TO_DEPOT
                     && pathFromCurrTaskToDepot.getTravelTime() <= PFAVUtils.MAX_TRAVELTIME_TO_DEPOT) {
@@ -198,8 +199,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 				}
 				if (matchingFreightTour != null) {
 					//if no tour at the depot is left, delete depot
-					if (startLinkToFreightTour.get(depot).isEmpty() && !PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS)
-						startLinkToFreightTour.remove(depot);
+					if (depotToFreightTour.get(depot).isEmpty() && !PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS)
+						depotToFreightTour.remove(depot);
 					break;
 				}
 			}
@@ -309,33 +310,46 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		this.freightTours = convertCarrierPlansToTaskList(carriers);
 
         log.info("initialising mapping of freight tours to link id's");
-        this.startLinkToFreightTour = new HashMap<>();
+		this.depotToFreightTour = new HashMap<>();
 
 //		if we allow empty depots, we need to initialise the manager's map of depot links to tours with empty lists.
         if (PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS) mapDepotLinksToEmptyTourList();
 
         //now fill the map with the freightTours that came out of the calculator
 		mapStartLinkOfToursToTour();
+		sortDepotLists();
     }
 
     private void mapDepotLinksToEmptyTourList() {
         for (Carrier carrier : this.carriers.getCarriers().values()) {
             for (CarrierVehicle v : carrier.getCarrierCapabilities().getCarrierVehicles()) {
-                this.startLinkToFreightTour.put(network.getLinks().get(v.getLocation()), new ArrayList<>());
+				this.depotToFreightTour.put(network.getLinks().get(v.getLocation()), new LinkedList<>());
             }
         }
     }
 
-
+	private void sortDepotLists() {
+		Comparator<PFAVTourData> comparator = new Comparator<PFAVTourData>() {
+			@Override
+			public int compare(PFAVTourData tour1, PFAVTourData tour2) {
+				return Double.compare(tour1.getLatestArrivalAtLastService(), tour2.getLatestArrivalAtLastService());
+			}
+		};
+		for (LinkedList<PFAVTourData> q : this.depotToFreightTour.values()) {
+			Collections.sort(q, comparator);
+		}
+	}
+    
+    
     private void mapStartLinkOfToursToTour() {
         for (PFAVTourData freightTour : this.freightTours) {
 			Link start = freightTour.getDepotLink();
-			if(this.startLinkToFreightTour.containsKey(start)){
-				this.startLinkToFreightTour.get(start).add(freightTour);
+			if (this.depotToFreightTour.containsKey(start)) {
+				this.depotToFreightTour.get(start).add(freightTour);
 			} else{
-				List<PFAVTourData> allDepotTours = new ArrayList<>();
+				LinkedList<PFAVTourData> allDepotTours = new LinkedList<>();
 				allDepotTours.add(freightTour);
-				this.startLinkToFreightTour.put(start,allDepotTours);
+				this.depotToFreightTour.put(start, allDepotTours);
 			}
 		}
 	}
@@ -348,6 +362,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
             runTourPlanning();
         } else {
             mapStartLinkOfToursToTour();
+			sortDepotLists();
         }
     }
 
@@ -364,7 +379,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
             writeCarriers(this.carriers, dir + "carriers_it" + event.getIteration() + ".xml");
             writeCarriers(this.carriersWithOnlyUsedTours, dir + "carriersOnlyUsedTours_it" + event.getIteration() + ".xml");
 			List<PFAVTourData> unfinishedTours = new ArrayList<>();
-			this.startLinkToFreightTour.forEach((link, tours) -> unfinishedTours.addAll(tours));
+			this.depotToFreightTour.forEach((link, tours) -> unfinishedTours.addAll(tours));
 			new PFAVUnfinishedToursDumper(unfinishedTours).writeStats(dir + "notDispatchedTours_it" + event.getIteration() + ".csv");
 		}
 	}
