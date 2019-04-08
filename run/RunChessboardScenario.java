@@ -56,7 +56,7 @@ public class RunChessboardScenario {
 
     private static final String CARRIERS_FILE_CASE2 = "scenarios/chessboard/secondCase/chessboard_carriersCase2_INFINITE.xml";
     private static final String VEHTYPES_FILE_CASE2 = "scenarios/chessboard/secondCase/chessboard_vehicleTypesCase2.xml";
-    ;
+
     private static final String OUTPUT_DIR = "output/travelTimeTest/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(new Date()) + "/";
 
 

@@ -25,6 +25,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.schedule.Task;
+import org.matsim.contrib.freight.carrier.TimeWindow;
 import privateAV.schedule.PFAVServiceTask;
 import privateAV.vehicle.MustReturnLinkTimePair;
 import privateAV.vehicle.PFAVehicle;
@@ -50,18 +51,17 @@ public class DispatchedPFAVTourData {
     private double actualEmptyMeters = Double.NEGATIVE_INFINITY;
     private int actualServedCapacityDemand = Integer.MIN_VALUE;
 
+    private double totalServiceDelay = 0;
+
     private DispatchedPFAVTourData(DispatchedPFAVTourData.Builder builder) {
         this.vehicleId = Objects.requireNonNull(builder.vehicleId);
         this.mustReturnLog = Objects.requireNonNull(builder.mustReturnLog);
-//        this.depotLink = Objects.requireNonNull(builder.depotLink);
         this.dispatchTime = builder.dispatchTime;
         this.requestLink = Objects.requireNonNull(builder.requestLink);
-//        this.plannedTourDuration = builder.plannedTourDuration;
         this.plannedTourLength = builder.plannedTourLength;
         this.plannedEmptyMeters = builder.plannedEmptyMeters;
         this.distanceToDepot = builder.distanceToDepot;
         this.distanceBackToOwner = builder.distanceBackToOwner;
-//        this.plannedTotalCapacityDemand = builder.plannedTotalCapacityDemand;
         this.tourData = builder.data;
     }
 
@@ -79,16 +79,24 @@ public class DispatchedPFAVTourData {
         else this.actualEmptyMeters += metersToAdd;
     }
 
+    private void computeAndNoteDelay(TimeWindow timeWindow, double serviceStartTime) {
+        if (timeWindow.getEnd() < serviceStartTime) {
+            this.totalServiceDelay += serviceStartTime - timeWindow.getEnd();
+        }
+    }
+
     public void addToActualServedCapacityDemand(int actualServedCapacityDemandToAdd) {
         if (this.actualServedCapacityDemand == Integer.MIN_VALUE) this.actualServedCapacityDemand = actualServedCapacityDemandToAdd;
         else this.actualServedCapacityDemand += actualServedCapacityDemandToAdd;
     }
 
-    public void notifyNextServiceTaskPerformed() {
+    public void notifyNextServiceTaskStarted(double startTime) {
         for (int i = this.tourData.getTourTasks().size() - 1; i >= 0; i--) {
             StayTask task = this.tourData.getTourTasks().get(i);
             if (task instanceof PFAVServiceTask && (task.getStatus() == Task.TaskStatus.PERFORMED || task.getStatus() == Task.TaskStatus.STARTED)) {
-                this.addToActualServedCapacityDemand(((PFAVServiceTask) task).getCarrierService().getCapacityDemand());
+                PFAVServiceTask serviceTask = (PFAVServiceTask) task;
+                this.addToActualServedCapacityDemand(serviceTask.getCarrierService().getCapacityDemand());
+                this.computeAndNoteDelay(serviceTask.getCarrierService().getServiceStartTimeWindow(), startTime);
                 return;
             }
         }
@@ -156,6 +164,10 @@ public class DispatchedPFAVTourData {
 
     public MustReturnLinkTimePair getMustReturnLog() {
         return mustReturnLog;
+    }
+
+    public double getTotalServiceDelay() {
+        return totalServiceDelay;
     }
 
 

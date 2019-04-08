@@ -32,6 +32,7 @@ public class PFAVModeModule extends AbstractDvrpModeModule {
 
         //we need our own FleetModule here
         install(new PFAVFleetModule(getMode(), scenario));
+        install(new PFAVAnalysisModule(getMode(), scenario.getNetwork()));
 
 //        install(FleetStatsCalculatorModule.createModule(getMode(), TaxiStatsDumper.class,
 //                getter -> new TaxiStatsDumper(taxiCfg, getter.get(OutputDirectoryHierarchy.class),

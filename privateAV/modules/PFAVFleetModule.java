@@ -1,6 +1,5 @@
 package privateAV.modules;
 
-import analysis.FreightTourDispatchAnalyzer;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Scenario;
@@ -62,14 +61,14 @@ public class PFAVFleetModule extends AbstractDvrpModeModule {
 
         installQSimModule(QSimScopeObjectListenerModule.createSimplifiedModule(getMode(), Fleet.class, PFAVFleetStatsCalculator.class));
 
-        //analysis
-        FreightTourDispatchAnalyzer analyzer = new FreightTourDispatchAnalyzer();
-
-        bindModal(FreightTourDispatchAnalyzer.class).toInstance(analyzer);
-        addControlerListenerBinding().to(modalKey(FreightTourDispatchAnalyzer.class));
-        installQSimModule(QSimScopeObjectListenerModule.createSimplifiedModule(getMode(), Fleet.class, FreightTourDispatchAnalyzer.class));
-
-        addEventHandlerBinding().toInstance(analyzer);
+//        //analysis
+//        FreightTourDispatchAnalyzer analyzer = new FreightTourDispatchAnalyzer();
+//
+//        bindModal(FreightTourDispatchAnalyzer.class).toInstance(analyzer);
+//        addControlerListenerBinding().to(modalKey(FreightTourDispatchAnalyzer.class));
+//        installQSimModule(QSimScopeObjectListenerModule.createSimplifiedModule(getMode(), Fleet.class, FreightTourDispatchAnalyzer.class));
+//
+//        addEventHandlerBinding().toInstance(analyzer);
 
     }
 }

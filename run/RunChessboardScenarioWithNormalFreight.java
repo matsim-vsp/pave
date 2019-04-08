@@ -18,6 +18,7 @@
 
 package run;
 
+import analysis.FreightTourStatsListener;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -144,6 +145,14 @@ public class RunChessboardScenarioWithNormalFreight {
         controler.addOverridingModule(carrierController);
         prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, carriers);
 
+        FreightTourStatsListener analyser = new FreightTourStatsListener(scenario.getNetwork());
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                addControlerListenerBinding().toInstance(analyser);
+                addEventHandlerBinding().toInstance(analyser);
+            }
+        });
 
         // run simulation
         controler.run();
@@ -214,6 +223,7 @@ public class RunChessboardScenarioWithNormalFreight {
             withoutFreight.writeGraphic(dir + "/" + event.getIteration() + ".legHistogram_withoutFreight.png");
             withoutFreight.reset(event.getIteration());
         });
+
     }
 
     private static CarrierScoringFunctionFactory createScoringFunctionFactory(final Network network) {

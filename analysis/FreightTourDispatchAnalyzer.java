@@ -24,9 +24,9 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import freight.tour.DispatchedPFAVTourData;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.events.ActivityEndEvent;
+import org.matsim.api.core.v01.events.ActivityStartEvent;
 import org.matsim.api.core.v01.events.LinkEnterEvent;
-import org.matsim.api.core.v01.events.handler.ActivityEndEventHandler;
+import org.matsim.api.core.v01.events.handler.ActivityStartEventHandler;
 import org.matsim.api.core.v01.events.handler.LinkEnterEventHandler;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -55,7 +55,7 @@ import java.util.Set;
  * leerfahrten - dauer und distanz (freightTourDispatch -> activityStart retool und freightTourCompleted -> retool)
  * insgesamt distanz der frachttour (aufsummieren der Wege/LinkLängen)
  */
-public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSimScopeObjectListener<Fleet>, LinkEnterEventHandler, ActivityEndEventHandler, IterationEndsListener {
+public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSimScopeObjectListener<Fleet>, LinkEnterEventHandler, ActivityStartEventHandler, IterationEndsListener {
 
     private Map<Id<DvrpVehicle>, DispatchedPFAVTourData> begunFreightTours = new HashMap<>();
     private Set<DispatchedPFAVTourData> completedFreightTours = new HashSet<>();
@@ -107,18 +107,13 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
         }
     }
 
-    // i use ActivityStartEvent instead of ActivityEndEvent, because i did get problems with the currentTask pointer of the schedule changing while
-    // i casted here in this method.... see below...
-    //for some reason, the current task in the vehicle's schedule is SOMETIMES already set to the next drive task, and SOMETIMES it is still pointing
-    //to the PFAVServiceTask... - i don't really understand why.... due to parallelisation ??
-    //tschlenther 14th of march '19
     @Override
-    public void handleEvent(ActivityEndEvent event) {
+    public void handleEvent(ActivityStartEvent event) {
 
         if (event.getActType().equals(PFAVActionCreator.SERVICE_ACTIVITY_TYPE)) {
             Id<DvrpVehicle> vehicleId = Id.create(event.getPersonId().toString(), DvrpVehicle.class);
 
-            this.begunFreightTours.get(vehicleId).notifyNextServiceTaskPerformed();
+            this.begunFreightTours.get(vehicleId).notifyNextServiceTaskStarted(event.getTime());
         }
     }
 
@@ -180,7 +175,9 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
                 .add("ActualEmptyMeters")
 
                 .add("PlannedTotalCapacityDemand")
-                .add("ActualTotalCapacityDemand");
+                .add("ActualTotalCapacityDemand")
+
+                .add("TotalServiceDelay");
         writer.writeNext(lineBuilder);
     }
 
@@ -206,7 +203,9 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
                     .addf(dblFormat, data.getActualEmptyMeters())
 
                     .addf("%d", data.getPlannedTotalCapacityDemand())
-                    .addf("%d", data.getActualServedCapacityDemand());
+                    .addf("%d", data.getActualServedCapacityDemand())
+
+                    .addf(dblFormat, data.getTotalServiceDelay());
 
             writer.writeNext(lineBuilder);
         }
@@ -232,7 +231,9 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
                     .add("-")
 
                     .addf("%d", data.getPlannedTotalCapacityDemand())
-                    .add("-");
+                    .add("-")
+
+                    .addf(dblFormat, data.getTotalServiceDelay());
 
             writer.writeNext(lineBuilder);
         }
