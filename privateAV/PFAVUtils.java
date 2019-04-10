@@ -40,7 +40,7 @@ public final class PFAVUtils {
      * represents the earliest start time of a freight tour. that means, the retool task of a freight tour must not start before
      * FREIGHTTOUR_EARLIEST_START. in the manager, the path to the depot is calculated. if needed, a stay task at the depot is inserted so that the PFAV waits in case.
      */
-    public static final double FREIGHTTOUR_EARLIEST_START = 10 * 3600;
+    public static final double FREIGHTTOUR_EARLIEST_START = 8 * 3600;
 
 	public static final String PFAV_ID_SUFFIX = "_PFAV";
 
@@ -89,7 +89,7 @@ public final class PFAVUtils {
      * set this to true for usecases in which you look only at a subset of depots. in order to have a correct dispatch, you need to have     *
      * a) one carrier per depot
      * b) all depots in the initial carrier file
-     * c) only those carriers that you want to look at containing services
+     * c) only those carriers that you want to look at to contain services
      *
      * set this to false if you want to enable long dispatch distances. setting this to false means that, over day time, the manager's set of depot
      * shrinks. consequently, the spatial dispatch algorithm allows longer distance's to depot's as it considers the closest three depots that have a tour left to serve.
@@ -129,7 +129,6 @@ public final class PFAVUtils {
     public static final boolean CONSIDER_SERVICE_TIME_WINDOWS_FOR_DISPATCH = false;
 
 	/**
-	 * defines whether a TaxiEmptyDriveTask from the depot back to the owner is inserted when the freight tour gets scheduled.
 	 * when true, the vehicle will immediately return to it's owner's activity location and wait there.
 	 * if false, it might perform another freight tour after having performed the last PFAVServiceTask.
 	 * TODO create JUnit test...

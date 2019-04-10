@@ -13,12 +13,11 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.path.VrpPath;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
-import org.matsim.contrib.dvrp.path.VrpPathWithTravelDataImpl;
 import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.schedule.*;
 import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
-import org.matsim.contrib.dvrp.tracker.OnlineDriveTaskTracker;
+import org.matsim.contrib.dvrp.tracker.TaskTrackers;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
 import org.matsim.contrib.taxi.passenger.TaxiRequest;
@@ -34,6 +33,7 @@ import org.matsim.core.router.FastAStarEuclideanFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.utils.misc.Time;
 import privateAV.events.FreightTourCompletedEvent;
 import privateAV.events.FreightTourRequestDeniedEvent;
 import privateAV.events.FreightTourScheduledEvent;
@@ -394,6 +394,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	
 	//-------------------------------COPIES
 
+	//	cannot be delegated cause is set to protected in TaxiScheduler
 	private void scheduleDrive(Schedule schedule, TaxiStayTask lastTask, VrpPathWithTravelData vrpPath) {
 		switch (lastTask.getStatus()) {
 			case PLANNED:
@@ -419,21 +420,91 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 	}
 
-    public void stopCruisingVehicle(DvrpVehicle vehicle) {
-        if (!taxiCfg.isVehicleDiversion()) {
-            throw new RuntimeException("Diversion must be on");
-        }
+	//	cannot be delegated because we need different new end time calculation than in TaxiScheduler.calcNewEndTime()
+//	maybe we should use inheritance in order to get rid off al these redundant lines....
+	public void updateTimeline(DvrpVehicle vehicle) {
+		Schedule schedule = vehicle.getSchedule();
+		if (schedule.getStatus() != ScheduleStatus.STARTED) {
+			return;
+		}
 
-        Schedule schedule = vehicle.getSchedule();
-        TaxiEmptyDriveTask driveTask = (TaxiEmptyDriveTask) Schedules.getNextToLastTask(schedule);
-        schedule.removeLastTask();
-        OnlineDriveTaskTracker tracker = (OnlineDriveTaskTracker) driveTask.getTaskTracker();
-        LinkTimePair stopPoint = tracker.getDiversionPoint();
-        tracker.divertPath(
-                new VrpPathWithTravelDataImpl(stopPoint.time, 0, new Link[]{stopPoint.link}, new double[]{0}));
-        appendStayTask(vehicle);
+		double predictedEndTime = TaskTrackers.predictEndTime(schedule.getCurrentTask(), timer.getTimeOfDay());
+		updateTimelineImpl(vehicle, predictedEndTime);
+	}
 
-    }
+	//this also is (almost) the same as TaxiScheduler.updateTimeLineImpl() except that we have a (slightly) different implementation of calcNewEndTime()
+	private void updateTimelineImpl(DvrpVehicle vehicle, double newEndTime) {
+		Schedule schedule = vehicle.getSchedule();
+		Task currentTask = schedule.getCurrentTask();
+		if (currentTask.getEndTime() == newEndTime) {
+			return;
+		}
+
+		currentTask.setEndTime(newEndTime);
+
+		List<? extends Task> tasks = schedule.getTasks();
+		int startIdx = currentTask.getTaskIdx() + 1;
+		double newBeginTime = newEndTime;
+
+		for (int i = startIdx; i < tasks.size(); i++) {
+			TaxiTask task = (TaxiTask) tasks.get(i);
+			double calcEndTime = calcNewEndTime(vehicle, task, newBeginTime);
+
+			if (calcEndTime == Time.UNDEFINED_TIME) {
+				schedule.removeTask(task);
+				i--;
+			} else if (calcEndTime < newBeginTime) {// 0 s is fine (e.g. last 'wait')
+				throw new IllegalStateException();
+			} else {
+				task.setBeginTime(newBeginTime);
+				task.setEndTime(calcEndTime);
+				newBeginTime = calcEndTime;
+			}
+		}
+	}
+
+	private double calcNewEndTime(DvrpVehicle vehicle, TaxiTask task, double newBeginTime) {
+		switch (task.getTaxiTaskType()) {
+			case STAY: {
+				if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
+					// even if endTime=beginTime, do not remove this task!!! A taxi schedule should end with WAIT
+					return Math.max(newBeginTime, vehicle.getServiceEndTime());
+				} else {
+					// if this is not the last task then some other task (e.g. DRIVE or PICKUP)
+					// must have been added at time submissionTime <= t
+					double oldEndTime = task.getEndTime();
+					if (oldEndTime <= newBeginTime) {// may happen if the previous task is delayed
+						return Time.UNDEFINED_TIME;// remove the task
+					} else {
+						return oldEndTime;
+					}
+				}
+			}
+
+			case EMPTY_DRIVE:
+			case OCCUPIED_DRIVE: {
+				// cannot be shortened/lengthen, therefore must be moved forward/backward
+				VrpPathWithTravelData path = (VrpPathWithTravelData) ((DriveTask) task).getPath();
+				// TODO one may consider recalculation of SP!!!!
+				return newBeginTime + path.getTravelTime();
+			}
+
+			case PICKUP: {
+				double t0 = ((TaxiPickupTask) task).getRequest().getEarliestStartTime();
+				// the actual pickup starts at max(t, t0)
+				double duration = task.getEndTime() - task.getBeginTime();
+				return Math.max(newBeginTime, t0) + duration;
+			}
+			case DROPOFF: {
+				// cannot be shortened/lengthen, therefore must be moved forward/backward
+				double duration = task.getEndTime() - task.getBeginTime();
+				return newBeginTime + duration;
+			}
+
+			default:
+				throw new IllegalStateException();
+		}
+	}
 
 	//-------------------------TRUE DELEGATES-----------------------------------
 
@@ -457,8 +528,5 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		delegate.stopVehicle(vehicle);
 	}
 
-	public void updateTimeline(DvrpVehicle vehicle) {
-		delegate.updateTimeline(vehicle);
-	}
 
 }
