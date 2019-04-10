@@ -38,7 +38,7 @@ public class PFAVServiceActivity extends FirstLastSimStepDynActivity {
 	 * @param activityType
 	 */
     public PFAVServiceActivity(String activityType, PFAVServiceTask serviceTask, Id<DvrpVehicle> vehicleId) {
-		super(activityType);
+		super(activityType + "_" + serviceTask.getCarrierService().getId());
 		this.departureTime = serviceTask.getEndTime();
         timeWindow = serviceTask.getCarrierService().getServiceStartTimeWindow();
         this.vehicleId = vehicleId;
