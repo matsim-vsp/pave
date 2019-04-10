@@ -70,7 +70,7 @@ public class RunPFAVInBerlin {
     public static void main(String[] args) {
         String configPath, output, carriers, vehTypes, population, networkChangeEvents;
         int maxIter;
-
+        boolean increaseCapacities;
         if (args.length > 0) {
             configPath = args[0];
             carriers = args[1];
@@ -79,6 +79,7 @@ public class RunPFAVInBerlin {
             maxIter = Integer.valueOf(args[4]);
             population = args[5];
             networkChangeEvents = args[6];
+            increaseCapacities = Boolean.valueOf(args[7]);
         } else {
             configPath = CONFIG_v53_1pct;
             carriers = CARRIERS_FILE;
@@ -87,6 +88,7 @@ public class RunPFAVInBerlin {
             maxIter = LAST_ITERATION;
             population = SMALL_PLANS_FILE;
             networkChangeEvents = NETWORK_CHANGE_EVENTS;
+            increaseCapacities = false;
         }
 
         RunBerlinScenario berlin = new RunBerlinScenario(configPath, null);
@@ -141,7 +143,11 @@ public class RunPFAVInBerlin {
 
         config.plans().setInputFile(population);
 
+        if (increaseCapacities) {
+            config.qsim().setFlowCapFactor(10);
+        }
         Scenario scenario = berlin.prepareScenario();
+
 
 //        log.warn("number of persons : " + scenario.getPopulation().getPersons().size());
 //        convertAgentsToPFAVOwners(scenario);

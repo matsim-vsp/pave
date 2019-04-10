@@ -38,20 +38,25 @@ import java.util.Random;
 public class PopulationCreator {
 
     public static void main(String[] args) {
-//        Scenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
-//        PopulationReader reader = new PopulationReader(scenario);
-//        reader.readFile("C:/Users/Work/svn/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.2-1pct/output-berlin-v5.2-1pct/ITERS/it.500/berlin-v5.2-1pct.500.plans.xml.gz");
-
-//        Scenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
-//        PopulationReader reader = new PopulationReader(scenario);
+        Scenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
+        PopulationReader reader = new PopulationReader(scenario);
 //
-//        reader.readFile("C:/Users/Work/git/freightAV/input/Plans/berlin1pctScenario_5pctCarLegsNowPFAV.xml.gz");
+        reader.readFile("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/originalPopulation_OnlyCarUsers.xml.gz");
+
 
 //        new PopulationWriter(cutPopulationTo100ForEachMode(convertAgentsToPFAVOwners(scenario))).write("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml");
 
-        int nrOfPFAVOwners = 100;
-        String dir = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/";
-        getXPFAVOWnersInBerlinScenarioAndWritePopulation(dir, "only" + nrOfPFAVOwners + "PFAVOwners.xml", nrOfPFAVOwners);
+        int nrOfPFAVOwners = 2000;
+        Population pop = defineAndGetXSpatialEquallyDistributedPFAVOwners(scenario.getPopulation(), nrOfPFAVOwners);
+        new PopulationWriter(pop).write("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/" + nrOfPFAVOwners + "CarUsersTransformed.xml.gz");
+
+
+//        String dir = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/";
+//        getXPFAVOWnersInBerlinScenarioAndWritePopulation(dir, "only" + nrOfPFAVOwners + "PFAVOwners.xml", nrOfPFAVOwners);
+
+//        new PopulationReader(scenario).readFile("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/originalPopulation.xml.gz");
+//        Population pop = deriveCarAndRideUsersOutOfPopulation(scenario.getPopulation());
+//        new PopulationWriter(pop).write("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/originalPopulation_OnlyCarUsers.xml.gz");
     }
 
     private static void getXPFAVOWnersInBerlinScenarioAndWritePopulation(String dir, String outPopulationFile, int nrOfOwners) {
@@ -65,6 +70,21 @@ public class PopulationCreator {
         writer2.write(dir + outPopulationFile);
     }
 
+    private static Population deriveCarAndRideUsersOutOfPopulation(Population population) {
+        Population carPop = ScenarioUtils.createScenario(ConfigUtils.createConfig()).getPopulation();
+        for (Person p : population.getPersons().values()) {
+            for (PlanElement element : p.getSelectedPlan().getPlanElements()) {
+                if (element instanceof Leg) {
+                    if (((Leg) element).getMode().equals("car")) {
+                        carPop.addPerson(p);
+                        break;
+                    }
+                }
+            }
+        }
+        return carPop;
+    }
+
     private static Population defineAndGetXSpatialEquallyDistributedPFAVOwners(Population population, int nrOfOwners) {
         Population pfavOwners = ScenarioUtils.createScenario(ConfigUtils.createConfig()).getPopulation();
         Random rand = MatsimRandom.getLocalInstance();
@@ -76,7 +96,7 @@ public class PopulationCreator {
 
                 for (PlanElement elem : population.getPersons().get(personID).getSelectedPlan().getPlanElements()) {
                     if (elem instanceof Leg) {
-                        if (((Leg) elem).getMode().equals("car") || ((Leg) elem).getMode().equals("ride")) {
+                        if (((Leg) elem).getMode().equals("car")) {
                             isCarUser = true;
                             ((Leg) elem).setMode("taxi");
                         }

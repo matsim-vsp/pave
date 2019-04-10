@@ -61,9 +61,27 @@ public class ServiceMapMatch {
 
 
     public static void main(String[] args) {
-        new ServiceMapMatch().run();
+        new ServiceMapMatch().countTotalCapacityDemand();
+//        new ServiceMapMatch().run();
     }
 
+
+    public void countTotalCapacityDemand() {
+        Carriers oldCarriers = new Carriers();
+        CarrierPlanXmlReaderV2 carrierReader = new CarrierPlanXmlReaderV2(oldCarriers);
+        carrierReader.readFile(inputOldCarriers);
+
+        int totalCapacityDemand = 0;
+        int totalAmountOfServices = 0;
+        for (Carrier carrier : oldCarriers.getCarriers().values()) {
+            for (CarrierService service : carrier.getServices()) {
+                totalCapacityDemand += service.getCapacityDemand();
+                totalAmountOfServices++;
+            }
+        }
+        System.out.println("totalCapacityDemand=" + totalCapacityDemand);
+        System.out.println("totalAmountOfServices=" + totalAmountOfServices);
+    }
 
     public void run(){
         mapGeomToCarrier(shapeFile);

@@ -110,7 +110,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
     @Override
     public void handleEvent(ActivityStartEvent event) {
 
-        if (event.getActType().equals(PFAVActionCreator.SERVICE_ACTIVITY_TYPE)) {
+        if (event.getActType().contains(PFAVActionCreator.SERVICE_ACTIVITY_TYPE)) {
             Id<DvrpVehicle> vehicleId = Id.create(event.getPersonId().toString(), DvrpVehicle.class);
 
             this.begunFreightTours.get(vehicleId).notifyNextServiceTaskStarted(event.getTime());
