@@ -174,6 +174,9 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
                 .add("PlannedEmptyMeters")
                 .add("ActualEmptyMeters")
 
+                .add("PlannedServicesCount")
+                .add("HandledServicesCount")
+
                 .add("PlannedTotalCapacityDemand")
                 .add("ActualTotalCapacityDemand")
 
@@ -202,6 +205,9 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
                     .addf(dblFormat, data.getPlannedEmptyMeters())
                     .addf(dblFormat, data.getActualEmptyMeters())
 
+                    .addf("%d", data.getAmountOfServicesPlanned())
+                    .addf("%d", data.getAmountOfServicesHandled())
+
                     .addf("%d", data.getPlannedTotalCapacityDemand())
                     .addf("%d", data.getActualServedCapacityDemand())
 
@@ -229,6 +235,9 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
 
                     .addf(dblFormat, data.getPlannedEmptyMeters())
                     .add("-")
+
+                    .addf("%d", data.getAmountOfServicesPlanned())
+                    .addf("%d", data.getAmountOfServicesHandled())
 
                     .addf("%d", data.getPlannedTotalCapacityDemand())
                     .add("-")

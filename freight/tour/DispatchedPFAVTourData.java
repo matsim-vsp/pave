@@ -41,6 +41,8 @@ public class DispatchedPFAVTourData {
     private final double dispatchTime;
     private final Id<Link> requestLink;
 
+    private int amountOfServicesHandled = 0;
+
     private final double plannedTourLength;
     private final double plannedEmptyMeters;
     private final double distanceToDepot;
@@ -97,6 +99,7 @@ public class DispatchedPFAVTourData {
                 PFAVServiceTask serviceTask = (PFAVServiceTask) task;
                 this.addToActualServedCapacityDemand(serviceTask.getCarrierService().getCapacityDemand());
                 this.computeAndNoteDelay(serviceTask.getCarrierService().getServiceStartTimeWindow(), startTime);
+                this.amountOfServicesHandled++;
                 return;
             }
         }
@@ -170,6 +173,13 @@ public class DispatchedPFAVTourData {
         return totalServiceDelay;
     }
 
+    public int getAmountOfServicesHandled() {
+        return amountOfServicesHandled;
+    }
+
+    public int getAmountOfServicesPlanned() {
+        return this.tourData.getTourTasks().size() - 2;
+    }
 
     public static final class Builder {
         private Id<DvrpVehicle> vehicleId;
