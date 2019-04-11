@@ -76,7 +76,7 @@ public final class PFAVUtils {
 	/**
 	 * defines whether the freight tour manager triggers the JSprit run in iteration 0
 	 */
-	public static final boolean RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION = true;
+	public static final boolean RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION = false;
 
 	/**
 	 * defines the number of iterations in the tour planning algorithm, see {@link freight.calculator.FreightTourCalculatorImpl}

@@ -144,7 +144,7 @@ public class RunPFAVInBerlin {
         config.plans().setInputFile(population);
 
         if (increaseCapacities) {
-            config.qsim().setFlowCapFactor(10);
+            config.qsim().setFlowCapFactor(1.5);
         }
         Scenario scenario = berlin.prepareScenario();
 

@@ -45,10 +45,7 @@ import privateAV.events.FreightTourRequestDeniedEvent;
 import privateAV.events.FreightTourScheduledEvent;
 import privateAV.vrpagent.PFAVActionCreator;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * antizipierte Zeit der Frachttour (mit oder ohne Retool am Ende? schließlich kann vorher eine neue begonnen werden)
@@ -148,8 +145,8 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
             String string = "%s";
             String dbl = "%.1f";
 
-            writeCompletedToursData(writer, string, dbl);
-            writeBegunToursData(writer, string, dbl);
+            writeTourData(this.completedFreightTours, writer, string, dbl);
+            writeTourData(this.begunFreightTours.values(), writer, string, dbl);
         }
 
     }
@@ -184,8 +181,8 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
         writer.writeNext(lineBuilder);
     }
 
-    private void writeCompletedToursData(CompactCSVWriter writer, String stringFormat, String dblFormat) {
-        for (DispatchedPFAVTourData data : this.completedFreightTours) {
+    private void writeTourData(Collection<DispatchedPFAVTourData> dataCollection, CompactCSVWriter writer, String stringFormat, String dblFormat) {
+        for (DispatchedPFAVTourData data : dataCollection) {
             CSVLineBuilder lineBuilder = new CSVLineBuilder()
                     .add(data.getVehicleId().toString())
                     .addf(dblFormat, data.getDispatchTime())
@@ -215,37 +212,6 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
 
             writer.writeNext(lineBuilder);
         }
-        writer.writeNextEmpty();
     }
 
-    private void writeBegunToursData(CompactCSVWriter writer, String stringFormat, String dblFormat) {
-        for (DispatchedPFAVTourData data : this.begunFreightTours.values()) {
-            CSVLineBuilder lineBuilder = new CSVLineBuilder()
-                    .add(data.getVehicleId().toString())
-                    .addf(dblFormat, data.getDispatchTime())
-                    .addf(stringFormat, data.getRequestLink())
-                    .addf(stringFormat, data.getDepotLink())
-                    .addf(dblFormat, data.getDistanceToDepot())
-
-                    .addf(dblFormat, data.getPlannedTourDuration())
-                    .add("-")
-
-                    .addf(dblFormat, data.getPlannedTourLength())
-                    .add("-")
-
-                    .addf(dblFormat, data.getPlannedEmptyMeters())
-                    .add("-")
-
-                    .addf("%d", data.getAmountOfServicesPlanned())
-                    .addf("%d", data.getAmountOfServicesHandled())
-
-                    .addf("%d", data.getPlannedTotalCapacityDemand())
-                    .add("-")
-
-                    .addf(dblFormat, data.getTotalServiceDelay());
-
-            writer.writeNext(lineBuilder);
-        }
-        writer.writeNextEmpty();
-    }
 }
