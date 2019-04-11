@@ -186,7 +186,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 			VrpPathWithTravelData pathFromCurrTaskToDepot = calcPathToDepot(vehicle, depot, router);
 			if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.MAX_BEELINE_DISTANCE_TO_DEPOT    // MAX BEELINE DISTANCE TO DEPOT
 					&& pathFromCurrTaskToDepot.getTravelTime() <= PFAVUtils.MAX_TRAVELTIME_TO_DEPOT                                    // MAX TRAVEL TIME TO DEPOT
-					&& pathFromCurrTaskToDepot.getArrivalTime() > PFAVUtils.FREIGHTTOUR_LATEST_START) {                                  // ARRIVAL BEFORE LATEST START
+                    && pathFromCurrTaskToDepot.getArrivalTime() < PFAVUtils.FREIGHTTOUR_LATEST_START) {                                  // ARRIVAL BEFORE LATEST START
 
                 log.info("computed arrival time at depot = " + pathFromCurrTaskToDepot.getArrivalTime());
                 log.info("latest start is = " + PFAVUtils.FREIGHTTOUR_LATEST_START);

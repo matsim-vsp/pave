@@ -159,6 +159,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	private void requestFreightTour(DvrpVehicle vehicle, boolean isComingFromAnotherFreightTour) {
 		if (timer.getTimeOfDay() > PFAVUtils.FREIGHTTOUR_LATEST_START) {
 			log.info("No freight tour is requested for vehicle " + vehicle.getId() + " because global freight time window ended already at " + PFAVUtils.FREIGHTTOUR_LATEST_START);
+            return;
 		}
 
         log.info("Vehicle " + vehicle.getId() + " requests a freight tour at " + timer.getTimeOfDay() + " on link " + ((StayTaskImpl) vehicle.getSchedule().getCurrentTask()).getLink().getId());
