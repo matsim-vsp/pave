@@ -101,10 +101,10 @@ public final class PFAVUtils {
 
 	/**
 	 * the maximum distance to a depot that is accepted. that means, a vehicle that is further away (at the moment of the request)
-     * than MAX_DISTANCE_TO_DEPOT from a depot, will not be dispatched to a starting from that depot.
+	 * than MAX_BEELINE_DISTANCE_TO_DEPOT from a depot, will not be dispatched to a starting from that depot.
 	 */
 	//for open Berlin Scenario, we set this to 10 kilometers. please be aware that this might not be useful for other scenarios
-    public static final long MAX_DISTANCE_TO_DEPOT = 10000;
+	public static final long MAX_BEELINE_DISTANCE_TO_DEPOT = 10000;
 
 	/**
 	 * the maximum travel time to a depot that is accepted. that means, a vehicle for which the access drive takes longer than

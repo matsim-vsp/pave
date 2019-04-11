@@ -184,14 +184,12 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
         for (Link depot : nearestDepots) {
 			Iterator<PFAVTourData> freightTourIterator = this.depotToFreightTour.get(depot).iterator();
 			VrpPathWithTravelData pathFromCurrTaskToDepot = calcPathToDepot(vehicle, depot, router);
-            if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.MAX_DISTANCE_TO_DEPOT
-                    && pathFromCurrTaskToDepot.getTravelTime() <= PFAVUtils.MAX_TRAVELTIME_TO_DEPOT) {
+			if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.MAX_BEELINE_DISTANCE_TO_DEPOT    // MAX BEELINE DISTANCE TO DEPOT
+					&& pathFromCurrTaskToDepot.getTravelTime() <= PFAVUtils.MAX_TRAVELTIME_TO_DEPOT                                    // MAX TRAVEL TIME TO DEPOT
+					&& pathFromCurrTaskToDepot.getArrivalTime() > PFAVUtils.FREIGHTTOUR_LATEST_START) {                                  // ARRIVAL BEFORE LATEST START
 
-                //		check if there is enough time before latest start
-                if (pathFromCurrTaskToDepot.getArrivalTime() > PFAVUtils.FREIGHTTOUR_LATEST_START) continue;
                 log.info("computed arrival time at depot = " + pathFromCurrTaskToDepot.getArrivalTime());
                 log.info("latest start is = " + PFAVUtils.FREIGHTTOUR_LATEST_START);
-
                 double waitTimeAtDepot = computeWaitTimeAtDepot(pathFromCurrTaskToDepot);
 
 				while (freightTourIterator.hasNext()) {
