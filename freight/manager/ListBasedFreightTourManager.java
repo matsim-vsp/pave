@@ -37,5 +37,5 @@ public interface ListBasedFreightTourManager {
     PFAVTourData getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router);
 
     boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot,
-                                                 PFAVTourData freightTour, LeastCostPathCalculator router);
+                                                 double waitTimeAtDepot, PFAVTourData freightTour, LeastCostPathCalculator router);
 }

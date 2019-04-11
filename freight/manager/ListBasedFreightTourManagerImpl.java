@@ -187,9 +187,16 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
             if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.MAX_DISTANCE_TO_DEPOT
                     && pathFromCurrTaskToDepot.getTravelTime() <= PFAVUtils.MAX_TRAVELTIME_TO_DEPOT) {
 
+                //		check if there is enough time before latest start
+                if (pathFromCurrTaskToDepot.getArrivalTime() > PFAVUtils.FREIGHTTOUR_LATEST_START) continue;
+                log.info("computed arrival time at depot = " + pathFromCurrTaskToDepot.getArrivalTime());
+                log.info("latest start is = " + PFAVUtils.FREIGHTTOUR_LATEST_START);
+
+                double waitTimeAtDepot = computeWaitTimeAtDepot(pathFromCurrTaskToDepot);
+
 				while (freightTourIterator.hasNext()) {
 					PFAVTourData tourData = freightTourIterator.next();
-					if (isEnoughTimeLeftToPerformFreightTour(vehicle, pathFromCurrTaskToDepot, tourData, router)) {
+                    if (isEnoughTimeLeftToPerformFreightTour(vehicle, pathFromCurrTaskToDepot, waitTimeAtDepot, tourData, router)) {
 						freightTourIterator.remove();
 						matchingFreightTour = tourData;
 						break;
@@ -236,8 +243,8 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 * @return
 	 */
 	@Override
-	public boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot,
-														 PFAVTourData freightTour, LeastCostPathCalculator router) {
+    public boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot, double waitTimeAtDepot,
+                                                        PFAVTourData freightTour, LeastCostPathCalculator router) {
 
         //do we have the chance to be at the last service in time?
         if (PFAVUtils.CONSIDER_SERVICE_TIME_WINDOWS_FOR_DISPATCH &&
@@ -265,13 +272,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 		double tourDuration = freightTour.getPlannedTourDuration();
 
-//		check if there is enough time before latest start
-		if (pathFromCurrTaskToDepot.getArrivalTime() > PFAVUtils.FREIGHTTOUR_LATEST_START) return false;
-//		check if vehicle arrives before earliest start. calculate the waiting time in case.
-		double waitTimeAtDepot = 0;
-		if (pathFromCurrTaskToDepot.getArrivalTime() < PFAVUtils.FREIGHTTOUR_EARLIEST_START) {
-			waitTimeAtDepot = PFAVUtils.FREIGHTTOUR_EARLIEST_START - pathFromCurrTaskToDepot.getArrivalTime();
-		}
 
 //		Link returnLink = PFAVUtils.getLastPassengerDropOff(vehicle.getSchedule()).getLink();
 
@@ -299,6 +299,17 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		}
 		return false;
 	}
+
+    private double computeWaitTimeAtDepot(VrpPathWithTravelData pathFromCurrTaskToDepot) {
+        log.info("earliest start is = " + PFAVUtils.FREIGHTTOUR_EARLIEST_START);
+//		check if vehicle arrives before earliest start. calculate the waiting time in case.
+        double waitTimeAtDepot = 0;
+        if (pathFromCurrTaskToDepot.getArrivalTime() < PFAVUtils.FREIGHTTOUR_EARLIEST_START) {
+            waitTimeAtDepot = PFAVUtils.FREIGHTTOUR_EARLIEST_START - pathFromCurrTaskToDepot.getArrivalTime();
+        }
+        log.info("wait time at depot is = " + waitTimeAtDepot);
+        return waitTimeAtDepot;
+    }
 
 	private void runTourPlanning() {
 		FreightTourCalculatorImpl tourCalculator = new FreightTourCalculatorImpl();
@@ -341,28 +352,33 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	}
     
     
-    private void mapStartLinkOfToursToTour() {
-        for (PFAVTourData freightTour : this.freightTours) {
-			Link start = freightTour.getDepotLink();
-			if (this.depotToFreightTour.containsKey(start)) {
-				this.depotToFreightTour.get(start).add(freightTour);
-			} else{
-				LinkedList<PFAVTourData> allDepotTours = new LinkedList<>();
-				allDepotTours.add(freightTour);
-				this.depotToFreightTour.put(start, allDepotTours);
-			}
-		}
-	}
-
 	@Override
     public void notifyIterationStarts(IterationStartsEvent event){
-		if ((PFAVUtils.FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1 && PFAVUtils.RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION)
-				|| (event.getIteration() % PFAVUtils.FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
+        if (event.getIteration() == 0) {
+            if (!PFAVUtils.RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION) {
+                this.freightTours = convertCarrierPlansToTaskList(this.carriers);
+            } else {
+                log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
+                runTourPlanning();
+            }
+        } else if ((event.getIteration() % PFAVUtils.FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
             log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
             runTourPlanning();
-        } else {
-            mapStartLinkOfToursToTour();
-			sortDepotLists();
+        }
+        mapStartLinkOfToursToTour();
+        sortDepotLists();
+    }
+
+    private void mapStartLinkOfToursToTour() {
+        for (PFAVTourData freightTour : this.freightTours) {
+            Link start = freightTour.getDepotLink();
+            if (this.depotToFreightTour.containsKey(start)) {
+                this.depotToFreightTour.get(start).add(freightTour);
+            } else {
+                LinkedList<PFAVTourData> allDepotTours = new LinkedList<>();
+                allDepotTours.add(freightTour);
+                this.depotToFreightTour.put(start, allDepotTours);
+            }
         }
     }
 
