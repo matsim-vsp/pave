@@ -261,6 +261,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 
 	private void setAttributesForTask(DvrpVehicle vehicle, StayTask currentTask, VrpPathWithTravelData path) {
 		double duration = currentTask.getEndTime() - currentTask.getBeginTime();
+
 		currentTask.setBeginTime(path.getArrivalTime());
 		currentTask.setEndTime(path.getArrivalTime() + duration);
 

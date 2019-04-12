@@ -182,6 +182,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 		PFAVTourData matchingFreightTour = null;
         for (Link depot : nearestDepots) {
+            log.info("size of depot to list: " + this.depotToFreightTour.get(depot).size());
 			Iterator<PFAVTourData> freightTourIterator = this.depotToFreightTour.get(depot).iterator();
 			VrpPathWithTravelData pathFromCurrTaskToDepot = calcPathToDepot(vehicle, depot, router);
 			if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.MAX_BEELINE_DISTANCE_TO_DEPOT    // MAX BEELINE DISTANCE TO DEPOT
@@ -206,6 +207,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 					//if no tour at the depot is left, delete depot
 					if (depotToFreightTour.get(depot).isEmpty() && !PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS)
 						depotToFreightTour.remove(depot);
+                    log.info("size of depot to list: " + this.depotToFreightTour.get(depot).size());
 					break;
 				}
 			}
@@ -318,15 +320,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 		log.info("overriding list of freight tours...");
 		this.freightTours = convertCarrierPlansToTaskList(carriers);
 
-        log.info("initialising mapping of freight tours to link id's");
-		this.depotToFreightTour = new HashMap<>();
-
-//		if we allow empty depots, we need to initialise the manager's map of depot links to tours with empty lists.
-        if (PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS) mapDepotLinksToEmptyTourList();
-
-        //now fill the map with the freightTours that came out of the calculator
-		mapStartLinkOfToursToTour();
-		sortDepotLists();
     }
 
     private void mapDepotLinksToEmptyTourList() {
@@ -338,12 +331,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
     }
 
 	private void sortDepotLists() {
-		Comparator<PFAVTourData> comparator = new Comparator<PFAVTourData>() {
-			@Override
-			public int compare(PFAVTourData tour1, PFAVTourData tour2) {
-				return Double.compare(tour1.getLatestArrivalAtLastService(), tour2.getLatestArrivalAtLastService());
-			}
-		};
+        Comparator<PFAVTourData> comparator = (tour1, tour2) -> Double.compare(tour1.getLatestArrivalAtLastService(), tour2.getLatestArrivalAtLastService());
 		for (LinkedList<PFAVTourData> q : this.depotToFreightTour.values()) {
 			Collections.sort(q, comparator);
 		}
@@ -353,16 +341,25 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	@Override
     public void notifyIterationStarts(IterationStartsEvent event){
         if (event.getIteration() == 0) {
-            if (!PFAVUtils.RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION) {
-                this.freightTours = convertCarrierPlansToTaskList(this.carriers);
-            } else {
+            if (PFAVUtils.RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION) {
                 log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
                 runTourPlanning();
+                writeCarriers(event);
+            } else {
+                this.freightTours = convertCarrierPlansToTaskList(this.carriers);
             }
         } else if ((event.getIteration() % PFAVUtils.FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
             log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
             runTourPlanning();
+            writeCarriers(event);
         }
+        log.info("initialising mapping of freight tours to link id's");
+        this.depotToFreightTour = new HashMap<>();
+
+//		if we allow empty depots, we need to initialise the manager's map of depot links to tours with empty lists.
+        if (PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS) mapDepotLinksToEmptyTourList();
+
+        //now fill the map with the freightTours that came out of the calculator
         mapStartLinkOfToursToTour();
         sortDepotLists();
     }
@@ -387,19 +384,18 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 	 */
 	@Override
 	public void notifyIterationEnds(IterationEndsEvent event) {
-		if ((PFAVUtils.FREIGHTTOUR_PLANNING_INTERVAL < 1 && event.getIteration() < 1) || (event.getIteration() % PFAVUtils.FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
-            String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/";
-			log.info("writing carrier file of iteration " + event.getIteration() + " to " + dir);
-            writeCarriers(this.carriers, dir + "carriers_it" + event.getIteration() + ".xml");
-            writeCarriers(this.carriersWithOnlyUsedTours, dir + "carriersOnlyUsedTours_it" + event.getIteration() + ".xml");
-			List<PFAVTourData> unfinishedTours = new ArrayList<>();
-			this.depotToFreightTour.forEach((link, tours) -> unfinishedTours.addAll(tours));
-			new PFAVUnfinishedToursDumper(unfinishedTours).writeStats(dir + "notDispatchedTours_it" + event.getIteration() + ".csv");
-		}
-	}
+        String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/";
+        List<PFAVTourData> unfinishedTours = new ArrayList<>();
+        this.depotToFreightTour.forEach((link, tours) -> unfinishedTours.addAll(tours));
+        new PFAVUnfinishedToursDumper(unfinishedTours).writeStats(dir + "notDispatchedTours_it" + event.getIteration() + ".csv");
+    }
 
-    private void writeCarriers(Carriers carriers, String outputDir) {
-		CarrierPlanXmlWriterV2 planWriter = new CarrierPlanXmlWriterV2(carriers);
-		planWriter.write(outputDir);
+    private void writeCarriers(IterationStartsEvent event) {
+        String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/";
+        log.info("writing carrier file of iteration " + event.getIteration() + " to " + dir);
+        CarrierPlanXmlWriterV2 planWriter = new CarrierPlanXmlWriterV2(this.carriers);
+        planWriter.write(dir + "carriers_it" + event.getIteration() + ".xml");
+        CarrierPlanXmlWriterV2 planWriter2 = new CarrierPlanXmlWriterV2(this.carriersWithOnlyUsedTours);
+        planWriter2.write(dir + "carriersOnlyUsedTours_it" + event.getIteration() + ".xml");
 	}
 }

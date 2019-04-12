@@ -70,4 +70,8 @@ public class PFAVRetoolTask extends StayTaskImpl implements TaxiTask {
 		return TaxiTaskType.DROPOFF;
 	}
 
+	@Override
+	public String toString() {
+		return super.toString() + " [" + this.getStatus() + "] " + "vehicle=" + this.vehicle;
+	}
 }
