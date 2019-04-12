@@ -27,6 +27,8 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkWriter;
 import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.util.CSVLineBuilder;
+import org.matsim.contrib.util.CompactCSVWriter;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.io.MatsimNetworkReader;
@@ -34,6 +36,7 @@ import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.gis.ShapeFileReader;
+import org.matsim.core.utils.io.IOUtils;
 import org.matsim.run.RunBerlinScenario;
 import org.matsim.vehicles.VehicleType;
 import org.opengis.feature.simple.SimpleFeature;
@@ -51,36 +54,75 @@ public class ServiceMapMatch {
     private final String inputOldNet = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PrivatkundenDirekt/network_Schroeder_slow.xml";
 
     private final String inputOldCarriers = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PrivatkundenDirekt/carriers_woSolution.xml.gz";
-    private final String outputNewCarriers = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks.xml.gz";
+    private static final String outputCSVFile = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks_TWsfitted_ServiceStats.csv";
 
     private final String shapeFile = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Depots/PFAV_CarrierAreas.shp";
-
-
+    //    private final String outputNewCarriers = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks.xml.gz";
+    private final String outputNewCarriers = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks_TWsfitted.xml.gz";
 
     private Map<Geometry,Carrier> carrierMap = new HashMap();
 
-
     public static void main(String[] args) {
-        new ServiceMapMatch().countTotalCapacityDemand();
 //        new ServiceMapMatch().run();
+        new ServiceMapMatch().writeServiceStatsCSV(outputCSVFile);
     }
 
 
-    public void countTotalCapacityDemand() {
-        Carriers oldCarriers = new Carriers();
-        CarrierPlanXmlReaderV2 carrierReader = new CarrierPlanXmlReaderV2(oldCarriers);
-        carrierReader.readFile(inputOldCarriers);
+    public void writeServiceStatsCSV(String file) {
+        try (CompactCSVWriter writer = new CompactCSVWriter(IOUtils.getBufferedWriter(file), ';')) {
+            writeHeader(writer);
+            String string = "%s";
+            String dbl = "%.1f";
 
-        int totalCapacityDemand = 0;
-        int totalAmountOfServices = 0;
-        for (Carrier carrier : oldCarriers.getCarriers().values()) {
-            for (CarrierService service : carrier.getServices()) {
-                totalCapacityDemand += service.getCapacityDemand();
-                totalAmountOfServices++;
+            Carriers oldCarriers = new Carriers();
+            CarrierPlanXmlReaderV2 carrierReader = new CarrierPlanXmlReaderV2(oldCarriers);
+            carrierReader.readFile(outputNewCarriers);
+
+            int totalCapacityDemand = 0;
+            int totalAmountOfServices = 0;
+            for (Carrier carrier : oldCarriers.getCarriers().values()) {
+                if (carrier.getCarrierCapabilities().getCarrierVehicles().size() > 1) {
+                    throw new RuntimeException("why does carrier " + carrier.getId() + " have more than one vehicle ?");
+                }
+                String depot = "";
+                for (CarrierVehicle v : carrier.getCarrierCapabilities().getCarrierVehicles()) {
+                    depot += v.getLocation();
+                }
+                for (CarrierService service : carrier.getServices()) {
+                    totalCapacityDemand += service.getCapacityDemand();
+                    totalAmountOfServices++;
+                    writeServiceData(writer, service, string, dbl, depot);
+                }
             }
+            System.out.println("totalCapacityDemand=" + totalCapacityDemand);
+            System.out.println("totalAmountOfServices=" + totalAmountOfServices);
         }
-        System.out.println("totalCapacityDemand=" + totalCapacityDemand);
-        System.out.println("totalAmountOfServices=" + totalAmountOfServices);
+    }
+
+    private void writeHeader(CompactCSVWriter writer) {
+        CSVLineBuilder lineBuilder = new CSVLineBuilder()
+                .add("ServiceID")
+                .add("EarliestStart")
+                .add("LatestStart")
+                .add("CapacityDemand")
+                .add("Duration")
+                .add("Type")
+                .add("LocationId")
+                .add("Depot");
+        writer.writeNext(lineBuilder);
+    }
+
+    private void writeServiceData(CompactCSVWriter writer, CarrierService service, String stringFormat, String dblFormat, String depot) {
+        CSVLineBuilder lineBuilder = new CSVLineBuilder()
+                .add("" + service.getId())
+                .addf(dblFormat, service.getServiceStartTimeWindow().getStart())
+                .addf(dblFormat, service.getServiceStartTimeWindow().getEnd())
+                .addf("%d", service.getCapacityDemand())
+                .addf(dblFormat, service.getServiceDuration())
+                .addf(stringFormat, service.getType())
+                .addf(stringFormat, "" + service.getLocationLinkId())
+                .addf(stringFormat, depot);
+        writer.writeNext(lineBuilder);
     }
 
     public void run(){
@@ -114,21 +156,22 @@ public class ServiceMapMatch {
             //we only have services in this carriers file, no shipments
             for(CarrierService service : carrier.getServices()){
                 Id<Link> newLink =handledOldLinksToNewLink.get(service.getLocationLinkId());
+                Coord oldLinkC = oldSchroederNet.getLinks().get(service.getLocationLinkId()).getCoord();
                 if(newLink == null) {
-                    Coord oldLinkC = oldSchroederNet.getLinks().get(service.getLocationLinkId()).getCoord();
                     newLink = NetworkUtils.getNearestLink(newNetOnlyCar, oldLinkC).getId();
                     handledOldLinksToNewLink.put(service.getLocationLinkId(), newLink);
-
-                    Carrier newCarrier = getResponsibleCarrier(oldLinkC);
-                    if (newCarrier != null) handledNewLinksToCarrier.put(newLink, newCarrier);
                 }
-                CarrierService newService =
-                        CarrierService.Builder.newInstance(Id.create(service.getId(), CarrierService.class), newLink)
-                        .setCapacityDemand(service.getCapacityDemand())
-                        .setServiceDuration(service.getServiceDuration())
-                        .setServiceStartTimeWindow(service.getServiceStartTimeWindow())
-                        .build();
-                handledNewLinksToCarrier.get(newLink).getServices().add(newService);
+                Carrier newCarrier = getResponsibleCarrier(oldLinkC);
+                if (newCarrier != null) {
+                    CarrierService newService =
+                            CarrierService.Builder.newInstance(Id.create(service.getId(), CarrierService.class), newLink)
+                                    .setCapacityDemand(service.getCapacityDemand())
+                                    .setServiceDuration(service.getServiceDuration())
+                                    .setServiceStartTimeWindow(getFittedTimeWindow(service.getServiceStartTimeWindow()))
+                                    .build();
+                    newCarrier.getServices().add(newService);
+                    handledNewLinksToCarrier.put(newLink, newCarrier);
+                }
             }
         }
 
@@ -157,6 +200,29 @@ public class ServiceMapMatch {
             if(geom.contains(MGC.coord2Point(ct.transform(c)))) return this.carrierMap.get(geom);
         }
         return null;
+    }
+
+    private TimeWindow getFittedTimeWindow(TimeWindow oldTimeWindow) {
+        double start = oldTimeWindow.getStart();
+        double end = oldTimeWindow.getEnd();
+
+        double oldDuration = end - start;
+        if (start < PFAVUtils.FREIGHTTOUR_EARLIEST_START) {
+            start = PFAVUtils.FREIGHTTOUR_EARLIEST_START;
+            if ((start + oldDuration) > PFAVUtils.FREIGHTTOUR_LATEST_START) {
+                end = PFAVUtils.FREIGHTTOUR_LATEST_START;
+            } else {
+                end = start + oldDuration;
+            }
+        } else if (end > PFAVUtils.FREIGHTTOUR_LATEST_START) {
+            end = PFAVUtils.FREIGHTTOUR_LATEST_START;
+            if ((end - oldDuration) < PFAVUtils.FREIGHTTOUR_EARLIEST_START) {
+                start = PFAVUtils.FREIGHTTOUR_EARLIEST_START;
+            } else {
+                start = end - oldDuration;
+            }
+        }
+        return TimeWindow.newInstance(start, end);
     }
 
     private void mapGeomToCarrier(String shapeFile){

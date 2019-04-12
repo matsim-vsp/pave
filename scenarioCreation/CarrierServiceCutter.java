@@ -50,7 +50,7 @@ public class CarrierServiceCutter {
 
         Carriers original = new Carriers();
         CarrierPlanXmlReaderV2 reader = new CarrierPlanXmlReaderV2(original);
-        reader.readFile("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks.xml.gz");
+        reader.readFile("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks_TWsfitted.xml.gz");
 
         for (Id<Carrier> id : original.getCarriers().keySet()) {
             if (!(investigatedCarriers.contains(id))) {
@@ -58,6 +58,6 @@ public class CarrierServiceCutter {
             }
         }
 
-        new CarrierPlanXmlWriterV2(original).write("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/ganzNeukoelln.xml");
+        new CarrierPlanXmlWriterV2(original).write("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/ganzNeukoelln_TWfitted.xml");
     }
 }

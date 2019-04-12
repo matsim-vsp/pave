@@ -272,7 +272,6 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 		double tourDuration = freightTour.getPlannedTourDuration();
 
-
 //		Link returnLink = PFAVUtils.getLastPassengerDropOff(vehicle.getSchedule()).getLink();
 
 		//owner link will be null if no dropOff has been performed yet. return to start link instead.
