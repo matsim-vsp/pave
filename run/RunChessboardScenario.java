@@ -82,7 +82,7 @@ public class RunChessboardScenario {
         taxiCfg.setPickupDuration(120);
         taxiCfg.setDropoffDuration(60);
         taxiCfg.setTaxisFile("something");
-
+        taxiCfg.setTimeProfiles(true);
 
         Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), taxiCfg);
 //		config.addModule(new DvrpConfigGroup());

@@ -90,9 +90,12 @@ public class RunPFAVScenario {
 
 //		config.plans().setInputFile("plans_only_taxi_4.0_slightly_modified.xml");
 
+        taxiCfg.setTimeProfiles(true);
+
 		config.addConfigConsistencyChecker(new TaxiConfigConsistencyChecker());
 		config.checkConsistency();
 		String mode = taxiCfg.getMode();
+
 
 		// load scenario
 		Scenario scenario = ScenarioUtils.loadScenario(config);
@@ -117,6 +120,5 @@ public class RunPFAVScenario {
 
 	}
 
-	
 
 }

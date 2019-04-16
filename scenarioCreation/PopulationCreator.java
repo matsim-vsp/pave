@@ -46,17 +46,19 @@ public class PopulationCreator {
 
 //        new PopulationWriter(cutPopulationTo100ForEachMode(convertAgentsToPFAVOwners(scenario))).write("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml");
 
-        int nrOfPFAVOwners = 12000;
-        Population pop = defineAndGetXSpatialEquallyDistributedPFAVOwners(scenario.getPopulation(), nrOfPFAVOwners);
-        new PopulationWriter(pop).write("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/" + nrOfPFAVOwners + "CarUsersTransformed.xml.gz");
+        int nrOfPFAVOwners = 9000;
+        String dir = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/";
+//        Population pop = defineAndGetXSpatialEquallyDistributedPFAVOwners(scenario.getPopulation(), nrOfPFAVOwners);
+//        new PopulationWriter(pop).write(dir + nrOfPFAVOwners + "CarUsersTransformed.xml.gz");
 
+        writeXAgentsOriginalAndPFAVPlans(dir, scenario.getPopulation(), nrOfPFAVOwners);
+    }
 
-//        String dir = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/";
-//        getXPFAVOWnersInBerlinScenarioAndWritePopulation(dir, "only" + nrOfPFAVOwners + "PFAVOwners.xml", nrOfPFAVOwners);
-
-//        new PopulationReader(scenario).readFile("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/originalPopulation.xml.gz");
-//        Population pop = deriveCarAndRideUsersOutOfPopulation(scenario.getPopulation());
-//        new PopulationWriter(pop).write("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/originalPopulation_OnlyCarUsers.xml.gz");
+    private static void writeXAgentsOriginalAndPFAVPlans(String dir, Population population, int nrOfAgents) {
+        Population sample = getRandomXCarUsersOutOfPopulation(population, nrOfAgents);
+        new PopulationWriter(sample).write(dir + nrOfAgents + "carUsers.xml");
+        convertAgentsToPFAVOwners(sample);
+        new PopulationWriter(sample).write(dir + nrOfAgents + "PFAVOwners.xml");
     }
 
     private static void getXPFAVOWnersInBerlinScenarioAndWritePopulation(String dir, String outPopulationFile, int nrOfOwners) {
@@ -111,20 +113,49 @@ public class PopulationCreator {
         return pfavOwners;
     }
 
-    public static Population convertAgentsToPFAVOwners(Scenario scenario) {
+    public static Population getRandomXCarUsersOutOfPopulation(Population population, int x) {
+        Population sample = ScenarioUtils.createScenario(ConfigUtils.createConfig()).getPopulation();
+        Random rand = MatsimRandom.getLocalInstance();
+        for (int i = 0; i < x; i++) {
+            boolean isCarUser = false;
+            while (!isCarUser) {
+                int randIdx = rand.nextInt(population.getPersons().size());
+                Id<Person> personID = (Id<Person>) population.getPersons().keySet().toArray()[randIdx];
 
-        for (Person p : scenario.getPopulation().getPersons().values()) {
-            if (MatsimRandom.getRandom().nextDouble() <= 0.05) {
-                //TODO: i only care about the selected plans, right?
-                for (PlanElement pe : p.getSelectedPlan().getPlanElements()) {
-                    if (pe instanceof Leg) {
-                        if (((Leg) pe).getMode().equals("car"))
-                            ((Leg) pe).setMode("taxi");
+                for (PlanElement elem : population.getPersons().get(personID).getSelectedPlan().getPlanElements()) {
+                    if (elem instanceof Leg) {
+                        if (((Leg) elem).getMode().equals("car")) {
+                            isCarUser = true;
+                            break;
+                        }
                     }
+                }
+                if (isCarUser) {
+                    sample.addPerson(population.getPersons().remove(personID));
+                    break;
                 }
             }
         }
-        return scenario.getPopulation();
+        return sample;
+    }
+
+    public static void convertAgentsToPFAVOwners(Population population) {
+
+        for (Person p : population.getPersons().values()) {
+                for (PlanElement pe : p.getSelectedPlan().getPlanElements()) {
+                    if (pe instanceof Leg) {
+                        if (((Leg) pe).getMode().equals("car")) {
+                            Leg leg = (Leg) pe;
+                            if (leg.getRoute().getStartLinkId().equals(leg.getRoute().getEndLinkId())) {
+                                leg.setMode("walk");
+                            } else {
+                                ((Leg) pe).setMode("taxi");
+                            }
+                        }
+                    }
+                }
+        }
+        return;
     }
 
     public static Population cutPopulationTo100ForEachMode(Population pop) {
@@ -159,32 +190,4 @@ public class PopulationCreator {
 
     }
 
-    public static void cutPopulationTo100ForEachMode() {
-        Scenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
-        PopulationReader reader = new PopulationReader(scenario);
-
-        reader.readFile("C:/Users/Work/git/freightAV/input/Plans/berlin1pctScenario_5pctCarLegsNowPFAV.xml.gz");
-
-        Map<String, Integer> nrOfPersonsPerMode = new HashMap<>();
-        Population newPop = ScenarioUtils.createScenario(ConfigUtils.createConfig()).getPopulation();
-        for (Person p : scenario.getPopulation().getPersons().values()) {
-            for (PlanElement pe : p.getSelectedPlan().getPlanElements()) {
-                if (pe instanceof Leg) {
-                    String mode = ((Leg) pe).getMode();
-                    Integer nrOfPersonsForThisMode = nrOfPersonsPerMode.get(mode);
-                    if (nrOfPersonsForThisMode == null) {
-                        nrOfPersonsForThisMode = 1;
-                    } else {
-                        nrOfPersonsForThisMode++;
-                    }
-                    if (nrOfPersonsForThisMode < 100) {
-                        newPop.addPerson(p);
-                        nrOfPersonsPerMode.put(mode, nrOfPersonsForThisMode);
-                        break;
-                    }
-                }
-            }
-        }
-        new PopulationWriter(newPop).write("C:/Users/Work/git/freightAV/input/Plans/berlin100PersonsPerMode.xml.gz");
-    }
 }

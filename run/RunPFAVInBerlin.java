@@ -107,6 +107,8 @@ public class RunPFAVInBerlin {
         taxiCfg.setDropoffDuration(60);
         taxiCfg.setTaxisFile("something");
 
+        taxiCfg.setTimeProfiles(true);  //write out occupancy plot
+
         ConfigGroup optimizerCfg = new ConfigGroup("optimizer");
         optimizerCfg.addParam("type", "RULE_BASED");
         optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.GOAL, RuleBasedRequestInserter.Goal.MIN_WAIT_TIME.toString());
