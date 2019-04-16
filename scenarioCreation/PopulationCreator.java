@@ -46,7 +46,7 @@ public class PopulationCreator {
 
 //        new PopulationWriter(cutPopulationTo100ForEachMode(convertAgentsToPFAVOwners(scenario))).write("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml");
 
-        int nrOfPFAVOwners = 2000;
+        int nrOfPFAVOwners = 12000;
         Population pop = defineAndGetXSpatialEquallyDistributedPFAVOwners(scenario.getPopulation(), nrOfPFAVOwners);
         new PopulationWriter(pop).write("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/" + nrOfPFAVOwners + "CarUsersTransformed.xml.gz");
 

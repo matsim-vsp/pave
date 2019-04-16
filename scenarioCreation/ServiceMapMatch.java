@@ -58,7 +58,7 @@ public class ServiceMapMatch {
 
     private final String shapeFile = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Depots/PFAV_CarrierAreas.shp";
     //    private final String outputNewCarriers = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks.xml.gz";
-    private final String outputNewCarriers = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks_TWsfitted.xml.gz";
+    private final String outputNewCarriers = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks_TWsfitted_Truck.xml.gz";
 
     private Map<Geometry,Carrier> carrierMap = new HashMap();
 
