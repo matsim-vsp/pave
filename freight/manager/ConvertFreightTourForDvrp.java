@@ -58,7 +58,7 @@ public class ConvertFreightTourForDvrp {
         double tEnd = ((Tour.Leg) freightTour.getTour().getTourElements().get(0)).getExpectedDepartureTime();
 
         //since i (yet) don't know how to set the duration of the start act in the freight contrib it is actually 0. so we use our retool value derived out of our utils
-        double tBegin = tEnd - PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
+        double tBegin = tEnd - PFAVUtils.PFAV_RETOOL_TIME;
 
         Link depotLink = network.getLinks().get(freightTour.getTour().getStart().getLocation());
 
@@ -69,10 +69,10 @@ public class ConvertFreightTourForDvrp {
 
         for (TourElement currentElement : freightTour.getTour().getTourElements()) {
             if (currentElement instanceof ServiceActivity) {
-                //currently we need to add PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES, since we added this already to the start act duration
+                //currently we need to add PFAVUtils.PFAV_RETOOL_TIME, since we added this already to the start act duration
                 ServiceActivity serviceAct = (ServiceActivity) currentElement;
 
-                tBegin = serviceAct.getExpectedArrival() + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
+                tBegin = serviceAct.getExpectedArrival() + PFAVUtils.PFAV_RETOOL_TIME;
                 tEnd = tBegin + serviceAct.getDuration();
                 location = network.getLinks().get(serviceAct.getLocation());
                 totalCapacityDemand += serviceAct.getService().getCapacityDemand();
@@ -86,7 +86,7 @@ public class ConvertFreightTourForDvrp {
         int size = freightTour.getTour().getTourElements().size();
         tBegin = ((Tour.Leg) freightTour.getTour().getTourElements().get(size - 1)).getExpectedDepartureTime()
                 + ((Tour.Leg) freightTour.getTour().getTourElements().get(size - 1)).getExpectedTransportTime();
-        tEnd = tBegin + PFAVUtils.RETOOL_TIME_FOR_PFAVEHICLES;
+        tEnd = tBegin + PFAVUtils.PFAV_RETOOL_TIME;
         location = network.getLinks().get(freightTour.getTour().getEnd().getLocation());
         taskList.add(new PFAVRetoolTask(tBegin, tEnd, location));
 

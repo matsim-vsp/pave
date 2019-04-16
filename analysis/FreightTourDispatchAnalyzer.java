@@ -189,7 +189,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
                     .addf(dblFormat, data.getMustReturnLog().getTime())
                     .addf(stringFormat, data.getMustReturnLog().getLinkId())
                     .addf(stringFormat, data.getRequestLink())
-                    .addf(stringFormat, data.getDepotLink())
+                    .addf(stringFormat, data.getDepotLinkId())
                     .addf(dblFormat, data.getDistanceToDepot())
                     .addf(dblFormat, data.getDistanceBackToOwner())
 

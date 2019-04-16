@@ -71,9 +71,11 @@ public class PFAVOptimizer implements TaxiOptimizer {
 
 			//get the vehicle
 		Id<DvrpVehicle> personalAV = Id.create(req.getPassengerId().toString() + PFAVUtils.PFAV_ID_SUFFIX, DvrpVehicle.class);
-			DvrpVehicle veh = fleet.getVehicles().get(personalAV);
-			
-			if (veh == null) {
+
+        log.info("agent " + req.getPassengerId() + " submitted a request at time= " + req.getSubmissionTime());
+        DvrpVehicle veh = fleet.getVehicles().get(personalAV);
+
+        if (veh == null) {
 				throw new RuntimeException("Vehicle " + personalAV.toString() + "does not exist.");
 			}
 			if(scheduler.isCurrentlyOnOrWillPerformPerformFreightTour(veh)) {

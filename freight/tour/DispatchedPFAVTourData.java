@@ -137,8 +137,8 @@ public class DispatchedPFAVTourData {
         return actualServedCapacityDemand;
     }
 
-    public Link getDepotLink() {
-        return tourData.getDepotLink();
+    public Id<Link> getDepotLinkId() {
+        return tourData.getDepotLink().getId();
     }
 
     public double getPlannedTourDuration() {

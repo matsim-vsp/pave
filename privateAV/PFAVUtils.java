@@ -54,7 +54,7 @@ public final class PFAVUtils {
 	/**
 	 * the amount of time that is needed to rebuild/retool the vehicle. that means how much time is needed to change the module on top of the car body
 	 */
-    public static final double RETOOL_TIME_FOR_PFAVEHICLES = 15 * 60;
+    public static final double PFAV_RETOOL_TIME = 15 * 60;
 
 	/**
 	 * the amount of time that the vehicle wants to arrive before it's owner ends the activity
@@ -63,20 +63,20 @@ public final class PFAVUtils {
 
     /**
      * can be used to cut down the amount of freight tours on the manager's to do list for the iteration.
-     * The set of freight tours remains constant until freight tour calculation is run for the next time, see FREIGHTTOUR_PLANNING_INTERVAL.
+     * The set of freight tours remains constant until freight tour calculation is run for the next time, see TOURPLANNING_INTERVAL.
 	 */
 	public static final double FREIGHT_DEMAND_SAMPLE_SIZE = 1.;
 
     /**
-     * the freight contrib will be run before every iteration where iterationNumber % FREIGHTTOUR_PLANNING_INTERVAL == 0- \n
-     * if FREIGHTTOUR_PLANNING_INTERVAL is set to 0 or any negative integer, the freight contrib will run only before iteration 0.
+     * the freight contrib will be run before every iteration where iterationNumber % TOURPLANNING_INTERVAL == 0- \n
+     * if TOURPLANNING_INTERVAL is set to 0 or any negative integer, the freight contrib will run only before iteration 0.
      */
-    public static final int FREIGHTTOUR_PLANNING_INTERVAL = 1;
+    public static final int TOURPLANNING_INTERVAL = 1;
 
 	/**
 	 * defines whether the freight tour manager triggers the JSprit run in iteration 0
 	 */
-	public static final boolean RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION = true;
+    public static final boolean RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION = false;
 
 	/**
 	 * defines the number of iterations in the tour planning algorithm, see {@link freight.calculator.FreightTourCalculatorImpl}
@@ -120,13 +120,13 @@ public final class PFAVUtils {
 
 	//for the current Open-Berlin-Scenario, we only look at one depot! to avoid having PFAV's seving that depot, which would normally serve another one,
 //			this parameter is set to 1. for other cases, e.g. a look on whole berlin, set this somewhat higher (2 or 3 might be a good start)
-	public static final int AMOUNT_OF_DEPOTS_TO_CONSIDER = 1;
+    public static final int AMOUNT_OF_DEPOTS_TO_CONSIDER = 3;
 
     /**
      * this boolean determines whether the {@link freight.manager.ListBasedFreightTourManagerImpl} looks at the latest start of the last service in a tour
      * and compares it with the approximated arrival time (computed by travel time to depot + planned tour duration til last service (derived out of freight tour))
      */
-    public static final boolean CONSIDER_SERVICE_TIME_WINDOWS_FOR_DISPATCH = false;
+    public static final boolean CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH = false;
 
 	/**
 	 * when true, the vehicle will immediately return to it's owner's activity location and wait there.

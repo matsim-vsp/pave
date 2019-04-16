@@ -247,7 +247,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
                                                         PFAVTourData freightTour, LeastCostPathCalculator router) {
 
         //do we have the chance to be at the last service in time?
-        if (PFAVUtils.CONSIDER_SERVICE_TIME_WINDOWS_FOR_DISPATCH &&
+		if (PFAVUtils.CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH &&
                 freightTour.getLatestArrivalAtLastService() < pathFromCurrTaskToDepot.getArrivalTime() + freightTour.getTravelTimeToLastService())
             return false;
 
@@ -347,7 +347,7 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
             } else {
                 this.freightTours = convertCarrierPlansToTaskList(this.carriers);
             }
-        } else if ((event.getIteration() % PFAVUtils.FREIGHTTOUR_PLANNING_INTERVAL == 0)) {
+		} else if ((event.getIteration() % PFAVUtils.TOURPLANNING_INTERVAL == 0)) {
             log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
             runTourPlanning();
             writeCarriers(event);
