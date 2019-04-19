@@ -343,10 +343,11 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
             if (PFAVUtils.RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION) {
                 log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
                 runTourPlanning();
-                writeCarriers(event);
             } else {
                 this.freightTours = convertCarrierPlansToTaskList(this.carriers);
             }
+            //in iteration 0, always write carriers file
+            writeCarriers(event);
 		} else if ((event.getIteration() % PFAVUtils.TOURPLANNING_INTERVAL == 0)) {
             log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
             runTourPlanning();

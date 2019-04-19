@@ -63,7 +63,7 @@ public class FreightTourStatsListener implements ActivityEndEventHandler, Activi
             if (this.departureTimes.containsKey(event.getPersonId()))
                 throw new IllegalStateException("two carrier drive agent departures in a row of agent " + event.getPersonId());
             this.departureTimes.put(event.getPersonId(), event.getTime());
-            FreightTourData data = new FreightTourData();
+            FreightTourData data = new FreightTourData(event.getLinkId().toString());
             this.currentTours.put(event.getPersonId(), data);
         } else if (event.getActType().equals("service")) {
             this.lastLegLength.put(this.driverToVehicle.get(event.getPersonId()), 0.);
@@ -118,14 +118,14 @@ public class FreightTourStatsListener implements ActivityEndEventHandler, Activi
     @Override
     public void notifyIterationEnds(IterationEndsEvent event) {
         String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/";
-        BufferedWriter writer = IOUtils.getBufferedWriter(dir + "freightTourStatsIt" + event.getIteration() + ".txt");
+        BufferedWriter writer = IOUtils.getBufferedWriter(dir + "FreightTourStats_it" + event.getIteration() + ".csv");
         try {
             int i = 1;
-            writer.write("index;travelledDistance;emptyDistance;travelledTime");
+            writer.write("index;travelledDistance;emptyDistance;travelledTime;depotLink");
             writer.newLine();
 
             for (FreightTourData data : this.allTours) {
-                writer.write("" + i + ";" + data.distance + ";" + data.emptyDistance + ";" + data.time);
+                writer.write("" + i + ";" + data.distance + ";" + data.emptyDistance + ";" + data.time + ";" + data.depot);
                 writer.newLine();
                 i++;
             }
@@ -149,6 +149,11 @@ public class FreightTourStatsListener implements ActivityEndEventHandler, Activi
 
     private class FreightTourData {
 
+        private String depot;
+
+        private FreightTourData(String depot) {
+            this.depot = depot;
+        }
         private double distance = 0.;
         private double time = 0.;
         private double emptyDistance = 0.;
