@@ -47,11 +47,7 @@ import java.util.List;
 
 
 /**
- * A factory that creates matsim-object from jsprit (https://github.com/jsprit/jsprit) and vice versa.
- * 
- * @author sschroeder
- * 
- * Extend the functionality for the use of shipments 
+ * A factory that creates matsim-object from algortihms provided from ovgu and vice versa.
  * 
  * @author kturner
  *
@@ -59,86 +55,168 @@ import java.util.List;
 class MatsimOvguFactory{
 
 	private static Logger log = Logger.getLogger( MatsimOvguFactory.class );
-	
-	//How to deal with a multi-depot VRP? Which depotLink should be used?  kmt jul/18
+
+	//Convert results from ovgu-algorithm to MATSim
+	/**
+	 * Creates a {@link CarrierPlan} from {@link VehicleRoutingProblemSolution}.
+	 *
+	 * <p>Note that the costs of the solution are multiplied by -1 to represent the corresponding score of a carrierPlan.
+	 * <p>The input parameter {@link Carrier} is just required to initialize the plan.
+	 * </br>
+	 */
+	public static CarrierPlan createPlan( Carrier carrier, ArrayList<ArrayList<RouteElement>> solution ){
+		Collection<ScheduledTour> tours = new ArrayList<ScheduledTour>();
+		for (ArrayList<RouteElement> route : solution) {
+			ScheduledTour scheduledTour = createTour(route);
+			tours.add(scheduledTour);
+		}
+		CarrierPlan carrierPlan = new CarrierPlan(carrier, tours);
+//		carrierPlan.setScore(solution.getCost()*(-1));
+		return carrierPlan;
+	}
+
+	/**
+	 * Creates {@link ScheduledTour} from {@link RouteElement}.
+	 *
+	 * @param route to be transformed
+	 * @return ScheduledTour
+//	 * @throws IllegalStateException if tourActivity is NOT {@link ServiceActivity}.
+	 */
+	public static ScheduledTour createTour(ArrayList<RouteElement> solution) {
+		for (RouteElement routeElement : solution) {
+			route = routeElement.getRoute()
+		}
+		assert route.getDepartureTime() == route.getStart().getEndTime() : "at this point route.getDepartureTime and route.getStart().getEndTime() must be equal";
+		TourActivities tour = route.getTourActivities();
+		CarrierVehicle carrierVehicle = createCarrierVehicle(route.getVehicle());
+		double depTime = route.getStart().getEndTime();
+
+		Tour.Builder tourBuilder = Tour.Builder.newInstance();
+		tourBuilder.scheduleStart(Id.create(route.getStart().getLocation().getId(), Link.class));
+		for (TourActivity act : tour.getActivities()) {
+			if(act instanceof ServiceActivity || act instanceof PickupService){
+				log.debug("Found ServiceActivity or PickupService : " + act.getName() + " at location " +  act.getLocation().getId() + " : " + act.getLocation().getCoordinate() );
+				Service job = (Service) ((JobActivity) act).getJob();
+				CarrierService carrierService = createCarrierService(job);
+				tourBuilder.addLeg(new Leg());
+				tourBuilder.scheduleService(carrierService);
+			}
+//			else if (act instanceof DeliverShipment){
+//				log.debug("Found DeliveryShipment: " + act.getName() + " at location " +  act.getLocation().getId() + " : " + act.getLocation().getCoordinate() );
+//				Shipment job = (Shipment) ((JobActivity) act).getJob();
+//				CarrierShipment carrierShipment = createCarrierShipment(job);
+//				tourBuilder.addLeg(new Leg());
+//				tourBuilder.scheduleDelivery(carrierShipment);
+//			}
+//			else if (act instanceof PickupShipment){
+//				log.debug("Found PickupShipment: " + act.getName() + " at location " +  act.getLocation().getId() + " : " + act.getLocation().getCoordinate() );
+//				Shipment job = (Shipment) ((JobActivity) act).getJob();
+//				CarrierShipment carrierShipment = createCarrierShipment(job);
+//				tourBuilder.addLeg(new Leg());
+//				tourBuilder.schedulePickup(carrierShipment);
+//			}
+			else
+				throw new IllegalStateException("unknown tourActivity occurred. this cannot be");
+		}
+		tourBuilder.addLeg(new Leg());
+		tourBuilder.scheduleEnd(Id.create(route.getEnd().getLocation().getId(), Link.class));
+		Tour vehicleTour = tourBuilder.build();
+		ScheduledTour sTour = ScheduledTour.newInstance(vehicleTour, carrierVehicle, depTime);
+		assert route.getDepartureTime() == sTour.getDeparture() : "departureTime of both route and scheduledTour must be equal";
+		return sTour;
+	}
+
+
+	/**
+	 *
+	 * 	Alles ab hier stammt vor allem aus der MATSimJspritFactory
+	 *
+ 	 */
+
+
 	/**
 	 * Creates (MATSim) CarrierShipment from a (jsprit) service
-	 * 
+	 *
 	 * @param service to be transformed to Shipment
 	 * @param depotLink as from-link for Shipment
 	 * @return CarrierShipment
 	 * @see CarrierShipment, Service
 	 */
+	@Deprecated
 	static CarrierShipment createCarrierShipmentFromService(Service service, String depotLink){
 		return CarrierShipment.Builder.newInstance(Id.create(service.getId(), CarrierShipment.class), Id.create(depotLink, Link.class),
 				Id.create(service.getLocation().getId(), Link.class), service.getSize().get(0)).
 				setDeliveryServiceTime(service.getServiceDuration()).
 				setDeliveryTimeWindow(TimeWindow.newInstance(service.getTimeWindow().getStart(),service.getTimeWindow().getEnd())).build();
 	}
-		
+
 	/**
 	 * Creates (MATSim) {@link CarrierShipment} from a (jsprit) {@link Shipment}
-	 * 
+	 *
 	 * @param shipment to be transformed to MATSim
 	 * @return CarrierShipment
 	 * @see CarrierShipment, Shipment
 	 */
+	@Deprecated
 	static CarrierShipment createCarrierShipment(Shipment shipment) {
-		return CarrierShipment.Builder.newInstance(Id.create(shipment.getId(), CarrierShipment.class), Id.createLinkId(shipment.getPickupLocation().getId()), 
-				Id.createLinkId(shipment.getDeliveryLocation().getId()), shipment.getSize().get(0))	
+		return CarrierShipment.Builder.newInstance(Id.create(shipment.getId(), CarrierShipment.class), Id.createLinkId(shipment.getPickupLocation().getId()),
+				Id.createLinkId(shipment.getDeliveryLocation().getId()), shipment.getSize().get(0))
 				.setDeliveryServiceTime(shipment.getDeliveryServiceTime())
 				.setDeliveryTimeWindow(TimeWindow.newInstance(shipment.getDeliveryTimeWindow().getStart(), shipment.getDeliveryTimeWindow().getEnd()))
 				.setPickupServiceTime(shipment.getPickupServiceTime())
 				.setPickupTimeWindow(TimeWindow.newInstance(shipment.getPickupTimeWindow().getStart(), shipment.getPickupTimeWindow().getEnd()))
 				.build();
 	}
-	
-	
-//	/**
-//	 * Creates (jsprit) {@link Shipment} from a (MATSim) {@link CarrierShipment}
-//	 *
-//	 * @param carrierShipment to be transformed to jsprit
-//	 * @return Shipment
-//	 * @see CarrierShipment, Shipment
-//	 */
-//	static Shipment createShipment (CarrierShipment carrierShipment) {
-//		return Shipment.Builder.newInstance(carrierShipment.getId().toString())
-//				.setDeliveryLocation(Location.newInstance(carrierShipment.getTo().toString()))
-//				.setDeliveryServiceTime(carrierShipment.getDeliveryServiceTime())
-//				.setDeliveryTimeWindow(com.graphhopper.jsprit.core.problem.solution.route.activity.TimeWindow.newInstance(carrierShipment.getDeliveryTimeWindow().getStart(), carrierShipment.getDeliveryTimeWindow().getEnd()))
-//				.setPickupServiceTime(carrierShipment.getPickupServiceTime())
-//				.setPickupLocation(Location.newInstance(carrierShipment.getFrom().toString()))
-//				.setPickupTimeWindow(com.graphhopper.jsprit.core.problem.solution.route.activity.TimeWindow.newInstance(carrierShipment.getPickupTimeWindow().getStart(), carrierShipment.getPickupTimeWindow().getEnd()))
-//				.addSizeDimension(0, carrierShipment.getSize())
-//				.build();
-//	}
-	
-//	static Shipment createShipment(CarrierShipment carrierShipment, Coord fromCoord, Coord toCoord) {
-//		Location.Builder fromLocationBuilder = Location.Builder.newInstance();
-//		fromLocationBuilder.setId(carrierShipment.getFrom().toString());
-//		if(fromCoord != null) {
-//			fromLocationBuilder.setCoordinate(Coordinate.newInstance(fromCoord.getX(), fromCoord.getY()));
-//		}
-//		Location fromLocation = fromLocationBuilder.build();
-//
-//		Location.Builder toLocationBuilder = Location.Builder.newInstance();
-//		toLocationBuilder.setId(carrierShipment.getTo().toString());
-//		if(toCoord != null) {
-//			toLocationBuilder.setCoordinate(Coordinate.newInstance(toCoord.getX(), toCoord.getY()));
-//		}
-//		Location toLocation = toLocationBuilder.build();
-//
-//		return Shipment.Builder.newInstance(carrierShipment.getId().toString())
-//		.setDeliveryLocation(toLocation)
-//		.setDeliveryServiceTime(carrierShipment.getDeliveryServiceTime())
-//		.setDeliveryTimeWindow(com.graphhopper.jsprit.core.problem.solution.route.activity.TimeWindow.newInstance(carrierShipment.getDeliveryTimeWindow().getStart(), carrierShipment.getDeliveryTimeWindow().getEnd()))
-//		.setPickupServiceTime(carrierShipment.getPickupServiceTime())
-//		.setPickupLocation(fromLocation)
-//		.setPickupTimeWindow(com.graphhopper.jsprit.core.problem.solution.route.activity.TimeWindow.newInstance(carrierShipment.getPickupTimeWindow().getStart(), carrierShipment.getPickupTimeWindow().getEnd()))
-//		.addSizeDimension(0, carrierShipment.getSize())
-//		.build();
-//	}
-	
+
+
+	/**
+	 * Creates (jsprit) {@link Shipment} from a (MATSim) {@link CarrierShipment}
+	 *
+	 * @param carrierShipment to be transformed to jsprit
+	 * @return Shipment
+	 * @see CarrierShipment, Shipment
+	 */
+	@Deprecated
+	static Shipment createShipment (CarrierShipment carrierShipment) {
+		return Shipment.Builder.newInstance(carrierShipment.getId().toString())
+				.setDeliveryLocation(Location.newInstance(carrierShipment.getTo().toString()))
+				.setDeliveryServiceTime(carrierShipment.getDeliveryServiceTime())
+				.setDeliveryTimeWindow(com.graphhopper.jsprit.core.problem.solution.route.activity.TimeWindow.newInstance(carrierShipment.getDeliveryTimeWindow().getStart(), carrierShipment.getDeliveryTimeWindow().getEnd()))
+				.setPickupServiceTime(carrierShipment.getPickupServiceTime())
+				.setPickupLocation(Location.newInstance(carrierShipment.getFrom().toString()))
+				.setPickupTimeWindow(com.graphhopper.jsprit.core.problem.solution.route.activity.TimeWindow.newInstance(carrierShipment.getPickupTimeWindow().getStart(), carrierShipment.getPickupTimeWindow().getEnd()))
+				.addSizeDimension(0, carrierShipment.getSize())
+				.build();
+	}
+
+	@Deprecated
+	static Shipment createShipment(CarrierShipment carrierShipment, Coord fromCoord, Coord toCoord) {
+		Location.Builder fromLocationBuilder = Location.Builder.newInstance();
+		fromLocationBuilder.setId(carrierShipment.getFrom().toString());
+		if(fromCoord != null) {
+			fromLocationBuilder.setCoordinate(Coordinate.newInstance(fromCoord.getX(), fromCoord.getY()));
+		}
+		Location fromLocation = fromLocationBuilder.build();
+
+		Location.Builder toLocationBuilder = Location.Builder.newInstance();
+		toLocationBuilder.setId(carrierShipment.getTo().toString());
+		if(toCoord != null) {
+			toLocationBuilder.setCoordinate(Coordinate.newInstance(toCoord.getX(), toCoord.getY()));
+		}
+		Location toLocation = toLocationBuilder.build();
+
+		return Shipment.Builder.newInstance(carrierShipment.getId().toString())
+		.setDeliveryLocation(toLocation)
+		.setDeliveryServiceTime(carrierShipment.getDeliveryServiceTime())
+		.setDeliveryTimeWindow(com.graphhopper.jsprit.core.problem.solution.route.activity.TimeWindow.newInstance(carrierShipment.getDeliveryTimeWindow().getStart(), carrierShipment.getDeliveryTimeWindow().getEnd()))
+		.setPickupServiceTime(carrierShipment.getPickupServiceTime())
+		.setPickupLocation(fromLocation)
+		.setPickupTimeWindow(com.graphhopper.jsprit.core.problem.solution.route.activity.TimeWindow.newInstance(carrierShipment.getPickupTimeWindow().getStart(), carrierShipment.getPickupTimeWindow().getEnd()))
+		.addSizeDimension(0, carrierShipment.getSize())
+		.build();
+	}
+
+	@Deprecated
 	static Service createService(CarrierService carrierService, Coord locationCoord) {
 		Location.Builder locationBuilder = Location.Builder.newInstance();
 		locationBuilder.setId(carrierService.getLocationLinkId().toString());
@@ -153,6 +231,7 @@ class MatsimOvguFactory{
 		return serviceBuilder.build();
 	}
 
+	@Deprecated
 	static CarrierService createCarrierService(Service service) {
 		CarrierService.Builder serviceBuilder = CarrierService.Builder.newInstance(Id.create(service.getId(), CarrierService.class), Id.create(service.getLocation().getId(), Link.class));
 		serviceBuilder.setCapacityDemand(service.getSize().get(0));
@@ -169,6 +248,7 @@ class MatsimOvguFactory{
 	 * @return jsprit vehicle
 	 * @see Vehicle, CarrierVehicle
 	 */
+	@Deprecated
 	static Vehicle createVehicle(CarrierVehicle carrierVehicle, Coord locationCoord){
 		Location.Builder vehicleLocationBuilder = Location.Builder.newInstance();
 		vehicleLocationBuilder.setId(carrierVehicle.getLocation().toString());
@@ -197,6 +277,7 @@ class MatsimOvguFactory{
 	 * @return carrierVehicle
 	 * @see CarrierVehicle, Vehicle
 	 */
+	@Deprecated
 	static CarrierVehicle createCarrierVehicle(Vehicle vehicle){
 		String vehicleId = vehicle.getId();
 		CarrierVehicle.Builder vehicleBuilder = CarrierVehicle.Builder.newInstance(Id.create(vehicleId, org.matsim.vehicles.Vehicle.class),
@@ -221,6 +302,7 @@ class MatsimOvguFactory{
 	 * @param type to be transformed
 	 * @return CarrierVehicleType
 	 */
+	@Deprecated
 	static CarrierVehicleType createCarrierVehicleType(VehicleType type){
 		CarrierVehicleType.Builder typeBuilder = CarrierVehicleType.Builder.newInstance(Id.create(type.getTypeId(), org.matsim.vehicles.VehicleType.class));
 		typeBuilder.setCapacity(type.getCapacityDimensions().get(0));
@@ -232,8 +314,8 @@ class MatsimOvguFactory{
 
 	/**
 	 * Creates {@link VehicleType} from {@link CarrierVehicleType}.
-
 	 */
+	@Deprecated
 	static VehicleType createVehicleType(CarrierVehicleType carrierVehicleType){
 		if(carrierVehicleType == null) throw new IllegalStateException("carrierVehicleType is null");
 		VehicleTypeImpl.Builder typeBuilder = VehicleTypeImpl.Builder.newInstance(carrierVehicleType.getId().toString());
@@ -245,53 +327,7 @@ class MatsimOvguFactory{
 		return typeBuilder.build();
 	}
 
-	/**
-	 * Creates {@link ScheduledTour} from {@link VehicleRoute}.
-	 *
-	 * @param route to be transformed
-	 * @return ScheduledTour
-	 * @throws IllegalStateException if tourActivity is NOT {@link ServiceActivity}.
-	 */
-	public static ScheduledTour createTour(VehicleRoute route) {
-		assert route.getDepartureTime() == route.getStart().getEndTime() : "at this point route.getDepartureTime and route.getStart().getEndTime() must be equal";
-		TourActivities tour = route.getTourActivities();
-		CarrierVehicle carrierVehicle = createCarrierVehicle(route.getVehicle());
-		double depTime = route.getStart().getEndTime();
 
-		Tour.Builder tourBuilder = Tour.Builder.newInstance();
-		tourBuilder.scheduleStart(Id.create(route.getStart().getLocation().getId(), Link.class));
-		for (TourActivity act : tour.getActivities()) {
-			if(act instanceof ServiceActivity || act instanceof PickupService){
-				log.debug("Found ServiceActivity or PickupService : " + act.getName() + " at location " +  act.getLocation().getId() + " : " + act.getLocation().getCoordinate() );
-				Service job = (Service) ((JobActivity) act).getJob();
-				CarrierService carrierService = createCarrierService(job);
-				tourBuilder.addLeg(new Leg());
-				tourBuilder.scheduleService(carrierService);
-			}
-			else if (act instanceof DeliverShipment){
-				log.debug("Found DeliveryShipment: " + act.getName() + " at location " +  act.getLocation().getId() + " : " + act.getLocation().getCoordinate() );
-				Shipment job = (Shipment) ((JobActivity) act).getJob();
-				CarrierShipment carrierShipment = createCarrierShipment(job);
-				tourBuilder.addLeg(new Leg());
-				tourBuilder.scheduleDelivery(carrierShipment);
-			}
-			else if (act instanceof PickupShipment){
-				log.debug("Found PickupShipment: " + act.getName() + " at location " +  act.getLocation().getId() + " : " + act.getLocation().getCoordinate() );
-				Shipment job = (Shipment) ((JobActivity) act).getJob();
-				CarrierShipment carrierShipment = createCarrierShipment(job);
-				tourBuilder.addLeg(new Leg());
-				tourBuilder.schedulePickup(carrierShipment);
-			}
-			else
-				throw new IllegalStateException("unknown tourActivity occurred. this cannot be");
-		}
-		tourBuilder.addLeg(new Leg());
-		tourBuilder.scheduleEnd(Id.create(route.getEnd().getLocation().getId(), Link.class));
-		Tour vehicleTour = tourBuilder.build();
-		ScheduledTour sTour = ScheduledTour.newInstance(vehicleTour, carrierVehicle, depTime);
-		assert route.getDepartureTime() == sTour.getDeparture() : "departureTime of both route and scheduledTour must be equal";
-		return sTour;
-	}
 
 
 	/**
@@ -303,6 +339,7 @@ class MatsimOvguFactory{
 	 * @param vehicleRoutingProblem the routing problem
      * @return VehicleRoute
 	 */
+	@Deprecated
 	public static VehicleRoute createRoute(ScheduledTour scheduledTour, VehicleRoutingProblem vehicleRoutingProblem){
 		CarrierVehicle carrierVehicle = scheduledTour.getVehicle();
 		double depTime = scheduledTour.getDeparture();
@@ -336,6 +373,7 @@ class MatsimOvguFactory{
 		return route;
 	}
 
+	@Deprecated
     private static Vehicle getVehicle(String id, VehicleRoutingProblem vehicleRoutingProblem) {
         for(Vehicle v : vehicleRoutingProblem.getVehicles()){
             if(v.getId().equals(id)) return v;
@@ -352,6 +390,7 @@ class MatsimOvguFactory{
      * <p>Pickups and deliveries can be defined as shipments with only one location (toLocation for delivery and fromLocation for pickup). Implementation follows
 	 *
 	 */
+    @Deprecated
 	public static VehicleRoutingProblem createRoutingProblem(Carrier carrier, Network network, VehicleRoutingTransportCosts transportCosts, VehicleRoutingActivityCosts activityCosts){
 		VehicleRoutingProblem.Builder vrpBuilder = VehicleRoutingProblem.Builder.newInstance();
 		boolean serviceInVrp = false;
@@ -436,6 +475,7 @@ class MatsimOvguFactory{
      * <p>Pickups and deliveries can be defined as shipments with only one location (toLocation for delivery and fromLocation for pickup). Implementation follows
 	 *
 	 */
+	@Deprecated
 	public static VehicleRoutingProblem.Builder createRoutingProblemBuilder(Carrier carrier, Network network){
 		VehicleRoutingProblem.Builder vrpBuilder = VehicleRoutingProblem.Builder.newInstance();
 		boolean serviceInVrp = false;
@@ -514,6 +554,7 @@ class MatsimOvguFactory{
 	 * <p>To retrieve coordinates the {@link Network} is required.
 	 * </br>
 	 */
+	@Deprecated
 	public static VehicleRoutingProblemSolution createSolution(CarrierPlan plan, VehicleRoutingProblem vehicleRoutingProblem) {
 		List<VehicleRoute> routes = new ArrayList<VehicleRoute>();
 		for(ScheduledTour tour : plan.getScheduledTours()){
@@ -530,6 +571,7 @@ class MatsimOvguFactory{
 	 * Creates a {@link Carrier} from {@link VehicleRoutingProblem}. The carrier is initialized with the carrierId, i.e. <code>carrier.getId()</code> returns carrierId.
 	 * </br>
 	 */
+	@Deprecated
 	public static Carrier createCarrier(String carrierId, VehicleRoutingProblem vrp){
 		Id<Carrier> id = Id.create(carrierId, Carrier.class);
 		Carrier carrier = CarrierImpl.newInstance(id);
@@ -547,26 +589,10 @@ class MatsimOvguFactory{
 			capabilityBuilder.addVehicle(createCarrierVehicle(vehicle));
 		}
 		carrier.setCarrierCapabilities(capabilityBuilder.build());
-		
+
 		return carrier;
 	}
-	
-	/**
-	 * Creates a {@link CarrierPlan} from {@link VehicleRoutingProblemSolution}.
-	 * 
-	 * <p>Note that the costs of the solution are multiplied by -1 to represent the corresponding score of a carrierPlan.
-	 * <p>The input parameter {@link Carrier} is just required to initialize the plan. 
-	 * </br>
-	 */
-	public static CarrierPlan createPlan( Carrier carrier, ArrayList<ArrayList<RouteElement>> solution ){
-		Collection<ScheduledTour> tours = new ArrayList<ScheduledTour>();
-		for(VehicleRoute route : solution.getRoutes()){
-			ScheduledTour scheduledTour = createTour(route);
-			tours.add(scheduledTour);
-		}
-		CarrierPlan carrierPlan = new CarrierPlan(carrier, tours);
-		carrierPlan.setScore(solution.getCost()*(-1));
-		return carrierPlan;
-	}
+
+
 	
 }
