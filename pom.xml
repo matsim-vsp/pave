@@ -31,6 +31,11 @@
 			<id>ojo-snapshots</id>
 			<url>http://oss.jfrog.org/libs-snapshot</url>
 		</repository>
+		<!--<repository>-->
+			<!--&lt;!&ndash; For OVGU Algorithms &ndash;&gt;-->
+			<!--<id>jitpack.io</id>-->
+			<!--<url>https://jitpack.io</url>-->
+		<!--</repository>-->
 	</repositories>
 
 	<dependencies>
@@ -71,6 +76,14 @@
 			<version>${matsim.version}</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!--<dependency>-->
+			<!--&lt;!&ndash; OVGU Algorithms &ndash;&gt;-->
+			<!--<groupId>com.github.RicosHub</groupId>-->
+			<!--<artifactId>ovgu.pave</artifactId>-->
+			<!--<version>master-SNAPSHOT</version>-->
+		<!--</dependency>-->
+
 
 	</dependencies>
 
