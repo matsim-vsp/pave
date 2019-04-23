@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/model/src/main/java/" modelPluginID="config" modelName="Config"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="5.0" copyrightFields="false" operationReflection="true" importOrganizing="true">
+  <foreignModel>Config.ecore</foreignModel>
+  <genPackages prefix="Config" basePackage="ovgu.pave.model" disposableProviderFactory="true"
+      contentTypeIdentifier="" ecorePackage="Config.ecore#/">
+    <genClasses ecoreClass="Config.ecore#//Algorithm">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Algorithm/algorithm"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Algorithm/computationStarted"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Algorithm/computationFinished"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Config.ecore#//Algorithm/lns"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Algorithm/randomSeet"/>
+    </genClasses>
+    <genClasses ecoreClass="Config.ecore#//Config">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Config/inputFolder"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Config.ecore#//Config/shortestPath"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Config.ecore#//Config/experiment"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Config/inputFilename"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Config.ecore#//Config/algorithm"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Config/configPath"/>
+    </genClasses>
+    <genClasses ecoreClass="Config.ecore#//ShortestPath">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//ShortestPath/use"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Config.ecore#//ShortestPath/graphhopper"/>
+    </genClasses>
+    <genClasses ecoreClass="Config.ecore#//Experiment">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Experiment/problem"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Experiment/numberOfRequests"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Experiment/numberOfVehicles"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Experiment/serviceDuration"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Experiment/timeWindowLength"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Experiment/maxDelayValue"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Experiment/startSequence"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Experiment/numberOfInsideIterations"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Experiment/outputFolder"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Experiment/numberOfOutsideIterations"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Experiment/vehicleCapacity"/>
+    </genClasses>
+    <genClasses ecoreClass="Config.ecore#//GraphHopper">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//GraphHopper/osmFilePath"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//GraphHopper/graphFolder"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//GraphHopper/weighting"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//GraphHopper/vehicleType"/>
+    </genClasses>
+    <genClasses ecoreClass="Config.ecore#//LNS">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/penaltyTerm"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/temperatureControlParameter"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/coolingRate"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/minSmallRequestSet"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/maxLargeRequestSet"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/maxSmallRequestSet"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/minLargeRequestSet"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/maxIterations"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/maxCalculationTime"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EReference Config.ecore#//LNS/insertionHeuristics"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EReference Config.ecore#//LNS/removalHeuristics"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Config.ecore#//LNS/rws"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/clusterPercentagePerRoute"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/shawDistanceWeight"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/shawBeginWeight"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//LNS/maxWithoutImprovement"/>
+    </genClasses>
+    <genClasses ecoreClass="Config.ecore#//Heuristic">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Heuristic/heuristicName"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//Heuristic/noise"/>
+    </genClasses>
+    <genClasses ecoreClass="Config.ecore#//RWS">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//RWS/Case1"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//RWS/Case2"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//RWS/Case3"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Config.ecore#//RWS/lastScoreInfluence"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

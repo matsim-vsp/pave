@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="algorithmObjects" nsURI="ovgu.pave.algorithmObjects" nsPrefix="alg">
+  <eClassifiers xsi:type="ecore:EClass" name="LNS">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="lowestCostsPerRequest"
+        eType="#//LowestCostsHashMap"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="maxIterations" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="rejections" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="iteration" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="exchangeableRequests" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="mainIteration" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="newSolution" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="acceptanceIteration" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="acceptances" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="Route" instanceClassName="ovgu.pave.model.solution.Route"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InsertionInformation">
+    <eOperations name="setScoreForRegretHeuristic">
+      <eParameters name="regretValue" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="insertionOptions" upperBound="-1"
+        eType="#//InsertionOption"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="request" lowerBound="1"
+        eType="#//Requests"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="score" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="RouteElement" instanceClassName="ovgu.pave.model.solution.RouteElement"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="LowestCostsHashMap" instanceClassName="java.util.HashMap&lt;ovgu.pave.model.input.Request, java.lang.Long>"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InsertionOption">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="costs" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="originIndex" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="destinationIndex" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="route" eType="#//Route"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="Requests" instanceClassName="ovgu.pave.model.input.Request"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RemovalOption">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="costs" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="route" eType="#//Route"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="originRouteElement" eType="#//RouteElement"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="destinationRouteElement"
+        eType="#//RouteElement"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="distance" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="absServiceBegin" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+  </eClassifiers>
+</ecore:EPackage>

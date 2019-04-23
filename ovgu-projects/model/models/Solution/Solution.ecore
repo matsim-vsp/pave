@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="solution" nsURI="ovgu.pave.solution" nsPrefix="sol">
+  <eClassifiers xsi:type="ecore:EClass" name="Route">
+    <eOperations name="getRouteElement" eType="#//RouteElement">
+      <eParameters name="index" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="routeElements" upperBound="-1"
+        eType="#//RouteElement" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="vehicle" eType="#//Vehicle"
+        transient="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="vehicleType" eType="#//VehicleType"
+        transient="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="vehicleID" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+        defaultValueLiteral="-1"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="vehicleTypeID" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+        defaultValueLiteral="-1"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="utilisation" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"
+        defaultValueLiteral="0"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RouteElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="serviceBegin" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="serviceDuration" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="Vehicle" instanceClassName="ovgu.pave.model.input.Vehicle"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="RequestActivity" instanceClassName="ovgu.pave.model.input.RequestActivity"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="Requests" instanceClassName="ovgu.pave.model.input.Request"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Solution">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="routes" upperBound="-1"
+        eType="#//Route" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="Score" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="useVehicleType" eType="#//UseVehicleType"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="unintegratedRequests" upperBound="-1"
+        eType="#//Requests" transient="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="integratedRequests" upperBound="-1"
+        eType="#//Requests" transient="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SupportRouteElement" eSuperTypes="#//RouteElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="location" lowerBound="1"
+        eType="#//Location" transient="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="locationID" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+        defaultValueLiteral="0"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RequestActivityRouteElement" eSuperTypes="#//RouteElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="requestActivity" lowerBound="1"
+        eType="#//RequestActivity" transient="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="requestActivityID" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral=""/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="WayPointRouteElement" eSuperTypes="#//RouteElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="wayPoint" lowerBound="1"
+        eType="#//WayPoint" transient="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="wayPointID" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral=""/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="Location" instanceClassName="ovgu.pave.model.input.Location"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="VehicleType" instanceClassName="ovgu.pave.model.input.VehicleType"/>
+  <eClassifiers xsi:type="ecore:EClass" name="UseVehicleType">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="useVehicleTypeInsteadVehicle"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean" defaultValueLiteral="false"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="VehicleTypes" upperBound="-1"
+        eType="#//VehicleType" transient="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="vehicleTypeIDs" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="quantities" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="WayPoint" instanceClassName="ovgu.pave.model.input.WayPoint"/>
+</ecore:EPackage>
