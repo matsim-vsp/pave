@@ -141,7 +141,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 					if (!this.vehiclesOnFreightTour.contains(vehicle)) throw new IllegalStateException("freight tour of vehicle " +
 							vehicle.getId() + "ends and scheduler did not even mark it as being on freight tour");
 
-					this.eventsManager.processEvent(new FreightTourCompletedEvent(vehicle, timer.getTimeOfDay()));
+					this.eventsManager.processEvent(new FreightTourCompletedEvent(vehicle.getId(), timer.getTimeOfDay()));
 					this.vehiclesOnFreightTour.remove(vehicle);
 					log.warn("vehicle " + vehicle.getId() + " returns to it's owner's location at time=" + timer.getTimeOfDay());
 				}
@@ -166,7 +166,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		PFAVTourData tourData = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
 		if (tourData != null) {
             log.info("vehicle " + vehicle.getId() + " requested a freight tour and received one by the manager");
-			if (isComingFromAnotherFreightTour) eventsManager.processEvent(new FreightTourCompletedEvent(vehicle, timer.getTimeOfDay()));
+			if (isComingFromAnotherFreightTour) eventsManager.processEvent(new FreightTourCompletedEvent(vehicle.getId(), timer.getTimeOfDay()));
 			scheduleFreightTour(vehicle, tourData);
 		} else {
 			Link requestLink = ((StayTaskImpl) vehicle.getSchedule().getCurrentTask()).getLink();
@@ -246,7 +246,8 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 //		tourData.setPlannedTourDuration(tourDuration);
 
 		DispatchedPFAVTourData dispatchData = DispatchedPFAVTourData.newBuilder()
-				.vehicle((PFAVehicle) vehicle)
+				.vehicleId(vehicle.getId())
+				.mustReturnLog(((PFAVehicle) vehicle).getMustReturnToOwnerLinkTimePairs().peek())
 				.dispatchTime(timer.getTimeOfDay())
 				.requestLink(requestLink.getId())
 				.tourData(tourData)
@@ -315,12 +316,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				throw new IllegalStateException(
 						"if a freight tour shall be inserted - the next vehicle task has to be STAY or EMPTY_DRIVE. That is not the case for vehicle " + vehicle.getId() + " at time " + timer.getTimeOfDay());
 		}
-
-//        scheduleStr = new StringBuilder();
-//		for (Task t : schedule.getTasks()) {
-//            scheduleStr.append(t.toString()).append("\n");
-//		}
-//		log.warn("schedule " + schedule.toString() + " after clean up: \n" + scheduleStr);
 	}
 
 	public void scheduleRequest(DvrpVehicle vehicle, TaxiRequest request) {

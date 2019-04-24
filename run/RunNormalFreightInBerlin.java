@@ -21,6 +21,7 @@
 package run;
 
 import analysis.FreightTourStatsListener;
+import analysis.OverallTravelTimeAndDistanceListener;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
@@ -173,11 +174,15 @@ public class RunNormalFreightInBerlin {
         prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, carriers);
 
         FreightTourStatsListener analyser = new FreightTourStatsListener(scenario.getNetwork());
+        OverallTravelTimeAndDistanceListener generalListener = new OverallTravelTimeAndDistanceListener(scenario.getNetwork());
         controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
                 addControlerListenerBinding().toInstance(analyser);
                 addEventHandlerBinding().toInstance(analyser);
+
+                addEventHandlerBinding().toInstance(generalListener);
+                addControlerListenerBinding().toInstance(generalListener);
             }
         });
 

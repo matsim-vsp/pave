@@ -35,17 +35,30 @@ public class FreightTourRequestDeniedEvent extends Event {
 
     public static final String ATTRIBUTE_VEHICLE = "vehicle";
     public static final String ATTRIBUTE_REQUEST_LINK = "requestLink";
-    public static final String ATTRIBUTE_MUST_RETURN_LINK_TIME_PAIR = "mustReturnLinkTimePair";
+    public static final String ATTRIBUTE_MUST_RETURN_LINK = "mustReturnLink";
+    public static final String ATTRIBUTE_MUST_RETURN_TIME = "mustReturnTime";
 
     private final Id<DvrpVehicle> vehicleId;
     private final Id<Link> requestLink;
-    private final MustReturnLinkTimePair returnLog;
+    private final Id<Link> mustReturnLink;
+    private final double mustReturnTime;
+
 
     public FreightTourRequestDeniedEvent(PFAVehicle vehicle, Id<Link> requestLink, double timeOfDay) {
         super(timeOfDay);
         vehicleId = vehicle.getId();
         this.requestLink = requestLink;
-        this.returnLog = vehicle.getMustReturnToOwnerLinkTimePairs().peek();
+        MustReturnLinkTimePair returnLog = vehicle.getMustReturnToOwnerLinkTimePairs().peek();
+        this.mustReturnLink = returnLog.getLinkId();
+        this.mustReturnTime = returnLog.getTime();
+    }
+
+    public FreightTourRequestDeniedEvent(Id<DvrpVehicle> vehicle, Id<Link> requestLink, double timeOfDay, Id<Link> mustReturnLink, double mustReturnTime) {
+        super(timeOfDay);
+        this.vehicleId = vehicle;
+        this.requestLink = requestLink;
+        this.mustReturnLink = mustReturnLink;
+        this.mustReturnTime = mustReturnTime;
     }
 
     /**
@@ -61,7 +74,9 @@ public class FreightTourRequestDeniedEvent extends Event {
         Map<String, String> attr = super.getAttributes();
         attr.put(ATTRIBUTE_VEHICLE, vehicleId + "");
         attr.put(ATTRIBUTE_REQUEST_LINK, requestLink + "");
-        attr.put(ATTRIBUTE_MUST_RETURN_LINK_TIME_PAIR, returnLog.toString());
+//        attr.put(ATTRIBUTE_MUST_RETURN_LINK_TIME_PAIR, returnLog.toString());
+        attr.put(ATTRIBUTE_MUST_RETURN_LINK, mustReturnLink + "");
+        attr.put(ATTRIBUTE_MUST_RETURN_TIME, mustReturnTime + "");
         return attr;
     }
 
@@ -73,7 +88,11 @@ public class FreightTourRequestDeniedEvent extends Event {
         return requestLink;
     }
 
-    public MustReturnLinkTimePair getReturnLog() {
-        return returnLog;
+    public Id<Link> getMustReturnLink() {
+        return mustReturnLink;
+    }
+
+    public double getMustReturnTime() {
+        return mustReturnTime;
     }
 }

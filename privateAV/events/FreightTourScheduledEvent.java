@@ -21,7 +21,10 @@
 package privateAV.events;
 
 import freight.tour.DispatchedPFAVTourData;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 
 import java.util.Map;
 
@@ -34,11 +37,31 @@ public class FreightTourScheduledEvent extends Event {
     public static final String ATTRIBUTE_FREIGHT_TOUR_DISTANCE = "freightTourDistance";
     public static final String ATTRIBUTE_MUST_RETURN_TIME = "mustReturnTime";
 
-    private DispatchedPFAVTourData tourData;
+    private final Id<DvrpVehicle> vehicleId;
+    private final Id<Link> requestLink;
+    private final double mustReturnTime;
+    private final double tourDuration;
+    private final double tourLength;
+
+    private DispatchedPFAVTourData tourData = null;
+
+    public FreightTourScheduledEvent(double time, Id<DvrpVehicle> vehicleId, Id<Link> requestLink, double mustReturnTime, double tourDuration, double tourLength) {
+        super(time);
+        this.vehicleId = vehicleId;
+        this.requestLink = requestLink;
+        this.mustReturnTime = mustReturnTime;
+        this.tourDuration = tourDuration;
+        this.tourLength = tourLength;
+    }
 
     public FreightTourScheduledEvent(DispatchedPFAVTourData data) {
         super(data.getDispatchTime());
         this.tourData = data;
+        this.vehicleId = data.getVehicleId();
+        this.requestLink = data.getRequestLink();
+        this.tourDuration = data.getPlannedTourDuration();
+        this.tourLength = data.getPlannedTourLength();
+        this.mustReturnTime = data.getMustReturnLog().getTime();
     }
 
     /**
@@ -52,11 +75,11 @@ public class FreightTourScheduledEvent extends Event {
     @Override
     public Map<String, String> getAttributes() {
         Map<String, String> attr = super.getAttributes();
-        attr.put(ATTRIBUTE_VEHICLE, tourData.getVehicleId() + "");
-        attr.put(ATTRIBUTE_REQUEST_LINK, tourData.getRequestLink() + "");
-        attr.put(ATTRIBUTE_FREIGHT_TOUR_DURATION, tourData.getPlannedTourDuration() + "");
-        attr.put(ATTRIBUTE_FREIGHT_TOUR_DISTANCE, tourData.getPlannedTourLength() + "");
-        attr.put(ATTRIBUTE_MUST_RETURN_TIME, tourData.getMustReturnLog() + "");
+        attr.put(ATTRIBUTE_VEHICLE, vehicleId + "");
+        attr.put(ATTRIBUTE_REQUEST_LINK, requestLink + "");
+        attr.put(ATTRIBUTE_FREIGHT_TOUR_DURATION, tourDuration + "");
+        attr.put(ATTRIBUTE_FREIGHT_TOUR_DISTANCE, tourLength + "");
+        attr.put(ATTRIBUTE_MUST_RETURN_TIME, mustReturnTime + "");
         return attr;
     }
 

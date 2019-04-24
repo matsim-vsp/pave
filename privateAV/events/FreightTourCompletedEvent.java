@@ -33,9 +33,9 @@ public class FreightTourCompletedEvent extends Event {
     private final Id<DvrpVehicle> vehicleId;
 
 
-    public FreightTourCompletedEvent(DvrpVehicle vehicle, double timeOfDay) {
+    public FreightTourCompletedEvent(Id<DvrpVehicle> vehicleId, double timeOfDay) {
         super(timeOfDay);
-        vehicleId = vehicle.getId();
+        this.vehicleId = vehicleId;
     }
 
     /**

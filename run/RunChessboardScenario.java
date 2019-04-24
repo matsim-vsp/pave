@@ -115,6 +115,7 @@ public class RunChessboardScenario {
         Controler controler = new Controler(scenario);
         controler.addOverridingModule(new DvrpModule());
 //		controler.addOverridingModule(new TaxiModule());
+
         controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
@@ -145,8 +146,8 @@ public class RunChessboardScenario {
             plan.addLeg(leg);
 
             Activity work = factory.createActivityFromLinkId("work", workLinkId);
-            work.setEndTime(18 * 3600);
             work.setStartTime(6 * 3600);
+            work.setEndTime(12 * 3600);
             plan.addActivity(work);
 
             leg = factory.createLeg("taxi");
@@ -226,11 +227,11 @@ public class RunChessboardScenario {
             plan.addLeg(leg);
 
             Activity work = factory.createActivityFromLinkId("work", workLinkId);
-            work.setEndTime(16 * 3600);
             work.setStartTime(6 * 3600);
+            work.setEndTime(12 * 3600);
             plan.addActivity(work);
 
-            leg = factory.createLeg("car");
+            leg = factory.createLeg("taxi");
             plan.addLeg(leg);
 
             Activity work2 = factory.createActivityFromLinkId("work", workLinkId2);

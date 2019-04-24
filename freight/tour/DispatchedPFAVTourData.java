@@ -28,7 +28,6 @@ import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.freight.carrier.TimeWindow;
 import privateAV.schedule.PFAVServiceTask;
 import privateAV.vehicle.MustReturnLinkTimePair;
-import privateAV.vehicle.PFAVehicle;
 
 import java.util.Objects;
 
@@ -200,12 +199,6 @@ public class DispatchedPFAVTourData {
         private Builder() {
         }
 
-        public DispatchedPFAVTourData.Builder vehicle(PFAVehicle val) {
-            vehicleId = val.getId();
-            mustReturnLog = val.getMustReturnToOwnerLinkTimePairs().peek();
-            return this;
-        }
-
         public DispatchedPFAVTourData.Builder dispatchTime(double val) {
             dispatchTime = val;
             return this;
@@ -249,6 +242,16 @@ public class DispatchedPFAVTourData {
 
         public DispatchedPFAVTourData.Builder distanceBackToOwner(double returnDistance) {
             distanceBackToOwner = returnDistance;
+            return this;
+        }
+
+        public DispatchedPFAVTourData.Builder mustReturnLog(MustReturnLinkTimePair val) {
+            mustReturnLog = val;
+            return this;
+        }
+
+        public DispatchedPFAVTourData.Builder vehicleId(Id<DvrpVehicle> val) {
+            vehicleId = val;
             return this;
         }
 

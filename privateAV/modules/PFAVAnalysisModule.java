@@ -22,6 +22,7 @@ package privateAV.modules;
 
 import analysis.FreightTourDispatchAnalyzer;
 import analysis.OverallTravelTimeAndDistanceListener;
+import analysis.PFAVWaitTimesAnalyzer;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
@@ -50,5 +51,9 @@ public class PFAVAnalysisModule extends AbstractDvrpModeModule {
         OverallTravelTimeAndDistanceListener generalListener = new OverallTravelTimeAndDistanceListener(network);
         addEventHandlerBinding().toInstance(generalListener);
         addControlerListenerBinding().toInstance(generalListener);
+
+        PFAVWaitTimesAnalyzer waitTimeHandler = new PFAVWaitTimesAnalyzer();
+        addEventHandlerBinding().toInstance(waitTimeHandler);
+        addControlerListenerBinding().toInstance(waitTimeHandler);
     }
 }

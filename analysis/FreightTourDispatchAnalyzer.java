@@ -48,9 +48,6 @@ import privateAV.vrpagent.PFAVActionCreator;
 import java.util.*;
 
 /**
- * antizipierte Zeit der Frachttour (mit oder ohne Retool am Ende? schließlich kann vorher eine neue begonnen werden)
- * leerfahrten - dauer und distanz (freightTourDispatch -> activityStart retool und freightTourCompleted -> retool)
- * insgesamt distanz der frachttour (aufsummieren der Wege/LinkLängen)
  */
 public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSimScopeObjectListener<Fleet>, LinkEnterEventHandler, ActivityStartEventHandler, IterationEndsListener {
 
@@ -99,8 +96,6 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
             if (t.getTaxiTaskType().equals(TaxiTask.TaxiTaskType.EMPTY_DRIVE)) {
                 data.addToActualEmptyMeters(link.getLength());
             }
-
-            //TODO: also account for empty kilometers on the way back to owner!!!!
         }
     }
 
