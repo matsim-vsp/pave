@@ -29,36 +29,111 @@ import org.matsim.api.core.v01.events.handler.PersonArrivalEventHandler;
 import org.matsim.api.core.v01.events.handler.PersonDepartureEventHandler;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
+import org.matsim.core.events.EventsUtils;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.io.IOUtils;
+import privateAV.PFAVUtils;
+import privateAV.events.PFAVEventsReader;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class OverallTravelTimeAndDistanceListener implements PersonDepartureEventHandler, PersonArrivalEventHandler, LinkEnterEventHandler, IterationEndsListener {
 
-    double overallTravelTime = 0.;
-    double overallTravelDistance = 0.;
-    private Map<Id<Person>, Double> departureTimes = new HashMap<>();
+    double taxiTravelTime = 0.;
+    double taxiTravelDistance = 0.;
+
+    double emptyPFAVTravelTime = 0.;
+    double emptyPFAVTravelDistance = 0.;
+
+    double freightTravelTime = 0.;
+    double freightTravelDistance = 0.;
+
+    double otherTravelTime = 0.;
+    double otherTravelDistance = 0.;
+
+    double sumPickupTime = 0;
+    double sumDropOffTime = 0;
+    List<String> vehiclesWithPassengers = new ArrayList<>();
+    private Map<Id<Person>, Double> taxiDepartureTimes = new HashMap<>();
+    ;
+    private HashMap<Id<Person>, Double> emptyPFAVDepartureTimes = new HashMap<>();
+    private HashMap<Id<Person>, Double> freightDepartureTimes = new HashMap<>();
+    ;
     private Network network;
+    private HashMap<Id<Person>, Double> otherDepartureTimes = new HashMap<>();
+
 
     public OverallTravelTimeAndDistanceListener(Network network) {
         this.network = network;
     }
 
+    public static void main(String[] args) {
+
+        String dir = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Truck/";
+        String input = dir + "berlin-v5.3-1pct.output_events.xml.gz";
+        EventsManager manager = EventsUtils.createEventsManager();
+
+        Network network = NetworkUtils.createNetwork();
+        new MatsimNetworkReader(network).readFile(dir + "berlin-v5.3-1pct.output_network.xml.gz");
+
+        OverallTravelTimeAndDistanceListener handler = new OverallTravelTimeAndDistanceListener(network);
+        manager.addHandler(handler);
+        PFAVEventsReader reader = new PFAVEventsReader(manager);
+
+        String output = dir + "/ITERS/it.0/OverallStats_it0_NEU.csv";
+
+        reader.readFile(input);
+        handler.writeStats(output);
+    }
+
+
     @Override
     public void handleEvent(PersonDepartureEvent event) {
-        this.departureTimes.put(event.getPersonId(), event.getTime());
+        if (event.getLegMode().equals("taxi")) {
+            this.taxiDepartureTimes.put(event.getPersonId(), event.getTime());
+            this.vehiclesWithPassengers.add(PFAVUtils.generatePFAVIdFromPersonId(event.getPersonId()).toString());
+            this.sumPickupTime += 120;
+        } else if (event.getLegMode().equals("car")) {
+            String person = event.getPersonId().toString();
+            if (!event.getPersonId().toString().contains("tr")) {
+                if ((person.contains(PFAVUtils.PFAV_ID_SUFFIX))) {
+                    if (!this.vehiclesWithPassengers.contains(person))
+                        this.emptyPFAVDepartureTimes.put(event.getPersonId(), event.getTime());
+                } else if (person.contains("freight")) {
+                    this.freightDepartureTimes.put(event.getPersonId(), event.getTime());
+                } else {
+                    this.otherDepartureTimes.put(event.getPersonId(), event.getTime());
+                }
+            }
+        }
+
     }
 
     @Override
     public void handleEvent(PersonArrivalEvent event) {
-        if (!this.departureTimes.containsKey(event.getPersonId()))
-            throw new IllegalStateException("arrival without departure of agent " + event.getPersonId());
-        this.overallTravelTime += event.getTime() - this.departureTimes.remove(event.getPersonId());
+        if (this.taxiDepartureTimes.containsKey(event.getPersonId())) {
+            this.taxiTravelTime += event.getTime() - this.taxiDepartureTimes.remove(event.getPersonId());
+            this.sumDropOffTime += 60;
+            if (!this.vehiclesWithPassengers.remove(PFAVUtils.generatePFAVIdFromPersonId(event.getPersonId()).toString())) {
+                throw new IllegalStateException();
+            }
+            ;
+        } else if (this.emptyPFAVDepartureTimes.containsKey(event.getPersonId())) {
+            this.emptyPFAVTravelTime += event.getTime() - this.emptyPFAVDepartureTimes.remove(event.getPersonId());
+        } else if (this.freightDepartureTimes.containsKey(event.getPersonId())) {
+            this.freightTravelTime += event.getTime() - this.freightDepartureTimes.remove(event.getPersonId());
+        } else if (this.otherDepartureTimes.containsKey(event.getPersonId())) {
+            this.otherTravelTime += event.getTime() - this.otherDepartureTimes.remove(event.getPersonId());
+        }
     }
 
     /**
@@ -69,13 +144,41 @@ public class OverallTravelTimeAndDistanceListener implements PersonDepartureEven
      */
     @Override
     public void reset(int iteration) {
-        this.overallTravelDistance = 0.;
-        this.overallTravelTime = 0.;
+        this.taxiTravelTime = 0.;
+        this.taxiTravelDistance = 0.;
+
+        this.emptyPFAVTravelTime = 0.;
+        this.emptyPFAVTravelDistance = 0.;
+
+        this.freightTravelTime = 0.;
+        this.freightTravelDistance = 0.;
+
+        this.otherTravelTime = 0.;
+        this.otherTravelDistance = 0.;
+
+        this.sumPickupTime = 0;
+        this.sumDropOffTime = 0;
     }
 
     @Override
     public void handleEvent(LinkEnterEvent event) {
-        this.overallTravelDistance += network.getLinks().get(event.getLinkId()).getLength();
+        String vehID = event.getVehicleId().toString();
+        double distance = network.getLinks().get(event.getLinkId()).getLength();
+        if (!vehID.contains("tr")) {
+            if (vehID.contains(PFAVUtils.PFAV_ID_SUFFIX)) {
+                if (this.vehiclesWithPassengers.contains(vehID)) {
+                    taxiTravelDistance += distance;
+                } else {
+                    emptyPFAVTravelDistance += distance;
+                }
+            } else if (vehID.contains("freight")) {
+                freightTravelDistance += distance;
+            } else {
+                otherTravelDistance += distance;
+
+            }
+
+        }
     }
 
 
@@ -87,14 +190,30 @@ public class OverallTravelTimeAndDistanceListener implements PersonDepartureEven
     @Override
     public void notifyIterationEnds(IterationEndsEvent event) {
         String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/";
-        BufferedWriter writer = IOUtils.getBufferedWriter(dir + "generaltStatsIt" + event.getIteration() + ".txt");
+        writeStats(dir + "generaltStatsIt" + event.getIteration() + ".txt");
+    }
+
+
+    public void writeStats(String file) {
+        BufferedWriter writer = IOUtils.getBufferedWriter(file);
         try {
-            writer.write("overallTravelTime;overallTravelDistance");
+            writer.write("taxiTravelTime[h];taxiTravelDistance[km];" +
+                    "PFAVwoPassTravelTime[h];PFAVwoPassTravelDistance[km];" +
+                    "freightTravelTime[h];freightTravelDistance[km];" +
+                    "otherTravelTime[h];otherTravelDistance[km];" +
+                    "sumPickup[h];sumDropoff[h]");
             writer.newLine();
-            writer.write("" + overallTravelTime + ";" + overallTravelDistance);
+            writer.write("" + taxiTravelTime / 3600 + ";" + taxiTravelDistance / 1000 + ";" +
+                    emptyPFAVTravelTime / 3600 + ";" + emptyPFAVTravelDistance / 1000 + ";" +
+                    freightTravelTime / 3600 + ";" + freightTravelDistance / 1000 + ";" +
+                    otherTravelTime / 3600 + ";" + otherTravelDistance / 1000 + ";" +
+                    +sumPickupTime / 3600 + ";" + sumDropOffTime / 3600);
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
+
 }

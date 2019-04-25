@@ -47,11 +47,11 @@ public class TaxiTimeProfileConverter {
     }
 
     public static void main(String[] args) {
-        String input = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Transporter/ITERS/it.0/berlin-v5.3-1pct.0.taxi_status_time_profiles_taxi.txt";
+        String input = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Pkw/ITERS/it.0/berlin-v5.3-1pct.0.taxi_status_time_profiles_taxi.txt";
 
         TaxiTimeProfileConverter converter = new TaxiTimeProfileConverter(36, 12);
         converter.readStats(input);
-        String output = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Transporter/ITERS/it.0/taxi_status_time_profiles_taxi_converted.csv";
+        String output = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Pkw/ITERS/it.0/taxi_status_time_profiles_taxi_converted.csv";
         converter.writeStats(output);
     }
 

@@ -61,6 +61,8 @@ public class PFAVWaitTimesAnalyzer implements PFAVWaitTimesListener, PersonEnter
         String input = dir + "output_events.xml";
 
         String output = dir + "/ITERS/it.0/WaitTimeStats_it0.csv";
+
+
         reader.readFile(input);
         handler.writeStats(output);
 
@@ -105,7 +107,7 @@ public class PFAVWaitTimesAnalyzer implements PFAVWaitTimesListener, PersonEnter
         BufferedWriter writer = IOUtils.getBufferedWriter(file);
         try {
             int i = 1;
-            writer.write("index;person;vehicle;beginTime;endTime;waitingTime;");
+            writer.write("index;person;vehicle;beginTime;endTime;waitingTime");
             writer.newLine();
 
             for (WaitTimeData data : this.dataSet) {
