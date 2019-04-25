@@ -106,7 +106,7 @@ public class RunNormalFreightInBerlin {
          *
          */
         taxiCfg.setDestinationKnown(true);
-        taxiCfg.setPickupDuration(120);
+        taxiCfg.setPickupDuration(60);
         taxiCfg.setDropoffDuration(60);
         taxiCfg.setTaxisFile("something");
 
