@@ -76,7 +76,7 @@ public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>,
             Collections.sort(mustReturnLinkTimePairs);
 
             if (vehicleStartLink != null) {
-                Id<DvrpVehicle> vehicleId = Id.create(p.getId().toString() + PFAVUtils.PFAV_ID_SUFFIX, DvrpVehicle.class);
+                Id<DvrpVehicle> vehicleId = PFAVUtils.generatePFAVIdFromPersonId(p.getId());
                 PFAVSpecification specification = PFAVSpecification.newBuilder()
                         .serviceBeginTime(0.)
                         .serviceEndTime(36 * 3600)

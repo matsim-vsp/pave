@@ -18,6 +18,9 @@
  * *********************************************************************** */
 package privateAV;
 
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
@@ -76,7 +79,7 @@ public final class PFAVUtils {
 	/**
 	 * defines whether the freight tour manager triggers the JSprit run in iteration 0
 	 */
-    public static final boolean RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION = true;
+    public static final boolean RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION = false;
 
 	/**
 	 * defines the number of iterations in the tour planning algorithm, see {@link freight.calculator.FreightTourCalculatorImpl}
@@ -142,5 +145,9 @@ public final class PFAVUtils {
 		}
 		return null;
 	}
+
+    public static Id<DvrpVehicle> generatePFAVIdFromPersonId(Id<Person> personId) {
+        return Id.create(personId.toString() + PFAVUtils.PFAV_ID_SUFFIX, DvrpVehicle.class);
+    }
 
 }

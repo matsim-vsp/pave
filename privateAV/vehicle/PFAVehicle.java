@@ -28,7 +28,7 @@ public class PFAVehicle extends DvrpVehicleImpl {
             return new PFAVehicle(s, linkProvider.apply((s).getStartLinkId()));
         } else {
             //TODO : we could insert a "normal" DvrpVehicle here. Maybe there is a usecase in future where we would want to have a mix of PFAVehicles and DvrpVehicles
-            throw new RuntimeException("möööööööööööööööööööööööp");
+            throw new IllegalArgumentException();
         }
     }
 
