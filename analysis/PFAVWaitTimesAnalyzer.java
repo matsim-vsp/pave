@@ -43,7 +43,7 @@ import java.util.Set;
 
 public class PFAVWaitTimesAnalyzer implements PFAVWaitTimesListener, ActivityStartEventHandler, IterationEndsListener {
 
-    private Map<Id<Person>, WaitTimeData> waitingOwners = new HashMap<>();
+    private Map<String, WaitTimeData> awaitedVehicles = new HashMap<>();
     private Set<WaitTimeData> dataSet = new HashSet<>();
 
 
@@ -71,19 +71,19 @@ public class PFAVWaitTimesAnalyzer implements PFAVWaitTimesListener, ActivitySta
 
     @Override
     public void handleEvent(PFAVOwnerWaitsForVehicleEvent event) {
-        if (this.waitingOwners.containsKey(event.getOwner())) {
+        if (this.awaitedVehicles.containsKey(event.getOwner())) {
             throw new IllegalStateException("owner " + event.getOwner() + " triggers two wait events without being picked up in the meantime." +
                     " second waiting event time=" + event.getTime());
         }
         WaitTimeData data = new WaitTimeData(event.getOwner(), event.getVehicleId(), event.getTime());
-        this.waitingOwners.put(event.getOwner(), data);
+        this.awaitedVehicles.put(event.getVehicleId().toString(), data);
     }
 
     @Override
     public void handleEvent(ActivityStartEvent event) {
         if (event.getActType().equals(PFAVActionCreator.PICKUP_ACTIVITY_TYPE)) {
-            if (this.waitingOwners.containsKey(event.getPersonId())) {
-                WaitTimeData data = this.waitingOwners.remove(event.getPersonId());
+            if (this.awaitedVehicles.containsKey(event.getPersonId().toString())) {
+                WaitTimeData data = this.awaitedVehicles.remove(event.getPersonId().toString());
                 data.setEndTime(event.getTime());
                 this.dataSet.add(data);
             }
