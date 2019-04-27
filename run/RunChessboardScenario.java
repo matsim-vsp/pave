@@ -79,7 +79,7 @@ public class RunChessboardScenario {
         TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
         taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
         taxiCfg.setDestinationKnown(true);
-        taxiCfg.setPickupDuration(120);
+        taxiCfg.setPickupDuration(60);
         taxiCfg.setDropoffDuration(60);
         taxiCfg.setTaxisFile("something");
         taxiCfg.setTimeProfiles(true);
@@ -88,11 +88,14 @@ public class RunChessboardScenario {
 //		config.addModule(new DvrpConfigGroup());
 //		config.addModule(taxiCfg);
 
+        System.out.println("" + taxiCfg.getPickupDuration());
+        taxiCfg.setDropoffDuration(60);
+
         config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
         config.qsim().setEndTime(20 * 3600);
 
         config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
-        config.controler().setLastIteration(1);
+        config.controler().setLastIteration(0);
 
         config.controler().setOutputDirectory(OUTPUT_DIR);
         config.network().setInputFile(NETWORK_FILE);
@@ -228,7 +231,7 @@ public class RunChessboardScenario {
 
             Activity work = factory.createActivityFromLinkId("work", workLinkId);
             work.setStartTime(6 * 3600);
-            work.setEndTime(16 * 3600);
+            work.setEndTime(12 * 3600);
             plan.addActivity(work);
 
             leg = factory.createLeg("taxi");
