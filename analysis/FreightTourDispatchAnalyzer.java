@@ -24,8 +24,10 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import freight.tour.DispatchedPFAVTourData;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.events.ActivityEndEvent;
 import org.matsim.api.core.v01.events.ActivityStartEvent;
 import org.matsim.api.core.v01.events.LinkEnterEvent;
+import org.matsim.api.core.v01.events.handler.ActivityEndEventHandler;
 import org.matsim.api.core.v01.events.handler.ActivityStartEventHandler;
 import org.matsim.api.core.v01.events.handler.LinkEnterEventHandler;
 import org.matsim.api.core.v01.network.Link;
@@ -49,10 +51,12 @@ import java.util.*;
 
 /**
  */
-public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSimScopeObjectListener<Fleet>, LinkEnterEventHandler, ActivityStartEventHandler, IterationEndsListener {
+public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSimScopeObjectListener<Fleet>,
+        LinkEnterEventHandler, ActivityStartEventHandler, ActivityEndEventHandler, IterationEndsListener {
 
     private Map<Id<DvrpVehicle>, DispatchedPFAVTourData> begunFreightTours = new HashMap<>();
     private Set<DispatchedPFAVTourData> completedFreightTours = new HashSet<>();
+    private Map<Id<DvrpVehicle>, Double> waitTimesAtDepot = new HashMap<>();
 
     private Fleet fleet;
 
@@ -100,10 +104,21 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
     }
 
     @Override
+    public void handleEvent(ActivityEndEvent event) {
+        Id<DvrpVehicle> vehicleId = Id.create(event.getPersonId().toString(), DvrpVehicle.class);
+        if (event.getActType().equals(PFAVActionCreator.STAY_ACTIVITY_TYPE) && this.begunFreightTours.containsKey(vehicleId)) {
+            this.begunFreightTours.get(vehicleId).setWaitTimeAtDepot(event.getTime() - this.waitTimesAtDepot.remove(vehicleId));
+        }
+    }
+
+    @Override
     public void handleEvent(ActivityStartEvent event) {
+        Id<DvrpVehicle> vehicleId = Id.create(event.getPersonId().toString(), DvrpVehicle.class);
+        if (event.getActType().equals(PFAVActionCreator.STAY_ACTIVITY_TYPE) && this.begunFreightTours.containsKey(vehicleId)) {
+            this.waitTimesAtDepot.put(vehicleId, event.getTime());
+        }
 
         if (event.getActType().contains(PFAVActionCreator.SERVICE_ACTIVITY_TYPE)) {
-            Id<DvrpVehicle> vehicleId = Id.create(event.getPersonId().toString(), DvrpVehicle.class);
 
             this.begunFreightTours.get(vehicleId).notifyNextServiceTaskStarted(event.getTime());
         }
@@ -155,6 +170,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
                 .add("RequestLink")
                 .add("DepotLink")
                 .add("DistanceToDepot")
+                .add("WaitTimeAtDepot")
                 .add("DistanceBackToOwner")
 
                 .add("PlannedTourDuration")
@@ -186,6 +202,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
                     .addf(stringFormat, data.getRequestLink())
                     .addf(stringFormat, data.getDepotLinkId())
                     .addf(dblFormat, data.getDistanceToDepot())
+                    .addf(dblFormat, data.getWaitTimeAtDepot())
                     .addf(dblFormat, data.getDistanceBackToOwner())
 
                     .addf(dblFormat, data.getPlannedTourDuration())

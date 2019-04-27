@@ -61,7 +61,7 @@ public class FreightTourStatsListener implements ActivityEndEventHandler, Activi
     public void handleEvent(ActivityEndEvent event) {
         if (event.getActType().equals("start")) {
             if (this.departureTimes.containsKey(event.getPersonId()))
-                throw new IllegalStateException("two carrier drive agent departures in a row of agent " + event.getPersonId());
+                throw new IllegalStateException("two carrier agent departures in a row of agent " + event.getPersonId());
             this.departureTimes.put(event.getPersonId(), event.getTime());
             FreightTourData data = new FreightTourData(event.getLinkId().toString(), event.getTime());
             this.currentTours.put(event.getPersonId(), data);
@@ -121,7 +121,7 @@ public class FreightTourStatsListener implements ActivityEndEventHandler, Activi
         BufferedWriter writer = IOUtils.getBufferedWriter(dir + "FreightTourStats_it" + event.getIteration() + ".csv");
         try {
             int i = 1;
-            writer.write("index;departureTime;travelledDistance;emptyDistance;travelledTime;depotLink");
+            writer.write("index;departureTime;travelledDistance;emptyDistance;tourDuration;depotLink");
             writer.newLine();
 
             for (FreightTourData data : this.allTours) {

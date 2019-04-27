@@ -48,26 +48,27 @@ import java.util.Map;
 
 public class OverallTravelTimeAndDistanceListener implements PersonDepartureEventHandler, PersonArrivalEventHandler, LinkEnterEventHandler, IterationEndsListener {
 
-    double taxiTravelTime = 0.;
-    double taxiTravelDistance = 0.;
+    private double taxiTravelTime = 0.;
+    private double taxiTravelDistance = 0.;
 
-    double emptyPFAVTravelTime = 0.;
-    double emptyPFAVTravelDistance = 0.;
+    private double emptyPFAVTravelTime = 0.;
+    private double emptyPFAVTravelDistance = 0.;
 
-    double freightTravelTime = 0.;
-    double freightTravelDistance = 0.;
+    private double freightTravelTime = 0.;
+    private double freightTravelDistance = 0.;
 
-    double otherTravelTime = 0.;
-    double otherTravelDistance = 0.;
+    private double otherTravelTime = 0.;
+    private double otherTravelDistance = 0.;
 
-    double sumPickupTime = 0;
-    double sumDropOffTime = 0;
-    List<String> vehiclesWithPassengers = new ArrayList<>();
+    private double sumPickupTime = 0;
+    private double sumDropOffTime = 0;
+    private List<String> vehiclesWithPassengers = new ArrayList<>();
+    private List<String> vehicleThatPassengerWaitFor;
     private Map<Id<Person>, Double> taxiDepartureTimes = new HashMap<>();
-    ;
+
     private HashMap<Id<Person>, Double> emptyPFAVDepartureTimes = new HashMap<>();
     private HashMap<Id<Person>, Double> freightDepartureTimes = new HashMap<>();
-    ;
+
     private Network network;
     private HashMap<Id<Person>, Double> otherDepartureTimes = new HashMap<>();
 
@@ -100,8 +101,13 @@ public class OverallTravelTimeAndDistanceListener implements PersonDepartureEven
     public void handleEvent(PersonDepartureEvent event) {
         if (event.getLegMode().equals("taxi")) {
             this.taxiDepartureTimes.put(event.getPersonId(), event.getTime());
-            this.vehiclesWithPassengers.add(PFAVUtils.generatePFAVIdFromPersonId(event.getPersonId()).toString());
-            this.sumPickupTime += 120;
+            String pfavID = PFAVUtils.generatePFAVIdFromPersonId(event.getPersonId()).toString();
+            if (this.emptyPFAVDepartureTimes.containsKey(pfavID)) {
+                this.vehicleThatPassengerWaitFor.add(pfavID);
+            } else {
+                this.vehiclesWithPassengers.add(pfavID);
+            }
+            this.sumPickupTime += 60;
         } else if (event.getLegMode().equals("car")) {
             String person = event.getPersonId().toString();
             if (!event.getPersonId().toString().contains("tr")) {
@@ -126,7 +132,7 @@ public class OverallTravelTimeAndDistanceListener implements PersonDepartureEven
             if (!this.vehiclesWithPassengers.remove(PFAVUtils.generatePFAVIdFromPersonId(event.getPersonId()).toString())) {
                 throw new IllegalStateException();
             }
-            ;
+
         } else if (this.emptyPFAVDepartureTimes.containsKey(event.getPersonId())) {
             this.emptyPFAVTravelTime += event.getTime() - this.emptyPFAVDepartureTimes.remove(event.getPersonId());
         } else if (this.freightDepartureTimes.containsKey(event.getPersonId())) {

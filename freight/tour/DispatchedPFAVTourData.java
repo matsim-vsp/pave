@@ -53,6 +53,7 @@ public class DispatchedPFAVTourData {
     private int actualServedCapacityDemand = Integer.MIN_VALUE;
 
     private double totalServiceDelay = 0;
+    private double waitTimeAtDepot = 0;
 
     private DispatchedPFAVTourData(DispatchedPFAVTourData.Builder builder) {
         this.vehicleId = Objects.requireNonNull(builder.vehicleId);
@@ -86,7 +87,7 @@ public class DispatchedPFAVTourData {
         }
     }
 
-    public void addToActualServedCapacityDemand(int actualServedCapacityDemandToAdd) {
+    void addToActualServedCapacityDemand(int actualServedCapacityDemandToAdd) {
         if (this.actualServedCapacityDemand == Integer.MIN_VALUE) this.actualServedCapacityDemand = actualServedCapacityDemandToAdd;
         else this.actualServedCapacityDemand += actualServedCapacityDemandToAdd;
     }
@@ -110,6 +111,14 @@ public class DispatchedPFAVTourData {
 
     public void setActualTourDuration(double actualTourDuration) {
         this.actualTourDuration = actualTourDuration;
+    }
+
+    public int getAmountOfServicesPlanned() {
+        int services = 0;
+        for (StayTask t : this.tourData.getTourTasks()) {
+            if (t instanceof PFAVServiceTask) services++;
+        }
+        return services;
     }
 
     public double getActualTourLength() {
@@ -176,9 +185,14 @@ public class DispatchedPFAVTourData {
         return amountOfServicesHandled;
     }
 
-    public int getAmountOfServicesPlanned() {
-        return this.tourData.getTourTasks().size() - 2;
+    public double getWaitTimeAtDepot() {
+        return this.waitTimeAtDepot;
     }
+
+    public void setWaitTimeAtDepot(double v) {
+        this.waitTimeAtDepot = v;
+    }
+
 
     public static final class Builder {
         private Id<DvrpVehicle> vehicleId;

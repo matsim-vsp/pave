@@ -147,7 +147,7 @@ public class RunChessboardScenario {
 
             Activity work = factory.createActivityFromLinkId("work", workLinkId);
             work.setStartTime(6 * 3600);
-            work.setEndTime(12 * 3600);
+            work.setEndTime(16 * 3600);
             plan.addActivity(work);
 
             leg = factory.createLeg("taxi");
@@ -228,7 +228,7 @@ public class RunChessboardScenario {
 
             Activity work = factory.createActivityFromLinkId("work", workLinkId);
             work.setStartTime(6 * 3600);
-            work.setEndTime(12 * 3600);
+            work.setEndTime(16 * 3600);
             plan.addActivity(work);
 
             leg = factory.createLeg("taxi");

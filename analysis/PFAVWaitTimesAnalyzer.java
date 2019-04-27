@@ -21,17 +21,18 @@
 package analysis;
 
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.events.PersonEntersVehicleEvent;
-import org.matsim.api.core.v01.events.handler.PersonEntersVehicleEventHandler;
+import org.matsim.api.core.v01.events.ActivityStartEvent;
+import org.matsim.api.core.v01.events.handler.ActivityStartEventHandler;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.utils.io.IOUtils;
-import org.matsim.vehicles.Vehicle;
 import privateAV.events.PFAVEventsReader;
 import privateAV.events.PFAVOwnerWaitsForVehicleEvent;
+import privateAV.vrpagent.PFAVActionCreator;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -40,9 +41,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class PFAVWaitTimesAnalyzer implements PFAVWaitTimesListener, PersonEntersVehicleEventHandler, IterationEndsListener {
+public class PFAVWaitTimesAnalyzer implements PFAVWaitTimesListener, ActivityStartEventHandler, IterationEndsListener {
 
-    private Map<Id<Person>, Double> waitingOwners = new HashMap<>();
+    private Map<Id<Person>, WaitTimeData> waitingOwners = new HashMap<>();
     private Set<WaitTimeData> dataSet = new HashSet<>();
 
 
@@ -70,21 +71,22 @@ public class PFAVWaitTimesAnalyzer implements PFAVWaitTimesListener, PersonEnter
 
     @Override
     public void handleEvent(PFAVOwnerWaitsForVehicleEvent event) {
-        System.out.println("holla holla");
-
         if (this.waitingOwners.containsKey(event.getOwner())) {
             throw new IllegalStateException("owner " + event.getOwner() + " triggers two wait events without being picked up in the meantime." +
                     " second waiting event time=" + event.getTime());
         }
-        this.waitingOwners.put(event.getOwner(), event.getTime());
+        WaitTimeData data = new WaitTimeData(event.getOwner(), event.getVehicleId(), event.getTime());
+        this.waitingOwners.put(event.getOwner(), data);
     }
 
     @Override
-    public void handleEvent(PersonEntersVehicleEvent event) {
-        if (this.waitingOwners.containsKey(event.getPersonId())) {
-            double start = this.waitingOwners.remove(event.getPersonId());
-            WaitTimeData data = new WaitTimeData(event.getPersonId(), event.getVehicleId(), start, event.getTime());
-            this.dataSet.add(data);
+    public void handleEvent(ActivityStartEvent event) {
+        if (event.getActType().equals(PFAVActionCreator.PICKUP_ACTIVITY_TYPE)) {
+            if (this.waitingOwners.containsKey(event.getPersonId())) {
+                WaitTimeData data = this.waitingOwners.remove(event.getPersonId());
+                data.setEndTime(event.getTime());
+                this.dataSet.add(data);
+            }
         }
     }
 
@@ -127,17 +129,20 @@ public class PFAVWaitTimesAnalyzer implements PFAVWaitTimesListener, PersonEnter
         double begin;
         double end;
         Id<Person> personId;
-        Id<Vehicle> vehicleId;
+        Id<DvrpVehicle> vehicleId;
 
-        WaitTimeData(Id<Person> personId, Id<Vehicle> vehicleId, double start, double end) {
+        WaitTimeData(Id<Person> personId, Id<DvrpVehicle> vehicleId, double start) {
             this.begin = start;
-            this.end = end;
             this.personId = personId;
             this.vehicleId = vehicleId;
         }
 
         double getWaitingTime() {
             return this.end - this.begin;
+        }
+
+        public void setEndTime(double time) {
+            this.end = time;
         }
     }
 
