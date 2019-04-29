@@ -94,7 +94,7 @@ public class RunNormalFreightInBerlin {
             increaseCapacities = false;
         }
 
-        RunBerlinScenario berlin = new RunBerlinScenario(configPath, null);
+        RunBerlinScenario berlin = new RunBerlinScenario(configPath);
         Config config = berlin.prepareConfig();
         TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
 
