@@ -155,33 +155,6 @@ public class OverallTravelTimeAndDistanceListener implements PersonDepartureEven
         }
     }
 
-    /**
-     * Gives the event handler the possibility to clean up its internal state.
-     * Within a Controler-Simulation, this is called before the mobsim starts.
-     *
-     * @param iteration the up-coming iteration from which up-coming events will be from.
-     */
-    @Override
-    public void reset(int iteration) {
-        this.totalPFAVOwnerTravelTime = 0.;
-        this.totalPFAVOwnerWaitingTime = 0;
-
-        this.PFAVehicleTravelTimeWithPassenger = 0.;
-        this.PFAVehicleTravelDistanceWithPassenger = 0;
-
-        this.PFAVehicleTravelTimeWithOutPassenger = 0.;
-        this.PFAVehicleTravelDistanceWithOutPassenger = 0.;
-
-        this.freightTravelTime = 0.;
-        this.freightTravelDistance = 0.;
-
-        this.otherTravelTime = 0.;
-        this.otherTravelDistance = 0.;
-
-        this.sumPickupTime = 0;
-        this.sumDropOffTime = 0;
-    }
-
     @Override
     public void handleEvent(LinkEnterEvent event) {
         String vehID = event.getVehicleId().toString();
@@ -201,7 +174,6 @@ public class OverallTravelTimeAndDistanceListener implements PersonDepartureEven
 
         }
     }
-
 
     /**
      * Notifies all observers of the Controler that a iteration is finished
@@ -236,4 +208,33 @@ public class OverallTravelTimeAndDistanceListener implements PersonDepartureEven
             e.printStackTrace();
         }
     }
+
+
+    /**
+     * Gives the event handler the possibility to clean up its internal state.
+     * Within a Controler-Simulation, this is called before the mobsim starts.
+     *
+     * @param iteration the up-coming iteration from which up-coming events will be from.
+     */
+    @Override
+    public void reset(int iteration) {
+        this.totalPFAVOwnerTravelTime = 0.;
+        this.totalPFAVOwnerWaitingTime = 0;
+
+        this.PFAVehicleTravelTimeWithPassenger = 0.;
+        this.PFAVehicleTravelDistanceWithPassenger = 0;
+
+        this.PFAVehicleTravelTimeWithOutPassenger = 0.;
+        this.PFAVehicleTravelDistanceWithOutPassenger = 0.;
+
+        this.freightTravelTime = 0.;
+        this.freightTravelDistance = 0.;
+
+        this.otherTravelTime = 0.;
+        this.otherTravelDistance = 0.;
+
+        this.sumPickupTime = 0;
+        this.sumDropOffTime = 0;
+    }
+
 }

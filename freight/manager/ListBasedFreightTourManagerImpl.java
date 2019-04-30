@@ -182,7 +182,9 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
 
 		PFAVTourData matchingFreightTour = null;
         for (Link depot : nearestDepots) {
-            log.info("size of depot to list: " + this.depotToFreightTour.get(depot).size());
+            log.info("size of depot todo list: " + this.depotToFreightTour.get(depot).size());
+            if (this.depotToFreightTour.get(depot).isEmpty())
+                continue;                                            //only go on if there is a tour left at depot
 			Iterator<PFAVTourData> freightTourIterator = this.depotToFreightTour.get(depot).iterator();
 			VrpPathWithTravelData pathFromCurrTaskToDepot = calcPathToDepot(vehicle, depot, router);
 			if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.MAX_BEELINE_DISTANCE_TO_DEPOT    // MAX BEELINE DISTANCE TO DEPOT
