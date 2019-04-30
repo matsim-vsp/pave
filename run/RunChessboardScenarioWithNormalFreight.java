@@ -18,7 +18,7 @@
 
 package run;
 
-import analysis.FreightTourStatsListener;
+import analysis.BaseCaseFreightTourStatsListener;
 import analysis.OverallTravelTimeAndDistanceListener;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -148,7 +148,7 @@ public class RunChessboardScenarioWithNormalFreight {
         controler.addOverridingModule(carrierController);
         prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, carriers);
 
-        FreightTourStatsListener analyser = new FreightTourStatsListener(scenario.getNetwork());
+        BaseCaseFreightTourStatsListener analyser = new BaseCaseFreightTourStatsListener(scenario.getNetwork(), carriers);
         OverallTravelTimeAndDistanceListener generalListener = new OverallTravelTimeAndDistanceListener(scenario.getNetwork());
         controler.addOverridingModule(new AbstractModule() {
             @Override

@@ -20,7 +20,7 @@
 
 package run;
 
-import analysis.FreightTourStatsListener;
+import analysis.BaseCaseFreightTourStatsListener;
 import analysis.OverallTravelTimeAndDistanceListener;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
@@ -173,7 +173,7 @@ public class RunNormalFreightInBerlin {
         controler.addOverridingModule(carrierController);
         prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, carriers);
 
-        FreightTourStatsListener analyser = new FreightTourStatsListener(scenario.getNetwork());
+        BaseCaseFreightTourStatsListener analyser = new BaseCaseFreightTourStatsListener(scenario.getNetwork(), carriers);
         OverallTravelTimeAndDistanceListener generalListener = new OverallTravelTimeAndDistanceListener(scenario.getNetwork());
         controler.addOverridingModule(new AbstractModule() {
             @Override
