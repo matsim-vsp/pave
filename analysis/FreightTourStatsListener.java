@@ -101,6 +101,7 @@ public class FreightTourStatsListener implements ActivityEndEventHandler, Activi
     @Override
     public void handleEvent(ActivityStartEvent event) {
         if (event.getActType().equals("end")) {
+            event.getPersonId();
             if (this.departureTimes.containsKey(event.getPersonId())) {
                 FreightTourData data = this.currentTours.remove(event.getPersonId());
                 data.time = event.getTime() - departureTimes.remove(event.getPersonId());
@@ -118,7 +119,11 @@ public class FreightTourStatsListener implements ActivityEndEventHandler, Activi
     @Override
     public void notifyIterationEnds(IterationEndsEvent event) {
         String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/";
-        BufferedWriter writer = IOUtils.getBufferedWriter(dir + "FreightTourStats_it" + event.getIteration() + ".csv");
+        writeStats(dir + "FreightTourStats_it" + event.getIteration() + ".csv");
+    }
+
+    public void writeStats(String file) {
+        BufferedWriter writer = IOUtils.getBufferedWriter(file);
         try {
             int i = 1;
             writer.write("index;departureTime;travelledDistance;emptyDistance;tourDuration;depotLink");

@@ -119,10 +119,11 @@ public final class PFAVUtils {
 	/**
 	 * defines the number of depots which are considered for the dispatch of a freight tour to a PFAV. in the dispatch algorithm, the closest
 	 * AMOUNT_OF_DEPOTS_TO_CONSIDER to the PFAV'S request location are searched, based on beeline distance.
+     *
+     * if you only look at one depot out of a bigger set of depot, you should set this value to 1 and set ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS true
 	 */
 
-	//for the current Open-Berlin-Scenario, we only look at one depot! to avoid having PFAV's seving that depot, which would normally serve another one,
-//			this parameter is set to 1. for other cases, e.g. a look on whole berlin, set this somewhat higher (2 or 3 might be a good start)
+
     public static final int AMOUNT_OF_DEPOTS_TO_CONSIDER = 3;
 
     /**

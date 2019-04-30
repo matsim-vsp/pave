@@ -45,11 +45,12 @@ public class CarrierTourDauerAnalysis {
     }
 
     public static void main(String[] args) {
-        String input = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Truck/ITERS/it.0/0.carrierPlans.xml";
-        String output = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Truck/ITERS/it.0/carriers_it0_stats.csv";
+        String input = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Transporter/ITERS/it.0/carriers_it0.xml";
+        String output = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Transporter/ITERS/it.0/carriers_it0_stats.csv";
 
         new CarrierTourDauerAnalysis(input).writeStats(output);
         System.out.println("Done");
+
     }
 
 
