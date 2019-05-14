@@ -79,7 +79,7 @@ public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler
     }
 
     public static void main(String[] args) {
-        String dir = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Truck/";
+        String dir = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Pkw/";
         String input = dir + "berlin-v5.3-1pct.output_events.xml.gz";
         String carriersFile = dir + "output_carriers.xml";
         final Carriers carriers = new Carriers();
