@@ -78,6 +78,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.eclipse.emf/ecore -->
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>ecore</artifactId>
+			<version>2.3.0-v200706262000</version>
+		</dependency>
+
 		<!--<dependency>-->
 			<!--&lt;!&ndash; OVGU Algorithms &ndash;&gt;-->
 			<!--<groupId>com.github.RicosHub</groupId>-->
