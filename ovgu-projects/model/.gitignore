@@ -1,0 +1,8 @@
+/.settings/
+/META-INF/
+/target/
+/.classpath
+/.project
+/build.properties
+/plugin.properties
+/plugin.xml

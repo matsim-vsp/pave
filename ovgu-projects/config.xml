@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ASCII"?>
+<con:Config xmlns:con="ovgu.pave.config" inputFolder="../resources/input" inputFilename="inputDARP.zip" configPath="../config.xml">
+  <shortestPath use="graphhopper">
+    <graphhopper osmFilePath="../resources/graphhopper/Berlin100320192115.osm.pbf" graphFolder="../resources/graphhopper/data" weighting="fastest" vehicleType="car"/>
+  </shortestPath>
+  <experiment problem="OFFLINE" numberOfRequests="800" numberOfVehicles="50" serviceDuration="1" maxDelayValue="20" startSequence="1" numberOfInsideIterations="101" outputFolder="../resources/output" numberOfOutsideIterations="1" vehicleCapacity="6"/>
+  <algorithm algorithm="ALNS" randomSeet="99">
+    <lns penaltyTerm="6000000" temperatureControlParameter="0.05" coolingRate="0.99975" minSmallRequestSet="0.2" maxLargeRequestSet="60" maxSmallRequestSet="0.4" minLargeRequestSet="30" maxIterations="25000" maxCalculationTime="9223372036854775807" shawDistanceWeight="1.0" shawBeginWeight="6.0" maxWithoutImprovement="5000">
+      <insertionHeuristics heuristicName="REGRET1"/>
+      <insertionHeuristics heuristicName="REGRET2"/>
+      <insertionHeuristics heuristicName="REGRET2NOISE" noise="4"/>
+      <removalHeuristics heuristicName="RANDOMREMOVAL"/>
+      <removalHeuristics heuristicName="WORSTREMOVAL" noise="4"/>
+      <removalHeuristics heuristicName="SHAWREMOVAL"/>
+      <rws Case1="33" Case2="9" Case3="13" lastScoreInfluence="0.9"/>
+    </lns>
+  </algorithm>
+</con:Config>
