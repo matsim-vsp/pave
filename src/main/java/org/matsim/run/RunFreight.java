@@ -18,12 +18,13 @@
 
 package org.matsim.run;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.*;
-
 import com.graphhopper.jsprit.analysis.toolbox.Plotter;
-import com.graphhopper.jsprit.core.problem.solution.route.VehicleRoute;
+import com.graphhopper.jsprit.core.algorithm.VehicleRoutingAlgorithm;
+import com.graphhopper.jsprit.core.algorithm.box.SchrimpfFactory;
+import com.graphhopper.jsprit.core.problem.VehicleRoutingProblem;
+import com.graphhopper.jsprit.core.problem.solution.VehicleRoutingProblemSolution;
+import com.graphhopper.jsprit.core.util.Solutions;
+import com.graphhopper.jsprit.io.problem.VrpXMLWriter;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
@@ -35,8 +36,8 @@ import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
 import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
-import org.matsim.contrib.freight.jsprit.NetworkRouter;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts.Builder;
+import org.matsim.contrib.freight.jsprit.NetworkRouter;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
@@ -54,21 +55,19 @@ import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
+import org.matsim.vehicles.EngineInformation.FuelType;
 import org.matsim.vehicles.EngineInformationImpl;
 import org.matsim.vehicles.VehicleType;
-import org.matsim.vehicles.EngineInformation.FuelType;
+import ovgu.pave.model.solution.RouteElement;
 
-import com.graphhopper.jsprit.core.algorithm.VehicleRoutingAlgorithm;
-import com.graphhopper.jsprit.core.algorithm.box.SchrimpfFactory;
-import com.graphhopper.jsprit.core.problem.VehicleRoutingProblem;
-import com.graphhopper.jsprit.core.problem.solution.VehicleRoutingProblemSolution;
-import com.graphhopper.jsprit.core.util.Solutions;
-import com.graphhopper.jsprit.io.problem.VrpXMLWriter;
-import ovgu.data.entity.RouteElement;
-import ovgu.utilities.DistanceMatrix;
-import ovgu.utilities.RouteHandler;
-import ovgu.utilities.Settings;
-import ovgu.vrptw.vrpSolver;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
+//import ovgu.data.entity.RouteElement;
+//import ovgu.utilities.DistanceMatrix;
+//import ovgu.utilities.RouteHandler;
+//import ovgu.utilities.Settings;
+//import ovgu.vrptw.vrpSolver;
 
 class RunFreight {
 	/*
