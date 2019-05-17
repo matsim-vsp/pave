@@ -84,7 +84,7 @@ class MatsimOvguFactory{
 	 */
 	public static ScheduledTour createTour(ArrayList<RouteElement> solution) {
 		for (RouteElement routeElement : solution) {
-			route = routeElement.getRoute()
+			route = routeElement.getRoute();
 		}
 		assert route.getDepartureTime() == route.getStart().getEndTime() : "at this point route.getDepartureTime and route.getStart().getEndTime() must be equal";
 		TourActivities tour = route.getTourActivities();
@@ -320,9 +320,9 @@ class MatsimOvguFactory{
 		if(carrierVehicleType == null) throw new IllegalStateException("carrierVehicleType is null");
 		VehicleTypeImpl.Builder typeBuilder = VehicleTypeImpl.Builder.newInstance(carrierVehicleType.getId().toString());
 		typeBuilder.addCapacityDimension(0, carrierVehicleType.getCarrierVehicleCapacity());
-		typeBuilder.setCostPerDistance(carrierVehicleType.getVehicleCostInformation().perDistanceUnit);
-		typeBuilder.setCostPerTransportTime(carrierVehicleType.getVehicleCostInformation().perTimeUnit);
-		typeBuilder.setFixedCost(carrierVehicleType.getVehicleCostInformation().fix);
+		typeBuilder.setCostPerDistance(carrierVehicleType.getVehicleCostInformation().getPerDistanceUnit());
+		typeBuilder.setCostPerTransportTime(carrierVehicleType.getVehicleCostInformation().getPerTimeUnit());
+		typeBuilder.setFixedCost(carrierVehicleType.getVehicleCostInformation().getFix());
 		typeBuilder.setMaxVelocity(carrierVehicleType.getMaximumVelocity());
 		return typeBuilder.build();
 	}
