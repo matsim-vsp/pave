@@ -58,6 +58,13 @@ import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.matsim.vehicles.EngineInformation.FuelType;
 import org.matsim.vehicles.EngineInformationImpl;
 import org.matsim.vehicles.VehicleType;
+import ovgu.pave.handler.Handler;
+import ovgu.pave.handler.modelHandler.InputHandler;
+import ovgu.pave.model.input.Edge;
+import ovgu.pave.model.input.Location;
+import ovgu.pave.model.input.Request;
+import ovgu.pave.model.input.Vehicle;
+import ovgu.pave.model.input.impl.LocationImpl;
 import ovgu.pave.model.solution.RouteElement;
 
 import java.io.IOException;
@@ -170,22 +177,22 @@ class RunFreight {
 
 				for ( Carrier carrier : carriers.getCarriers().values() ){
 
-					List<Id<Link>> locations = new ArrayList<>() ;
+					List<Id<Link>> locationsMATSim = new ArrayList<>() ;
 					// yy todo make above a list of links, not a list of linkIDs
 
-					locations.add( depotLinkId ) ;
+					locationsMATSim.add( depotLinkId ) ;
 					for( CarrierService service : carrier.getServices() ){
-						locations.add( service.getLocationLinkId() ) ;
+						locationsMATSim.add( service.getLocationLinkId() ) ;
 					}
 					for( CarrierShipment shipment : carrier.getShipments() ){
-						locations.add( shipment.getFrom() ) ;
-						locations.add( shipment.getTo() ) ;
+						locationsMATSim.add( shipment.getFrom() ) ;
+						locationsMATSim.add( shipment.getTo() ) ;
 					}
 
-					float [][] matrix = new float[locations.size()][locations.size()] ;
+					float [][] matrix = new float[locationsMATSim.size()][locationsMATSim.size()] ;
 
 					List<Id<Link>> list = new ArrayList<>() ;
-					for( Id<Link> linkId : locations ){
+					for( Id<Link> linkId : locationsMATSim ){
 						list.add(linkId) ;
 					}
 					Collections.sort( list ) ;
@@ -193,14 +200,14 @@ class RunFreight {
 					TravelTime tt = new FreeSpeedTravelTime();
 					TravelDisutility tc = new FreespeedTravelTimeAndDisutility( config.planCalcScore() );
 					LeastCostPathTree tree = new LeastCostPathTree( tt, tc );
-					for( Id<Link> startLinkId : locations ){
+					for( Id<Link> startLinkId : locationsMATSim ){
 						Node originNode = network.getLinks().get( startLinkId ).getToNode() ;
 						double time = 8. * 3600.;
 						tree.calculate( scenario.getNetwork(), originNode, time );
 						int startIndex = Collections.binarySearch( list, startLinkId ) ;
 						Gbl.assertIf( startIndex>=0 );
 						Map<Id<Node>, LeastCostPathTree.NodeData> result = tree.getTree();
-						for( Id<Link> destLinkId : locations ){
+						for( Id<Link> destLinkId : locationsMATSim ){
 							Node destNode = network.getLinks().get( destLinkId ).getFromNode() ;
 							LeastCostPathTree.NodeData abc = result.get( destNode.getId() );
 							int destIndex = Collections.binarySearch( list, destLinkId ) ;
@@ -209,10 +216,88 @@ class RunFreight {
 						}
 					}
 
-					DistanceMatrix mtx = new DistanceMatrix();
-					mtx.setDistanceMatrix( matrix );
-					vrpSolver vrpSolver = new vrpSolver( mtx ) ;
+					// Erstelle eine Umwandlungstabelle, da OVGU integer als Id benötigt
+					HashMap<Id<Link>, Integer> locationsTransformator = new HashMap<Id<Link>, Integer>();
+					for (Id<Link> startLinkId : locationsMATSim) {
+						locationsTransformator.put(startLinkId, locationsTransformator.size()+1);
+					}
 
+					//Erstelle locations für OVGU
+					List<Location> locations = new ArrayList<Location>();
+					for( Id<Link> startLinkId : locationsMATSim ) {
+						locations.add(InputHandler.createLocation(locationsTransformator.get(startLinkId), network.getLinks().get(startLinkId).getCoord().getX(), network.getLinks().get(startLinkId).getCoord().getX()));
+					}
+
+					List<List<Long>> mtx = null;
+
+					Handler.getNetwork().initNetwork(Handler.getInput().getLocations());
+
+					//TODO: Matrix korrekt umwandeln. kmt, Mai 19
+					for (int x = 0; x < mtx.size(); x++) {
+						for (int y = 0; y < mtx.size(); y++) {
+							if (Handler.getNetwork().getEdges()[x][y] == null)
+								System.out.println("NEIN: "+  x + " " + y );
+							if (mtx.get(x).get(y) == null)
+								System.out.println("JA: " + x+ " "+y );
+							Handler.getNetwork().getEdges()[x][y].setDuration(mtx.get(x).get(y));
+							Handler.getInput().addEdge(Handler.getNetwork().getEdges()[x][y]);
+						}
+					}
+
+//					DistanceMatrix mtx = new DistanceMatrix();
+//					mtx.setDistanceMatrix( matrix );
+//					vrpSolver vrpSolver = new vrpSolver( mtx ) ;
+
+					//Erstelle Fahrzeugtyp -> bisher nur eigenschaft Kapzität.
+					List<ovgu.pave.model.input.VehicleType> vehicleTypesOvgu = new ArrayList<ovgu.pave.model.input.VehicleType>();
+
+					// Erstelle eine Umwandlungstabelle, da OVGU integer als Id benötigt
+					HashMap<Id<VehicleType>, Integer> vehicleTypeTransformator = new HashMap<Id<VehicleType>, Integer>();
+					for (CarrierVehicleType vehicleType : carrier.getCarrierCapabilities().getVehicleTypes()) {
+						vehicleTypeTransformator.put(vehicleType.getId(), locationsTransformator.size()+1);
+					}
+
+					//alle vehicleTypes erstellen
+					for (Id<VehicleType> id : vehicleTypeTransformator.keySet()){
+						vehicleTypesOvgu.add(InputHandler.createVehicleType(vehicleTypeTransformator.get(id), vehicleTypes.getVehicleTypes().get(id).getCarrierVehicleCapacity());
+					}
+
+
+					List<Vehicle> vehicles = new ArrayList<Vehicle>();
+					//TODO: BISHER einfach nur die erste Location -> noch auf Depot definieren.
+					//TODO: Anzahl der Fahrzeuge bisher unklar und muss explizit erstellt werden.
+					vehicles.add(InputHandler.createVehicle(1, vehicleTypesOvgu.get(0), locations.get(0), locations.get(0)));
+
+
+					// Erstelle eine Umwandlungstabelle, da OVGU integer als Id benötigt
+					HashMap<Id<CarrierService>, Integer> serviceTransformator = new HashMap<Id<CarrierService>, Integer>();
+					for (CarrierService service : carrier.getServices()) {
+						serviceTransformator.put(service.getId(), serviceTransformator.size()+1);
+					}
+
+					List<Request> requests = new ArrayList<Request>();
+					for (Id<CarrierService> serviceId : serviceTransformator.keySet()) {
+
+						Location originLocation = locations.get(0);
+						Location destinationLocation = locations.get(0); //TODO Setze sie Richtig durch Abfrage
+						int i = 2; 									 	//TODO Setze sie Richtig durch Abfrage
+						Request request = InputHandler.createRequest(serviceTransformator.get(serviceId), originLocation, destinationLocation, i));
+						request.setReceivingTime(99);										//TODO Setze sie Richtig durch Abfrage
+						request.getOriginActivity().setEarliestArrival(999);				//TODO Setze sie Richtig durch Abfrage
+						request.getOriginActivity().setServiceDuration(9);					//TODO Setze sie Richtig durch Abfrage
+						request.getOriginActivity().setLatestArrival(99999);				//TODO Setze sie Richtig durch Abfrage
+						request.getDestinationActivity().setEarliestArrival(111);			//TODO Setze sie Richtig durch Abfrage
+						request.getDestinationActivity().setServiceDuration(1);				//TODO Setze sie Richtig durch Abfrage
+						request.getDestinationActivity().setLatestArrival(11111);			//TODO Setze sie Richtig durch Abfrage
+						requests.add(request);
+					}
+
+					//TODO: noch erstellen
+					List<Edge> edges = new ArrayList<Edge>();
+
+
+					//War bisher als Umsetzungsidee drin. Bleibt noch zum nachlesen hier, allerings auskommentiert
+					/*
 
 					ArrayList<RouteElement> currentRequests = new ArrayList<>(  ) ;
 					for( CarrierService service : carrier.getServices() ){
@@ -225,6 +310,7 @@ class RunFreight {
 						// yyyyyy there is some material missing here.
 						currentRequests.add(re) ;
 					}
+					*/
 
 
 					ArrayList<ArrayList<RouteElement>> finalRoutes = null;
