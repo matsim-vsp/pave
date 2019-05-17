@@ -114,7 +114,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 					if (vehicle instanceof PFAVehicle) {
 						requestFreightTour(vehicle, false);
 					} else {
-						//in future, there could be usecases where we have both, DvrpVehicles (supertype) and PFAVehicles, so we would not throw an axception here and just keep going
+						//in future, there could be usecases where we have both, DvrpVehicles (supertype) and PFAVehicles, so we would not throw an exception here and just keep going
 						throw new RuntimeException("currently, all DvrpVehicles should be of type PFAVehicle");
 					}
 				} else if (currentTask instanceof PFAVServiceTask
@@ -124,10 +124,10 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 					if (!requestedVehicles.keySet().contains(vehicle.getId())) {
 						requestFreightTour(vehicle, true);
 					}
-				} else if (currentTask instanceof PFAVRetoolTask && Schedules.getNextTask(schedule) instanceof TaxiStayTask) {
+				} else if (currentTask instanceof PFAVRetoolTask && Schedules.getNextTask(schedule) instanceof TaxiEmptyDriveTask) {
 					//we are at the end of a freight tour (otherwise next task would be instanceof PFAVServiceDriveTask
 
-//					if we ever use this with shared AV's, we should mark the end of the freight tour HERE already.
+//					if we ever use this with shared AV's, we should mark the end of the freight tour HERE already (FreightTourCompletedEvent).
 					//	scheduleDriveToOwner(vehicle, schedule, (PFAVRetoolTask) currentTask);
 				}
 				break;
@@ -235,15 +235,13 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 		double returnDistance = getDistanceOfPathForAnalysis(returnDriveTask.getPath());
 		emptyMeters += returnDistance;
 		totalDistance += returnDistance;
+
+		//append stay task
 		appendStayTask(vehicle);
 
 		//mark this vehicle's state as "on freight tour"
 		this.vehiclesOnFreightTour.add(vehicle);
 		log.info("vehicle " + vehicle.getId() + " got assigned to a freight schedule");
-		double tourDuration = returnDriveTask.getEndTime() - schedule.getCurrentTask().getEndTime();
-
-		//the following is only for analysis
-//		tourData.setPlannedTourDuration(tourDuration);
 
 		DispatchedPFAVTourData dispatchData = DispatchedPFAVTourData.newBuilder()
 				.vehicleId(vehicle.getId())
@@ -302,7 +300,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 				break;
 			case EMPTY_DRIVE:
 				/*TODO: calling same method 4 times feels dirty - extract method !?
-				 *we cannot use delegate.removeAwaitingRequests cause this method inserts another stay task
+				 *we cannot use delegate.removeAwaitingRequests() because this method inserts another stay task
 				 *
 				 *vehicle requested freight tour after having performed another one
 				 *we have to remove the following awaiting tasks in the schedule
