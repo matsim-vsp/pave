@@ -18,22 +18,21 @@
  * *********************************************************************** */
 package privateAV.optimizer;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.name.Named;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.MapConfiguration;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
-import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.router.util.TravelTime;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.name.Named;
+
 import privateAV.PFAVScheduler;
 
 /**
@@ -68,17 +67,14 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 
 	@Override
 	public TaxiOptimizer get() {
-		Configuration optimizerConfig = new MapConfiguration(taxiCfg.getOptimizerConfigGroup().getParams());
 //		LeastCostPathCalculator router = new DijkstraFactory().createPathCalculator(network, travelDisutility,
 //				travelTime);
 		
 		if(!(scheduler instanceof PFAVScheduler)) {
 			throw new IllegalArgumentException("this OptimizerProvider can only work with a scheduler of type " + PFAVScheduler.class);
 		}
-		
-		
-		return new PFAVOptimizer(taxiCfg, fleet, (PFAVScheduler) scheduler,
-				new RuleBasedTaxiOptimizerParams(optimizerConfig), eventsManager, timer);
+
+		return new PFAVOptimizer(taxiCfg, fleet, (PFAVScheduler)scheduler, eventsManager, timer);
 	}
 	
 }

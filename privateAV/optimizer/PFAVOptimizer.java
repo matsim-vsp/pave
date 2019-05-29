@@ -1,8 +1,5 @@
 package privateAV.optimizer;
 
-import com.google.inject.Inject;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.MapConfiguration;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
@@ -11,13 +8,15 @@ import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.taxi.optimizer.DefaultTaxiOptimizerParams;
 import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
-import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
 import org.matsim.contrib.taxi.passenger.TaxiRequest;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
+
+import com.google.inject.Inject;
+
 import privateAV.PFAVScheduler;
 import privateAV.PFAVUtils;
 import privateAV.events.PFAVOwnerWaitsForVehicleEvent;
@@ -39,10 +38,9 @@ public class PFAVOptimizer implements TaxiOptimizer {
 
 		if(!(scheduler instanceof PFAVScheduler)) {
 			throw new IllegalArgumentException("this OptimizerProvider can only work with a scheduler of type " + PFAVScheduler.class);
-		} 
-		
-		Configuration optimizerConfig = new MapConfiguration(taxiCfg.getOptimizerConfigGroup().getParams());
-		this.params = new RuleBasedTaxiOptimizerParams(optimizerConfig);
+		}
+
+		this.params = taxiCfg.getTaxiOptimizerParams();
 		
 		this.fleet = fleet;
 		this.scheduler = (PFAVScheduler) scheduler;
@@ -52,12 +50,12 @@ public class PFAVOptimizer implements TaxiOptimizer {
 		this.printDetailedWarnings = taxiCfg.isPrintDetailedWarnings();
 	}
 	
-	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, PFAVScheduler scheduler,
-						 DefaultTaxiOptimizerParams params, EventsManager eventsManager, MobsimTimer timer) {
+	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, PFAVScheduler scheduler, EventsManager eventsManager,
+			MobsimTimer timer) {
 		
 		this.fleet = fleet;
 		this.scheduler = scheduler;
-		this.params = params;
+		this.params = taxiCfg.getTaxiOptimizerParams();
 		this.eventsManager = eventsManager;
 		this.timer = timer;
 		

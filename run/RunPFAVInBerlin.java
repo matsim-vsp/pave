@@ -36,11 +36,9 @@ import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
-import org.matsim.contrib.taxi.optimizer.rules.RuleBasedRequestInserter;
 import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
@@ -114,15 +112,7 @@ public class RunPFAVInBerlin {
 
 		taxiCfg.setTimeProfiles(true);  //write out occupancy plot
 
-		ConfigGroup optimizerCfg = new ConfigGroup("optimizer");
-		optimizerCfg.addParam("type", "RULE_BASED");
-		optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.GOAL,
-				RuleBasedRequestInserter.Goal.MIN_WAIT_TIME.toString());
-		optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.NEAREST_REQUESTS_LIMIT, "99999");
-		optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.NEAREST_VEHICLES_LIMIT, "99999");
-		optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.CELL_SIZE,
-				"1000"); //according to RuleBasedTaxiOptimizerParams 1000m was tested for Berlin
-		taxiCfg.setOptimizerConfigGroup(optimizerCfg);
+		taxiCfg.addParameterSet(new RuleBasedTaxiOptimizerParams());
 
 		String mode = taxiCfg.getMode();
 		config.addModule(taxiCfg);

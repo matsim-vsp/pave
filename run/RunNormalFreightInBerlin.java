@@ -40,12 +40,10 @@ import org.matsim.contrib.freight.replanning.CarrierPlanStrategyManagerFactory;
 import org.matsim.contrib.freight.scoring.CarrierScoringFunctionFactory;
 import org.matsim.contrib.freight.usecases.analysis.CarrierScoreStats;
 import org.matsim.contrib.freight.usecases.analysis.LegHistogram;
-import org.matsim.contrib.taxi.optimizer.rules.RuleBasedRequestInserter;
 import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
@@ -120,15 +118,7 @@ public class RunNormalFreightInBerlin {
 
 		taxiCfg.setTimeProfiles(true);
 
-		ConfigGroup optimizerCfg = new ConfigGroup("optimizer");
-		optimizerCfg.addParam("type", "RULE_BASED");
-		optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.GOAL,
-				RuleBasedRequestInserter.Goal.MIN_WAIT_TIME.toString());
-		optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.NEAREST_REQUESTS_LIMIT, "99999");
-		optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.NEAREST_VEHICLES_LIMIT, "99999");
-		optimizerCfg.addParam(RuleBasedTaxiOptimizerParams.CELL_SIZE,
-				"1000"); //according to RuleBasedTaxiOptimizerParams 1000m was tested for Berlin
-		taxiCfg.setOptimizerConfigGroup(optimizerCfg);
+		taxiCfg.addParameterSet(new RuleBasedTaxiOptimizerParams());
 
 		String mode = taxiCfg.getMode();
 		config.addModule(taxiCfg);
