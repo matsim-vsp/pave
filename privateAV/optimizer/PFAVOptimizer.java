@@ -6,7 +6,7 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.schedule.Task;
-import org.matsim.contrib.taxi.optimizer.DefaultTaxiOptimizerParams;
+import org.matsim.contrib.taxi.optimizer.AbstractTaxiOptimizerParams;
 import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
 import org.matsim.contrib.taxi.passenger.TaxiRequest;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
@@ -29,7 +29,7 @@ public class PFAVOptimizer implements TaxiOptimizer {
 
 	private Fleet fleet;
 	private PFAVScheduler scheduler;
-	private DefaultTaxiOptimizerParams params;
+	private AbstractTaxiOptimizerParams params;
 	//TODO: use the setting for log messages
 	private boolean printDetailedWarnings;
 
