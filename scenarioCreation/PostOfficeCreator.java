@@ -58,7 +58,6 @@ public class PostOfficeCreator {
         Network network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile(NET_FILE);
 
-        //i'll keep this car filtering for the first try
         NetworkFilterManager filterCarLinks = new NetworkFilterManager(network);
         filterCarLinks.addLinkFilter(l -> {
             if (l.getAllowedModes().contains(TransportMode.car)) return true;
@@ -105,10 +104,6 @@ public class PostOfficeCreator {
             writer.newLine();
 
             count++;
-//            Charger fastCharger = new ChargerImpl(Id.create(l.getId().toString() + "fast", Charger.class), 120 * EvUnits.W_PER_kW, 10, l, c, "fast");
-//            chargers.add(fastCharger);
-//            Charger truckCharger = new ChargerImpl(Id.create(l.getId().toString() + "truck", Charger.class), 400 * EvUnits.W_PER_kW, 2, l, c, "truck");
-//            chargers.add(truckCharger);
         }
         writer.close();
         NetworkFilterManager filterDepotLinks = new NetworkFilterManager(filteredNet);

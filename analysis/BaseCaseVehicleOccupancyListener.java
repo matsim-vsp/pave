@@ -73,15 +73,16 @@ public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHan
 
         String input = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Truck/berlin-v5.3-1pct.output_events.xml.gz";
         reader.readFile(input);
-        String output = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Truck/vehicleOccupancy.csv";
+        String output = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Truck/vehicleOccupancy2.csv";
         handler.writeStats(output);
     }
 
     @Override
     public void handleEvent(PersonArrivalEvent event) {
 
-        if ((this.population.getPersons().containsKey(event.getPersonId())) &&
-                event.getLegMode().equals("car")) {
+        if ( ( (this.population.getPersons().containsKey(event.getPersonId())) &&
+                event.getLegMode().equals("car"))
+        || event.getPersonId().toString().contains("freight") )  {
             int slot = (int) (event.getTime() / (3600 / nrOfSlotsPerHour));
             this.arrivals[slot]++;
         }
@@ -89,8 +90,9 @@ public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHan
 
     @Override
     public void handleEvent(PersonDepartureEvent event) {
-        if ((this.population.getPersons().containsKey(event.getPersonId())) &&
-                event.getLegMode().equals("car")) {
+        if ( ( (this.population.getPersons().containsKey(event.getPersonId())) &&
+                event.getLegMode().equals("car") )
+            || event.getPersonId().toString().contains("freight") )   {
             int slot = (int) (event.getTime() / (3600 / nrOfSlotsPerHour));
             this.departures[slot]++;
         }

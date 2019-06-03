@@ -288,9 +288,6 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 
 	private void cleanScheduleBeforeInsertingFreightTour(DvrpVehicle vehicle, Schedule schedule) {
-//        StringBuilder scheduleStr = new StringBuilder();
-//        for (Task t : schedule.getTasks()) scheduleStr.append(t.toString()).append("\n");
-//        log.warn("schedule " + schedule.toString() + " before clean up: \n" + scheduleStr.toString());
 
 		switch (((TaxiTask) Schedules.getNextTask(schedule)).getTaxiTaskType()) {
 			case STAY:
@@ -420,7 +417,7 @@ public class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 
 	//	cannot be delegated because we need different new end time calculation than in TaxiScheduler.calcNewEndTime()
-//	maybe we should use inheritance in order to get rid off al these redundant lines....
+//	maybe we should use inheritance in order to get rid of all these redundant lines....
 	public void updateTimeline(DvrpVehicle vehicle) {
 		Schedule schedule = vehicle.getSchedule();
 		if (schedule.getStatus() != ScheduleStatus.STARTED) {

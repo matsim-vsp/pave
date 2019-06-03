@@ -22,6 +22,7 @@ package analysis;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.sun.xml.internal.bind.v2.TODO;
 import freight.tour.DispatchedPFAVTourData;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.ActivityEndEvent;
@@ -74,7 +75,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
 
     @Override
     public void handleEvent(FreightTourRequestDeniedEvent event) {
-
+        // TODO
     }
 
     @Override
