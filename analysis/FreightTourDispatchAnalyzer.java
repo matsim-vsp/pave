@@ -20,10 +20,12 @@
 
 package analysis;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.sun.xml.internal.bind.v2.TODO;
-import freight.tour.DispatchedPFAVTourData;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.ActivityEndEvent;
 import org.matsim.api.core.v01.events.ActivityStartEvent;
@@ -43,12 +45,15 @@ import org.matsim.contrib.util.CompactCSVWriter;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.utils.io.IOUtils;
+
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
+import freight.tour.DispatchedPFAVTourData;
 import privateAV.events.FreightTourCompletedEvent;
 import privateAV.events.FreightTourRequestDeniedEvent;
 import privateAV.events.FreightTourScheduledEvent;
 import privateAV.vrpagent.PFAVActionCreator;
-
-import java.util.*;
 
 /**
  */
