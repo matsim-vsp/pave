@@ -21,8 +21,12 @@
 package analysis;
 
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.events.ActivityEndEvent;
+import org.matsim.api.core.v01.events.ActivityStartEvent;
 import org.matsim.api.core.v01.events.PersonArrivalEvent;
 import org.matsim.api.core.v01.events.PersonDepartureEvent;
+import org.matsim.api.core.v01.events.handler.ActivityEndEventHandler;
+import org.matsim.api.core.v01.events.handler.ActivityStartEventHandler;
 import org.matsim.api.core.v01.events.handler.PersonArrivalEventHandler;
 import org.matsim.api.core.v01.events.handler.PersonDepartureEventHandler;
 import org.matsim.api.core.v01.population.Population;
@@ -33,12 +37,14 @@ import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
+import privateAV.vrpagent.PFAVActionCreator;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 
-public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHandler, PersonArrivalEventHandler {
+public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHandler, PersonArrivalEventHandler,
+        ActivityStartEventHandler, ActivityEndEventHandler {
 
     int totalAmountOfVehicles;
 
@@ -46,12 +52,14 @@ public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHan
     Population population;
     private int[] departures;
     private int[] arrivals;
+    private int[] atService;
 
     public BaseCaseVehicleOccupancyListener(int totalAmountOfVehicles, int nrOfSlotsPerHour, Population pop) {
         this.totalAmountOfVehicles = totalAmountOfVehicles;
         this.nrOfSlotsPerHour = nrOfSlotsPerHour;
         this.departures = new int[36 * nrOfSlotsPerHour + 1];
         this.arrivals = new int[36 * nrOfSlotsPerHour + 1];
+        this.atService = new int[36 * nrOfSlotsPerHour + 1];
         this.population = pop;
     }
 
@@ -73,7 +81,7 @@ public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHan
 
         String input = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Truck/berlin-v5.3-1pct.output_events.xml.gz";
         reader.readFile(input);
-        String output = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Truck/vehicleOccupancy2.csv";
+        String output = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Truck/vehicleOccupancy3.csv";
         handler.writeStats(output);
     }
 
@@ -85,6 +93,25 @@ public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHan
         || event.getPersonId().toString().contains("freight") )  {
             int slot = (int) (event.getTime() / (3600 / nrOfSlotsPerHour));
             this.arrivals[slot]++;
+        }
+    }
+
+    @Override
+    public void handleEvent(ActivityStartEvent event) {
+        if(event.getPersonId().toString().contains("freight")
+            && event.getActType().contains(PFAVActionCreator.SERVICE_ACTIVITY_TYPE)){
+            int slot = (int) (event.getTime() / (3600 / nrOfSlotsPerHour));
+            this.atService[slot] ++;
+        }
+    }
+
+
+    @Override
+    public void handleEvent(ActivityEndEvent event) {
+        if(event.getPersonId().toString().contains("freight")
+                && event.getActType().contains(PFAVActionCreator.SERVICE_ACTIVITY_TYPE)){
+            int slot = (int) (event.getTime() / (3600 / nrOfSlotsPerHour));
+            this.atService[slot] --;
         }
     }
 
@@ -104,16 +131,23 @@ public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHan
         try {
             bw.write("timeSlot;cat;value");
             int currentVehiclesEnRoute = 0;
+            int currentVehiclesAtService = 0;
             for (int i = 0; i < nrOfSlotsPerHour * 36 + 1; i++) {
                 currentVehiclesEnRoute = currentVehiclesEnRoute + departures[i] - arrivals[i];
+                currentVehiclesAtService = currentVehiclesAtService + atService[i];
                 if (currentVehiclesEnRoute < 0) {
                     throw new IllegalStateException("i = " + i +
                             " and departures = " + departures[i] + " and arrivals=" + arrivals[i]);
+                } if( currentVehiclesAtService < 0){
+                    throw new IllegalStateException("i = " + i +
+                            " and atServices = " + atService[i] );
                 }
                 bw.newLine();
                 bw.write("" + i + ";" + "parked;" + (totalAmountOfVehicles - currentVehiclesEnRoute));
                 bw.newLine();
                 bw.write("" + i + ";" + "enRoute;" + currentVehiclesEnRoute);
+                bw.newLine();
+                bw.write("" + i + ";" + "atService;" + currentVehiclesAtService );
             }
 
             bw.flush();
