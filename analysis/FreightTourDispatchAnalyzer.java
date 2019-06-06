@@ -20,12 +20,9 @@
 
 package analysis;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import freight.tour.DispatchedPFAVTourData;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.ActivityEndEvent;
 import org.matsim.api.core.v01.events.ActivityStartEvent;
@@ -42,18 +39,19 @@ import org.matsim.contrib.dvrp.run.QSimScopeObjectListener;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 import org.matsim.contrib.util.CSVLineBuilder;
 import org.matsim.contrib.util.CompactCSVWriter;
+import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
+import org.matsim.core.events.EventsUtils;
+import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.io.IOUtils;
-
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
-import freight.tour.DispatchedPFAVTourData;
 import privateAV.events.FreightTourCompletedEvent;
 import privateAV.events.FreightTourRequestDeniedEvent;
 import privateAV.events.FreightTourScheduledEvent;
+import privateAV.events.PFAVEventsReader;
 import privateAV.vrpagent.PFAVActionCreator;
+
+import java.util.*;
 
 /**
  */
@@ -63,6 +61,8 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
     private Map<Id<DvrpVehicle>, DispatchedPFAVTourData> begunFreightTours = new HashMap<>();
     private Set<DispatchedPFAVTourData> completedFreightTours = new HashSet<>();
     private Map<Id<DvrpVehicle>, Double> waitTimesAtDepot = new HashMap<>();
+
+    private Map<Tuple<Id<DvrpVehicle>,Double>,Double> freeTimesOfPFAVWhenRequestDenied = new HashMap<>();
 
     private Fleet fleet;
 
@@ -80,7 +80,10 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
 
     @Override
     public void handleEvent(FreightTourRequestDeniedEvent event) {
-        // TODO
+        Id<DvrpVehicle> veh = event.getVehicleId();
+        Double dispatchTime = event.getTime();
+        Double mustReturnTime = event.getMustReturnTime();
+        this.freeTimesOfPFAVWhenRequestDenied.put(new Tuple<>(veh,dispatchTime), mustReturnTime - dispatchTime);
     }
 
     @Override
@@ -137,10 +140,15 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
      */
     @Override
     public void notifyIterationEnds(IterationEndsEvent event) {
-        String outDir = event.getServices().getConfig().controler().getOutputDirectory();
-        outDir += "/ITERS/it." + event.getIteration() + "/FreightTourStats_it" + event.getIteration() + ".csv";
+        String dispatchStatsFile = event.getServices().getConfig().controler().getOutputDirectory();
+        String deniedStatsFile = dispatchStatsFile + "/ITERS/it." + event.getIteration() + "/DeniedRequestsStats_it" + event.getIteration() + ".csv";
+        dispatchStatsFile += "/ITERS/it." + event.getIteration() + "/FreightTourStats_it" + event.getIteration() + ".csv";
 
-        writeStats(outDir);
+        String string = "%s";
+        String dbl = "%.1f";
+
+        writeDispatchStats(dispatchStatsFile, string, dbl);
+        writeDeniedStats(deniedStatsFile, dbl);
     }
 
     @Override
@@ -154,16 +162,14 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
         this.fleet = fleet;
     }
 
-    private void writeStats(String file) {
+    private void writeDispatchStats(String file, String string, String dbl) {
         try (CompactCSVWriter writer = new CompactCSVWriter(IOUtils.getBufferedWriter(file), ';')) {
             writeHeader(writer);
-
-            String string = "%s";
-            String dbl = "%.1f";
-
             writeTourData(this.completedFreightTours, writer, string, dbl);
             writeTourData(this.begunFreightTours.values(), writer, string, dbl);
         }
+
+
 
     }
 
@@ -231,5 +237,23 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
             writer.writeNext(lineBuilder);
         }
     }
+
+    private void writeDeniedStats(String file, String dblFormat) {
+        try (CompactCSVWriter writer = new CompactCSVWriter(IOUtils.getBufferedWriter(file), ';')) {
+
+            writer.writeNext("vehID;dispatchTime;freeTime");
+
+            for(Tuple<Id<DvrpVehicle>,Double> tuple : this.freeTimesOfPFAVWhenRequestDenied.keySet()){
+                CSVLineBuilder lineBuilder = new CSVLineBuilder()
+                        .add(tuple.getFirst().toString())
+                        .addf(dblFormat, tuple.getSecond())
+                        .addf(dblFormat, this.freeTimesOfPFAVWhenRequestDenied.get(tuple));
+                writer.writeNext(lineBuilder);
+            }
+
+        }
+
+    }
+
 
 }
