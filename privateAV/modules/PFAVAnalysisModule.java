@@ -28,11 +28,11 @@ import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.contrib.dvrp.run.QSimScopeObjectListenerModule;
 
-public class PFAVAnalysisModule extends AbstractDvrpModeModule {
+class PFAVAnalysisModule extends AbstractDvrpModeModule {
 
     private final Network network;
 
-    public PFAVAnalysisModule(String mode, Network network) {
+    PFAVAnalysisModule( String mode, Network network ) {
         super(mode);
         this.network = network;
     }

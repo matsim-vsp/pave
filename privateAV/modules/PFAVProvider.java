@@ -16,7 +16,7 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package privateAV.optimizer;
+package privateAV.modules;
 
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.Fleet;
@@ -39,7 +39,7 @@ import privateAV.PFAVScheduler;
  * @author tschlenther
  *
  */
-public class PFAVProvider implements Provider<TaxiOptimizer> {
+class PFAVProvider implements Provider<TaxiOptimizer> {
 	private TaxiConfigGroup taxiCfg;
 	private Fleet fleet;
 	private TaxiScheduleInquiry scheduler;

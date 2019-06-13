@@ -47,6 +47,7 @@ public class PFAVModeModule extends AbstractDvrpModeModule {
                 bind(ListBasedFreightTourManager.class).toInstance(tourManager);
             }
         });
+        installQSimModule( new PFAVQSimModule( taxiCfg ) );
         addControlerListenerBinding().toInstance(tourManager);
     }
 

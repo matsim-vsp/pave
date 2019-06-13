@@ -28,10 +28,9 @@ import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import privateAV.PFAVScheduler;
-import privateAV.optimizer.PFAVProvider;
 import privateAV.vrpagent.PFAVActionCreator;
 
-public class PFAVQSimModule extends AbstractDvrpModeQSimModule {
+class PFAVQSimModule extends AbstractDvrpModeQSimModule {
 
     private final TaxiConfigGroup taxiCfg;
 

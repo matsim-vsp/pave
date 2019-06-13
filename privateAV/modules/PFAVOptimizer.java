@@ -1,4 +1,4 @@
-package privateAV.optimizer;
+package privateAV.modules;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
@@ -21,7 +21,7 @@ import privateAV.PFAVScheduler;
 import privateAV.PFAVUtils;
 import privateAV.events.PFAVOwnerWaitsForVehicleEvent;
 
-public class PFAVOptimizer implements TaxiOptimizer {
+class PFAVOptimizer implements TaxiOptimizer {
 
 	private static final Logger log = Logger.getLogger(PFAVScheduler.class);
 	private final EventsManager eventsManager;

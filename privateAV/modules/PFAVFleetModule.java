@@ -18,7 +18,7 @@ import com.google.inject.name.Named;
 import privateAV.vehicle.PFAVFleetStatsCalculator;
 import privateAV.vehicle.PFAVehicle;
 
-public class PFAVFleetModule extends AbstractDvrpModeModule {
+class PFAVFleetModule extends AbstractDvrpModeModule {
 
     private boolean updateVehicleStartLinkToLastLink;
     private Scenario scenario;
