@@ -67,7 +67,6 @@ import org.matsim.core.scoring.SumScoringFunction;
 import analysis.BaseCaseFreightTourStatsListener;
 import analysis.OverallTravelTimeAndDistanceListener;
 import privateAV.modules.PFAVModeModule;
-import privateAV.modules.PFAVQSimModule;
 
 /**
  * @author tschlenther
@@ -184,7 +183,6 @@ public class RunChessboardScenarioWithNormalFreight {
 			@Override
 			public void install() {
 				install(new PFAVModeModule(taxiCfg, scenario, carriersFile, vehTypesFile));
-				installQSimModule(new PFAVQSimModule(taxiCfg));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));

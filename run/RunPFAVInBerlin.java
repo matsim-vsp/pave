@@ -48,7 +48,6 @@ import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.run.RunBerlinScenario;
 
 import privateAV.modules.PFAVModeModule;
-import privateAV.modules.PFAVQSimModule;
 
 public class RunPFAVInBerlin {
 
@@ -152,7 +151,6 @@ public class RunPFAVInBerlin {
 			@Override
 			public void install() {
 				install(new PFAVModeModule(taxiCfg, scenario, carriers, vehTypes));
-				installQSimModule(new PFAVQSimModule(taxiCfg));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));

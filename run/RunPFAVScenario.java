@@ -35,7 +35,6 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 import privateAV.PFAVUtils;
 import privateAV.modules.PFAVModeModule;
-import privateAV.modules.PFAVQSimModule;
 
 /**
  * @author tschlenther
@@ -106,7 +105,6 @@ public class RunPFAVScenario {
 			@Override
 			public void install() {
 				install(new PFAVModeModule(taxiCfg, scenario, finalCarriers, finalVehTypes));
-				installQSimModule(new PFAVQSimModule(taxiCfg));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));

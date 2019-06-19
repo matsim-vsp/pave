@@ -34,11 +34,7 @@ public class PFAVModeModule extends AbstractDvrpModeModule {
         install(new PFAVFleetModule(getMode(), scenario));
         install(new PFAVAnalysisModule(getMode(), scenario.getNetwork()));
 
-//        install(FleetStatsCalculatorModule.createModule(getMode(), TaxiStatsDumper.class,
-//                getter -> new TaxiStatsDumper(taxiCfg, getter.get(OutputDirectoryHierarchy.class),
-//                        getter.get(IterationCounter.class))));
-
-        //TODO: get those files from some kind of config group or pass it to the module as parameter
+        //TODO: get those files from some kind of config group or pass it to the module as parameters
         ListBasedFreightTourManagerImpl tourManager = new ListBasedFreightTourManagerImpl(this.CARRIERS_FILE, this.VEHTYPES_FILE);
 
         installQSimModule(new AbstractDvrpModeQSimModule(getMode()){
@@ -47,8 +43,9 @@ public class PFAVModeModule extends AbstractDvrpModeModule {
                 bind(ListBasedFreightTourManager.class).toInstance(tourManager);
             }
         });
-        installQSimModule( new PFAVQSimModule( taxiCfg ) );
         addControlerListenerBinding().toInstance(tourManager);
+
+        installQSimModule( new PFAVQSimModule( taxiCfg ) );
     }
 
 }
