@@ -20,19 +20,7 @@
 
 package run;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.population.Leg;
-import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
@@ -44,10 +32,11 @@ import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
-import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.run.RunBerlinScenario;
-
 import privateAV.modules.PFAVModeModule;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class RunPFAVInBerlin {
 
@@ -63,10 +52,6 @@ public class RunPFAVInBerlin {
 	private static final String SMALL_PLANS_FILE = "C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml";
 
 	private static final int LAST_ITERATION = 0;
-	private static final double PERCENTAGE_OF_PFAV_OWNERS = 0.01;
-	private static final double DOWN_SAMPLE_SIZE = 0.5;
-	private static Logger log = Logger.getLogger(RunPFAVInBerlin.class);
-	private static Set<Id<Person>> PFAV_owners = new HashSet<>();
 
 	public static void main(String[] args) {
 		String configPath, output, carriers, vehTypes, population, networkChangeEvents;
@@ -92,57 +77,15 @@ public class RunPFAVInBerlin {
 			increaseCapacities = false;
 		}
 
-		RunBerlinScenario berlin = new RunBerlinScenario(configPath);
+		RunBerlinScenario berlin = new RunBerlinScenario(new String[]{configPath});
+
+		//setup config
 		Config config = berlin.prepareConfig();
-		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
-
-		taxiCfg.setBreakSimulationIfNotAllRequestsServed(
-				false); //for test purposes, set this to false in order to get error stack trace
-		/*
-		 * very important: we assume that destinations of trips are known in advance.
-		 * that leads to the occupiedDriveTask and the TaxiDropoffTask to be inserted at the same time as the PickUpTask (when the request gets scheduled).
-		 * in our scenario, this is realistic, since users must have defined their working location before the agreement on having their AV make freight trips.
-		 *
-		 */
-		taxiCfg.setDestinationKnown(true);
-		taxiCfg.setPickupDuration(60);
-		taxiCfg.setDropoffDuration(60);
-		taxiCfg.setTaxisFile("something");
-
-		taxiCfg.setTimeProfiles(true);  //write out occupancy plot
-
-		taxiCfg.addParameterSet(new RuleBasedTaxiOptimizerParams());
-
+		TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
 		String mode = taxiCfg.getMode();
 		config.addModule(taxiCfg);
+		adjustConfigParameters(output, population, networkChangeEvents, maxIter, increaseCapacities, config);
 
-		config.addModule(new DvrpConfigGroup());
-
-		config.strategy().setFractionOfIterationsToDisableInnovation(0);        //  ???
-
-		PlanCalcScoreConfigGroup.ModeParams taxiModeParams = new PlanCalcScoreConfigGroup.ModeParams("taxi");
-		taxiModeParams.setMarginalUtilityOfTraveling(0.);       // car also has 0.0 ????
-		config.planCalcScore().addModeParams(taxiModeParams);
-
-		config.controler()
-				.setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
-		config.controler().setLastIteration(maxIter);
-		config.controler().setOutputDirectory(output);
-
-		config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
-		config.qsim().setNumberOfThreads(1);
-
-		//        for test purposes
-		//        config.qsim().setEndTime(12 * 3600);
-
-		config.network().setChangeEventsInputFile(networkChangeEvents);
-		config.network().setTimeVariantNetwork(true);
-
-		config.plans().setInputFile(population);
-
-		if (increaseCapacities) {
-			config.qsim().setFlowCapFactor(1.5);
-		}
 		Scenario scenario = berlin.prepareScenario();
 
 		// setup controler
@@ -159,27 +102,36 @@ public class RunPFAVInBerlin {
 		berlin.run();
 	}
 
-	private static void convertAgentsToPFAVOwners(Scenario scenario) {
-		log.info("start converting car legs to taxi legs with the probability " + PERCENTAGE_OF_PFAV_OWNERS);
-		final Random rnd = MatsimRandom.getLocalInstance();
-		for (Person p : scenario.getPopulation().getPersons().values()) {
-			if (rnd.nextDouble() <= PERCENTAGE_OF_PFAV_OWNERS) {
-				//TODO: i only care about the selected plans, right?
-				PFAV_owners.add(p.getId());
-				for (PlanElement pe : p.getSelectedPlan().getPlanElements()) {
-					if (pe instanceof Leg) {
-						if (((Leg)pe).getMode().equals("car"))
-							((Leg)pe).setMode("taxi");
-					}
-				}
-			}
+	private static void adjustConfigParameters(String output, String population, String networkChangeEvents, int maxIter, boolean increaseCapacities, Config config) {
+		config.addModule(new DvrpConfigGroup());
+		config.strategy().setFractionOfIterationsToDisableInnovation(0);
+		PlanCalcScoreConfigGroup.ModeParams taxiModeParams = new PlanCalcScoreConfigGroup.ModeParams("taxi");
+		taxiModeParams.setMarginalUtilityOfTraveling(0.);       // car also has 0.0 in berlin scenario????
+		config.planCalcScore().addModeParams(taxiModeParams);
+		config.controler()
+				.setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+		config.controler().setLastIteration(maxIter);
+		config.controler().setOutputDirectory(output);
+
+		config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
+		config.qsim().setNumberOfThreads(1);
+		config.network().setChangeEventsInputFile(networkChangeEvents);
+		config.network().setTimeVariantNetwork(true);
+		config.plans().setInputFile(population);
+		if (increaseCapacities) {
+			config.qsim().setFlowCapFactor(1.5);
 		}
 	}
 
-	private static void downsample(final Map map, final double sample) {
-		final Random rnd = MatsimRandom.getLocalInstance();
-		log.warn("map size before=" + map.size());
-		map.values().removeIf(person -> rnd.nextDouble() > sample && !PFAV_owners.contains(((Person)person).getId()));
-		log.warn("map size after=" + map.size());
+	private static TaxiConfigGroup prepareTaxiConfigGroup() {
+		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
+		taxiCfg.setDestinationKnown(true);
+		taxiCfg.setPickupDuration(60);
+		taxiCfg.setDropoffDuration(60);
+		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false); //for test purposes, set this to false in order to get error stack trace
+		taxiCfg.setTimeProfiles(true);  //write out occupancy plot
+		taxiCfg.addParameterSet(new RuleBasedTaxiOptimizerParams());
+		return taxiCfg;
 	}
+
 }

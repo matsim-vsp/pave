@@ -64,8 +64,8 @@ public class FreightTourCalculatorImpl implements FreightTourCalculator {
 			VehicleRoutingProblem.Builder vrpBuilder = MatsimJspritFactory.createRoutingProblemBuilder(carrier, network);
 			vrpBuilder.setRoutingCost(netBasedCosts) ;
 			VehicleRoutingProblem problem = vrpBuilder.build();
-	
-				// get the algorithm out-of-the-box, search solution and get the best one.
+
+            //get the algorithm out-of-the-box, search solution and get the best one.
 			VehicleRoutingAlgorithm algorithm = new SchrimpfFactory().createAlgorithm(problem);
 
 			algorithm.setMaxIterations(PFAVUtils.NR_OF_JSPRIT_ITERATIONS);
@@ -82,16 +82,13 @@ public class FreightTourCalculatorImpl implements FreightTourCalculator {
 				//get the CarrierPlan
 			CarrierPlan carrierPlan = MatsimJspritFactory.createPlan(carrier, bestSolution);
 
-
 			/* calculate the route - we need this because otherwise we only have the duration of the service task and do not have a clue about tour duration
 			 * BUT: the routes themselves cannot be used later. please also see ConvertFreightForDvrp.convertToList()
 			 */
-
 			//if we use this default method, a router is created by leastCostPathCalculatorFactory.createPathCalculator(network, travelDisutility, travelTime);
 			NetworkRouter.routePlan(carrierPlan, netBasedCosts);
 
 			carrier.setSelectedPlan(carrierPlan);
-			
 		}
 		return carriers;
 	}

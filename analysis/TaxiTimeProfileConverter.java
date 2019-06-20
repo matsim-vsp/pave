@@ -22,13 +22,16 @@ package analysis;
 
 import org.matsim.core.utils.io.IOUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class TaxiTimeProfileConverter {
 
 
     private final int hours;
-    int nrOfSlotsPerHour;
+    private int nrOfSlotsPerHour;
     private int[] emptyDrive;
     private int[] pickup;
     private int[] occupiedDrive;
@@ -36,7 +39,7 @@ public class TaxiTimeProfileConverter {
     private int[] stay;
 
 
-    public TaxiTimeProfileConverter(int hours, int nrOfSlotsPerHour) {
+    private TaxiTimeProfileConverter(int hours, int nrOfSlotsPerHour) {
         this.hours = hours;
         this.nrOfSlotsPerHour = nrOfSlotsPerHour;
         this.emptyDrive = new int[hours * nrOfSlotsPerHour + 1];
@@ -47,11 +50,18 @@ public class TaxiTimeProfileConverter {
     }
 
     public static void main(String[] args) {
-        String input = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Transporter/ITERS/it.0/berlin-v5.3-1pct.0.taxi_status_time_profiles_taxi.txt";
-
+        String input;
+        String output;
+        if (args.length < 1) {
+            input = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Transporter/ITERS/it.0/berlin-v5.3-1pct.0.taxi_status_time_profiles_taxi.txt";
+            output = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Transporter/ITERS/it.0/taxi_status_time_profiles_taxi_converted.csv";
+        } else {
+            input = args[0];
+            output = args[1];
+        }
         TaxiTimeProfileConverter converter = new TaxiTimeProfileConverter(36, 12);
         converter.readStats(input);
-        String output = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Transporter/ITERS/it.0/taxi_status_time_profiles_taxi_converted.csv";
+
         converter.writeStats(output);
     }
 
@@ -77,9 +87,7 @@ public class TaxiTimeProfileConverter {
                 line = reader.readLine();
             }
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -88,7 +96,6 @@ public class TaxiTimeProfileConverter {
         BufferedWriter bw = IOUtils.getBufferedWriter(file);
         try {
             bw.write("timeSlot;cat;value");
-            int currentVehiclesEnRoute = 0;
             for (int i = 0; i < emptyDrive.length; i++) {
                 bw.newLine();
                 bw.write("" + i + ";" + "EmptyDrive;" + emptyDrive[i]);
@@ -105,7 +112,6 @@ public class TaxiTimeProfileConverter {
             bw.flush();
             bw.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }

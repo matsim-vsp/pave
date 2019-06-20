@@ -46,15 +46,15 @@ import java.text.DecimalFormat;
 public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHandler, PersonArrivalEventHandler,
         ActivityStartEventHandler, ActivityEndEventHandler {
 
-    int totalAmountOfVehicles;
+    private int totalAmountOfVehicles;
 
-    int nrOfSlotsPerHour;
-    Population population;
+    private int nrOfSlotsPerHour;
+    private Population population;
     private int[] departures;
     private int[] arrivals;
     private int[] atService;
 
-    public BaseCaseVehicleOccupancyListener(int totalAmountOfVehicles, int nrOfSlotsPerHour, Population pop) {
+    private BaseCaseVehicleOccupancyListener(int totalAmountOfVehicles, int nrOfSlotsPerHour, Population pop) {
         this.totalAmountOfVehicles = totalAmountOfVehicles;
         this.nrOfSlotsPerHour = nrOfSlotsPerHour;
         this.departures = new int[36 * nrOfSlotsPerHour + 1];
@@ -125,7 +125,7 @@ public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHan
         }
     }
 
-    public void writeStats(String filename) {
+    private void writeStats(String filename) {
         BufferedWriter bw = IOUtils.getBufferedWriter(filename);
         DecimalFormat df = new DecimalFormat("##.##");
         try {
@@ -153,7 +153,6 @@ public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHan
             bw.flush();
             bw.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
