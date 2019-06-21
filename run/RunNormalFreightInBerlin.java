@@ -20,21 +20,13 @@
 
 package run;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
+import analysis.BaseCaseFreightTourStatsListener;
+import analysis.OverallTravelTimeAndDistanceListener;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
-import org.matsim.contrib.freight.carrier.Carrier;
-import org.matsim.contrib.freight.carrier.CarrierPlan;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
-import org.matsim.contrib.freight.carrier.CarrierVehicleTypeLoader;
-import org.matsim.contrib.freight.carrier.CarrierVehicleTypeReader;
-import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
-import org.matsim.contrib.freight.carrier.Carriers;
+import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.controler.CarrierModule;
 import org.matsim.contrib.freight.replanning.CarrierPlanStrategyManagerFactory;
 import org.matsim.contrib.freight.scoring.CarrierScoringFunctionFactory;
@@ -57,8 +49,8 @@ import org.matsim.core.replanning.selectors.BestPlanSelector;
 import org.matsim.core.scoring.SumScoringFunction;
 import org.matsim.run.RunBerlinScenario;
 
-import analysis.BaseCaseFreightTourStatsListener;
-import analysis.OverallTravelTimeAndDistanceListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class RunNormalFreightInBerlin {
 
@@ -75,120 +67,128 @@ public class RunNormalFreightInBerlin {
 
 	private static final int LAST_ITERATION = 0;
 
-	public static void main(String[] args) {
-		String configPath, output, carriersFile, vehTypesFile, population, networkChangeEvents;
-		int maxIter;
-		boolean increaseCapacities;
-		if (args.length > 0) {
-			configPath = args[0];
-			carriersFile = args[1];
-			vehTypesFile = args[2];
-			output = args[3];
-			maxIter = Integer.valueOf(args[4]);
-			population = args[5];
-			networkChangeEvents = args[6];
-			increaseCapacities = Boolean.valueOf(args[7]);
-		} else {
-			configPath = CONFIG_v53_1pct;
-			carriersFile = CARRIERS_FILE;
-			vehTypesFile = VEHTYPES_FILE;
-			output = OUTPUTDIR;
-			maxIter = LAST_ITERATION;
-			population = SMALL_PLANS_FILE;
-			networkChangeEvents = NETWORK_CHANGE_EVENTS;
-			increaseCapacities = false;
-		}
+    public static void main(String[] args) {
+        String configPath, output, carriersFile, vehTypesFile, population, networkChangeEvents;
+        int maxIter;
+        boolean increaseCapacities;
+        if (args.length > 0) {
+            configPath = args[0];
+            carriersFile = args[1];
+            vehTypesFile = args[2];
+            output = args[3];
+            maxIter = Integer.valueOf(args[4]);
+            population = args[5];
+            networkChangeEvents = args[6];
+            increaseCapacities = Boolean.valueOf(args[7]);
+        } else {
+            configPath = CONFIG_v53_1pct;
+            carriersFile = CARRIERS_FILE;
+            vehTypesFile = VEHTYPES_FILE;
+            output = OUTPUTDIR;
+            maxIter = LAST_ITERATION;
+            population = SMALL_PLANS_FILE;
+            networkChangeEvents = NETWORK_CHANGE_EVENTS;
+            increaseCapacities = false;
+        }
 
-		RunBerlinScenario berlin = new RunBerlinScenario(configPath);
-		Config config = berlin.prepareConfig();
-		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
+        RunBerlinScenario berlin = new RunBerlinScenario(configPath);
+        Config config = berlin.prepareConfig();
 
-		taxiCfg.setBreakSimulationIfNotAllRequestsServed(
-				false); //for test purposes, set this to false in order to get error stack trace
-		/*
-		 * very important: we assume that destinations of trips are known in advance.
-		 * that leads to the occupiedDriveTask and the TaxiDropoffTask to be inserted at the same time as the PickUpTask (when the request gets scheduled).
-		 * in our scenario, this is realistic, since users must have defined their working location before the agreement on having their AV make freight trips.
-		 *
-		 */
-		taxiCfg.setDestinationKnown(true);
-		taxiCfg.setPickupDuration(60);
-		taxiCfg.setDropoffDuration(60);
-		taxiCfg.setTaxisFile("something");
+        TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
+        String mode = taxiCfg.getMode();
+        config.addModule(taxiCfg);
 
-		taxiCfg.setTimeProfiles(true);
+        prepareConfig(output, population, networkChangeEvents, maxIter, increaseCapacities, config);
+        Scenario scenario = berlin.prepareScenario();
 
-		taxiCfg.addParameterSet(new RuleBasedTaxiOptimizerParams());
+        // setup controler
+        Controler controler = berlin.prepareControler(new DvrpModule());
 
-		String mode = taxiCfg.getMode();
-		config.addModule(taxiCfg);
+        final Carriers carriers = readFreightInputAndPrepareCarrierModule(carriersFile, vehTypesFile, scenario, controler);
+        prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, carriers);
 
-		config.addModule(new DvrpConfigGroup());
+        BaseCaseFreightTourStatsListener analyser = new BaseCaseFreightTourStatsListener(scenario.getNetwork(),
+                carriers);
+        OverallTravelTimeAndDistanceListener generalListener = new OverallTravelTimeAndDistanceListener(
+                scenario.getNetwork());
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                addControlerListenerBinding().toInstance(analyser);
+                addEventHandlerBinding().toInstance(analyser);
 
-		config.strategy().setFractionOfIterationsToDisableInnovation(0);        //  ???
+                addEventHandlerBinding().toInstance(generalListener);
+                addControlerListenerBinding().toInstance(generalListener);
+            }
+        });
 
-		PlanCalcScoreConfigGroup.ModeParams taxiModeParams = new PlanCalcScoreConfigGroup.ModeParams("taxi");
-		taxiModeParams.setMarginalUtilityOfTraveling(0.);       // car also has 0.0 ????
-		config.planCalcScore().addModeParams(taxiModeParams);
+        // run simulation
+        berlin.run();
+    }
 
-		config.controler()
-				.setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
-		config.controler().setLastIteration(maxIter);
-		config.controler().setOutputDirectory(output);
+    private static Carriers readFreightInputAndPrepareCarrierModule(String carriersFile, String vehTypesFile, Scenario scenario, Controler controler) {
+        final Carriers carriers = new Carriers();
+        new CarrierPlanXmlReaderV2(carriers).readFile(carriersFile);
 
-		config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
-		config.qsim().setNumberOfThreads(1);
+        CarrierVehicleTypes types = new CarrierVehicleTypes();
+        new CarrierVehicleTypeReader(types).readFile(vehTypesFile);
+        new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(types);
 
-		//        for test purposes
-		//        config.qsim().setEndTime(12 * 3600);
+        CarrierPlanStrategyManagerFactory strategyManagerFactory = createStrategyManagerFactory(types, controler);
+        CarrierScoringFunctionFactory scoringFunctionFactory = createScoringFunctionFactory(scenario.getNetwork());
 
-		config.network().setChangeEventsInputFile(networkChangeEvents);
-		config.network().setTimeVariantNetwork(true);
+        CarrierModule carrierController = new CarrierModule(carriers, strategyManagerFactory, scoringFunctionFactory);
+        //        CarrierModule carrierController = new CarrierModule(carriers, null, null);
 
-		config.plans().setInputFile(population);
+        controler.addOverridingModule(carrierController);
+        return carriers;
+    }
 
-		if (increaseCapacities) {
-			config.qsim().setFlowCapFactor(1.5);
-		}
-		Scenario scenario = berlin.prepareScenario();
+    private static void prepareConfig(String output, String population, String networkChangeEvents, int maxIter, boolean increaseCapacities, Config config) {
+        config.addModule(new DvrpConfigGroup());
 
-		// setup controler
-		Controler controler = berlin.prepareControler(new DvrpModule());
+        config.strategy().setFractionOfIterationsToDisableInnovation(0);        //  ???
+        PlanCalcScoreConfigGroup.ModeParams taxiModeParams = new PlanCalcScoreConfigGroup.ModeParams("taxi");
+        taxiModeParams.setMarginalUtilityOfTraveling(0.);       // car also has 0.0 ????
+        config.planCalcScore().addModeParams(taxiModeParams);
 
-		final Carriers carriers = new Carriers();
-		new CarrierPlanXmlReaderV2(carriers).readFile(carriersFile);
+        config.controler()
+                .setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+        config.controler().setLastIteration(maxIter);
+        config.controler().setOutputDirectory(output);
 
-		CarrierVehicleTypes types = new CarrierVehicleTypes();
-		new CarrierVehicleTypeReader(types).readFile(vehTypesFile);
-		new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(types);
+        config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
+        config.qsim().setNumberOfThreads(1);
 
-		CarrierPlanStrategyManagerFactory strategyManagerFactory = createStrategyManagerFactory(types, controler);
-		CarrierScoringFunctionFactory scoringFunctionFactory = createScoringFunctionFactory(scenario.getNetwork());
+        //        for test purposes
+        //        config.qsim().setEndTime(12 * 3600);
 
-		CarrierModule carrierController = new CarrierModule(carriers, strategyManagerFactory, scoringFunctionFactory);
-		//        CarrierModule carrierController = new CarrierModule(carriers, null, null);
+        config.network().setChangeEventsInputFile(networkChangeEvents);
+        config.network().setTimeVariantNetwork(true);
+        config.plans().setInputFile(population);
+        if (increaseCapacities) {
+            config.qsim().setFlowCapFactor(1.5);
+        }
+    }
 
-		controler.addOverridingModule(carrierController);
-		prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, carriers);
-
-		BaseCaseFreightTourStatsListener analyser = new BaseCaseFreightTourStatsListener(scenario.getNetwork(),
-				carriers);
-		OverallTravelTimeAndDistanceListener generalListener = new OverallTravelTimeAndDistanceListener(
-				scenario.getNetwork());
-		controler.addOverridingModule(new AbstractModule() {
-			@Override
-			public void install() {
-				addControlerListenerBinding().toInstance(analyser);
-				addEventHandlerBinding().toInstance(analyser);
-
-				addEventHandlerBinding().toInstance(generalListener);
-				addControlerListenerBinding().toInstance(generalListener);
-			}
-		});
-
-		// run simulation
-		berlin.run();
-	}
+    private static TaxiConfigGroup prepareTaxiConfigGroup() {
+        TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
+        taxiCfg.setBreakSimulationIfNotAllRequestsServed(
+                false); //for test purposes, set this to false in order to get error stack trace
+        /*
+         * very important: we assume that destinations of trips are known in advance.
+         * that leads to the occupiedDriveTask and the TaxiDropoffTask to be inserted at the same time as the PickUpTask (when the request gets scheduled).
+         * in our scenario, this is realistic, since users must have defined their working location before the agreement on having their AV make freight trips.
+         *
+         */
+        taxiCfg.setDestinationKnown(true);
+        taxiCfg.setPickupDuration(60);
+        taxiCfg.setDropoffDuration(60);
+        taxiCfg.setTaxisFile("something");
+        taxiCfg.setTimeProfiles(true);
+        taxiCfg.addParameterSet(new RuleBasedTaxiOptimizerParams());
+        return taxiCfg;
+    }
 
 	private static void prepareFreightOutputDataAndStats(Scenario scenario, EventsManager eventsManager,
 			MatsimServices controler, final Carriers carriers) {
