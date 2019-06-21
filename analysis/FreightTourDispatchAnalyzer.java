@@ -39,16 +39,13 @@ import org.matsim.contrib.dvrp.run.QSimScopeObjectListener;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 import org.matsim.contrib.util.CSVLineBuilder;
 import org.matsim.contrib.util.CompactCSVWriter;
-import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
-import org.matsim.core.events.EventsUtils;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.io.IOUtils;
 import privateAV.events.FreightTourCompletedEvent;
 import privateAV.events.FreightTourRequestDeniedEvent;
 import privateAV.events.FreightTourScheduledEvent;
-import privateAV.events.PFAVEventsReader;
 import privateAV.vrpagent.PFAVActionCreator;
 
 import java.util.*;
@@ -155,6 +152,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
     public void reset(int iteration) {
         this.begunFreightTours.clear();
         this.completedFreightTours.clear();
+        this.freeTimesOfPFAVWhenRequestDenied.clear();
     }
 
     @Override
@@ -241,7 +239,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
     private void writeDeniedStats(String file, String dblFormat) {
         try (CompactCSVWriter writer = new CompactCSVWriter(IOUtils.getBufferedWriter(file), ';')) {
 
-            writer.writeNext("vehID;dispatchTime;freeTime");
+            writer.writeNext("vehID;requestTime;freeTime");
 
             for(Tuple<Id<DvrpVehicle>,Double> tuple : this.freeTimesOfPFAVWhenRequestDenied.keySet()){
                 CSVLineBuilder lineBuilder = new CSVLineBuilder()

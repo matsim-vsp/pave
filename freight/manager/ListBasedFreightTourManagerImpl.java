@@ -248,13 +248,12 @@ public class ListBasedFreightTourManagerImpl implements ListBasedFreightTourMana
     public boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot, double waitTimeAtDepot,
                                                         PFAVTourData freightTour, LeastCostPathCalculator router) {
 
-        //do we have the chance to be at the last service in time?
+		//does the vehicle have the chance to be at the last service in time?
 		if (PFAVUtils.CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH &&
                 freightTour.getLatestArrivalAtLastService() < pathFromCurrTaskToDepot.getArrivalTime() + freightTour.getTravelTimeToLastService())
             return false;
 
 		MustReturnLinkTimePair mustReturnToOwnerLog = vehicle.getMustReturnToOwnerLinkTimePairs().peek();
-//		Double timeWhenOwnerNeedsVehicle = vehicle.getOwnerActEndTimes().peek();
 		Double timeWhenOwnerNeedsVehicle = mustReturnToOwnerLog.getTime();
 		Link returnLink = network.getLinks().get(mustReturnToOwnerLog.getLinkId());
 		if (timeWhenOwnerNeedsVehicle == null) {
