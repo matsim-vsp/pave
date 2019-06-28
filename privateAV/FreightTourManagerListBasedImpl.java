@@ -53,9 +53,9 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     private final int timeSlice;
 
 
-    private Map<Link, LinkedList<PFAVTourDataPlanned>> depotToFreightTour = new HashMap<>();
+    private Map<Link, LinkedList<FreightTourDataPlanned>> depotToFreightTour = new HashMap<>();
 
-    private List<PFAVTourDataPlanned> freightTours = new ArrayList<>();
+    private List<FreightTourDataPlanned> freightTours = new ArrayList<>();
     @Inject
     @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
     private Network network;
@@ -93,7 +93,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
         return carriers;
     }
 
-    private List<PFAVTourDataPlanned> convertCarrierPlansToTaskList(Carriers carriers) {
+    private List<FreightTourDataPlanned> convertCarrierPlansToTaskList(Carriers carriers) {
         if (PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE < 0 || PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE > 1)
             throw new IllegalStateException("the sample size for the freight demand must be in between 0 and 1");
 
@@ -101,7 +101,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
 
         log.info("start converting carrier plans to taxi tasks..");
 
-        List<PFAVTourDataPlanned> freightTours = new ArrayList<>();
+        List<FreightTourDataPlanned> freightTours = new ArrayList<>();
         carriersWithOnlyUsedTours = new Carriers();
         log.info(("number of carriers = " + carriers.getCarriers().size()));
         for (Carrier carrier : carriers.getCarriers().values()) {
@@ -128,7 +128,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
      * @see privateAV.FreightTourManagerListBased#getAVFreightTours()
      */
     @Override
-    public List<PFAVTourDataPlanned> getPFAVTours() {
+    public List<FreightTourDataPlanned> getPFAVTours() {
         return this.freightTours;
     }
 
@@ -136,12 +136,12 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
      * @see privateAV.FreightTourManagerListBased#getRandomAVFreightTour()
      */
     @Override
-    public PFAVTourDataPlanned getRandomPFAVTour() {
+    public FreightTourDataPlanned getRandomPFAVTour() {
         if (this.depotToFreightTour.size() == 0) return null;
         Link depot = this.depotToFreightTour.keySet().toArray(new Link[depotToFreightTour.size()])[MatsimRandom.getRandom().nextInt(this.depotToFreightTour.size())];
 
 
-        PFAVTourDataPlanned tour = (PFAVTourDataPlanned) this.depotToFreightTour.get(depot).toArray()[MatsimRandom.getRandom().nextInt(this.depotToFreightTour.get(depot).size())];
+        FreightTourDataPlanned tour = (FreightTourDataPlanned) this.depotToFreightTour.get(depot).toArray()[MatsimRandom.getRandom().nextInt(this.depotToFreightTour.get(depot).size())];
 
         if (PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS) {
             if (tour == null) {
@@ -165,23 +165,23 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
      * @param vehicle that requests a freight tozr.
      */
     @Override
-    public PFAVTourDataPlanned getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
+    public FreightTourDataPlanned getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
         return getDispatchedTourForVehicle(vehicle, router);
     }
 
-    private PFAVTourDataPlanned getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
+    private FreightTourDataPlanned getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
         StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(PFAVUtils.AMOUNT_OF_DEPOTS_TO_CONSIDER, link1 -> link1, link2 -> link2);
         Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
         List<Link> nearestDepots = finder.findNearest(requestLink, depotToFreightTour.keySet().stream());
 
         //TODO: test this spatial dispatch algorithm, especially: is the nearestDepots list sorted??
 
-        PFAVTourDataPlanned matchingFreightTour = null;
+        FreightTourDataPlanned matchingFreightTour = null;
         for (Link depot : nearestDepots) {
             log.info("size of depot todo list: " + this.depotToFreightTour.get(depot).size());
             if (this.depotToFreightTour.get(depot).isEmpty())
                 continue;                                            //only go on if there is a tour left at depot
-            Iterator<PFAVTourDataPlanned> freightTourIterator = this.depotToFreightTour.get(depot).iterator();
+            Iterator<FreightTourDataPlanned> freightTourIterator = this.depotToFreightTour.get(depot).iterator();
             VrpPathWithTravelData pathFromCurrTaskToDepot = calcPathToDepot(vehicle, depot, router);
             if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.MAX_BEELINE_DISTANCE_TO_DEPOT    // MAX BEELINE DISTANCE TO DEPOT
                     && pathFromCurrTaskToDepot.getTravelTime() <= PFAVUtils.MAX_TRAVELTIME_TO_DEPOT                                    // MAX TRAVEL TIME TO DEPOT
@@ -192,7 +192,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
                 double waitTimeAtDepot = computeWaitTimeAtDepot(pathFromCurrTaskToDepot);
 
                 while (freightTourIterator.hasNext()) {
-                    PFAVTourDataPlanned tourData = freightTourIterator.next();
+                    FreightTourDataPlanned tourData = freightTourIterator.next();
                     if (isEnoughTimeLeftToPerformFreightTour(vehicle, pathFromCurrTaskToDepot, waitTimeAtDepot, tourData, router)) {
                         freightTourIterator.remove();
                         matchingFreightTour = tourData;
@@ -242,7 +242,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
      */
     @Override
     public boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot, double waitTimeAtDepot,
-                                                        PFAVTourDataPlanned freightTour, LeastCostPathCalculator router) {
+                                                        FreightTourDataPlanned freightTour, LeastCostPathCalculator router) {
 
         //does the vehicle have the chance to be at the last service in time?
         if (PFAVUtils.CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH &&
@@ -323,8 +323,8 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     }
 
     private void sortDepotLists() {
-        Comparator<PFAVTourDataPlanned> comparator = (tour1, tour2) -> Double.compare(tour1.getLatestArrivalAtLastService(), tour2.getLatestArrivalAtLastService());
-        for (LinkedList<PFAVTourDataPlanned> q : this.depotToFreightTour.values()) {
+        Comparator<FreightTourDataPlanned> comparator = (tour1, tour2) -> Double.compare(tour1.getLatestArrivalAtLastService(), tour2.getLatestArrivalAtLastService());
+        for (LinkedList<FreightTourDataPlanned> q : this.depotToFreightTour.values()) {
             Collections.sort(q, comparator);
         }
     }
@@ -358,12 +358,12 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     }
 
     private void mapStartLinkOfToursToTour() {
-        for (PFAVTourDataPlanned freightTour : this.freightTours) {
+        for (FreightTourDataPlanned freightTour : this.freightTours) {
             Link start = freightTour.getDepotLink();
             if (this.depotToFreightTour.containsKey(start)) {
                 this.depotToFreightTour.get(start).add(freightTour);
             } else {
-                LinkedList<PFAVTourDataPlanned> allDepotTours = new LinkedList<>();
+                LinkedList<FreightTourDataPlanned> allDepotTours = new LinkedList<>();
                 allDepotTours.add(freightTour);
                 this.depotToFreightTour.put(start, allDepotTours);
             }
@@ -378,7 +378,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     @Override
     public void notifyIterationEnds(IterationEndsEvent event) {
         String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/";
-        List<PFAVTourDataPlanned> unfinishedTours = new ArrayList<>();
+        List<FreightTourDataPlanned> unfinishedTours = new ArrayList<>();
         this.depotToFreightTour.forEach((link, tours) -> unfinishedTours.addAll(tours));
         new PFAVUnfinishedToursDumper(unfinishedTours).writeStats(dir + "notDispatchedTours_it" + event.getIteration() + ".csv");
     }

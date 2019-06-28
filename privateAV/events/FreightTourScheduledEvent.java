@@ -24,7 +24,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
-import privateAV.PFAVTourDataDispatched;
+import privateAV.FreightTourDataDispatched;
 
 import java.util.Map;
 
@@ -43,7 +43,7 @@ public class FreightTourScheduledEvent extends Event {
     private final double tourDuration;
     private final double tourLength;
 
-    private PFAVTourDataDispatched tourData = null;
+    private FreightTourDataDispatched tourData = null;
 
     public FreightTourScheduledEvent(double time, Id<DvrpVehicle> vehicleId, Id<Link> requestLink, double mustReturnTime, double tourDuration, double tourLength) {
         super(time);
@@ -54,7 +54,7 @@ public class FreightTourScheduledEvent extends Event {
         this.tourLength = tourLength;
     }
 
-    public FreightTourScheduledEvent(PFAVTourDataDispatched data) {
+    public FreightTourScheduledEvent(FreightTourDataDispatched data) {
         super(data.getDispatchTime());
         this.tourData = data;
         this.vehicleId = data.getVehicleId();
@@ -83,7 +83,7 @@ public class FreightTourScheduledEvent extends Event {
         return attr;
     }
 
-    public PFAVTourDataDispatched getTourData() {
+    public FreightTourDataDispatched getTourData() {
         return this.tourData;
     }
 

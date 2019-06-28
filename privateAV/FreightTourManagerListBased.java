@@ -27,12 +27,12 @@ import java.util.List;
  * @author tschlenther
  */
 public interface FreightTourManagerListBased {
-    List<PFAVTourDataPlanned> getPFAVTours();
+    List<FreightTourDataPlanned> getPFAVTours();
 
-    PFAVTourDataPlanned getRandomPFAVTour();
+    FreightTourDataPlanned getRandomPFAVTour();
 
-    PFAVTourDataPlanned getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router);
+    FreightTourDataPlanned getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router);
 
     boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot,
-                                                 double waitTimeAtDepot, PFAVTourDataPlanned freightTour, LeastCostPathCalculator router);
+                                                 double waitTimeAtDepot, FreightTourDataPlanned freightTour, LeastCostPathCalculator router);
 }

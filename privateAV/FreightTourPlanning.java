@@ -56,7 +56,7 @@ public final class FreightTourPlanning {
 	 * Consequently, we only convert the (service) activities here and construct the paths/legs later.
      * @see FreightTourManagerListBased
 	 */
-    static PFAVTourDataPlanned convertToPFAVTourData(ScheduledTour freightTour, Network network) {
+    static FreightTourDataPlanned convertToPFAVTourData(ScheduledTour freightTour, Network network) {
         // we only need duration for the service tasks - id we wanted exact planned time points of daytime, we would need to derive them out of the legs (like we do for start and end activity)
 
         //the Start and End activities are not part of ScheduledTour.getTour.getTourElements();
@@ -100,7 +100,7 @@ public final class FreightTourPlanning {
         taskList.add(new PFAVRetoolTask(tBegin, tEnd, location));
 
         double plannedTourDuration = tEnd - taskList.get(0).getBeginTime();
-        return new PFAVTourDataPlanned(taskList, depotLink, plannedTourDuration, travelTimeToLastService, totalCapacityDemand);
+        return new FreightTourDataPlanned(taskList, depotLink, plannedTourDuration, travelTimeToLastService, totalCapacityDemand);
 	}
 
     public static void runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime, int timeSlice) {

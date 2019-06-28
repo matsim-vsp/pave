@@ -42,8 +42,8 @@ import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.io.IOUtils;
+import privateAV.FreightTourDataDispatched;
 import privateAV.PFAVActionCreator;
-import privateAV.PFAVTourDataDispatched;
 import privateAV.events.FreightTourCompletedEvent;
 import privateAV.events.FreightTourRequestDeniedEvent;
 import privateAV.events.FreightTourScheduledEvent;
@@ -55,8 +55,8 @@ import java.util.*;
 public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSimScopeObjectListener<Fleet>,
         LinkEnterEventHandler, ActivityStartEventHandler, ActivityEndEventHandler, IterationEndsListener {
 
-    private Map<Id<DvrpVehicle>, PFAVTourDataDispatched> begunFreightTours = new HashMap<>();
-    private Set<PFAVTourDataDispatched> completedFreightTours = new HashSet<>();
+    private Map<Id<DvrpVehicle>, FreightTourDataDispatched> begunFreightTours = new HashMap<>();
+    private Set<FreightTourDataDispatched> completedFreightTours = new HashSet<>();
     private Map<Id<DvrpVehicle>, Double> waitTimesAtDepot = new HashMap<>();
 
     private Map<Tuple<Id<DvrpVehicle>,Double>,Double> freeTimesOfPFAVWhenRequestDenied = new HashMap<>();
@@ -85,7 +85,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
 
     @Override
     public void handleEvent(FreightTourCompletedEvent event) {
-        PFAVTourDataDispatched data = this.begunFreightTours.get(event.getVehicleId());
+        FreightTourDataDispatched data = this.begunFreightTours.get(event.getVehicleId());
         if (data == null) {
             throw new RuntimeException("vehicle " + event.getVehicleId() + " completed a freight tour that has not begun?");
         }
@@ -99,7 +99,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
         Link link = network.getLinks().get(event.getLinkId());
         if (this.begunFreightTours.keySet().contains(event.getVehicleId())) {
 
-            PFAVTourDataDispatched data = this.begunFreightTours.get(event.getVehicleId());
+            FreightTourDataDispatched data = this.begunFreightTours.get(event.getVehicleId());
             data.addToActualTourLength(link.getLength());
 
             TaxiTask t = (TaxiTask) (fleet.getVehicles().get(event.getVehicleId())).getSchedule().getCurrentTask();
@@ -202,8 +202,8 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
         writer.writeNext(lineBuilder);
     }
 
-    private void writeTourData(Collection<PFAVTourDataDispatched> dataCollection, CompactCSVWriter writer, String stringFormat, String dblFormat) {
-        for (PFAVTourDataDispatched data : dataCollection) {
+    private void writeTourData(Collection<FreightTourDataDispatched> dataCollection, CompactCSVWriter writer, String stringFormat, String dblFormat) {
+        for (FreightTourDataDispatched data : dataCollection) {
             CSVLineBuilder lineBuilder = new CSVLineBuilder()
                     .add(data.getVehicleId().toString())
                     .addf(dblFormat, data.getDispatchTime())

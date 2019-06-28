@@ -26,7 +26,7 @@ import org.matsim.contrib.dvrp.schedule.StayTask;
 import java.util.List;
 import java.util.Objects;
 
-public class PFAVTourDataPlanned {
+public class FreightTourDataPlanned {
 
     private final Link depotLink;
     private final int plannedTotalCapacityDemand;
@@ -38,7 +38,7 @@ public class PFAVTourDataPlanned {
 
     private List<StayTask> tourTasks;
 
-    public PFAVTourDataPlanned(List<StayTask> tourTasks, Link depotLinkId, double plannedTourDuration, double travelTimeToLastService, int plannedTotalCapacityDemand) {
+    public FreightTourDataPlanned(List<StayTask> tourTasks, Link depotLinkId, double plannedTourDuration, double travelTimeToLastService, int plannedTotalCapacityDemand) {
         this.tourTasks = Objects.requireNonNull(tourTasks);
         this.depotLink = Objects.requireNonNull(depotLinkId);
         this.plannedTourDuration = plannedTourDuration;

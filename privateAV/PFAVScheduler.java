@@ -156,7 +156,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 
         log.info("Vehicle " + vehicle.getId() + " requests a freight tour at " + timer.getTimeOfDay() + " on link " + ((StayTaskImpl) vehicle.getSchedule().getCurrentTask()).getLink().getId());
-		PFAVTourDataPlanned tourData = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
+		FreightTourDataPlanned tourData = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
 		if (tourData != null) {
             log.info("vehicle " + vehicle.getId() + " requested a freight tour and received one by the manager");
 			if (isComingFromAnotherFreightTour) eventsManager.processEvent(new FreightTourCompletedEvent(vehicle.getId(), timer.getTimeOfDay()));
@@ -168,7 +168,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 	}
 
-	private void scheduleFreightTour(DvrpVehicle vehicle, PFAVTourDataPlanned tourData) {
+	private void scheduleFreightTour(DvrpVehicle vehicle, FreightTourDataPlanned tourData) {
 		//schedule just got updated.. current task should be a dropOff, nextTast should be a STAY task
 		Schedule schedule = vehicle.getSchedule();
 		Link requestLink = ((StayTaskImpl) vehicle.getSchedule().getCurrentTask()).getLink();
@@ -236,7 +236,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		this.vehiclesOnFreightTour.add(vehicle);
 		log.info("vehicle " + vehicle.getId() + " got assigned to a freight schedule");
 
-		PFAVTourDataDispatched dispatchData = PFAVTourDataDispatched.newBuilder()
+		FreightTourDataDispatched dispatchData = FreightTourDataDispatched.newBuilder()
 				.vehicleId(vehicle.getId())
 				.mustReturnLog(((PFAVehicle) vehicle).getMustReturnToOwnerLinkTimePairs().peek())
 				.dispatchTime(timer.getTimeOfDay())

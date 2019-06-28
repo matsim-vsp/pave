@@ -29,12 +29,12 @@ import org.matsim.contrib.freight.carrier.TimeWindow;
 
 import java.util.Objects;
 
-public class PFAVTourDataDispatched {
+public class FreightTourDataDispatched {
 
     private final PFAVehicle.MustReturnLinkTimePair mustReturnLog;
 
     private final Id<DvrpVehicle> vehicleId;
-    private PFAVTourDataPlanned tourData;
+    private FreightTourDataPlanned tourData;
     private final double dispatchTime;
     private final Id<Link> requestLink;
 
@@ -53,7 +53,7 @@ public class PFAVTourDataDispatched {
     private double totalServiceDelay = 0;
     private double waitTimeAtDepot = 0;
 
-    private PFAVTourDataDispatched(PFAVTourDataDispatched.Builder builder) {
+    private FreightTourDataDispatched(FreightTourDataDispatched.Builder builder) {
         this.vehicleId = Objects.requireNonNull(builder.vehicleId);
         this.mustReturnLog = Objects.requireNonNull(builder.mustReturnLog);
         this.dispatchTime = builder.dispatchTime;
@@ -65,8 +65,8 @@ public class PFAVTourDataDispatched {
         this.tourData = builder.data;
     }
 
-    public static PFAVTourDataDispatched.Builder newBuilder() {
-        return new PFAVTourDataDispatched.Builder();
+    public static FreightTourDataDispatched.Builder newBuilder() {
+        return new FreightTourDataDispatched.Builder();
     }
 
     public void addToActualTourLength(double metersToAdd) {
@@ -205,70 +205,70 @@ public class PFAVTourDataDispatched {
         //        private double plannedTourDuration;
         private double plannedTourLength;
         //private int plannedTotalCapacityDemand;
-        private PFAVTourDataPlanned data;
+        private FreightTourDataPlanned data;
         private double distanceBackToOwner;
 
         private Builder() {
         }
 
-        public PFAVTourDataDispatched.Builder dispatchTime(double val) {
+        public FreightTourDataDispatched.Builder dispatchTime(double val) {
             dispatchTime = val;
             return this;
         }
 
-//        public PFAVTourDataDispatched.Builder depotLink(Id<Link> val) {
+//        public FreightTourDataDispatched.Builder depotLink(Id<Link> val) {
 //            depotLink = val;
 //            return this;
 //        }
 
-        public PFAVTourDataDispatched.Builder requestLink(Id<Link> val) {
+        public FreightTourDataDispatched.Builder requestLink(Id<Link> val) {
             requestLink = val;
             return this;
         }
 
-        public PFAVTourDataDispatched.Builder tourData(PFAVTourDataPlanned val) {
+        public FreightTourDataDispatched.Builder tourData(FreightTourDataPlanned val) {
             this.data = val;
             return this;
         }
 
-        //        public PFAVTourDataDispatched.Builder plannedTourDuration(double val) {
+        //        public FreightTourDataDispatched.Builder plannedTourDuration(double val) {
 //            plannedTourDuration = val;
 //            return this;
 //        }
 //
-        public PFAVTourDataDispatched.Builder plannedTourLength(double val) {
+        public FreightTourDataDispatched.Builder plannedTourLength(double val) {
             plannedTourLength = val;
             return this;
         }
 
-        public PFAVTourDataDispatched.Builder plannedEmptyMeters(double val) {
+        public FreightTourDataDispatched.Builder plannedEmptyMeters(double val) {
             plannedEmptyMeters = val;
             return this;
         }
 
         //
-        public PFAVTourDataDispatched.Builder distanceToDepot(double val) {
+        public FreightTourDataDispatched.Builder distanceToDepot(double val) {
             distanceToDepot = val;
             return this;
         }
 
-        public PFAVTourDataDispatched.Builder distanceBackToOwner(double returnDistance) {
+        public FreightTourDataDispatched.Builder distanceBackToOwner(double returnDistance) {
             distanceBackToOwner = returnDistance;
             return this;
         }
 
-        public PFAVTourDataDispatched.Builder mustReturnLog(PFAVehicle.MustReturnLinkTimePair val) {
+        public FreightTourDataDispatched.Builder mustReturnLog(PFAVehicle.MustReturnLinkTimePair val) {
             mustReturnLog = val;
             return this;
         }
 
-        public PFAVTourDataDispatched.Builder vehicleId(Id<DvrpVehicle> val) {
+        public FreightTourDataDispatched.Builder vehicleId(Id<DvrpVehicle> val) {
             vehicleId = val;
             return this;
         }
 
-        public PFAVTourDataDispatched build() {
-            return new PFAVTourDataDispatched(this);
+        public FreightTourDataDispatched build() {
+            return new FreightTourDataDispatched(this);
         }
     }
 }
