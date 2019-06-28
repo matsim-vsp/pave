@@ -77,7 +77,8 @@ public class RunPFAVInBerlin {
 			increaseCapacities = false;
 		}
 
-		RunBerlinScenario berlin = new RunBerlinScenario(new String[]{configPath});
+//		RunBerlinScenario berlin = new RunBerlinScenario(new String[]{configPath});
+		RunBerlinScenario berlin = new RunBerlinScenario(configPath, null);
 
 		//setup config
 		Config config = berlin.prepareConfig();
@@ -131,6 +132,7 @@ public class RunPFAVInBerlin {
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false); //for test purposes, set this to false in order to get error stack trace
 		taxiCfg.setTimeProfiles(true);  //write out occupancy plot
 		taxiCfg.addParameterSet(new RuleBasedTaxiOptimizerParams());
+		taxiCfg.setTaxisFile("something");
 		return taxiCfg;
 	}
 

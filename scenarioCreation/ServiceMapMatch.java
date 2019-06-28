@@ -131,7 +131,7 @@ public class ServiceMapMatch {
         //should be referenced in GK 4 after having a look at the net in via
         Network oldSchroederNet = NetworkUtils.createNetwork();
         //is referenced in GK4
-        Network openBerlinNet = new RunBerlinScenario(CONFIG_v53_1pct).prepareScenario().getNetwork();
+        Network openBerlinNet = new RunBerlinScenario(CONFIG_v53_1pct, null).prepareScenario().getNetwork();
 
         MatsimNetworkReader oldNetReader = new MatsimNetworkReader(oldSchroederNet);
 //        MatsimNetworkReader openBerlinNetReader = new MatsimNetworkReader(openBerlinNet);
