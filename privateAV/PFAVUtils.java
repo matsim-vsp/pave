@@ -82,7 +82,7 @@ public final class PFAVUtils {
     public static final boolean RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION = true;
 
 	/**
-	 * defines the number of iterations in the tour planning algorithm, see {@link freight.calculator.FreightTourCalculatorImpl}
+	 * defines the number of iterations in the tour planning algorithm, see implementation of {@link FreightTourPlanning}
 	 */
     public static final int NR_OF_JSPRIT_ITERATIONS = 300;
 
@@ -122,12 +122,10 @@ public final class PFAVUtils {
      *
      * if you only look at one depot out of a bigger set of depot, you should set this value to 1 and set ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS true
 	 */
-
-
     public static final int AMOUNT_OF_DEPOTS_TO_CONSIDER = 3;
 
     /**
-     * this boolean determines whether the {@link freight.manager.ListBasedFreightTourManagerImpl} looks at the latest start of the last service in a tour
+	 * this boolean determines whether the implementation of {@link FreightTourManagerListBased} looks at the latest start of the last service in a tour
      * and compares it with the approximated arrival time (computed by travel time to depot + planned tour duration til last service (derived out of freight tour))
      */
     public static final boolean CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH = false;

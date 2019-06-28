@@ -2,7 +2,6 @@ package privateAV;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import freight.manager.ListBasedFreightTourManager;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -38,7 +37,7 @@ import privateAV.events.FreightTourScheduledEvent;
 
 import java.util.*;
 
-class PFAVScheduler implements TaxiScheduleInquiry {
+final class PFAVScheduler implements TaxiScheduleInquiry {
 
 	private static final Logger log = Logger.getLogger(PFAVScheduler.class);
 
@@ -52,7 +51,7 @@ class PFAVScheduler implements TaxiScheduleInquiry {
 
 	private Set<DvrpVehicle> vehiclesOnFreightTour = new HashSet();
 
-    private final ListBasedFreightTourManager freightManager;
+	private final FreightTourManagerListBased freightManager;
 	private Map<Id<DvrpVehicle>, Double> requestedVehicles = new HashMap<>();
 
 	/**
@@ -66,8 +65,8 @@ class PFAVScheduler implements TaxiScheduleInquiry {
 	 */
 	@Inject
 	public PFAVScheduler(TaxiConfigGroup taxiCfg, Fleet fleet, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
-                         MobsimTimer timer, @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
-                         TravelDisutility travelDisutility, EventsManager eventsManager, ListBasedFreightTourManager tourManager) {
+						 MobsimTimer timer, @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
+						 TravelDisutility travelDisutility, EventsManager eventsManager, FreightTourManagerListBased tourManager) {
         this.freightManager = tourManager;
         this.eventsManager = eventsManager;
 		this.taxiCfg = taxiCfg;

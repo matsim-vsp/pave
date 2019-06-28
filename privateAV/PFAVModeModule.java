@@ -1,7 +1,5 @@
 package privateAV;
 
-import freight.manager.ListBasedFreightTourManager;
-import freight.manager.ListBasedFreightTourManagerImpl;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.router.TimeAsTravelDisutility;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
@@ -37,12 +35,13 @@ public class PFAVModeModule extends AbstractDvrpModeModule {
         install(new PFAVModuleAnalysis(getMode(), scenario.getNetwork()));
 
         //TODO: get those files from some kind of config group or pass it to the module as parameters
-        ListBasedFreightTourManagerImpl tourManager = new ListBasedFreightTourManagerImpl(this.CARRIERS_FILE, this.VEHTYPES_FILE);
+//        int timeSlice = pfavConfig.getTourPlannungTimeSlice(); TODO
+        FreightTourManagerListBasedImpl tourManager = new FreightTourManagerListBasedImpl(this.CARRIERS_FILE, this.VEHTYPES_FILE, 1800);
 
         installQSimModule(new AbstractDvrpModeQSimModule(getMode()){
             @Override
             protected void configureQSim() {
-                bind(ListBasedFreightTourManager.class).toInstance(tourManager);
+                bind(FreightTourManagerListBased.class).toInstance(tourManager);
             }
         });
         addControlerListenerBinding().toInstance(tourManager);

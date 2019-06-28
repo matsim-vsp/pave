@@ -18,33 +18,45 @@
  * *********************************************************************** */
 package privateAV;
 
-import freight.manager.ListBasedFreightTourManagerImpl;
+import com.graphhopper.jsprit.core.algorithm.VehicleRoutingAlgorithm;
+import com.graphhopper.jsprit.core.algorithm.box.SchrimpfFactory;
+import com.graphhopper.jsprit.core.algorithm.termination.VariationCoefficientTermination;
+import com.graphhopper.jsprit.core.problem.VehicleRoutingProblem;
+import com.graphhopper.jsprit.core.problem.solution.VehicleRoutingProblemSolution;
+import com.graphhopper.jsprit.core.util.Solutions;
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.schedule.StayTask;
-import org.matsim.contrib.freight.carrier.ScheduledTour;
-import org.matsim.contrib.freight.carrier.Tour;
+import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.carrier.Tour.ServiceActivity;
 import org.matsim.contrib.freight.carrier.Tour.TourElement;
+import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
+import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
+import org.matsim.contrib.freight.jsprit.NetworkRouter;
+import org.matsim.core.router.util.TravelTime;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * @author tschlenther
  *
  */
-public class ConvertFreightTourForDvrp {
+public final class FreightTourPlanning {
 
-	/**
+    private static final Logger log = Logger.getLogger(FreightTourPlanning.class);
+
+    /**
 	 * @param freightTour
 	 * @param network
      * @return a list that contains the start retool task and all service tasks in the ScheduledTour and the end retool task. The legs in the ScheduledTour do not contain useful route information.
 	 * Furthermore, we want to route with up to date travel times within the mobsim anyways (as we are looking on dvrp vehicles).
 	 * Consequently, we only convert the (service) activities here and construct the paths/legs later.
-     * @see ListBasedFreightTourManagerImpl
+     * @see FreightTourManagerListBased
 	 */
-    public static PFAVTourDataPlanned convertToPFAVTourData(ScheduledTour freightTour, Network network) {
+    static PFAVTourDataPlanned convertToPFAVTourData(ScheduledTour freightTour, Network network) {
         // we only need duration for the service tasks - id we wanted exact planned time points of daytime, we would need to derive them out of the legs (like we do for start and end activity)
 
         //the Start and End activities are not part of ScheduledTour.getTour.getTourElements();
@@ -90,5 +102,45 @@ public class ConvertFreightTourForDvrp {
         double plannedTourDuration = tEnd - taskList.get(0).getBeginTime();
         return new PFAVTourDataPlanned(taskList, depotLink, plannedTourDuration, travelTimeToLastService, totalCapacityDemand);
 	}
+
+    public static void runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime, int timeSlice) {
+
+        NetworkBasedTransportCosts.Builder netBuilder = NetworkBasedTransportCosts.Builder.newInstance(network, vehicleTypes.getVehicleTypes().values());
+        netBuilder.setTimeSliceWidth(timeSlice); // !!!! otherwise it will not do anything.
+        netBuilder.setTravelTime(travelTime);
+        final NetworkBasedTransportCosts netBasedCosts = netBuilder.build();
+
+        for (Carrier carrier : carriers.getCarriers().values()) {
+            //Build VRP
+            VehicleRoutingProblem.Builder vrpBuilder = MatsimJspritFactory.createRoutingProblemBuilder(carrier, network);
+            vrpBuilder.setRoutingCost(netBasedCosts);
+            VehicleRoutingProblem problem = vrpBuilder.build();
+
+            //get the algorithm out-of-the-box, search solution and get the best one.
+            VehicleRoutingAlgorithm algorithm = new SchrimpfFactory().createAlgorithm(problem);
+
+            algorithm.setMaxIterations(PFAVUtils.NR_OF_JSPRIT_ITERATIONS);
+
+            // variationCoefficient = stdDeviation/mean. so i set the threshold rather soft
+            algorithm.addTerminationCriterion(new VariationCoefficientTermination(50, 0.01));
+
+            //TODO: add Initial solution - the one from last run => i tried this but this lead to the FreightReactionToTravelTimesTest failing...
+//			algorithm.addInitialSolution();
+
+            Collection<VehicleRoutingProblemSolution> solutions = algorithm.searchSolutions();
+            VehicleRoutingProblemSolution bestSolution = Solutions.bestOf(solutions);
+
+            //get the CarrierPlan
+            CarrierPlan carrierPlan = MatsimJspritFactory.createPlan(carrier, bestSolution);
+
+            /* calculate the route - we need this because otherwise we only have the duration of the service task and do not have a clue about tour duration
+             * BUT: the routes themselves cannot be used later. please also see ConvertFreightForDvrp.convertToList()
+             */
+            //if we use this default method, a router is created by leastCostPathCalculatorFactory.createPathCalculator(network, travelDisutility, travelTime);
+            NetworkRouter.routePlan(carrierPlan, netBasedCosts);
+
+            carrier.setSelectedPlan(carrierPlan);
+        }
+    }
 
 }
