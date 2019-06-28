@@ -1,4 +1,4 @@
-package privateAV.modules;
+package privateAV;
 
 import freight.manager.ListBasedFreightTourManager;
 import freight.manager.ListBasedFreightTourManagerImpl;
@@ -6,6 +6,7 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.router.TimeAsTravelDisutility;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
+import org.matsim.contrib.dvrp.run.DvrpModes;
 import org.matsim.contrib.dynagent.run.DynRoutingModule;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
@@ -26,13 +27,14 @@ public class PFAVModeModule extends AbstractDvrpModeModule {
 
     @Override
     public void install() {
+        DvrpModes.registerDvrpMode(binder(), getMode());
         bindModal(TravelDisutilityFactory.class).toInstance(TimeAsTravelDisutility::new);
 
         addRoutingModuleBinding(getMode()).toInstance(new DynRoutingModule(getMode()));
 
         //we need our own FleetModule here
         install(new PFAVFleetModule(getMode(), scenario));
-        install(new PFAVAnalysisModule(getMode(), scenario.getNetwork()));
+        install(new PFAVModuleAnalysis(getMode(), scenario.getNetwork()));
 
         //TODO: get those files from some kind of config group or pass it to the module as parameters
         ListBasedFreightTourManagerImpl tourManager = new ListBasedFreightTourManagerImpl(this.CARRIERS_FILE, this.VEHTYPES_FILE);
@@ -44,8 +46,7 @@ public class PFAVModeModule extends AbstractDvrpModeModule {
             }
         });
         addControlerListenerBinding().toInstance(tourManager);
-
-        installQSimModule( new PFAVQSimModule( taxiCfg ) );
+        installQSimModule(new PFAVModuleQSim(taxiCfg));
     }
 
 }
