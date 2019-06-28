@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package privateAV.modules;
+package privateAV;
 
 import analysis.FreightTourDispatchAnalyzer;
 import analysis.OverallTravelTimeAndDistanceListener;
@@ -28,11 +28,11 @@ import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.contrib.dvrp.run.QSimScopeObjectListenerModule;
 
-class PFAVAnalysisModule extends AbstractDvrpModeModule {
+class PFAVModuleAnalysis extends AbstractDvrpModeModule {
 
     private final Network network;
 
-    PFAVAnalysisModule( String mode, Network network ) {
+    PFAVModuleAnalysis(String mode, Network network) {
         super(mode);
         this.network = network;
     }

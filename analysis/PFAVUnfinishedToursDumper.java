@@ -20,18 +20,18 @@
 
 package analysis;
 
-import freight.tour.PFAVTourData;
 import org.matsim.contrib.util.CSVLineBuilder;
 import org.matsim.contrib.util.CompactCSVWriter;
 import org.matsim.core.utils.io.IOUtils;
+import privateAV.PFAVTourDataPlanned;
 
 import java.util.Collection;
 
 public class PFAVUnfinishedToursDumper {
 
-    private final Collection<PFAVTourData> unfinishedTours;
+    private final Collection<PFAVTourDataPlanned> unfinishedTours;
 
-    public PFAVUnfinishedToursDumper(Collection<PFAVTourData> tours) {
+    public PFAVUnfinishedToursDumper(Collection<PFAVTourDataPlanned> tours) {
         this.unfinishedTours = tours;
     }
 
@@ -59,7 +59,7 @@ public class PFAVUnfinishedToursDumper {
     }
 
     private void writeData(CompactCSVWriter writer, String stringFormat, String dblFormat) {
-        for (PFAVTourData data : this.unfinishedTours) {
+        for (PFAVTourDataPlanned data : this.unfinishedTours) {
             CSVLineBuilder lineBuilder = new CSVLineBuilder()
                     .addf(stringFormat, data.getDepotLink())
                     .addf(dblFormat, data.getPlannedTourDuration())

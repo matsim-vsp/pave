@@ -33,7 +33,7 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.run.RunBerlinScenario;
-import privateAV.modules.PFAVModeModule;
+import privateAV.PFAVModeModule;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

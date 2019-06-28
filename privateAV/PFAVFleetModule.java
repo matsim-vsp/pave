@@ -1,5 +1,7 @@
-package privateAV.modules;
+package privateAV;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.Fleet;
@@ -11,12 +13,6 @@ import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
 import org.matsim.contrib.dvrp.run.ModalProviders;
 import org.matsim.contrib.dvrp.run.QSimScopeObjectListenerModule;
-
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
-import privateAV.vehicle.PFAVFleetStatsCalculator;
-import privateAV.vehicle.PFAVehicle;
 
 class PFAVFleetModule extends AbstractDvrpModeModule {
 

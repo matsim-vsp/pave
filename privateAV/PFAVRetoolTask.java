@@ -16,20 +16,19 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package privateAV.schedule;
+package privateAV;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
-import privateAV.vrpagent.PFAVActionCreator;
 
 /**
  * @author tschlenther
  *
  */
-public class PFAVRetoolTask extends StayTaskImpl implements TaxiTask {
+class PFAVRetoolTask extends StayTaskImpl implements TaxiTask {
 
 	double earliestStartTime = 0.0;
 	Id<DvrpVehicle> vehicle = null;
@@ -39,7 +38,7 @@ public class PFAVRetoolTask extends StayTaskImpl implements TaxiTask {
 	 * @param endTime
 	 * @param link
 	 */
-	public PFAVRetoolTask(double beginTime, double endTime, Link link) {
+    PFAVRetoolTask(double beginTime, double endTime, Link link) {
 		super(beginTime, endTime, link, PFAVActionCreator.RETOOL_ACTIVITY_TYPE);
 		// TODO Auto-generated constructor stub
 	}

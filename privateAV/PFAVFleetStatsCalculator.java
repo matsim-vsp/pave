@@ -1,4 +1,4 @@
-package privateAV.vehicle;
+package privateAV;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -15,11 +15,10 @@ import org.matsim.contrib.dvrp.run.QSimScopeObjectListener;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
 import org.matsim.core.controler.events.BeforeMobsimEvent;
 import org.matsim.core.controler.listener.BeforeMobsimListener;
-import privateAV.PFAVUtils;
 
 import java.util.*;
 
-public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, BeforeMobsimListener {
+class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, BeforeMobsimListener {
 
     private final FleetSpecification fleetSpecification;
     private final Population population;
@@ -57,7 +56,7 @@ public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>,
         List<PFAVSpecification> vehiclesForIteration = new ArrayList<>();
         for(Person p : this.population.getPersons().values()) {
             Id<Link> vehicleStartLink = null;
-            LinkedList<MustReturnLinkTimePair> mustReturnLinkTimePairs = new LinkedList<>();
+            LinkedList<PFAVehicle.MustReturnLinkTimePair> mustReturnLinkTimePairs = new LinkedList<>();
             //TODO: test this
             Plan plan = p.getSelectedPlan();
             for (int i = 0; i < plan.getPlanElements().size(); i++) {
@@ -71,7 +70,7 @@ public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>,
             }
             //add a time stamp representing the end of the day after the last taxi leg of the owner.
             // meaning that the vehicle has time until end of simulation to perform freight tours
-            mustReturnLinkTimePairs.add(new MustReturnLinkTimePair(Double.POSITIVE_INFINITY, null));
+            mustReturnLinkTimePairs.add(new PFAVehicle.MustReturnLinkTimePair(Double.POSITIVE_INFINITY, null));
             //just to be sure that list really is sorted. as we go through the plan consecutively, this should be unnecessary..
             Collections.sort(mustReturnLinkTimePairs);
 
@@ -127,7 +126,7 @@ public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>,
         throw new IllegalStateException("could not compute must return time for agent " + plan.getPerson().getId() + " before leg " + plan.getPlanElements().get(startIndex));
     }
 
-    private MustReturnLinkTimePair getMustReturnLinkTimePairFromPreviousNonStageActivity(Plan plan, int startIndex) {
+    private PFAVehicle.MustReturnLinkTimePair getMustReturnLinkTimePairFromPreviousNonStageActivity(Plan plan, int startIndex) {
         Leg lastLeg = null;
         for (int i = startIndex; i >= 0; i--) {
             PlanElement pe = plan.getPlanElements().get(i);
@@ -159,7 +158,7 @@ public class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>,
                     } else {
                         returnTime = act.getEndTime();
                     }
-                    return new MustReturnLinkTimePair(returnTime, act.getLinkId());
+                    return new PFAVehicle.MustReturnLinkTimePair(returnTime, act.getLinkId());
                 }
             }
         }

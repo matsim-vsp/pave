@@ -18,10 +18,10 @@
  * *********************************************************************** */
 package freight.manager;
 
-import freight.tour.PFAVTourData;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.core.router.util.LeastCostPathCalculator;
-import privateAV.vehicle.PFAVehicle;
+import privateAV.PFAVTourDataPlanned;
+import privateAV.PFAVehicle;
 
 import java.util.List;
 
@@ -30,12 +30,12 @@ import java.util.List;
  *
  */
 public interface ListBasedFreightTourManager {
-    List<PFAVTourData> getPFAVTours();
+    List<PFAVTourDataPlanned> getPFAVTours();
 
-    PFAVTourData getRandomPFAVTour();
+    PFAVTourDataPlanned getRandomPFAVTour();
 
-    PFAVTourData getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router);
+    PFAVTourDataPlanned getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router);
 
     boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot,
-                                                 double waitTimeAtDepot, PFAVTourData freightTour, LeastCostPathCalculator router);
+                                                 double waitTimeAtDepot, PFAVTourDataPlanned freightTour, LeastCostPathCalculator router);
 }

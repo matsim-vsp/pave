@@ -1,4 +1,4 @@
-package privateAV.modules;
+package privateAV;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -27,14 +27,12 @@ import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
-import privateAV.PFAVScheduler;
-import privateAV.vrpagent.PFAVActionCreator;
 
-class PFAVQSimModule extends AbstractDvrpModeQSimModule {
+class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
 
     private final TaxiConfigGroup taxiCfg;
 
-    public PFAVQSimModule(TaxiConfigGroup taxiCfg) {
+    public PFAVModuleQSim(TaxiConfigGroup taxiCfg) {
         super(taxiCfg.getMode());
         this.taxiCfg = taxiCfg;
     }

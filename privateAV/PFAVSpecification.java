@@ -1,4 +1,4 @@
-package privateAV.vehicle;
+package privateAV;
 
 import com.google.common.base.MoreObjects;
 import org.matsim.api.core.v01.Id;
@@ -16,7 +16,7 @@ import java.util.Queue;
  *
  * @author tschlenther
  */
-public class PFAVSpecification implements DvrpVehicleSpecification {
+class PFAVSpecification implements DvrpVehicleSpecification {
 
     private final Id<DvrpVehicle> id;
     private final Id<Link> startLinkId;
@@ -25,7 +25,7 @@ public class PFAVSpecification implements DvrpVehicleSpecification {
     // time window
     private final double serviceBeginTime;
     private final double serviceEndTime;
-    public LinkedList<MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
+    public LinkedList<PFAVehicle.MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
 
     private PFAVSpecification(PFAVSpecification.Builder builder) {
         id = Objects.requireNonNull(builder.id);
@@ -76,14 +76,14 @@ public class PFAVSpecification implements DvrpVehicleSpecification {
         return serviceEndTime;
     }
 
-    public LinkedList<MustReturnLinkTimePair> getMustReturnToOwnerLinkTimePairs() {
+    public LinkedList<PFAVehicle.MustReturnLinkTimePair> getMustReturnToOwnerLinkTimePairs() {
         return mustReturnToOwnerLinkTimePairs;
     }
 
     @Override
     public String toString() {
         String mustReturnLogs = "";
-        for (MustReturnLinkTimePair pair : mustReturnToOwnerLinkTimePairs) {
+        for (PFAVehicle.MustReturnLinkTimePair pair : mustReturnToOwnerLinkTimePairs) {
             mustReturnLogs += pair.toString() + "; ";
         }
         return MoreObjects.toStringHelper(this)
@@ -98,7 +98,7 @@ public class PFAVSpecification implements DvrpVehicleSpecification {
 
     public static final class Builder {
         public Queue<Double> actEndTimes;
-        public LinkedList<MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
+        public LinkedList<PFAVehicle.MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
         private Id<DvrpVehicle> id;
         private Id<Link> startLinkId;
         private Integer capacity;
@@ -138,7 +138,7 @@ public class PFAVSpecification implements DvrpVehicleSpecification {
             return this;
         }
 
-        public PFAVSpecification.Builder mustReturnToOwnerLinkTimePairs(LinkedList<MustReturnLinkTimePair> list) {
+        public PFAVSpecification.Builder mustReturnToOwnerLinkTimePairs(LinkedList<PFAVehicle.MustReturnLinkTimePair> list) {
             mustReturnToOwnerLinkTimePairs = list;
             return this;
         }

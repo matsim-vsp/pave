@@ -18,17 +18,15 @@
  *                                                                         *
  * *********************************************************************** */
 
-package freight.tour;
+package privateAV;
 
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.schedule.StayTask;
-import privateAV.schedule.PFAVRetoolTask;
-import privateAV.schedule.PFAVServiceTask;
 
 import java.util.List;
 import java.util.Objects;
 
-public class PFAVTourData {
+public class PFAVTourDataPlanned {
 
     private final Link depotLink;
     private final int plannedTotalCapacityDemand;
@@ -40,7 +38,7 @@ public class PFAVTourData {
 
     private List<StayTask> tourTasks;
 
-    public PFAVTourData(List<StayTask> tourTasks, Link depotLinkId, double plannedTourDuration, double travelTimeToLastService, int plannedTotalCapacityDemand) {
+    public PFAVTourDataPlanned(List<StayTask> tourTasks, Link depotLinkId, double plannedTourDuration, double travelTimeToLastService, int plannedTotalCapacityDemand) {
         this.tourTasks = Objects.requireNonNull(tourTasks);
         this.depotLink = Objects.requireNonNull(depotLinkId);
         this.plannedTourDuration = plannedTourDuration;

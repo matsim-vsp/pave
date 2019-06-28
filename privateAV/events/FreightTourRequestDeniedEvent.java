@@ -24,8 +24,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
-import privateAV.vehicle.MustReturnLinkTimePair;
-import privateAV.vehicle.PFAVehicle;
+import privateAV.PFAVehicle;
 
 import java.util.Map;
 
@@ -48,7 +47,7 @@ public class FreightTourRequestDeniedEvent extends Event {
         super(timeOfDay);
         vehicleId = vehicle.getId();
         this.requestLink = requestLink;
-        MustReturnLinkTimePair returnLog = vehicle.getMustReturnToOwnerLinkTimePairs().peek();
+        PFAVehicle.MustReturnLinkTimePair returnLog = vehicle.getMustReturnToOwnerLinkTimePairs().peek();
         this.mustReturnLink = returnLog.getLinkId();
         this.mustReturnTime = returnLog.getTime();
     }

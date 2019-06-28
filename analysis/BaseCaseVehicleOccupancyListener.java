@@ -37,7 +37,7 @@ import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
-import privateAV.vrpagent.PFAVActionCreator;
+import privateAV.PFAVActionCreator;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

@@ -1,13 +1,13 @@
-package privateAV.vehicle;
+package privateAV;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
+import com.google.common.base.MoreObjects;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicleImpl;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicleSpecification;
 
-import com.google.common.base.MoreObjects;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class PFAVehicle extends DvrpVehicleImpl {
 
@@ -49,5 +49,40 @@ public class PFAVehicle extends DvrpVehicleImpl {
                 .add("serviceEndTime", getServiceEndTime())
                 .add("mustReturnLogs", mustReturnLogs)
                 .toString();
+    }
+
+    /**
+     * i know there is {@link org.matsim.contrib.dvrp.util.LinkTimePair} already, but for the reference
+     * to must return location in the PFAVehicle, we can not work with Link but only with Id<Link> since the
+     * network cannot be injected into PFAVFleetStatsCalculator (it's logic is run before mobsim).
+     * Furthermore, to be sure..
+     */
+    public static class MustReturnLinkTimePair implements Comparable<MustReturnLinkTimePair> {
+
+        final double time;
+        final Id<Link> linkId;
+
+        MustReturnLinkTimePair(double time, Id<Link> linkId) {
+            this.time = time;
+            this.linkId = linkId;
+        }
+
+        public double getTime() {
+            return time;
+        }
+
+        public Id<Link> getLinkId() {
+            return linkId;
+        }
+
+        @Override
+        public int compareTo(MustReturnLinkTimePair other) {
+            return Double.compare(time, other.time);
+        }
+
+        @Override
+        public String toString() {
+            return "[link=" + linkId + "][time=" + time + "]";
+        }
     }
 }

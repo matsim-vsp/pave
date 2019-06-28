@@ -1,10 +1,9 @@
 /* *********************************************************************** *
- * project: org.matsim.*
- * Controler.java
+ * project: org.matsim.*												   *
  *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2007 by the members listed in the COPYING,        *
+ * copyright       : (C) 2008 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -17,43 +16,31 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
+package privateAV;
 
-package privateAV.vehicle;
-
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
+import org.matsim.contrib.dvrp.schedule.DriveTaskImpl;
+import org.matsim.contrib.taxi.schedule.TaxiTask;
 
 /**
- * i know there is {@link org.matsim.contrib.dvrp.util.LinkTimePair} already, but for the reference
- * to must return location in the PFAVehicle, we can not work with Link but only with Id<Link> since the
- * network cannot be injected into PFAVFleetStatsCalculator (it's logic is run before mobsim).
- * Furthermore, to be sure
+ * @author tschlenther
+ *
  */
-public class MustReturnLinkTimePair implements Comparable<MustReturnLinkTimePair> {
+class PFAVServiceDriveTask extends DriveTaskImpl implements TaxiTask {
 
-    final double time;
-    final Id<Link> linkId;
+    PFAVServiceDriveTask(VrpPathWithTravelData path) {
+		super(path);
+	}
 
-    MustReturnLinkTimePair(double time, Id<Link> linkId) {
-        this.time = time;
-        this.linkId = linkId;
-    }
+	@Override
+	public TaxiTaskType getTaxiTaskType() {
+		return TaxiTaskType.OCCUPIED_DRIVE;
+	} 
 
-    public double getTime() {
-        return time;
-    }
+	
+	@Override
+	protected String commonToString() {
+		return "[" + getTaxiTaskType().name() + "_SERVICE]" + super.commonToString();
+	}
 
-    public Id<Link> getLinkId() {
-        return linkId;
-    }
-
-    @Override
-    public int compareTo(MustReturnLinkTimePair other) {
-        return Double.compare(time, other.time);
-    }
-
-    @Override
-    public String toString() {
-        return "[link=" + linkId + "][time=" + time + "]";
-    }
 }
