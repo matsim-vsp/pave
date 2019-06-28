@@ -9,7 +9,7 @@ import org.matsim.contrib.dynagent.run.DynRoutingModule;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 
-public class PFAVModeModule extends AbstractDvrpModeModule {
+public final class PFAVModeModule extends AbstractDvrpModeModule {
     private final String CARRIERS_FILE;
     private final String VEHTYPES_FILE;
     private final TaxiConfigGroup taxiCfg;

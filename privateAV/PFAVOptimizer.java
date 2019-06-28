@@ -17,7 +17,7 @@ import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 import privateAV.events.PFAVOwnerWaitsForVehicleEvent;
 
-class PFAVOptimizer implements TaxiOptimizer {
+final class PFAVOptimizer implements TaxiOptimizer {
 
 	private static final Logger log = Logger.getLogger(PFAVScheduler.class);
 	private final EventsManager eventsManager;

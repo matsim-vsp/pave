@@ -16,7 +16,7 @@ import java.util.Queue;
  *
  * @author tschlenther
  */
-class PFAVSpecification implements DvrpVehicleSpecification {
+final class PFAVSpecification implements DvrpVehicleSpecification {
 
     private final Id<DvrpVehicle> id;
     private final Id<Link> startLinkId;

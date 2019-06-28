@@ -29,7 +29,7 @@ import org.matsim.contrib.freight.carrier.TimeWindow;
 
 import java.util.Objects;
 
-public class FreightTourDataDispatched {
+public final class FreightTourDataDispatched {
 
     private final PFAVehicle.MustReturnLinkTimePair mustReturnLog;
 

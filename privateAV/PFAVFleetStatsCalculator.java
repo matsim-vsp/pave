@@ -18,7 +18,7 @@ import org.matsim.core.controler.listener.BeforeMobsimListener;
 
 import java.util.*;
 
-class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, BeforeMobsimListener {
+final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, BeforeMobsimListener {
 
     private final FleetSpecification fleetSpecification;
     private final Population population;

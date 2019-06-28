@@ -9,19 +9,19 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicleSpecification;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class PFAVehicle extends DvrpVehicleImpl {
+public final class PFAVehicle extends DvrpVehicleImpl {
 
-    Queue<MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
+    private Queue<MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
 
     //TODO: actually, the ownerActEndTimes are now contained twice, once in the specification, once in the vehicle.
     // at least for debugging that is nice, but maybe the list should be removed from here..
-    public PFAVehicle(PFAVSpecification specification, Link startLink) {
+    PFAVehicle(PFAVSpecification specification, Link startLink) {
         super(specification, startLink);
         this.mustReturnToOwnerLinkTimePairs = new LinkedList<>();
         this.mustReturnToOwnerLinkTimePairs.addAll(specification.mustReturnToOwnerLinkTimePairs);
     }
 
-    public static DvrpVehicleImpl createWithLinkProvider(DvrpVehicleSpecification specification, Link startLink) {
+    static DvrpVehicleImpl createWithLinkProvider(DvrpVehicleSpecification specification, Link startLink) {
         if (specification instanceof PFAVSpecification) {
             PFAVSpecification s = (PFAVSpecification) specification;
             return new PFAVehicle(s, startLink);
@@ -57,7 +57,7 @@ public class PFAVehicle extends DvrpVehicleImpl {
      * network cannot be injected into PFAVFleetStatsCalculator (it's logic is run before mobsim).
      * Furthermore, to be sure..
      */
-    public static class MustReturnLinkTimePair implements Comparable<MustReturnLinkTimePair> {
+    public static final class MustReturnLinkTimePair implements Comparable<MustReturnLinkTimePair> {
 
         final double time;
         final Id<Link> linkId;

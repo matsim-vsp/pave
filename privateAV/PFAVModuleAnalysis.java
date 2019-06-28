@@ -28,7 +28,7 @@ import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.contrib.dvrp.run.QSimScopeObjectListenerModule;
 
-class PFAVModuleAnalysis extends AbstractDvrpModeModule {
+final class PFAVModuleAnalysis extends AbstractDvrpModeModule {
 
     private final Network network;
 

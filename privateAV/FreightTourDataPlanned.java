@@ -26,7 +26,7 @@ import org.matsim.contrib.dvrp.schedule.StayTask;
 import java.util.List;
 import java.util.Objects;
 
-public class FreightTourDataPlanned {
+public final class FreightTourDataPlanned {
 
     private final Link depotLink;
     private final int plannedTotalCapacityDemand;

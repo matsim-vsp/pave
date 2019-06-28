@@ -42,7 +42,7 @@ import org.matsim.core.mobsim.framework.MobsimTimer;
  * @author tschlenther
  *
  */
-public class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
+public final class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 
 	public static final String PICKUP_ACTIVITY_TYPE = "TaxiPickup";
 	public static final String DROPOFF_ACTIVITY_TYPE = "TaxiDropoff";
@@ -64,7 +64,7 @@ public class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 				taxiCfg.getPickupDuration());
 	}
 
-	PFAVActionCreator(PassengerEngine passengerEngine, VrpLegFactory legFactory, double pickupDuration) {
+    private PFAVActionCreator(PassengerEngine passengerEngine, VrpLegFactory legFactory, double pickupDuration) {
 		this.passengerEngine = passengerEngine;
 		this.legFactory = legFactory;
 		this.pickupDuration = pickupDuration;

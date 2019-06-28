@@ -14,7 +14,7 @@ import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
 import org.matsim.contrib.dvrp.run.ModalProviders;
 import org.matsim.contrib.dvrp.run.QSimScopeObjectListenerModule;
 
-class PFAVFleetModule extends AbstractDvrpModeModule {
+final class PFAVFleetModule extends AbstractDvrpModeModule {
 
     private boolean updateVehicleStartLinkToLastLink;
     private Scenario scenario;
