@@ -32,7 +32,7 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.misc.Time;
 import privateAV.events.FreightTourCompletedEvent;
-import privateAV.events.FreightTourRequestDeniedEvent;
+import privateAV.events.FreightTourRequestRejectedEvent;
 import privateAV.events.FreightTourScheduledEvent;
 
 import java.util.*;
@@ -163,8 +163,8 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 			scheduleFreightTour(vehicle, tourData);
 		} else {
 			Link requestLink = ((StayTaskImpl) vehicle.getSchedule().getCurrentTask()).getLink();
-			eventsManager.processEvent(new FreightTourRequestDeniedEvent((PFAVehicle) vehicle, requestLink.getId(), timer.getTimeOfDay()));
-			log.info("request is denied");
+			eventsManager.processEvent(new FreightTourRequestRejectedEvent((PFAVehicle) vehicle, requestLink.getId(), timer.getTimeOfDay()));
+			log.info("request is rejected");
 		}
 	}
 

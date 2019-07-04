@@ -42,7 +42,7 @@ public class PFAVEventsReader extends MatsimXmlParser {
         delegate = new EventsReaderXMLv1(events);
         this.setValidating(false);
         delegate.addCustomEventMapper(FreightTourCompletedEvent.EVENT_TYPE, getFreightTourCompletedEventMapper());
-        delegate.addCustomEventMapper(FreightTourRequestDeniedEvent.EVENT_TYPE, getFreightTourRequestDeniedEventMapper());
+        delegate.addCustomEventMapper(FreightTourRequestRejectedEvent.EVENT_TYPE, getFreightTourRequestDeniedEventMapper());
         delegate.addCustomEventMapper(FreightTourScheduledEvent.EVENT_TYPE, getFreightTourScheduledEventMapper());
         delegate.addCustomEventMapper(PFAVOwnerWaitsForVehicleEvent.EVENT_TYPE, getPFAVOwnerWaitsEventMapper());
     }
@@ -66,20 +66,20 @@ public class PFAVEventsReader extends MatsimXmlParser {
         };
     }
 
-    private EventsReaderXMLv1.CustomEventMapper<FreightTourRequestDeniedEvent> getFreightTourRequestDeniedEventMapper() {
-        return new EventsReaderXMLv1.CustomEventMapper<FreightTourRequestDeniedEvent>() {
+    private EventsReaderXMLv1.CustomEventMapper<FreightTourRequestRejectedEvent> getFreightTourRequestDeniedEventMapper() {
+        return new EventsReaderXMLv1.CustomEventMapper<FreightTourRequestRejectedEvent>() {
             @Override
-            public FreightTourRequestDeniedEvent apply(GenericEvent event) {
+            public FreightTourRequestRejectedEvent apply(GenericEvent event) {
 
                 Map<String, String> attributes = event.getAttributes();
 
-                Double time = Double.parseDouble(attributes.get(FreightTourRequestDeniedEvent.ATTRIBUTE_TIME));
-                Id<DvrpVehicle> vid = Id.create(attributes.get(FreightTourRequestDeniedEvent.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
-                Id<Link> requestLink = Id.createLinkId(attributes.get(FreightTourRequestDeniedEvent.ATTRIBUTE_REQUEST_LINK));
-                Id<Link> returnLink = Id.createLinkId(attributes.get(FreightTourRequestDeniedEvent.ATTRIBUTE_MUST_RETURN_LINK));
-                double returnTime = Double.parseDouble(attributes.get(FreightTourRequestDeniedEvent.ATTRIBUTE_MUST_RETURN_TIME));
+                Double time = Double.parseDouble(attributes.get(FreightTourRequestRejectedEvent.ATTRIBUTE_TIME));
+                Id<DvrpVehicle> vid = Id.create(attributes.get(FreightTourRequestRejectedEvent.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
+                Id<Link> requestLink = Id.createLinkId(attributes.get(FreightTourRequestRejectedEvent.ATTRIBUTE_REQUEST_LINK));
+                Id<Link> returnLink = Id.createLinkId(attributes.get(FreightTourRequestRejectedEvent.ATTRIBUTE_MUST_RETURN_LINK));
+                double returnTime = Double.parseDouble(attributes.get(FreightTourRequestRejectedEvent.ATTRIBUTE_MUST_RETURN_TIME));
 
-                return new FreightTourRequestDeniedEvent(vid, requestLink, time, returnLink, returnTime);
+                return new FreightTourRequestRejectedEvent(vid, requestLink, time, returnLink, returnTime);
             }
         };
     }

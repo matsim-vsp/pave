@@ -45,7 +45,7 @@ import org.matsim.core.utils.io.IOUtils;
 import privateAV.FreightTourDataDispatched;
 import privateAV.PFAVActionCreator;
 import privateAV.events.FreightTourCompletedEvent;
-import privateAV.events.FreightTourRequestDeniedEvent;
+import privateAV.events.FreightTourRequestRejectedEvent;
 import privateAV.events.FreightTourScheduledEvent;
 
 import java.util.*;
@@ -76,7 +76,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
     }
 
     @Override
-    public void handleEvent(FreightTourRequestDeniedEvent event) {
+    public void handleEvent(FreightTourRequestRejectedEvent event) {
         Id<DvrpVehicle> veh = event.getVehicleId();
         Double dispatchTime = event.getTime();
         Double mustReturnTime = event.getMustReturnTime();

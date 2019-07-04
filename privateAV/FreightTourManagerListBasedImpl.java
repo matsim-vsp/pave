@@ -211,10 +211,10 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
             }
         }
         if (matchingFreightTour == null) {
-            //we could throw the FreightTourRequestDeniedEvent here and hand to it the depot list on which we had a look on as well as the amount of
+            //we could throw the FreightTourRequestRejectedEvent here and hand to it the depot list on which we had a look on as well as the amount of
             //freight tours we looked at etc.
             //BUT: we would need the eventsManager AND the MobsimTimer (for latter, we could normally also use currentTask.getEndTime() but that would be dirty somehow)
-//			events.processEvent(new FreightTourRequestDeniedEvent(vehicle, requestLink.getId(), time));
+//			events.processEvent(new FreightTourRequestRejectedEvent(vehicle, requestLink.getId(), time));
         }
         return matchingFreightTour;
     }

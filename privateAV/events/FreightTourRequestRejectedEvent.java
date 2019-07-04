@@ -28,14 +28,14 @@ import privateAV.PFAVehicle;
 
 import java.util.Map;
 
-public class FreightTourRequestDeniedEvent extends Event {
+public class FreightTourRequestRejectedEvent extends Event {
 
-    public static final String EVENT_TYPE = "freightTourDenied";
+    static final String EVENT_TYPE = "rejectedFreightTourRequest";
 
-    public static final String ATTRIBUTE_VEHICLE = "vehicle";
-    public static final String ATTRIBUTE_REQUEST_LINK = "requestLink";
-    public static final String ATTRIBUTE_MUST_RETURN_LINK = "mustReturnLink";
-    public static final String ATTRIBUTE_MUST_RETURN_TIME = "mustReturnTime";
+    static final String ATTRIBUTE_VEHICLE = "vehicle";
+    static final String ATTRIBUTE_REQUEST_LINK = "requestLink";
+    static final String ATTRIBUTE_MUST_RETURN_LINK = "mustReturnLink";
+    static final String ATTRIBUTE_MUST_RETURN_TIME = "mustReturnTime";
 
     private final Id<DvrpVehicle> vehicleId;
     private final Id<Link> requestLink;
@@ -43,7 +43,7 @@ public class FreightTourRequestDeniedEvent extends Event {
     private final double mustReturnTime;
 
 
-    public FreightTourRequestDeniedEvent(PFAVehicle vehicle, Id<Link> requestLink, double timeOfDay) {
+    public FreightTourRequestRejectedEvent(PFAVehicle vehicle, Id<Link> requestLink, double timeOfDay) {
         super(timeOfDay);
         vehicleId = vehicle.getId();
         this.requestLink = requestLink;
@@ -52,7 +52,7 @@ public class FreightTourRequestDeniedEvent extends Event {
         this.mustReturnTime = returnLog.getTime();
     }
 
-    public FreightTourRequestDeniedEvent(Id<DvrpVehicle> vehicle, Id<Link> requestLink, double timeOfDay, Id<Link> mustReturnLink, double mustReturnTime) {
+    public FreightTourRequestRejectedEvent(Id<DvrpVehicle> vehicle, Id<Link> requestLink, double timeOfDay, Id<Link> mustReturnLink, double mustReturnTime) {
         super(timeOfDay);
         this.vehicleId = vehicle;
         this.requestLink = requestLink;
