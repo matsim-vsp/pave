@@ -29,10 +29,10 @@ import java.util.Map;
 
 public class PFAVOwnerWaitsForVehicleEvent extends Event {
 
-    public static final String EVENT_TYPE = "PFAVOwner waits";
+    static final String EVENT_TYPE = "PFAVOwner waits";
 
-    public static final String ATTRIBUTE_OWNER = "owner";
-    public static final String ATTRIBUTE_VEHICLE = "vehicle";
+    static final String ATTRIBUTE_OWNER = "owner";
+    static final String ATTRIBUTE_VEHICLE = "vehicle";
 
     private final Id<DvrpVehicle> vehicleId;
     private final Id<Person> owner;

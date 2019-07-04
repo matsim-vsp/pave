@@ -27,8 +27,8 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import java.util.Map;
 
 public class FreightTourCompletedEvent extends Event {
-    public static final String EVENT_TYPE = "freightTourCompleted";
-    public static final String ATTRIBUTE_VEHICLE = "vehicle";
+    static final String EVENT_TYPE = "freightTourCompleted";
+    static final String ATTRIBUTE_VEHICLE = "vehicle";
 
     private final Id<DvrpVehicle> vehicleId;
 

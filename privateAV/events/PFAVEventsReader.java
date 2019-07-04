@@ -36,7 +36,7 @@ import java.util.Stack;
 
 public class PFAVEventsReader extends MatsimXmlParser {
 
-    EventsReaderXMLv1 delegate;
+    private EventsReaderXMLv1 delegate;
 
     public PFAVEventsReader(EventsManager events) {
         delegate = new EventsReaderXMLv1(events);
@@ -58,7 +58,7 @@ public class PFAVEventsReader extends MatsimXmlParser {
 
                 Map<String, String> attributes = event.getAttributes();
 
-                Double time = Double.parseDouble(attributes.get(FreightTourCompletedEvent.ATTRIBUTE_TIME));
+                double time = Double.parseDouble(attributes.get(FreightTourCompletedEvent.ATTRIBUTE_TIME));
                 Id<DvrpVehicle> vid = Id.create(attributes.get(FreightTourCompletedEvent.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
 
                 return new FreightTourCompletedEvent(vid, time);
@@ -73,7 +73,7 @@ public class PFAVEventsReader extends MatsimXmlParser {
 
                 Map<String, String> attributes = event.getAttributes();
 
-                Double time = Double.parseDouble(attributes.get(FreightTourRequestRejectedEvent.ATTRIBUTE_TIME));
+                double time = Double.parseDouble(attributes.get(FreightTourRequestRejectedEvent.ATTRIBUTE_TIME));
                 Id<DvrpVehicle> vid = Id.create(attributes.get(FreightTourRequestRejectedEvent.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
                 Id<Link> requestLink = Id.createLinkId(attributes.get(FreightTourRequestRejectedEvent.ATTRIBUTE_REQUEST_LINK));
                 Id<Link> returnLink = Id.createLinkId(attributes.get(FreightTourRequestRejectedEvent.ATTRIBUTE_MUST_RETURN_LINK));
@@ -91,7 +91,7 @@ public class PFAVEventsReader extends MatsimXmlParser {
 
                 Map<String, String> attributes = event.getAttributes();
 
-                Double time = Double.parseDouble(attributes.get(FreightTourScheduledEvent.ATTRIBUTE_TIME));
+                double time = Double.parseDouble(attributes.get(FreightTourScheduledEvent.ATTRIBUTE_TIME));
                 Id<DvrpVehicle> vid = Id.create(attributes.get(FreightTourScheduledEvent.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
                 Id<Link> requestLink = Id.createLinkId(attributes.get(FreightTourScheduledEvent.ATTRIBUTE_REQUEST_LINK));
                 double returnTime = Double.parseDouble(attributes.get(FreightTourScheduledEvent.ATTRIBUTE_MUST_RETURN_TIME));
@@ -110,7 +110,7 @@ public class PFAVEventsReader extends MatsimXmlParser {
 
                 Map<String, String> attributes = event.getAttributes();
 
-                Double time = Double.parseDouble(attributes.get(PFAVOwnerWaitsForVehicleEvent.ATTRIBUTE_TIME));
+                double time = Double.parseDouble(attributes.get(PFAVOwnerWaitsForVehicleEvent.ATTRIBUTE_TIME));
                 Id<DvrpVehicle> vid = Id.create(attributes.get(PFAVOwnerWaitsForVehicleEvent.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
                 Id<Person> owner = Id.createPersonId(attributes.get(PFAVOwnerWaitsForVehicleEvent.ATTRIBUTE_OWNER));
 
