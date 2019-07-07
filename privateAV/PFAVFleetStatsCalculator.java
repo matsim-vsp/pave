@@ -1,22 +1,28 @@
 package privateAV;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.population.*;
+import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.Plan;
+import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.api.core.v01.population.Population;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.fleet.FleetSpecification;
-import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.run.QSimScopeObjectListener;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
 import org.matsim.core.controler.events.BeforeMobsimEvent;
 import org.matsim.core.controler.listener.BeforeMobsimListener;
-
-import java.util.*;
 
 final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, BeforeMobsimListener {
 
@@ -24,10 +30,6 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
     private final Population population;
     private Set<Id<DvrpVehicle>> oldVehicles = new HashSet<Id<DvrpVehicle>>();
     private final String mode;
-
-    @Inject
-    @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
-    private Network network;
 
     public PFAVFleetStatsCalculator(FleetSpecification fleetSpecification, Scenario scenario, String mode){
         this.fleetSpecification = fleetSpecification;

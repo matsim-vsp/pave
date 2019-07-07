@@ -1,14 +1,11 @@
 package privateAV;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.fleet.FleetSpecification;
 import org.matsim.contrib.dvrp.fleet.FleetSpecificationImpl;
 import org.matsim.contrib.dvrp.fleet.Fleets;
-import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
 import org.matsim.contrib.dvrp.run.ModalProviders;
@@ -35,14 +32,11 @@ final class PFAVFleetModule extends AbstractDvrpModeModule {
             @Override
             protected void configureQSim() {
                 bindModal(Fleet.class).toProvider(new ModalProviders.AbstractProvider<Fleet>(getMode()) {
-                    @Inject
-                    @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
-                    private Network network;
-
                     @Override
                     public Fleet get() {
                         FleetSpecification fleetSpecification = getModalInstance(FleetSpecification.class);
-						return Fleets.createCustomFleet(fleetSpecification,
+                        Network network = getModalInstance(Network.class);
+                        return Fleets.createCustomFleet(fleetSpecification,
 								s -> PFAVehicle.createWithLinkProvider(s, network.getLinks().get(s.getStartLinkId())));
                     }
                 }).asEagerSingleton();

@@ -18,12 +18,8 @@
  * *********************************************************************** */
 package privateAV;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.name.Named;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.Fleet;
-import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
@@ -32,9 +28,11 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.router.util.TravelTime;
 
+import com.google.inject.Provider;
+import com.google.inject.name.Named;
+
 /**
  * @author tschlenther
- *
  */
 public class PFAVProvider implements Provider<TaxiOptimizer> {
 	private TaxiConfigGroup taxiCfg;
@@ -43,35 +41,33 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 	private MobsimTimer timer;
 	private TravelTime travelTime;
 	private EventsManager eventsManager;
-//	private TravelDisutility travelDisutility;
-//	private Network network;
+	//	private TravelDisutility travelDisutility;
+	//	private Network network;
 
-	@Inject
-	public PFAVProvider(TaxiConfigGroup taxiCfg, Fleet fleet,
-						TaxiScheduleInquiry scheduler, MobsimTimer timer,
-						@Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network,
-						@Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
-						EventsManager eventsManager) {
-			this.taxiCfg = taxiCfg;
-			this.fleet = fleet;
-			this.scheduler = scheduler;
+	public PFAVProvider(TaxiConfigGroup taxiCfg, Fleet fleet, TaxiScheduleInquiry scheduler, MobsimTimer timer,
+			Network network, @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime,
+			EventsManager eventsManager) {
+		this.taxiCfg = taxiCfg;
+		this.fleet = fleet;
+		this.scheduler = scheduler;
 		this.timer = timer;
-//			this.network = network;
-			this.travelTime = travelTime;
-//			this.travelDisutility = new TimeAsTravelDisutility(travelTime);
+		//			this.network = network;
+		this.travelTime = travelTime;
+		//			this.travelDisutility = new TimeAsTravelDisutility(travelTime);
 		this.eventsManager = eventsManager;
 	}
 
 	@Override
 	public TaxiOptimizer get() {
-//		LeastCostPathCalculator router = new DijkstraFactory().createPathCalculator(network, travelDisutility,
-//				travelTime);
-		
-		if(!(scheduler instanceof PFAVScheduler)) {
-			throw new IllegalArgumentException("this OptimizerProvider can only work with a scheduler of type " + PFAVScheduler.class);
+		//		LeastCostPathCalculator router = new DijkstraFactory().createPathCalculator(network, travelDisutility,
+		//				travelTime);
+
+		if (!(scheduler instanceof PFAVScheduler)) {
+			throw new IllegalArgumentException(
+					"this OptimizerProvider can only work with a scheduler of type " + PFAVScheduler.class);
 		}
 
 		return new PFAVOptimizer(taxiCfg, fleet, (PFAVScheduler)scheduler, eventsManager, timer);
 	}
-	
+
 }
