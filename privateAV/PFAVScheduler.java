@@ -1,12 +1,6 @@
 package privateAV;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -16,25 +10,15 @@ import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.path.VrpPath;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPaths;
-import org.matsim.contrib.dvrp.schedule.DriveTask;
-import org.matsim.contrib.dvrp.schedule.Schedule;
+import org.matsim.contrib.dvrp.schedule.*;
 import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
-import org.matsim.contrib.dvrp.schedule.Schedules;
-import org.matsim.contrib.dvrp.schedule.StayTask;
-import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
-import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.tracker.TaskTrackers;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
 import org.matsim.contrib.taxi.passenger.TaxiRequest;
 import org.matsim.contrib.taxi.passenger.TaxiRequest.TaxiRequestStatus;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
-import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
-import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
-import org.matsim.contrib.taxi.schedule.TaxiOccupiedDriveTask;
-import org.matsim.contrib.taxi.schedule.TaxiPickupTask;
-import org.matsim.contrib.taxi.schedule.TaxiStayTask;
-import org.matsim.contrib.taxi.schedule.TaxiTask;
+import org.matsim.contrib.taxi.schedule.*;
 import org.matsim.contrib.taxi.schedule.TaxiTask.TaxiTaskType;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
@@ -45,12 +29,14 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.misc.Time;
-
-import com.google.inject.name.Named;
-
 import privateAV.events.FreightTourCompletedEvent;
 import privateAV.events.FreightTourRequestRejectedEvent;
 import privateAV.events.FreightTourScheduledEvent;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 final class PFAVScheduler implements TaxiScheduleInquiry {
 
@@ -64,23 +50,16 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	private final TaxiConfigGroup taxiCfg;
 	private final EventsManager eventsManager;
 
-	private Set<DvrpVehicle> vehiclesOnFreightTour = new HashSet();
+	private HashSet<DvrpVehicle> vehiclesOnFreightTour = new HashSet<>();
 
 	private final FreightTourManagerListBased freightManager;
 	private Map<Id<DvrpVehicle>, Double> requestedVehicles = new HashMap<>();
 
 	/**
-	 * @param taxiCfg
-	 * @param fleet
-	 * @param network
-	 * @param timer
-	 * @param travelTime
-	 * @param travelDisutility
-	 * @param eventsManager
 	 */
-	public PFAVScheduler(TaxiConfigGroup taxiCfg, Fleet fleet, Network network, MobsimTimer timer,
-			@Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, TravelDisutility travelDisutility,
-			EventsManager eventsManager, FreightTourManagerListBased tourManager) {
+	PFAVScheduler(TaxiConfigGroup taxiCfg, Fleet fleet, Network network, MobsimTimer timer,
+				  @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, TravelDisutility travelDisutility,
+				  EventsManager eventsManager, FreightTourManagerListBased tourManager) {
 		this.freightManager = tourManager;
 		this.eventsManager = eventsManager;
 		this.taxiCfg = taxiCfg;
@@ -202,20 +181,18 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 
 	private void scheduleFreightTour(DvrpVehicle vehicle, FreightTourDataPlanned tourData) {
-		//schedule just got updated.. current task should be a dropOff, nextTast should be a STAY task
+		//schedule just got updated.. current task should be a dropOff, nextTask should be a STAY task
 		Schedule schedule = vehicle.getSchedule();
 		Link requestLink = ((StayTaskImpl)vehicle.getSchedule().getCurrentTask()).getLink();
 		List<StayTask> freightActivities = tourData.getTourTasks();
 
 		cleanScheduleBeforeInsertingFreightTour(vehicle, schedule);
 
-		List<Task> freightTour = new ArrayList<>(); //for analysis
 		double totalDistance = 0.;  //for analysis
 		double emptyMeters = 0.;    //for analysis
 		double distanceToDepot = 0; //for analysis
 
 		StayTask previousTask = (StayTaskImpl)schedule.getCurrentTask();
-
 		for (int i = 0; i < freightActivities.size(); i++) {
 			StayTask currentTask = freightActivities.get(i);
 
@@ -235,7 +212,6 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				schedule.addTask(driveTask);
 
 				//				analysis
-				freightTour.add(driveTask); //analysis
 				double pathDistance = getDistanceOfPathForAnalysis(driveTask.getPath());
 				totalDistance += pathDistance; //analysis
 				if (driveTask instanceof TaxiEmptyDriveTask)
@@ -246,22 +222,13 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 
 			setAttributesForTask(vehicle, currentTask, path);
 			schedule.addTask(currentTask);
-			freightTour.add(currentTask);
 
 			previousTask = currentTask;
 		}
-
 		//schedule drive back to owner. if we do not do this here,
 		//we cannot include the empty kilometers of the return drive in the freight tour (so owner would have to pay)
-		Link returnLink = getReturnLink((PFAVehicle)vehicle);
-		VrpPathWithTravelData pathBackToOwner = VrpPaths.calcAndCreatePath(previousTask.getLink(), returnLink,
-				previousTask.getEndTime(), router, travelTime);
-		TaxiEmptyDriveTask returnDriveTask = new TaxiEmptyDriveTask(pathBackToOwner);
-		schedule.addTask(returnDriveTask);
-
+		double returnDistance = scheduleReturnToOwnerAndGetDistance((PFAVehicle) vehicle, schedule, previousTask);
 		//analysis
-		freightTour.add(returnDriveTask);
-		double returnDistance = getDistanceOfPathForAnalysis(returnDriveTask.getPath());
 		emptyMeters += returnDistance;
 		totalDistance += returnDistance;
 
@@ -285,6 +252,16 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				.build();
 
 		eventsManager.processEvent(new FreightTourScheduledEvent(dispatchData));
+	}
+
+	private double scheduleReturnToOwnerAndGetDistance(PFAVehicle vehicle, Schedule schedule, StayTask previousTask) {
+		Link returnLink = getReturnLink(vehicle);
+		VrpPathWithTravelData pathBackToOwner = VrpPaths.calcAndCreatePath(previousTask.getLink(), returnLink,
+				previousTask.getEndTime(), router, travelTime);
+		TaxiEmptyDriveTask returnDriveTask = new TaxiEmptyDriveTask(pathBackToOwner);
+		schedule.addTask(returnDriveTask);
+
+		return getDistanceOfPathForAnalysis(returnDriveTask.getPath());
 	}
 
 	private void setAttributesForTask(DvrpVehicle vehicle, StayTask currentTask, VrpPathWithTravelData path) {
@@ -317,7 +294,6 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 
 	private void cleanScheduleBeforeInsertingFreightTour(DvrpVehicle vehicle, Schedule schedule) {
-
 		switch (((TaxiTask)Schedules.getNextTask(schedule)).getTaxiTaskType()) {
 			case STAY:
 				//vehicle requested freight tour after passenger dropoff
@@ -345,7 +321,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 	}
 
-	public void scheduleRequest(DvrpVehicle vehicle, TaxiRequest request) {
+	void scheduleRequest(DvrpVehicle vehicle, TaxiRequest request) {
 		if (request.getStatus() != TaxiRequestStatus.UNPLANNED) {
 			throw new IllegalStateException();
 		}
@@ -406,10 +382,13 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		schedule.addTask(new TaxiStayTask(tBegin, tEnd, link));
 	}
 
-	public boolean isCurrentlyOnOrWillPerformPerformFreightTour(DvrpVehicle veh) {
+	boolean isCurrentlyOnOrWillPerformPerformFreightTour(DvrpVehicle veh) {
 		return this.vehiclesOnFreightTour.contains(veh);
 	}
 
+	/**
+	 * currently not implemented. is here for use in future (other usecases than ts's master thesis)
+	 */
 	public void cancelFreightTour(DvrpVehicle veh) {
 		// TODO: cancel the freight tour and make vehicle return to depot. insert STAY task at the depot
 		//		- first check if freight tour is started in the first place! otherwise throw exception!
@@ -450,7 +429,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 
 	//	cannot be delegated because we need different new end time calculation than in TaxiScheduler.calcNewEndTime()
 	//	maybe we should use inheritance in order to get rid of all these redundant lines....
-	public void updateTimeline(DvrpVehicle vehicle) {
+	void updateTimeline(DvrpVehicle vehicle) {
 		Schedule schedule = vehicle.getSchedule();
 		if (schedule.getStatus() != ScheduleStatus.STARTED) {
 			return;
