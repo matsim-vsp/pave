@@ -144,6 +144,8 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 
 				break;
 			case OCCUPIED_DRIVE:
+				//TODO here, we need to check whether the next task is a PFAVServiceTask.
+				// If so, we need to check if vehicle is too early and if so we need to insert a stay task and let the vehicle wait until service time window starts
 				break;
 			default: {
 				throw new IllegalStateException();
