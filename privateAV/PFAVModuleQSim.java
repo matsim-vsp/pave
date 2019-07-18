@@ -22,7 +22,6 @@ import org.matsim.contrib.taxi.util.stats.TaxiStatusTimeProfileCollectorProvider
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.MatsimServices;
 import org.matsim.core.mobsim.framework.MobsimTimer;
-import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 
@@ -30,7 +29,7 @@ final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
 
     private final TaxiConfigGroup taxiCfg;
 
-    public PFAVModuleQSim(TaxiConfigGroup taxiCfg) {
+    PFAVModuleQSim(TaxiConfigGroup taxiCfg) {
         super(taxiCfg.getMode());
         this.taxiCfg = taxiCfg;
     }
@@ -74,8 +73,9 @@ final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
                     public TaxiScheduleInquiry get() {
                         Fleet fleet = getModalInstance(Fleet.class);
                         Network network = getModalInstance(Network.class);
-                        TravelDisutility travelDisutility = getModalInstance(
-                                TravelDisutilityFactory.class).createTravelDisutility(travelTime);
+//                        TravelDisutility travelDisutility = getModalInstance(
+//                                TravelDisutilityFactory.class).createTravelDisutility(travelTime);
+                        TravelDisutility travelDisutility = getModalInstance(TravelDisutility.class);
                         return new PFAVScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility, events, tourManager);
                     }
                 }).asEagerSingleton();

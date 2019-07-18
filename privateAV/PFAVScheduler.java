@@ -198,8 +198,8 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		for (int i = 0; i < freightActivities.size(); i++) {
 			StayTask currentTask = freightActivities.get(i);
 
-			VrpPathWithTravelData path = PFAVUtils.calcAndCreatePath(previousTask.getLink(), currentTask.getLink(),
-					previousTask.getEndTime(), router, travelTime, vehicle);
+			VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(previousTask.getLink(), currentTask.getLink(),
+					previousTask.getEndTime(), router, travelTime);
 
 			DriveTask driveTask = null;
 			//first activity could be PFAVRetoolTask or TaxiStayTask
@@ -258,8 +258,8 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 
 	private double scheduleReturnToOwnerAndGetDistance(PFAVehicle vehicle, Schedule schedule, StayTask previousTask) {
 		Link returnLink = getReturnLink(vehicle);
-		VrpPathWithTravelData pathBackToOwner = PFAVUtils.calcAndCreatePath(previousTask.getLink(), returnLink,
-				previousTask.getEndTime(), router, travelTime, vehicle);
+		VrpPathWithTravelData pathBackToOwner = VrpPaths.calcAndCreatePath(previousTask.getLink(), returnLink,
+				previousTask.getEndTime(), router, travelTime);
 		TaxiEmptyDriveTask returnDriveTask = new TaxiEmptyDriveTask(pathBackToOwner);
 		schedule.addTask(returnDriveTask);
 
