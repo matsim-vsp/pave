@@ -43,7 +43,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler, ActivityStartEventHandler, VehicleEntersTrafficEventHandler, VehicleLeavesTrafficEventHandler, LinkEnterEventHandler, IterationEndsListener {
+public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler, ActivityStartEventHandler,
+        VehicleEntersTrafficEventHandler, VehicleLeavesTrafficEventHandler, LinkEnterEventHandler, IterationEndsListener {
 
     private Map<Id<Person>, Double> departureTimes = new HashMap<>();
 
@@ -58,8 +59,8 @@ public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler
 
     private Network network;
 
-
-    Map<Id<Person>, ScheduledTour> driverToScheduledTour = null;
+    private Map<Id<Person>, ScheduledTour> driverToScheduledTour = null;
+    private Map<Id<Person>, Double> serviceActStartTimes = new HashMap<>();
 
     public BaseCaseFreightTourStatsListener(Network network) {
         this.network = network;
@@ -79,7 +80,7 @@ public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler
     }
 
     public static void main(String[] args) {
-        String dir = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Pkw/";
+        String dir = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/bCs_gzBln_11k_Truck/";
         String input = dir + "berlin-v5.3-1pct.output_events.xml.gz";
         String carriersFile = dir + "output_carriers.xml";
         final Carriers carriers = new Carriers();
@@ -92,8 +93,7 @@ public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler
         BaseCaseFreightTourStatsListener handler = new BaseCaseFreightTourStatsListener(network, carriers);
         manager.addHandler(handler);
         PFAVEventsReader reader = new PFAVEventsReader(manager);
-
-        String output = dir + "/ITERS/it.0/Truck_FreightTourStats_it.0_NEU.csv";
+        String output = dir + "/ITERS/it.0/FreightTourStats_it0.csv";
 
         reader.readFile(input);
         handler.writeStats(output);
@@ -136,6 +136,8 @@ public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler
 
             FreightTourData data = new FreightTourData(event.getLinkId().toString(), event.getTime());
             this.currentTours.put(event.getPersonId(), data);
+        } else if (event.getActType().equals("service")) {
+            this.currentTours.get(event.getPersonId()).totalServiceTime += event.getTime() - this.serviceActStartTimes.remove(event.getPersonId());
         }
     }
 
@@ -149,6 +151,7 @@ public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler
         String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/";
         writeStats(dir + "FreightTourStats_it" + event.getIteration() + ".csv");
     }
+
 
     @Override
     public void handleEvent(ActivityStartEvent event) {
@@ -164,13 +167,20 @@ public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler
             FreightTourData data = currentTours.get(event.getPersonId());
             if (this.driverToScheduledTour != null) {
                 ScheduledTour carrierTour = this.driverToScheduledTour.get(event.getPersonId());
+
+                Tour.ServiceActivity serviceAct = data.getCurrentServiceAct(carrierTour);
+                double delay = event.getTime() - serviceAct.getTimeWindow().getEnd();
+                double waitTimeAtService = serviceAct.getTimeWindow().getStart() - event.getTime();
+                if (waitTimeAtService > 0 && delay > 0)
+                    throw new IllegalStateException("driver " + event.getPersonId() + " both is too early AND to late at service " + serviceAct.getService());
+                if (waitTimeAtService < 0) waitTimeAtService = 0;
+                data.totalWaitTimeAtServices += waitTimeAtService;
                 if (data.plannedTourDuration == null) {
+                    data.waitTimeAtFirstService = waitTimeAtService;
                     data.deriveInformationFromScheduledTour(carrierTour);
                     data.driverId = event.getPersonId().toString();
                 }
-                // we only increase serviceIdx once per service, so we need to account for the TourLegs in the ScheduledTour
-                Tour.ServiceActivity service = (Tour.ServiceActivity) carrierTour.getTour().getTourElements().get(data.serviceIdx + data.serviceIdx - 1);
-                double delay = event.getTime() - service.getTimeWindow().getEnd();
+                this.serviceActStartTimes.put(event.getPersonId(), event.getTime());
                 if (delay > 0) data.increaseDelayAtServices(delay);
             }
             this.lastLegLength.put(this.driverToVehicle.get(event.getPersonId()), 0.);
@@ -188,16 +198,18 @@ public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler
         this.allTours = new ArrayList<>();
     }
 
-    public void writeStats(String file) {
+    void writeStats(String file) {
         BufferedWriter writer = IOUtils.getBufferedWriter(file);
         try {
             int i = 1;
-            writer.write("index;departureTime;travelledDistance;emptyDistance;" +
+            writer.write("index;departureTime;totalServiceTime;waitTimeAtFirstService;totalWaitTimeAtServices;" +
+                    "travelledDistance;emptyDistance;" +
                     "plannedTourDuration;actualTourDuration;serviceCount;totalDelay;depotLink;driverId");
             writer.newLine();
 
             for (FreightTourData data : this.allTours) {
-                writer.write("" + i + ";" + data.departureTime + ";" + data.distance + ";" + data.emptyDistance
+                writer.write("" + i + ";" + data.departureTime + ";" + data.totalServiceTime + ";" + data.waitTimeAtFirstService + ";" + data.totalWaitTimeAtServices
+                        + ";" + data.distance + ";" + data.emptyDistance
                         + ";" + data.plannedTourDuration + ";" + data.actualTourDuration + ";" + data.serviceCount
                         + ";" + data.accumulatedDelayAtServices + ";" + data.depot + ";" + data.driverId);
                 writer.newLine();
@@ -214,10 +226,13 @@ public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler
 
         private final String depot;
         private final double departureTime;
+        double totalServiceTime = 0;
+        double waitTimeAtFirstService = 0;
+        double totalWaitTimeAtServices = 0;
 
         private Double plannedTourDuration = null;
         private int serviceCount;
-        private int serviceIdx = 1;
+        private int serviceIdx = -1;
 
         private double distance = 0.;
         private double actualTourDuration = 0.;
@@ -242,8 +257,15 @@ public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler
         }
 
 
-        public void increaseDelayAtServices(double amount) {
+        private void increaseDelayAtServices(double amount) {
             this.accumulatedDelayAtServices += amount;
+        }
+
+
+        Tour.ServiceActivity getCurrentServiceAct(ScheduledTour carrierTour) {
+            // we only increase serviceIdx once per service, so we need to account for the TourLegs in the ScheduledTour
+            this.serviceIdx += 2;
+            return (Tour.ServiceActivity) carrierTour.getTour().getTourElements().get(serviceIdx);
         }
     }
 
