@@ -31,7 +31,7 @@ import java.util.Map;
 public class FreightTourScheduledEvent extends Event {
     static final String EVENT_TYPE = "freightTourScheduled";
 
-    static final String ATTRIBUTE_VEHICLE = "vehicle";
+    public static final String ATTRIBUTE_VEHICLE = "vehicle";
     static final String ATTRIBUTE_REQUEST_LINK = "requestLink";
     static final String ATTRIBUTE_FREIGHT_TOUR_DURATION = "freightTourDuration";
     static final String ATTRIBUTE_FREIGHT_TOUR_DISTANCE = "freightTourDistance";

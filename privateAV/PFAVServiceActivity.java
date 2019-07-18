@@ -53,7 +53,7 @@ class PFAVServiceActivity extends FirstLastSimStepDynActivity {
 	
 	@Override
 	protected void beforeFirstStep(double now) {
-		// TODO do we want/need wo simulate something here
+		// TODO we need to check whether the service activity can be started yet!!!
 		super.beforeFirstStep(now);
 	}
 
