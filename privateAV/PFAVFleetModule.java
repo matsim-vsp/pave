@@ -13,10 +13,9 @@ import org.matsim.contrib.dvrp.run.QSimScopeObjectListenerModule;
 
 final class PFAVFleetModule extends AbstractDvrpModeModule {
 
-    private boolean updateVehicleStartLinkToLastLink;
     private Scenario scenario;
 
-    public PFAVFleetModule(String mode, Scenario scenario){
+    PFAVFleetModule(String mode, Scenario scenario) {
         super(mode);
         this.scenario = scenario;
     }
@@ -48,15 +47,6 @@ final class PFAVFleetModule extends AbstractDvrpModeModule {
         addControlerListenerBinding().to(modalKey(PFAVFleetStatsCalculator.class));
 
         installQSimModule(QSimScopeObjectListenerModule.createSimplifiedModule(getMode(), Fleet.class, PFAVFleetStatsCalculator.class));
-
-//        //analysis
-//        FreightTourDispatchAnalyzer analyzer = new FreightTourDispatchAnalyzer();
-//
-//        bindModal(FreightTourDispatchAnalyzer.class).toInstance(analyzer);
-//        addControlerListenerBinding().to(modalKey(FreightTourDispatchAnalyzer.class));
-//        installQSimModule(QSimScopeObjectListenerModule.createSimplifiedModule(getMode(), Fleet.class, FreightTourDispatchAnalyzer.class));
-//
-//        addEventHandlerBinding().toInstance(analyzer);
 
     }
 }

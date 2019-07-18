@@ -19,11 +19,17 @@
 package privateAV;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
+import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
+import org.matsim.core.router.util.LeastCostPathCalculator;
+import org.matsim.core.router.util.TravelTime;
+import org.matsim.vehicles.Vehicle;
 
 /**
  * @author tschlenther
@@ -31,6 +37,8 @@ import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
  * //TODO transfer (almost) all of this to a new type of config group
  */
 public final class PFAVUtils {
+
+	public static final String MODE = "pfav";
 
     /**
      * represents the latest start time of a freight tour. that means, the retool task of a freight tour has to start before
@@ -148,5 +156,17 @@ public final class PFAVUtils {
     public static Id<DvrpVehicle> generatePFAVIdFromPersonId(Id<Person> personId) {
         return Id.create(personId.toString() + PFAVUtils.PFAV_ID_SUFFIX, DvrpVehicle.class);
     }
+
+	/**
+	 * TODO:put this in org.matsim.contrib.dvrp.path.VrpPaths and open a pull request
+	 */
+	public static VrpPathWithTravelData calcAndCreatePath(Link fromLink, Link toLink, double departureTime, LeastCostPathCalculator router, TravelTime travelTime, Vehicle vehicle) {
+		LeastCostPathCalculator.Path path = null;
+		if (fromLink != toLink) {
+			path = router.calcLeastCostPath(fromLink.getToNode(), toLink.getFromNode(), departureTime + 1.0D, null, vehicle);
+		}
+		return VrpPaths.createPath(fromLink, toLink, departureTime, path, travelTime);
+	}
+
 
 }

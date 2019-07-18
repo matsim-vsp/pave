@@ -1,13 +1,11 @@
 package privateAV;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
-import org.matsim.contrib.dvrp.passenger.DefaultPassengerRequestValidator;
-import org.matsim.contrib.dvrp.passenger.PassengerEngine;
-import org.matsim.contrib.dvrp.passenger.PassengerEngineQSimModule;
-import org.matsim.contrib.dvrp.passenger.PassengerRequestCreator;
-import org.matsim.contrib.dvrp.passenger.PassengerRequestValidator;
+import org.matsim.contrib.dvrp.passenger.*;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.ModalProviders;
@@ -28,9 +26,6 @@ import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
 final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
 
     private final TaxiConfigGroup taxiCfg;
@@ -50,20 +45,13 @@ final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
             private MobsimTimer timer;
 
             @Inject
-            @Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
-            private TravelTime travelTime;
-
-            @Inject
             private EventsManager events;
 
             @Override
             public TaxiOptimizer get() {
                 Fleet fleet = getModalInstance(Fleet.class);
-                Network network = getModalInstance(Network.class);
                 TaxiScheduleInquiry taxiScheduler = getModalInstance(TaxiScheduleInquiry.class);
-                TravelDisutility travelDisutility = getModalInstance(
-                        TravelDisutilityFactory.class).createTravelDisutility(travelTime);
-                return new PFAVProvider(taxiCfg, fleet, taxiScheduler, timer, network, travelTime, events).get();
+                return new PFAVProvider(taxiCfg, fleet, taxiScheduler, timer, events).get();
             }
         });
 
