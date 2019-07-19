@@ -134,9 +134,8 @@ public final class FreightTourPlanning {
             CarrierPlan carrierPlan = MatsimJspritFactory.createPlan(carrier, bestSolution);
 
             /* calculate the route - we need this because otherwise we only have the duration of the service task and do not have a clue about tour duration
-             * BUT: the routes themselves cannot be used later. please also see ConvertFreightForDvrp.convertToList()
              */
-            //if we use this default method, a router is created by leastCostPathCalculatorFactory.createPathCalculator(network, travelDisutility, travelTime);
+            //if we use this default method, FastDijkstraFactory.createLeastCostPathCalculator(network, travelDisutility, travelTime) is called;
             NetworkRouter.routePlan(carrierPlan, netBasedCosts);
 
             carrier.setSelectedPlan(carrierPlan);
