@@ -21,24 +21,27 @@
 package privateAV;
 
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.schedule.StayTask;
+import org.matsim.contrib.dvrp.schedule.DriveTask;
+import org.matsim.contrib.dvrp.schedule.DriveTaskImpl;
+import org.matsim.contrib.taxi.schedule.TaxiTask;
 
 import java.util.List;
 import java.util.Objects;
 
 public final class FreightTourDataPlanned {
 
+    private List<TaxiTask> tourTasks;
+    private DriveTask accessDriveTask = null;
+
     private final Link depotLink;
     private final int plannedTotalCapacityDemand;
     private final double travelTimeToLastService;
 
     private Double plannedTourDuration;
-
     private int amountOfRejections = 0;
 
-    private List<StayTask> tourTasks;
 
-    public FreightTourDataPlanned(List<StayTask> tourTasks, Link depotLinkId, double plannedTourDuration, double travelTimeToLastService, int plannedTotalCapacityDemand) {
+    FreightTourDataPlanned(List<TaxiTask> tourTasks, Link depotLinkId, double plannedTourDuration, double travelTimeToLastService, int plannedTotalCapacityDemand) {
         this.tourTasks = Objects.requireNonNull(tourTasks);
         this.depotLink = Objects.requireNonNull(depotLinkId);
         this.plannedTourDuration = plannedTourDuration;
@@ -46,12 +49,16 @@ public final class FreightTourDataPlanned {
         this.plannedTotalCapacityDemand = plannedTotalCapacityDemand;
     }
 
+    public void setPlannedTourDuration(Double plannedTourDuration) {
+        this.plannedTourDuration = plannedTourDuration;
+    }
+
     public double getPlannedTourDuration() {
         return plannedTourDuration;
     }
 
-    public void setPlannedTourDuration(Double plannedTourDuration) {
-        this.plannedTourDuration = plannedTourDuration;
+    public List<TaxiTask> getTourTasks() {
+        return tourTasks;
     }
 
     public int getPlannedTotalCapacityDemand() {
@@ -62,8 +69,8 @@ public final class FreightTourDataPlanned {
         return depotLink;
     }
 
-    public List<StayTask> getTourTasks() {
-        return tourTasks;
+    public DriveTask getAccessDriveTask() {
+        return this.accessDriveTask;
     }
 
     public int getAmountOfRejections() {
@@ -85,4 +92,7 @@ public final class FreightTourDataPlanned {
         return this.travelTimeToLastService;
     }
 
+    public void setAccessDriveTask(DriveTaskImpl driveTask) {
+        this.accessDriveTask = driveTask;
+    }
 }

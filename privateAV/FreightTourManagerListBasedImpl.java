@@ -31,6 +31,7 @@ import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.schedule.Tasks;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.util.StraightLineKnnFinder;
 import org.matsim.contrib.util.distance.DistanceUtils;
@@ -264,8 +265,8 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
         }
 
         StayTask currentTask = (StayTask) vehicle.getSchedule().getCurrentTask();
-        StayTask start = freightTour.getTourTasks().get(0);
-        StayTask end = freightTour.getTourTasks().get(freightTour.getTourTasks().size() - 1);
+        StayTask start = (StayTask) freightTour.getTourTasks().get(0);
+        StayTask end = (StayTask) freightTour.getTourTasks().get(freightTour.getTourTasks().size() - 1);
 
         double tourDuration = freightTour.getPlannedTourDuration();
 
@@ -291,6 +292,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
                         + " in order to be consistent with earliest start time set to " + PFAVUtils.FREIGHTTOUR_EARLIEST_START);
                 freightTour.getTourTasks().add(0, new TaxiStayTask(start.getBeginTime() - waitTimeAtDepot, start.getBeginTime(), start.getLink()));
             }
+            freightTour.setAccessDriveTask(new TaxiEmptyDriveTask(pathFromCurrTaskToDepot));
             return true;
         }
         return false;

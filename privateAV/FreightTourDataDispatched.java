@@ -23,9 +23,9 @@ package privateAV;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
-import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.freight.carrier.TimeWindow;
+import org.matsim.contrib.taxi.schedule.TaxiTask;
 
 import java.util.Objects;
 
@@ -65,7 +65,7 @@ public final class FreightTourDataDispatched {
         this.tourData = builder.data;
     }
 
-    public static FreightTourDataDispatched.Builder newBuilder() {
+    static FreightTourDataDispatched.Builder newBuilder() {
         return new FreightTourDataDispatched.Builder();
     }
 
@@ -92,7 +92,7 @@ public final class FreightTourDataDispatched {
 
     public void notifyNextServiceTaskStarted(double startTime) {
         for (int i = this.tourData.getTourTasks().size() - 1; i >= 0; i--) {
-            StayTask task = this.tourData.getTourTasks().get(i);
+            TaxiTask task = this.tourData.getTourTasks().get(i);
             if (task instanceof PFAVServiceTask && (task.getStatus() == Task.TaskStatus.PERFORMED || task.getStatus() == Task.TaskStatus.STARTED)) {
                 PFAVServiceTask serviceTask = (PFAVServiceTask) task;
                 this.addToActualServedCapacityDemand(serviceTask.getCarrierService().getCapacityDemand());
@@ -113,7 +113,7 @@ public final class FreightTourDataDispatched {
 
     public int getAmountOfServicesPlanned() {
         int services = 0;
-        for (StayTask t : this.tourData.getTourTasks()) {
+        for (TaxiTask t : this.tourData.getTourTasks()) {
             if (t instanceof PFAVServiceTask) services++;
         }
         return services;

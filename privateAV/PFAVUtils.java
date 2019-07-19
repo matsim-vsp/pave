@@ -131,11 +131,16 @@ public final class PFAVUtils {
     public static final boolean CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH = false;
 
 	/**
+	 * determines whether the drives within the freight tour are reRouted when the freight tour is dispatched
+	 */
+	public static final boolean RE_ROUTE_TOURS = false;
+
+	/**
 	 * when true, the vehicle will immediately return to it's owner's activity location and wait there.
 	 * if false, it might perform another freight tour after having performed the last PFAVServiceTask.
 	 * TODO create JUnit test...
 	 */
-    public static boolean ALLOW_MULTIPLE_TOURS_IN_A_ROW = true;
+	public static boolean ALLOW_MULTIPLE_TOURS_IN_A_ROW = true;
 
 	public static TaxiDropoffTask getLastPassengerDropOff(Schedule schedule) {
 		for (int i = schedule.getTasks().size() - 1; i >= 0; i--) {
