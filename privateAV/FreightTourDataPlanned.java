@@ -73,12 +73,12 @@ public final class FreightTourDataPlanned {
         return this.accessDriveTask;
     }
 
-    public int getAmountOfRejections() {
-        return amountOfRejections;
-    }
-
     void setAccessDriveTask(DriveTaskImpl driveTask) {
         this.accessDriveTask = driveTask;
+    }
+
+    public int getAmountOfRejections() {
+        return amountOfRejections;
     }
 
     void incrementAmountOfRejections() {

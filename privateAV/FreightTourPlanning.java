@@ -73,7 +73,6 @@ public final class FreightTourPlanning {
 
         int size = freightTour.getTour().getTourElements().size();
         for (int i = 0; i < size; i++) {
-            System.out.println("i = " + i);
             TourElement currentElement = freightTour.getTour().getTourElements().get(i);
             if (currentElement instanceof ServiceActivity) {
                 //currently we need to add PFAVUtils.PFAV_RETOOL_TIME, since we added this already to the start act duration

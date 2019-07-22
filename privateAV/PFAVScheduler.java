@@ -187,10 +187,12 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		Schedule schedule = vehicle.getSchedule();
 
 		cleanScheduleBeforeInsertingFreightTour(vehicle, schedule);
-		schedule.addTask(tourData.getAccessDriveTask());
+        DriveTask accessDrive = tourData.getAccessDriveTask();
+        if (accessDrive == null) throw new IllegalStateException("no access drive found for tour " + tourData);
+        schedule.addTask(accessDrive);
 
+        //actually insert the task into the schedule. shift start and end times respectively
 		FreightTourDataDispatched dispatchData;
-
 		insertFreightTourInSchedule(vehicle, tourData);
 
 		double returnDistance = scheduleReturnToOwnerAndGetDistance((PFAVehicle) vehicle, schedule, (StayTask) Schedules.getLastTask(schedule));
@@ -252,7 +254,6 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				setAttributesForTask(vehicle, currentTask, previousTask);
 			}
 			previousTask = currentTask;
-			System.out.println("current task = " + currentTask);
 			vehicle.getSchedule().addTask(currentTask);
 		}
 	}
