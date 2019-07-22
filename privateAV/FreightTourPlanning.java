@@ -78,7 +78,7 @@ public final class FreightTourPlanning {
                 //currently we need to add PFAVUtils.PFAV_RETOOL_TIME, since we added this already to the start act duration
                 ServiceActivity serviceAct = (ServiceActivity) currentElement;
 
-                tBegin = serviceAct.getExpectedArrival() + PFAVUtils.PFAV_RETOOL_TIME;
+                tBegin = tEnd; //serviceAct.getExpectedArrival() does always return 0. so we work with our own variable
                 tEnd = tBegin + serviceAct.getDuration();
                 location = network.getLinks().get(serviceAct.getLocation());
                 totalCapacityDemand += serviceAct.getService().getCapacityDemand();
@@ -91,11 +91,10 @@ public final class FreightTourPlanning {
                 else {
                     path = createVrpPath(route, tEnd, network, travelTime);
                 }
-                if (i == size - 1) {
-                    taskList.add(new TaxiEmptyDriveTask(path));
-                } else {
-                    taskList.add(new PFAVServiceDriveTask(path));
-                }
+                TaxiTask driveTask = (i == size - 1) ? new TaxiEmptyDriveTask(path) : new PFAVServiceDriveTask(path);
+                taskList.add(driveTask);
+                tEnd = driveTask.getEndTime();
+                tBegin = driveTask.getBeginTime();
             }
         }
         double travelTimeToLastService = taskList.get(taskList.size() - 2).getBeginTime();
@@ -106,6 +105,7 @@ public final class FreightTourPlanning {
         taskList.add(new PFAVRetoolTask(tBegin, tEnd, location));
 
         double plannedTourDuration = tEnd - taskList.get(0).getBeginTime();
+        if (plannedTourDuration < 0) throw new RuntimeException("tour duration must be positive");
         return new FreightTourDataPlanned(taskList, depotLink, plannedTourDuration, travelTimeToLastService, totalCapacityDemand);
 	}
 
