@@ -63,8 +63,7 @@ public class PopulationCreator {
 
     private static void getXPFAVOWnersInBerlinScenarioAndWritePopulation(String dir, String outPopulationFile, int nrOfOwners) {
         String config = "input/BerlinScenario/5.3/berlin-v5.3-1pct.config.xml";
-        RunBerlinScenario berlin = new RunBerlinScenario(config, null);
-        Scenario scenario = berlin.prepareScenario();
+        Scenario scenario = RunBerlinScenario.prepareScenario(RunBerlinScenario.prepareConfig(new String[]{config}));
         PopulationWriter writer1 = new PopulationWriter(scenario.getPopulation());
         writer1.write(dir + "originalPopulation.xml.gz");
         Population onlyPFAVOwners = defineAndGetXSpatialEquallyDistributedPFAVOwners(scenario.getPopulation(), nrOfOwners);

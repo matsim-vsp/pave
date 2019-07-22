@@ -15,7 +15,7 @@ public final class PFAVehicle extends DvrpVehicleImpl {
 
     //TODO: actually, the ownerActEndTimes are now contained twice, once in the specification, once in the vehicle.
     // at least for debugging that is nice, but maybe the list should be removed from here..
-    PFAVehicle(PFAVSpecification specification, Link startLink) {
+    private PFAVehicle(PFAVSpecification specification, Link startLink) {
         super(specification, startLink);
         this.mustReturnToOwnerLinkTimePairs = new LinkedList<>();
         this.mustReturnToOwnerLinkTimePairs.addAll(specification.mustReturnToOwnerLinkTimePairs);

@@ -71,21 +71,15 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     /**
      *
      */
-    FreightTourManagerListBasedImpl(String pathToCarriersFile, String pathToVehTypesFile, int timeSlice) {
+    FreightTourManagerListBasedImpl(String pathToCarriersFile, CarrierVehicleTypes vehicleTypes, int timeSlice) {
 
         this.carriers = readCarriers(pathToCarriersFile);
-        this.vehicleTypes = readVehicleTypes(pathToVehTypesFile);
+        this.vehicleTypes = vehicleTypes;
         this.timeSlice = timeSlice;
         log.info("loading carrier vehicle types..");
         new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(vehicleTypes);
     }
 
-    private CarrierVehicleTypes readVehicleTypes(String input) {
-        CarrierVehicleTypes vTypes = new CarrierVehicleTypes();
-        CarrierVehicleTypeReader reader = new CarrierVehicleTypeReader(vTypes);
-        reader.readFile(input);
-        return vTypes;
-    }
 
     private Carriers readCarriers(String file) {
         Carriers carriers = new Carriers();
@@ -324,7 +318,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     }
 
     private void sortDepotLists() {
-        Comparator<FreightTourDataPlanned> comparator = (tour1, tour2) -> Double.compare(tour1.getLatestArrivalAtLastService(), tour2.getLatestArrivalAtLastService());
+        Comparator<FreightTourDataPlanned> comparator = Comparator.comparingDouble(FreightTourDataPlanned::getLatestArrivalAtLastService);
         for (LinkedList<FreightTourDataPlanned> q : this.depotToFreightTour.values()) {
             Collections.sort(q, comparator);
         }
