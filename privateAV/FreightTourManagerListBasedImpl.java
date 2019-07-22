@@ -247,6 +247,10 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
         PFAVehicle.MustReturnLinkTimePair mustReturnToOwnerLog = vehicle.getMustReturnToOwnerLinkTimePairs().peek();
         Double timeWhenOwnerNeedsVehicle = mustReturnToOwnerLog.getTime();
         Link returnLink = network.getLinks().get(mustReturnToOwnerLog.getLinkId());
+        StayTask currentTask = (StayTask) vehicle.getSchedule().getCurrentTask();
+        StayTask start = (StayTask) freightTour.getTourTasks().get(0);
+        StayTask end = (StayTask) freightTour.getTourTasks().get(freightTour.getTourTasks().size() - 1);
+
         if (timeWhenOwnerNeedsVehicle == null) {
             throw new IllegalStateException("could not derive must return time of vehicle " + vehicle.getId() + " out of vehicle specification");
         } else if (timeWhenOwnerNeedsVehicle == Double.NEGATIVE_INFINITY) {
@@ -255,17 +259,13 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
 //            return false;
         } else if (timeWhenOwnerNeedsVehicle == Double.POSITIVE_INFINITY) {
             log.info("tour duration is irrelevant for vehicle " + vehicle.getId() + " because owner does not need the PFAV anymore for today");
+            accountForWaitTaskAndAccessDrive(vehicle, pathFromCurrTaskToDepot, waitTimeAtDepot, freightTour, start);
             return true;
         }
-
-        StayTask currentTask = (StayTask) vehicle.getSchedule().getCurrentTask();
-        StayTask start = (StayTask) freightTour.getTourTasks().get(0);
-        StayTask end = (StayTask) freightTour.getTourTasks().get(freightTour.getTourTasks().size() - 1);
 
         double tourDuration = freightTour.getPlannedTourDuration();
 
 //		Link returnLink = PFAVUtils.getLastPassengerDropOff(vehicle.getSchedule()).getLink();
-
         //owner link will be null if no dropOff has been performed yet. return to start link instead.
         //actually this should not happen in the moment, as the first call of the requestFreightTour() method in the scheduler always is triggered after a passenger dropoff
 //		if (returnLink == null) returnLink = vehicle.getStartLink();
@@ -281,15 +281,19 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
             log.info("tour duration = " + totalTimeNeededToPerformFreightTour + " seems to be okay for vehicle " + vehicle.getId() + " starting at time " + currentTask.getEndTime());
             log.warn("the owner wants the vehicle back at time " + timeWhenOwnerNeedsVehicle);
 
-            if (waitTimeAtDepot > 0) {
-                log.info("inserting wait task with duration= " + waitTimeAtDepot + " at the depot link " + freightTour.getDepotLink().getId() + " for vehicle " + vehicle.getId()
-                        + " in order to be consistent with earliest start time set to " + PFAVUtils.FREIGHTTOUR_EARLIEST_START);
-                freightTour.getTourTasks().add(0, new TaxiStayTask(start.getBeginTime() - waitTimeAtDepot, start.getBeginTime(), start.getLink()));
-            }
-            freightTour.setAccessDriveTask(new TaxiEmptyDriveTask(pathFromCurrTaskToDepot));
+            accountForWaitTaskAndAccessDrive(vehicle, pathFromCurrTaskToDepot, waitTimeAtDepot, freightTour, start);
             return true;
         }
         return false;
+    }
+
+    private void accountForWaitTaskAndAccessDrive(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot, double waitTimeAtDepot, FreightTourDataPlanned freightTour, StayTask start) {
+        if (waitTimeAtDepot > 0) {
+            log.info("inserting wait task with duration= " + waitTimeAtDepot + " at the depot link " + freightTour.getDepotLink().getId() + " for vehicle " + vehicle.getId()
+                    + " in order to be consistent with earliest start time set to " + PFAVUtils.FREIGHTTOUR_EARLIEST_START);
+            freightTour.getTourTasks().add(0, new TaxiStayTask(start.getBeginTime() - waitTimeAtDepot, start.getBeginTime(), start.getLink()));
+        }
+        freightTour.setAccessDriveTask(new TaxiEmptyDriveTask(pathFromCurrTaskToDepot));
     }
 
     private double computeWaitTimeAtDepot(VrpPathWithTravelData pathFromCurrTaskToDepot) {
