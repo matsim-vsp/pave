@@ -77,9 +77,6 @@ public class RunPFAVInBerlin {
 			increaseCapacities = false;
 		}
 
-//		RunBerlinScenario berlin = new RunBerlinScenario(new String[]{configPath});
-		RunBerlinScenario berlin = new RunBerlinScenario();
-
 		//setup config
 		Config config = RunBerlinScenario.prepareConfig(new String[]{configPath});
 		TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
