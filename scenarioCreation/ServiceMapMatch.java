@@ -29,6 +29,7 @@ import org.matsim.api.core.v01.network.NetworkWriter;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.util.CSVLineBuilder;
 import org.matsim.contrib.util.CompactCSVWriter;
+import org.matsim.core.config.Config;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.io.MatsimNetworkReader;
@@ -131,7 +132,8 @@ public class ServiceMapMatch {
         //should be referenced in GK 4 after having a look at the net in via
         Network oldSchroederNet = NetworkUtils.createNetwork();
         //is referenced in GK4
-        Network openBerlinNet = new RunBerlinScenario(CONFIG_v53_1pct, null).prepareScenario().getNetwork();
+        Config config = RunBerlinScenario.prepareConfig(new String[]{CONFIG_v53_1pct});
+        Network openBerlinNet = RunBerlinScenario.prepareScenario(config).getNetwork();
 
         MatsimNetworkReader oldNetReader = new MatsimNetworkReader(oldSchroederNet);
 //        MatsimNetworkReader openBerlinNetReader = new MatsimNetworkReader(openBerlinNet);

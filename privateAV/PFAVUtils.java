@@ -32,6 +32,10 @@ import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
  */
 public final class PFAVUtils {
 
+	public static final String MODE = "pfav";
+
+	public static final String PFAV_TYPE = "PFAV";
+
     /**
      * represents the latest start time of a freight tour. that means, the retool task of a freight tour has to start before
      * FREIGHTTOUR_LATEST_START. in the manager, the path to the depot is calculated. if the above mentioned condition is not fulfilled
@@ -148,5 +152,9 @@ public final class PFAVUtils {
     public static Id<DvrpVehicle> generatePFAVIdFromPersonId(Id<Person> personId) {
         return Id.create(personId.toString() + PFAVUtils.PFAV_ID_SUFFIX, DvrpVehicle.class);
     }
+
+	public static int timeSlice() {
+		return 1800;
+	}
 
 }

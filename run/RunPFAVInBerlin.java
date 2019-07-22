@@ -78,19 +78,20 @@ public class RunPFAVInBerlin {
 		}
 
 //		RunBerlinScenario berlin = new RunBerlinScenario(new String[]{configPath});
-		RunBerlinScenario berlin = new RunBerlinScenario(configPath, null);
+		RunBerlinScenario berlin = new RunBerlinScenario();
 
 		//setup config
-		Config config = berlin.prepareConfig();
+		Config config = RunBerlinScenario.prepareConfig(new String[]{configPath});
 		TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
 		String mode = taxiCfg.getMode();
 		config.addModule(taxiCfg);
 		adjustConfigParameters(output, population, networkChangeEvents, maxIter, increaseCapacities, config);
 
-		Scenario scenario = berlin.prepareScenario();
+		Scenario scenario = RunBerlinScenario.prepareScenario(config);
 
 		// setup controler
-		Controler controler = berlin.prepareControler(new DvrpModule());
+		Controler controler = RunBerlinScenario.prepareControler(scenario);
+		controler.addOverridingModule(new DvrpModule());
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
@@ -100,7 +101,7 @@ public class RunPFAVInBerlin {
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));
 
 		// run simulation
-		berlin.run();
+		controler.run();
 	}
 
 	private static void adjustConfigParameters(String output, String population, String networkChangeEvents, int maxIter, boolean increaseCapacities, Config config) {
