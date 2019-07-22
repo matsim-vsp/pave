@@ -71,7 +71,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     /**
      *
      */
-    public FreightTourManagerListBasedImpl(String pathToCarriersFile, String pathToVehTypesFile, int timeSlice) {
+    FreightTourManagerListBasedImpl(String pathToCarriersFile, String pathToVehTypesFile, int timeSlice) {
 
         this.carriers = readCarriers(pathToCarriersFile);
         this.vehicleTypes = readVehicleTypes(pathToVehTypesFile);
@@ -112,7 +112,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
             for (ScheduledTour freightTour : plan.getScheduledTours()) {
                 //we need to cut down here and not beforehand in the services, since the tour planning would otherwise result in longer and inaccurate tours
                 if (MatsimRandom.getRandom().nextDouble() <= PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE) {
-                    freightTours.add(FreightTourPlanning.convertToPFAVTourData(freightTour, this.network));
+                    freightTours.add(FreightTourPlanning.convertToPFAVTourData(freightTour, this.network, this.travelTime));
                     onlyUsedTours.add(freightTour);
                 }
             }
@@ -299,7 +299,6 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     }
 
     private double computeWaitTimeAtDepot(VrpPathWithTravelData pathFromCurrTaskToDepot) {
-        log.info("earliest start is = " + PFAVUtils.FREIGHTTOUR_EARLIEST_START);
 //		check if vehicle arrives before earliest start. calculate the waiting time in case.
         double waitTimeAtDepot = 0;
         if (pathFromCurrTaskToDepot.getArrivalTime() < PFAVUtils.FREIGHTTOUR_EARLIEST_START) {

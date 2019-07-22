@@ -27,13 +27,18 @@ import com.graphhopper.jsprit.core.util.Solutions;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.dvrp.schedule.StayTask;
+import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
+import org.matsim.contrib.dvrp.path.VrpPathWithTravelDataImpl;
+import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.carrier.Tour.ServiceActivity;
 import org.matsim.contrib.freight.carrier.Tour.TourElement;
 import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
 import org.matsim.contrib.freight.jsprit.NetworkRouter;
+import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
+import org.matsim.contrib.taxi.schedule.TaxiTask;
+import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.util.TravelTime;
 
 import java.util.ArrayList;
@@ -49,34 +54,27 @@ public final class FreightTourPlanning {
     private static final Logger log = Logger.getLogger(FreightTourPlanning.class);
 
     /**
-	 * @param freightTour
-	 * @param network
-     * @return a list that contains the start retool task and all service tasks in the ScheduledTour and the end retool task. The legs in the ScheduledTour do not contain useful route information.
-	 * Furthermore, we want to route with up to date travel times within the mobsim anyways (as we are looking on dvrp vehicles).
-	 * Consequently, we only convert the (service) activities here and construct the paths/legs later.
-     * @see FreightTourManagerListBased
 	 */
-    static FreightTourDataPlanned convertToPFAVTourData(ScheduledTour freightTour, Network network) {
+    static FreightTourDataPlanned convertToPFAVTourData(ScheduledTour freightTour, Network network, TravelTime travelTime) {
         // we only need duration for the service tasks - id we wanted exact planned time points of daytime, we would need to derive them out of the legs (like we do for start and end activity)
-
         //the Start and End activities are not part of ScheduledTour.getTour.getTourElements();
-        //otherwise, this method could be shortened by two thirds
-        List<StayTask> taskList = new ArrayList<>();
+        List<TaxiTask> taskList = new ArrayList<>();
 
-        //we actually get the begin time by deriving it out of the first leg in the tour. in the freight activity itself, the begin time is always set to the 'depot opening time' or 0
+        //we could think about setting the start time of the first retool activity according to global time window (currently PFAVUtils.FREIGHTTOUR_EARLIEST_START
+        //but this implicitly happens when calculating oath to depot and wait time at depot in the FreightTourManagerListBasedImpl
         double tEnd = ((Tour.Leg) freightTour.getTour().getTourElements().get(0)).getExpectedDepartureTime();
-
-        //since i (yet) don't know how to set the duration of the start act in the freight contrib it is actually 0. so we use our retool value derived out of our utils
         double tBegin = tEnd - PFAVUtils.PFAV_RETOOL_TIME;
 
         Link depotLink = network.getLinks().get(freightTour.getTour().getStart().getLocation());
-
         Link location = depotLink;
         taskList.add(new PFAVRetoolTask(tBegin, tEnd, location));
 
         int totalCapacityDemand = 0;
 
-        for (TourElement currentElement : freightTour.getTour().getTourElements()) {
+        int size = freightTour.getTour().getTourElements().size();
+        for (int i = 0; i < size; i++) {
+            System.out.println("i = " + i);
+            TourElement currentElement = freightTour.getTour().getTourElements().get(i);
             if (currentElement instanceof ServiceActivity) {
                 //currently we need to add PFAVUtils.PFAV_RETOOL_TIME, since we added this already to the start act duration
                 ServiceActivity serviceAct = (ServiceActivity) currentElement;
@@ -86,15 +84,24 @@ public final class FreightTourPlanning {
                 location = network.getLinks().get(serviceAct.getLocation());
                 totalCapacityDemand += serviceAct.getService().getCapacityDemand();
                 taskList.add(new PFAVServiceTask(tBegin, tEnd, location, serviceAct.getService()));
+            } else if (currentElement instanceof Tour.Leg) {
+                NetworkRoute route = (NetworkRoute) ((Tour.Leg) currentElement).getRoute();
+                VrpPathWithTravelData path;
+                if (route.getStartLinkId().equals(route.getEndLinkId()))
+                    path = VrpPaths.createZeroLengthPath(network.getLinks().get(route.getStartLinkId()), tEnd);
+                else {
+                    path = createVrpPath(route, tEnd, network, travelTime);
+                }
+                if (i == size - 1) {
+                    taskList.add(new TaxiEmptyDriveTask(path));
+                } else {
+                    taskList.add(new PFAVServiceDriveTask(path));
+                }
             }
         }
+        double travelTimeToLastService = taskList.get(taskList.size() - 2).getBeginTime();
 
-        double travelTimeToLastService = taskList.get(taskList.size() - 1).getBeginTime();
-
-        //for the times set at the end activity, see comments above. we need this workaround here
-        int size = freightTour.getTour().getTourElements().size();
-        tBegin = ((Tour.Leg) freightTour.getTour().getTourElements().get(size - 1)).getExpectedDepartureTime()
-                + ((Tour.Leg) freightTour.getTour().getTourElements().get(size - 1)).getExpectedTransportTime();
+        tBegin = taskList.get(taskList.size() - 1).getEndTime();
         tEnd = tBegin + PFAVUtils.PFAV_RETOOL_TIME;
         location = network.getLinks().get(freightTour.getTour().getEnd().getLocation());
         taskList.add(new PFAVRetoolTask(tBegin, tEnd, location));
@@ -102,6 +109,33 @@ public final class FreightTourPlanning {
         double plannedTourDuration = tEnd - taskList.get(0).getBeginTime();
         return new FreightTourDataPlanned(taskList, depotLink, plannedTourDuration, travelTimeToLastService, totalCapacityDemand);
 	}
+
+
+    private static VrpPathWithTravelDataImpl createVrpPath(NetworkRoute networkRoute, double departureTime, Network network, TravelTime travelTime) {
+        int count = networkRoute.getLinkIds().size();
+
+        Link[] links = new Link[count + 2];
+        double[] linkTTs = new double[count + 2];
+        links[0] = network.getLinks().get(networkRoute.getStartLinkId());
+        double linkTT = 1.0D;
+        linkTTs[0] = linkTT;
+        double currentTime = departureTime + linkTT;
+
+        for (int i = 0; i < count; ++i) {
+            Link link = network.getLinks().get(networkRoute.getLinkIds().get(i));
+            links[i + 1] = link;
+            linkTT = travelTime.getLinkTravelTime(link, currentTime, null, null);
+            linkTTs[i + 1] = linkTT;
+            currentTime += linkTT;
+        }
+        links[count + 1] = network.getLinks().get(networkRoute.getEndLinkId());
+        Link lastLink = network.getLinks().get(networkRoute.getEndLinkId());
+        linkTT = Math.floor(lastLink.getLength() / lastLink.getFreespeed(currentTime));
+        linkTTs[count + 1] = linkTT;
+//        double totalTT = 1.0D + networkRoute.getTravelTime() + linkTT;
+        double totalTT = (currentTime + linkTT) - departureTime;
+        return new VrpPathWithTravelDataImpl(departureTime, totalTT, links, linkTTs);
+    }
 
     public static void runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime, int timeSlice) {
 

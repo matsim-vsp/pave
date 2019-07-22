@@ -57,7 +57,7 @@ public final class FreightTourDataPlanned {
         return plannedTourDuration;
     }
 
-    public List<TaxiTask> getTourTasks() {
+    List<TaxiTask> getTourTasks() {
         return tourTasks;
     }
 
@@ -69,7 +69,7 @@ public final class FreightTourDataPlanned {
         return depotLink;
     }
 
-    public DriveTask getAccessDriveTask() {
+    DriveTask getAccessDriveTask() {
         return this.accessDriveTask;
     }
 
@@ -77,22 +77,22 @@ public final class FreightTourDataPlanned {
         return amountOfRejections;
     }
 
-    public void incrementAmountOfRejections() {
+    void setAccessDriveTask(DriveTaskImpl driveTask) {
+        this.accessDriveTask = driveTask;
+    }
+
+    void incrementAmountOfRejections() {
         this.amountOfRejections++;
     }
 
-    public double getLatestArrivalAtLastService() {
-        if (!(tourTasks.get(tourTasks.size() - 2) instanceof PFAVServiceTask) || !(tourTasks.get(tourTasks.size() - 1) instanceof PFAVRetoolTask)) {
+    double getLatestArrivalAtLastService() {
+        if (!(tourTasks.get(tourTasks.size() - 3) instanceof PFAVServiceTask) || !(tourTasks.get(tourTasks.size() - 1) instanceof PFAVRetoolTask)) {
             throw new IllegalStateException();
         }
-        return ((PFAVServiceTask) tourTasks.get(tourTasks.size() - 2)).getCarrierService().getServiceStartTimeWindow().getEnd();
+        return ((PFAVServiceTask) tourTasks.get(tourTasks.size() - 3)).getCarrierService().getServiceStartTimeWindow().getEnd();
     }
 
-    public double getTravelTimeToLastService() {
+    double getTravelTimeToLastService() {
         return this.travelTimeToLastService;
-    }
-
-    public void setAccessDriveTask(DriveTaskImpl driveTask) {
-        this.accessDriveTask = driveTask;
     }
 }

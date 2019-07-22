@@ -7,7 +7,6 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.Fleet;
-import org.matsim.contrib.dvrp.path.VrpPath;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.schedule.*;
@@ -192,14 +191,10 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 
 		FreightTourDataDispatched dispatchData;
 
-		if (PFAVUtils.RE_ROUTE_TOURS) {
-			reRouteAndScheduleFreightTour(vehicle, tourData);
-		} else {
-			insertFreightTour(vehicle, tourData);
-		}
+		insertFreightTourInSchedule(vehicle, tourData);
 
 		double returnDistance = scheduleReturnToOwnerAndGetDistance((PFAVehicle) vehicle, schedule, (StayTask) Schedules.getLastTask(schedule));
-		double distanceToDepot = getDistanceOfPathForAnalysis(tourData.getAccessDriveTask().getPath());
+		double distanceToDepot = VrpPaths.calcDistance(tourData.getAccessDriveTask().getPath());
 		dispatchData = buildDispatchData(vehicle, tourData, distanceToDepot, returnDistance);
 		//append stay task
 		appendStayTask(vehicle);
@@ -220,7 +215,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				.collect(Collectors.toList());
 
 		for (Task task : remainingDriveTasks) {
-			double distance = getDistanceOfPathForAnalysis(((DriveTaskImpl) task).getPath());
+			double distance = VrpPaths.calcDistance(((DriveTaskImpl) task).getPath());
 			if (task instanceof TaxiEmptyDriveTask) emptyMeters += distance;
 			totalDistance += distance;
 		}
@@ -238,44 +233,11 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				.build();
 	}
 
-	private void insertFreightTour(DvrpVehicle vehicle, FreightTourDataPlanned tourData) {
-		throw new RuntimeException("not implemented");
-//		List<TaxiTask> tourActivities = tourData.getTourTasks();
-//		Task previousTask = tourData.getAccessDriveTask();
-//		VrpPathWithTravelData lastPath = (VrpPathWithTravelData) tourData.getAccessDriveTask().getPath();
-//		for(TaxiTask currentTask: tourActivities) {
-//			if(currentTask instanceof StayTaskImpl){
-//				setAttributesForTask(vehicle, (StayTask) currentTask, lastPath);
-//			} else if (currentTask instanceof DriveTaskImpl){
-//				DriveTaskImpl originalDriveTask = (DriveTaskImpl) currentTask;
-//				VrpPathWithTravelDataImpl originalPath = (VrpPathWithTravelDataImpl) originalDriveTask.getPath();
-//				VrpPathWithTravelDataImpl pp = new VrpPathWithTravelDataImpl(previousTask.getEndTime(),originalPath.getTravelTime(), originalPath.get)
-//				VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(originalDriveTask.getPath().getFromLink(), originalDriveTask.getPath().getToLink(),
-//						previousTask.getEndTime(), this.router, this.travelTime);
-//				if(originalDriveTask instanceof TaxiEmptyDriveTask){
-//					currentTask = new TaxiEmptyDriveTask(path);
-//				} else if(originalDriveTask instanceof PFAVServiceDriveTask){
-//					currentTask = new PFAVServiceDriveTask(path);
-//				} else{
-//					throw new IllegalStateException();
-//				}
-//			}else {
-//				throw new IllegalStateException("");
-//			}
-//			previousTask = currentTask;
-//			vehicle.getSchedule().addTask(currentTask);
-//		}
-//
-	}
-
-	private void reRouteAndScheduleFreightTour(DvrpVehicle vehicle, FreightTourDataPlanned tourData) {
+	private void insertFreightTourInSchedule(DvrpVehicle vehicle, FreightTourDataPlanned tourData) {
 		List<TaxiTask> tourActivities = tourData.getTourTasks();
 		Task previousTask = tourData.getAccessDriveTask();
-		VrpPathWithTravelData lastPath = (VrpPathWithTravelData) tourData.getAccessDriveTask().getPath();
 		for (TaxiTask currentTask : tourActivities) {
-			if (currentTask instanceof StayTaskImpl) {
-				setAttributesForTask(vehicle, (StayTask) currentTask, lastPath);
-			} else if (currentTask instanceof DriveTaskImpl) {
+			if (PFAVUtils.RE_ROUTE_TOURS && currentTask instanceof DriveTask) {
 				DriveTaskImpl originalDriveTask = (DriveTaskImpl) currentTask;
 				VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(originalDriveTask.getPath().getFromLink(), originalDriveTask.getPath().getToLink(),
 						previousTask.getEndTime(), this.router, this.travelTime);
@@ -287,9 +249,10 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 					throw new IllegalStateException();
 				}
 			} else {
-				throw new IllegalStateException("");
+				setAttributesForTask(vehicle, currentTask, previousTask);
 			}
 			previousTask = currentTask;
+			System.out.println("current task = " + currentTask);
 			vehicle.getSchedule().addTask(currentTask);
 		}
 	}
@@ -300,15 +263,13 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				previousTask.getEndTime(), router, travelTime);
 		TaxiEmptyDriveTask returnDriveTask = new TaxiEmptyDriveTask(pathBackToOwner);
 		schedule.addTask(returnDriveTask);
-		return getDistanceOfPathForAnalysis(pathBackToOwner);
+		return VrpPaths.calcDistance(pathBackToOwner);
 	}
 
-	private void setAttributesForTask(DvrpVehicle vehicle, StayTask currentTask, VrpPathWithTravelData path) {
+	private void setAttributesForTask(DvrpVehicle vehicle, Task currentTask, Task previousTask) {
 		double duration = currentTask.getEndTime() - currentTask.getBeginTime();
-
-		currentTask.setBeginTime(path.getArrivalTime());
-		currentTask.setEndTime(path.getArrivalTime() + duration);
-
+		currentTask.setBeginTime(previousTask.getEndTime());
+		currentTask.setEndTime(previousTask.getEndTime() + duration);
 		if (currentTask instanceof PFAVRetoolTask) {
 			((PFAVRetoolTask)currentTask).setVehicle(vehicle.getId());
 		}
@@ -320,16 +281,6 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 			ownerLink = PFAVUtils.getLastPassengerDropOff(vehicle.getSchedule()).getLink().getId();
 		}
 		return network.getLinks().get(ownerLink);
-	}
-
-	private double getDistanceOfPathForAnalysis(VrpPath path) {
-		//do not compute the first link since it's not really travelled but just where the vehicle is inserted
-		double totalDistance = 0;
-		for (int z = 1; z < path.getLinkCount(); z++) {
-			double distance = path.getLink(z).getLength();
-			totalDistance += distance; //analysis
-		}
-		return totalDistance;
 	}
 
 	private void cleanScheduleBeforeInsertingFreightTour(DvrpVehicle vehicle, Schedule schedule) {
