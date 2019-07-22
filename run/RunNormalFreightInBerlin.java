@@ -92,18 +92,20 @@ public class RunNormalFreightInBerlin {
         }
 
 //        RunBerlinScenario berlin = new RunBerlinScenario(new String[]{configPath});
-        RunBerlinScenario berlin = new RunBerlinScenario(configPath, null);
-        Config config = berlin.prepareConfig();
+        RunBerlinScenario berlin = new RunBerlinScenario();
+        Config config = RunBerlinScenario.prepareConfig(new String[]{configPath});
 
         TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
         String mode = taxiCfg.getMode();
         config.addModule(taxiCfg);
 
         prepareConfig(output, population, networkChangeEvents, maxIter, increaseCapacities, config);
-        Scenario scenario = berlin.prepareScenario();
+        Scenario scenario = RunBerlinScenario.prepareScenario(config);
 
         // setup controler
-        Controler controler = berlin.prepareControler(new DvrpModule());
+        Controler controler = RunBerlinScenario.prepareControler(scenario);
+
+        controler.addOverridingModule(new DvrpModule());
 
         final Carriers carriers = readFreightInputAndPrepareCarrierModule(carriersFile, vehTypesFile, scenario, controler);
         prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, carriers);
@@ -124,7 +126,7 @@ public class RunNormalFreightInBerlin {
         });
 
         // run simulation
-        berlin.run();
+        controler.run();
     }
 
     private static Carriers readFreightInputAndPrepareCarrierModule(String carriersFile, String vehTypesFile, Scenario scenario, Controler controler) {
