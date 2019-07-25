@@ -163,46 +163,20 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
         return getDispatchedTourForVehicle(vehicle, router);
     }
 
+    FreightTourDataPlanned getPFAVTourAtDepot(PFAVehicle vehicle, Link depot, LeastCostPathCalculator router) {
+        Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
+        return searchForTourAtDepot(depot, requestLink, vehicle, router);
+    }
+
     private FreightTourDataPlanned getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
         StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(PFAVUtils.AMOUNT_OF_DEPOTS_TO_CONSIDER, link1 -> link1, link2 -> link2);
         Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
         List<Link> nearestDepots = finder.findNearest(requestLink, depotToFreightTour.keySet().stream());
 
         //TODO: test this spatial dispatch algorithm, especially: is the nearestDepots list sorted??
-
         FreightTourDataPlanned matchingFreightTour = null;
         for (Link depot : nearestDepots) {
-            log.info("size of depot todo list: " + this.depotToFreightTour.get(depot).size());
-            if (this.depotToFreightTour.get(depot).isEmpty())
-                continue;                                            //only go on if there is a tour left at depot
-            Iterator<FreightTourDataPlanned> freightTourIterator = this.depotToFreightTour.get(depot).iterator();
-            VrpPathWithTravelData pathFromCurrTaskToDepot = calcPathToDepot(vehicle, depot, router);
-            if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.MAX_BEELINE_DISTANCE_TO_DEPOT    // MAX BEELINE DISTANCE TO DEPOT
-                    && pathFromCurrTaskToDepot.getTravelTime() <= PFAVUtils.MAX_TRAVELTIME_TO_DEPOT                                    // MAX TRAVEL TIME TO DEPOT
-                    && pathFromCurrTaskToDepot.getArrivalTime() < PFAVUtils.FREIGHTTOUR_LATEST_START) {                                  // ARRIVAL BEFORE LATEST START
-
-                log.info("computed arrival time at depot = " + pathFromCurrTaskToDepot.getArrivalTime());
-                log.info("latest start is = " + PFAVUtils.FREIGHTTOUR_LATEST_START);
-                double waitTimeAtDepot = computeWaitTimeAtDepot(pathFromCurrTaskToDepot);
-
-                while (freightTourIterator.hasNext()) {
-                    FreightTourDataPlanned tourData = freightTourIterator.next();
-                    if (isEnoughTimeLeftToPerformFreightTour(vehicle, pathFromCurrTaskToDepot, waitTimeAtDepot, tourData, router)) {
-                        freightTourIterator.remove();
-                        matchingFreightTour = tourData;
-                        break;
-                    } else {
-                        tourData.incrementAmountOfRejections();
-                    }
-                }
-                if (matchingFreightTour != null) {
-                    //if no tour at the depot is left, delete depot
-                    if (depotToFreightTour.get(depot).isEmpty() && !PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS)
-                        depotToFreightTour.remove(depot);
-                    log.info("size of depot to list: " + this.depotToFreightTour.get(depot).size());
-                    break;
-                }
-            }
+            matchingFreightTour = searchForTourAtDepot(depot, requestLink, vehicle, router);
         }
         if (matchingFreightTour == null) {
             //we could throw the FreightTourRequestRejectedEvent here and hand to it the depot list on which we had a look on as well as the amount of
@@ -212,6 +186,42 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
         }
         return matchingFreightTour;
     }
+
+    private FreightTourDataPlanned searchForTourAtDepot(Link depot, Link requestLink, PFAVehicle vehicle, LeastCostPathCalculator router) {
+        FreightTourDataPlanned matchingFreightTour = null;
+        log.info("size of depot todo list: " + this.depotToFreightTour.get(depot).size());
+        if (this.depotToFreightTour.get(depot).isEmpty())
+            return null;//only go on if there is a tour left at depot
+        Iterator<FreightTourDataPlanned> freightTourIterator = this.depotToFreightTour.get(depot).iterator();
+        VrpPathWithTravelData pathFromCurrTaskToDepot = calcPathToDepot(vehicle, depot, router);
+        if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.MAX_BEELINE_DISTANCE_TO_DEPOT    // MAX BEELINE DISTANCE TO DEPOT
+                && pathFromCurrTaskToDepot.getTravelTime() <= PFAVUtils.MAX_TRAVELTIME_TO_DEPOT                                    // MAX TRAVEL TIME TO DEPOT
+                && pathFromCurrTaskToDepot.getArrivalTime() < PFAVUtils.FREIGHTTOUR_LATEST_START) {                                  // ARRIVAL BEFORE LATEST START
+
+            log.info("computed arrival time at depot = " + pathFromCurrTaskToDepot.getArrivalTime());
+            log.info("latest start is = " + PFAVUtils.FREIGHTTOUR_LATEST_START);
+            double waitTimeAtDepot = computeWaitTimeAtDepot(pathFromCurrTaskToDepot);
+
+            while (freightTourIterator.hasNext()) {
+                FreightTourDataPlanned tourData = freightTourIterator.next();
+                if (isEnoughTimeLeftToPerformFreightTour(vehicle, pathFromCurrTaskToDepot, waitTimeAtDepot, tourData, router)) {
+                    freightTourIterator.remove();
+                    matchingFreightTour = tourData;
+                    break;
+                } else {
+                    tourData.incrementAmountOfRejections();
+                }
+            }
+            if (matchingFreightTour != null) {
+                //if no tour at the depot is left, delete depot
+                if (depotToFreightTour.get(depot).isEmpty() && !PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS)
+                    depotToFreightTour.remove(depot);
+                log.info("size of depot to list: " + this.depotToFreightTour.get(depot).size());
+            }
+        }
+        return matchingFreightTour;
+    }
+
 
     private VrpPathWithTravelData calcPathToDepot(PFAVehicle vehicle, Link depotLink, LeastCostPathCalculator router) {
         StayTask currentTask = (StayTask) vehicle.getSchedule().getCurrentTask();
