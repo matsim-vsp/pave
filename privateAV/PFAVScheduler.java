@@ -168,7 +168,20 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				+ timer.getTimeOfDay()
 				+ " on link "
 				+ ((StayTaskImpl)vehicle.getSchedule().getCurrentTask()).getLink().getId());
-		FreightTourDataPlanned tourData = freightManager.getBestPFAVTourForVehicle((PFAVehicle)vehicle, router);
+		FreightTourDataPlanned tourData;
+		if (isComingFromAnotherFreightTour) {
+			PFAVRetoolTask remainingRetoolTask = (PFAVRetoolTask) vehicle.getSchedule().tasks()
+					.filter((Task t) -> {
+						return t instanceof PFAVRetoolTask;
+					})
+					.filter(t -> t.getStatus().equals(Task.TaskStatus.PLANNED))
+					.findFirst().get();
+			Link depotLink = remainingRetoolTask.getLink();
+			tourData = ((FreightTourManagerListBasedImpl) freightManager).getPFAVTourAtDepot((PFAVehicle) vehicle, depotLink, router);
+		} else {
+			tourData = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
+		}
+
 		if (tourData != null) {
 			log.info("vehicle " + vehicle.getId() + " requested a freight tour and received one by the manager");
 			if (isComingFromAnotherFreightTour)

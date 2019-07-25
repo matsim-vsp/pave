@@ -46,7 +46,7 @@ public class PopulationCreator {
 
 //        new PopulationWriter(cutPopulationTo100ForEachMode(convertAgentsToPFAVOwners(scenario))).write("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml");
 
-        int nrOfPFAVOwners = 9000;
+        int nrOfPFAVOwners = 13000;
         String dir = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/";
 //        Population pop = defineAndGetXSpatialEquallyDistributedPFAVOwners(scenario.getPopulation(), nrOfPFAVOwners);
 //        new PopulationWriter(pop).write(dir + nrOfPFAVOwners + "CarUsersTransformed.xml.gz");
@@ -112,7 +112,7 @@ public class PopulationCreator {
         return pfavOwners;
     }
 
-    public static Population getRandomXCarUsersOutOfPopulation(Population population, int x) {
+    static Population getRandomXCarUsersOutOfPopulation(Population population, int x) {
         Population sample = ScenarioUtils.createScenario(ConfigUtils.createConfig()).getPopulation();
         Random rand = MatsimRandom.getLocalInstance();
         for (int i = 0; i < x; i++) {
@@ -138,7 +138,7 @@ public class PopulationCreator {
         return sample;
     }
 
-    public static void convertAgentsToPFAVOwners(Population population) {
+    static void convertAgentsToPFAVOwners(Population population) {
 
         for (Person p : population.getPersons().values()) {
                 for (PlanElement pe : p.getSelectedPlan().getPlanElements()) {
