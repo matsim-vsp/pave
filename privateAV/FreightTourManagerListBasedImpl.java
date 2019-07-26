@@ -160,7 +160,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
      * @param vehicle that requests a freight tozr.
      */
     @Override
-    public FreightTourDataPlanned getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
+    public FreightTourDataPlanned vehicleRequestedFreightTour(PFAVehicle vehicle, LeastCostPathCalculator router) {
         return getDispatchedTourForVehicle(vehicle, router);
     }
 

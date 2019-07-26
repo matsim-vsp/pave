@@ -179,7 +179,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 			Link depotLink = remainingRetoolTask.getLink();
 			tourData = ((FreightTourManagerListBasedImpl) freightManager).getPFAVTourAtDepot((PFAVehicle) vehicle, depotLink, router);
 		} else {
-			tourData = freightManager.getBestPFAVTourForVehicle((PFAVehicle) vehicle, router);
+			tourData = freightManager.vehicleRequestedFreightTour((PFAVehicle) vehicle, router);
 		}
 
 		if (tourData != null) {

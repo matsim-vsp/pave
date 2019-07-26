@@ -18,6 +18,7 @@
  * *********************************************************************** */
 package privateAV;
 
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 
@@ -31,7 +32,11 @@ public interface FreightTourManagerListBased {
 
     FreightTourDataPlanned getRandomPFAVTour();
 
-    FreightTourDataPlanned getBestPFAVTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router);
+    FreightTourDataPlanned vehicleRequestedFreightTour(PFAVehicle vehicle, LeastCostPathCalculator router);
+
+    FreightTourDataPlanned vehicleRequestedFreightTourAtDepot(PFAVehicle vehicle, Link depotLink, LeastCostPathCalculator router);
+
+    FreightTourDataPlanned vehicleRequestedFreightTourExcludingDepot(PFAVehicle vehicle, Link depotLink, LeastCostPathCalculator router);
 
     boolean isEnoughTimeLeftToPerformFreightTour(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot,
                                                  double waitTimeAtDepot, FreightTourDataPlanned freightTour, LeastCostPathCalculator router);
