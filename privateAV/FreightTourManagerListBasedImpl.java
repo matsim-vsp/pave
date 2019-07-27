@@ -44,6 +44,7 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelTime;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * @author tschlenther
@@ -161,19 +162,32 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
      */
     @Override
     public FreightTourDataPlanned vehicleRequestedFreightTour(PFAVehicle vehicle, LeastCostPathCalculator router) {
-        return getDispatchedTourForVehicle(vehicle, router);
-    }
-
-    FreightTourDataPlanned getPFAVTourAtDepot(PFAVehicle vehicle, Link depot, LeastCostPathCalculator router) {
         Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
-        return searchForTourAtDepot(depot, requestLink, vehicle, router);
+        List<Link> nearestDepots = findNearestDepots(requestLink, depotToFreightTour.keySet().stream());
+        return searchForTourAtSeveralDepots(vehicle, router, requestLink, nearestDepots);
     }
 
-    private FreightTourDataPlanned getDispatchedTourForVehicle(PFAVehicle vehicle, LeastCostPathCalculator router) {
+    @Override
+    public FreightTourDataPlanned vehicleRequestedFreightTourAtDepot(PFAVehicle vehicle, Link depotLink, LeastCostPathCalculator router) {
+        Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
+        return searchForTourAtDepot(depotLink, requestLink, vehicle, router);
+    }
+
+    @Override
+    public FreightTourDataPlanned vehicleRequestedFreightTourExcludingDepot(PFAVehicle vehicle, Link depotLink, LeastCostPathCalculator router) {
+        Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
+        Set<Link> depots = new HashSet<>(depotToFreightTour.keySet());
+        depots.remove(depotLink);
+        List<Link> nearestDepots = findNearestDepots(requestLink, depots.stream());
+        return searchForTourAtSeveralDepots(vehicle, router, requestLink, nearestDepots);
+    }
+
+    private List<Link> findNearestDepots(Link requestLink, Stream<Link> depotLinks) {
         StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(PFAVUtils.AMOUNT_OF_DEPOTS_TO_CONSIDER, link1 -> link1, link2 -> link2);
-        Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
-        List<Link> nearestDepots = finder.findNearest(requestLink, depotToFreightTour.keySet().stream());
+        return finder.findNearest(requestLink, depotLinks);
+    }
 
+    private FreightTourDataPlanned searchForTourAtSeveralDepots(PFAVehicle vehicle, LeastCostPathCalculator router, Link requestLink, List<Link> nearestDepots) {
         //TODO: test this spatial dispatch algorithm, especially: is the nearestDepots list sorted??
         FreightTourDataPlanned matchingFreightTour = null;
         for (Link depot : nearestDepots) {

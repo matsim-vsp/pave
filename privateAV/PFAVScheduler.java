@@ -102,23 +102,16 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 			case DROPOFF:
 				if (currentTask instanceof TaxiDropoffTask) {
 					if (vehicle instanceof PFAVehicle) {
-						requestFreightTour(vehicle, false);
+						requestFreightTour(vehicle);
 					} else {
 						//in future, there could be usecases where we have both, DvrpVehicles (supertype) and PFAVehicles, so we would not throw an exception here and just keep going
 						throw new RuntimeException("currently, all DvrpVehicles should be of type PFAVehicle");
 					}
-				} else if (currentTask instanceof PFAVServiceTask && Schedules.getNextTask(
-						schedule) instanceof TaxiEmptyDriveTask && PFAVUtils.ALLOW_MULTIPLE_TOURS_IN_A_ROW) {
-					//vehicle just performed the last service task and can now demand the next freight tour if owner has not submitted a request yet
-					if (!requestedVehicles.keySet().contains(vehicle.getId())) {
-						requestFreightTour(vehicle, true);
-					}
-				} else if (currentTask instanceof PFAVRetoolTask && Schedules.getNextTask(
-						schedule) instanceof TaxiEmptyDriveTask) {
-					//we are at the end of a freight tour (otherwise next task would be instanceof PFAVServiceDriveTask
-
-					//					if we ever use this with shared AV's, we should mark the end of the freight tour HERE already (FreightTourCompletedEvent).
-					//	scheduleDriveToOwner(vehicle, schedule, (PFAVRetoolTask) currentTask);
+				} else if (currentTask instanceof PFAVRetoolTask
+						&& Schedules.getNextTask(schedule) instanceof TaxiEmptyDriveTask //we are at the end of a freight tour (otherwise next task would be instanceof PFAVServiceDriveTask
+						&& PFAVUtils.ALLOW_MULTIPLE_TOURS_IN_A_ROW
+						&& !requestedVehicles.keySet().contains(vehicle.getId())) {    //owner has not submitted a request yet
+					requestFreightTour(vehicle);
 				}
 				break;
 
@@ -126,7 +119,11 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				break;
 			}
 			case EMPTY_DRIVE:
-				if (Schedules.getPreviousTask(schedule) instanceof PFAVRetoolTask) {
+				if (Schedules.getNextTask(schedule) instanceof PFAVRetoolTask
+						&& PFAVUtils.ALLOW_MULTIPLE_TOURS_IN_A_ROW
+						&& !requestedVehicles.keySet().contains(vehicle.getId())) {
+					requestFreightTour(vehicle);
+				} else if (Schedules.getPreviousTask(schedule) instanceof PFAVRetoolTask) {
 					//we are at the end of a freight tour
 					if (!this.vehiclesOnFreightTour.contains(vehicle))
 						throw new IllegalStateException("freight tour of vehicle "
@@ -153,7 +150,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 	}
 
-	private void requestFreightTour(DvrpVehicle vehicle, boolean isComingFromAnotherFreightTour) {
+	private void requestFreightTour(DvrpVehicle vehicle) {
 		if (timer.getTimeOfDay() > PFAVUtils.FREIGHTTOUR_LATEST_START) {
 			log.info("No freight tour is requested for vehicle "
 					+ vehicle.getId()
@@ -169,23 +166,25 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				+ " on link "
 				+ ((StayTaskImpl)vehicle.getSchedule().getCurrentTask()).getLink().getId());
 		FreightTourDataPlanned tourData;
-		if (isComingFromAnotherFreightTour) {
-			PFAVRetoolTask remainingRetoolTask = (PFAVRetoolTask) vehicle.getSchedule().tasks()
-					.filter((Task t) -> {
-						return t instanceof PFAVRetoolTask;
-					})
-					.filter(t -> t.getStatus().equals(Task.TaskStatus.PLANNED))
-					.findFirst().get();
-			Link depotLink = remainingRetoolTask.getLink();
-			tourData = ((FreightTourManagerListBasedImpl) freightManager).getPFAVTourAtDepot((PFAVehicle) vehicle, depotLink, router);
-		} else {
-			tourData = freightManager.vehicleRequestedFreightTour((PFAVehicle) vehicle, router);
-		}
 
+		Task currentTask = vehicle.getSchedule().getCurrentTask();
+		if (currentTask instanceof TaxiDropoffTask) {
+			tourData = freightManager.vehicleRequestedFreightTour((PFAVehicle) vehicle, router);
+		} else {
+			Link depotLink = Tasks.getEndLink(currentTask);
+			if (currentTask instanceof TaxiEmptyDriveTask) {
+				tourData = freightManager.vehicleRequestedFreightTourAtDepot((PFAVehicle) vehicle, depotLink, router);
+			} else if (currentTask instanceof PFAVRetoolTask) {
+				tourData = freightManager.vehicleRequestedFreightTourExcludingDepot((PFAVehicle) vehicle, depotLink, router);
+			} else {
+				throw new IllegalStateException();
+			}
+			if (tourData != null) {
+				eventsManager.processEvent(new FreightTourCompletedEvent(vehicle.getId(), timer.getTimeOfDay()));
+			}
+		}
 		if (tourData != null) {
 			log.info("vehicle " + vehicle.getId() + " requested a freight tour and received one by the manager");
-			if (isComingFromAnotherFreightTour)
-				eventsManager.processEvent(new FreightTourCompletedEvent(vehicle.getId(), timer.getTimeOfDay()));
 			scheduleFreightTour(vehicle, tourData);
 		} else {
 			Link requestLink = ((StayTaskImpl)vehicle.getSchedule().getCurrentTask()).getLink();
@@ -196,11 +195,9 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 
 	private void scheduleFreightTour(DvrpVehicle vehicle, FreightTourDataPlanned tourData) {
-		//schedule just got updated.. current task should be a dropOff, nextTask should be a STAY task
+		cleanScheduleBeforeInsertingFreightTour(vehicle);
 		Schedule schedule = vehicle.getSchedule();
-
-		cleanScheduleBeforeInsertingFreightTour(vehicle, schedule);
-        DriveTask accessDrive = tourData.getAccessDriveTask();
+		DriveTask accessDrive = tourData.getAccessDriveTask();
         if (accessDrive == null) throw new IllegalStateException("no access drive found for tour " + tourData);
         schedule.addTask(accessDrive);
 
@@ -297,31 +294,33 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		return network.getLinks().get(ownerLink);
 	}
 
-	private void cleanScheduleBeforeInsertingFreightTour(DvrpVehicle vehicle, Schedule schedule) {
-		switch (((TaxiTask)Schedules.getNextTask(schedule)).getTaxiTaskType()) {
-			case STAY:
-				//vehicle requested freight tour after passenger dropoff
-				//remove the stay task at the owner's activity location
-				schedule.removeLastTask();
-				break;
-			case EMPTY_DRIVE:
-				/*TODO: calling same method 4 times feels dirty - extract method !?
-				 *we cannot use delegate.removeAwaitingRequests() because this method inserts another stay task
-				 *
-				 *vehicle requested freight tour after having performed another one
-				 *we have to remove the following awaiting tasks in the schedule
-				 */
-				schedule.removeLastTask();    //empty drive to depot
-				schedule.removeLastTask();    //retool task at depot
-				schedule.removeLastTask();    //empty drive to owner's location
-				schedule.removeLastTask();    //stay at owner's location
-				break;
-			default:
-				throw new IllegalStateException(
-						"if a freight tour shall be inserted - the next vehicle task has to be STAY or EMPTY_DRIVE. That is not the case for vehicle "
-								+ vehicle.getId()
-								+ " at time "
-								+ timer.getTimeOfDay());
+	private void cleanScheduleBeforeInsertingFreightTour(DvrpVehicle vehicle) {
+		/*TODO: calling same method several times feels dirty - extract method !?
+		 *we cannot use delegate.removeAwaitingRequests() because this method inserts another stay task
+		 *
+		 *vehicle requested freight tour after having performed another one
+		 *we have to remove the following awaiting tasks in the schedule
+		 */
+		Schedule schedule = vehicle.getSchedule();
+		Task currentTask = schedule.getCurrentTask();
+
+		if (currentTask instanceof TaxiDropoffTask) {
+			//vehicle requested freight tour after passenger dropoff
+			//remove the stay task at the owner's activity location
+			schedule.removeLastTask();
+		} else if (currentTask instanceof TaxiEmptyDriveTask) {
+			schedule.removeLastTask();    //retool task at depot
+			schedule.removeLastTask();    //empty drive to owner's location
+			schedule.removeLastTask();    //stay at owner's location
+		} else if (currentTask instanceof PFAVRetoolTask) {
+			schedule.removeLastTask();    //empty drive to owner's location
+			schedule.removeLastTask();    //stay at owner's location
+		} else {
+			throw new IllegalStateException(
+					"if a freight tour shall be inserted the current task has to be DROPOFF, PFAVRetool or EMPTY_DRIVE. That is not the case for vehicle "
+							+ vehicle.getId()
+							+ " at time "
+							+ timer.getTimeOfDay());
 		}
 	}
 
