@@ -164,7 +164,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				+ " requests a freight tour at "
 				+ timer.getTimeOfDay()
 				+ " on link "
-				+ ((StayTaskImpl)vehicle.getSchedule().getCurrentTask()).getLink().getId());
+				+ (Tasks.getEndLink(vehicle.getSchedule().getCurrentTask())).getId());
 		FreightTourDataPlanned tourData;
 
 		Task currentTask = vehicle.getSchedule().getCurrentTask();
@@ -187,7 +187,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 			log.info("vehicle " + vehicle.getId() + " requested a freight tour and received one by the manager");
 			scheduleFreightTour(vehicle, tourData);
 		} else {
-			Link requestLink = ((StayTaskImpl)vehicle.getSchedule().getCurrentTask()).getLink();
+			Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
 			eventsManager.processEvent(new FreightTourRequestRejectedEvent((PFAVehicle)vehicle, requestLink.getId(),
 					timer.getTimeOfDay()));
 			log.info("request is rejected");
