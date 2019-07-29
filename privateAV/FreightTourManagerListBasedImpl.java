@@ -28,6 +28,7 @@ import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.schedule.StayTask;
+import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.schedule.Tasks;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.freight.carrier.*;
@@ -240,8 +241,8 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
 
 
     private VrpPathWithTravelData calcPathToDepot(PFAVehicle vehicle, Link depotLink, LeastCostPathCalculator router) {
-        StayTask currentTask = (StayTask) vehicle.getSchedule().getCurrentTask();
-        return VrpPaths.calcAndCreatePath(currentTask.getLink(), depotLink, currentTask.getEndTime(), router, travelTime);
+        Task currentTask = vehicle.getSchedule().getCurrentTask();
+        return VrpPaths.calcAndCreatePath(Tasks.getEndLink(currentTask), depotLink, currentTask.getEndTime(), router, travelTime);
     }
 
 
