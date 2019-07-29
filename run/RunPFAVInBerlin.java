@@ -53,7 +53,7 @@ public class RunPFAVInBerlin {
 
 	//only for test purposes
 //	private static final String SMALL_PLANS_FILE = "C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml";
-	private static final String SMALL_PLANS_FILE = "C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/11000PFAVOwners.xml";
+    private static final String SMALL_PLANS_FILE = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/9000PFAVOwners.xml";
 
 
 	private static final int LAST_ITERATION = 0;
