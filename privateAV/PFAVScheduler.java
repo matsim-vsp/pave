@@ -119,14 +119,11 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				break;
 			}
 			case EMPTY_DRIVE:
-				if (Schedules.getNextTask(schedule) instanceof PFAVRetoolTask
-                        && Schedules.getPreviousTask(schedule) instanceof PFAVServiceTask    //is vehicle returning to depot
-                        // we do not want to request another freight tour here... we may want to change the logic here and delete the second (1second) empty drive
+                if (isPFAVReturningToDepot(vehicle)
 						&& PFAVUtils.ALLOW_MULTIPLE_TOURS_IN_A_ROW
 						&& !requestedVehicles.keySet().contains(vehicle.getId())) {
 					requestFreightTour(vehicle);
-                } else if (Schedules.getPreviousTask(schedule) instanceof PFAVRetoolTask
-                        && !(Schedules.getNextTask(schedule) instanceof PFAVRetoolTask)) {  //no transfer drive to another depot
+                } else if (isPFAVReturningToOwner(vehicle)) {
 					//we are at the end of a freight tour
 					if (!this.vehiclesOnFreightTour.contains(vehicle))
 						throw new IllegalStateException("freight tour of vehicle "
@@ -153,9 +150,19 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 	}
 
-//	boolean isPFAVReturningToDepot(PFAVehicle vehicle){
-//
-//	}
+    private boolean isPFAVReturningToDepot(DvrpVehicle vehicle) {
+        Schedule schedule = vehicle.getSchedule();
+        return (schedule.getCurrentTask() instanceof TaxiEmptyDriveTask &&
+                Schedules.getNextTask(schedule) instanceof PFAVRetoolTask &&
+                Schedules.getPreviousTask(schedule) instanceof PFAVServiceTask);
+    }
+
+    private boolean isPFAVReturningToOwner(DvrpVehicle vehicle) {
+        Schedule schedule = vehicle.getSchedule();
+        return (schedule.getCurrentTask() instanceof TaxiEmptyDriveTask
+                && Schedules.getPreviousTask(schedule) instanceof PFAVRetoolTask
+                && !(Schedules.getNextTask(schedule) instanceof PFAVRetoolTask)); //no transfer drive to another depot
+    }
 
 	private void requestFreightTour(DvrpVehicle vehicle) {
 		if (timer.getTimeOfDay() > PFAVUtils.FREIGHTTOUR_LATEST_START) {
