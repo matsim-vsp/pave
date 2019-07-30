@@ -120,10 +120,13 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 			}
 			case EMPTY_DRIVE:
 				if (Schedules.getNextTask(schedule) instanceof PFAVRetoolTask
+                        && Schedules.getPreviousTask(schedule) instanceof PFAVServiceTask    //is vehicle returning to depot
+                        // we do not want to request another freight tour here... we may want to change the logic here and delete the second (1second) empty drive
 						&& PFAVUtils.ALLOW_MULTIPLE_TOURS_IN_A_ROW
 						&& !requestedVehicles.keySet().contains(vehicle.getId())) {
 					requestFreightTour(vehicle);
-				} else if (Schedules.getPreviousTask(schedule) instanceof PFAVRetoolTask) {
+                } else if (Schedules.getPreviousTask(schedule) instanceof PFAVRetoolTask
+                        && !(Schedules.getNextTask(schedule) instanceof PFAVRetoolTask)) {  //no transfer drive to another depot
 					//we are at the end of a freight tour
 					if (!this.vehiclesOnFreightTour.contains(vehicle))
 						throw new IllegalStateException("freight tour of vehicle "
@@ -149,6 +152,10 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 			}
 		}
 	}
+
+//	boolean isPFAVReturningToDepot(PFAVehicle vehicle){
+//
+//	}
 
 	private void requestFreightTour(DvrpVehicle vehicle) {
 		if (timer.getTimeOfDay() > PFAVUtils.FREIGHTTOUR_LATEST_START) {
@@ -201,7 +208,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
         if (accessDrive == null) throw new IllegalStateException("no access drive found for tour " + tourData);
         schedule.addTask(accessDrive);
 
-        //actually insert the task into the schedule. shift start and end times respectively
+        //actually insert the tasks into the schedule. shift start and end times respectively
 		FreightTourDataDispatched dispatchData;
 		insertFreightTourInSchedule(vehicle, tourData);
 
@@ -219,7 +226,6 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	private FreightTourDataDispatched buildDispatchData(DvrpVehicle vehicle, FreightTourDataPlanned tourData, double distanceToDepot, double distanceBackToOwner) {
 		double totalDistance = 0.;  //for analysis
 		double emptyMeters = 0.;    //for analysis
-		StayTask previousTask = (StayTaskImpl) vehicle.getSchedule().getCurrentTask();
 
 		List<Task> remainingDriveTasks = vehicle.getSchedule().getTasks().stream()
 				.filter(t -> t.getStatus().equals(Task.TaskStatus.PLANNED))
@@ -236,7 +242,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				.vehicleId(vehicle.getId())
 				.mustReturnLog(((PFAVehicle) vehicle).getMustReturnToOwnerLinkTimePairs().peek())
 				.dispatchTime(timer.getTimeOfDay())
-				.requestLink(((StayTaskImpl) vehicle.getSchedule().getCurrentTask()).getLink().getId())
+                .requestLink(Tasks.getEndLink(vehicle.getSchedule().getCurrentTask()).getId())
 				.tourData(tourData)
 				.distanceToDepot(distanceToDepot)
 				.distanceBackToOwner(distanceBackToOwner)

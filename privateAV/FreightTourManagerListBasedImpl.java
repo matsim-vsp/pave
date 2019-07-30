@@ -193,6 +193,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
         FreightTourDataPlanned matchingFreightTour = null;
         for (Link depot : nearestDepots) {
             matchingFreightTour = searchForTourAtDepot(depot, requestLink, vehicle, router);
+            if (matchingFreightTour != null) break;
         }
         if (matchingFreightTour == null) {
             log.info("request will be rejected. must return log of vehicle:" + vehicle.getMustReturnToOwnerLinkTimePairs().peek());
@@ -233,7 +234,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
                 //if no tour at the depot is left, delete depot
                 if (depotToFreightTour.get(depot).isEmpty() && !PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS)
                     depotToFreightTour.remove(depot);
-                log.info("size of depot to list: " + this.depotToFreightTour.get(depot).size());
+                log.info("size of depot to do list after removal: " + this.depotToFreightTour.get(depot).size());
             }
         }
         return matchingFreightTour;
@@ -273,7 +274,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
         PFAVehicle.MustReturnLinkTimePair mustReturnToOwnerLog = vehicle.getMustReturnToOwnerLinkTimePairs().peek();
         Double timeWhenOwnerNeedsVehicle = mustReturnToOwnerLog.getTime();
         Link returnLink = network.getLinks().get(mustReturnToOwnerLog.getLinkId());
-        StayTask currentTask = (StayTask) vehicle.getSchedule().getCurrentTask();
+        Task currentTask = vehicle.getSchedule().getCurrentTask();
         StayTask start = (StayTask) freightTour.getTourTasks().get(0);
         StayTask end = (StayTask) freightTour.getTourTasks().get(freightTour.getTourTasks().size() - 1);
 
@@ -304,7 +305,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
                 tourDuration +
                 pathFromDepotToOwner.getTravelTime();
 
-        if (totalTimeNeededToPerformFreightTour < 0) throw new IllegalStateException("total time needed for tour msut be positive. \n " +
+        if (totalTimeNeededToPerformFreightTour < 0) throw new IllegalStateException("total time needed for tour must be positive. \n " +
                 "access drive duration = " + pathFromCurrTaskToDepot.getTravelTime() +
                 "\n wait time at depot = " + waitTimeAtDepot +
                 "\n tourDuration = " + tourDuration +

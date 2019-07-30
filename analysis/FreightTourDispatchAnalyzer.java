@@ -125,7 +125,9 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
         }
 
         if (event.getActType().contains(PFAVActionCreator.SERVICE_ACTIVITY_TYPE)) {
-
+            if (this.begunFreightTours.get(vehicleId) == null)
+                throw new IllegalStateException("vehicle " + vehicleId + " has just started a service activity but no tour start is registered!" +
+                        "\n see the event=" + event);
             this.begunFreightTours.get(vehicleId).notifyNextServiceTaskStarted(event.getTime());
         }
     }
