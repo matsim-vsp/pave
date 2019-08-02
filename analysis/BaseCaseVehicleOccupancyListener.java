@@ -65,7 +65,7 @@ public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHan
 
     public static void main(String[] args) {
 
-        String inputPop = "C:/Users/Work/svn/runs-svn/pfav/berlin/ownFleetWithDrivers_13k_Truck/berlin-v5.3-1pct.output_plans.xml.gz";
+        String inputPop = "C:/Users/Work/svn/runs-svn/pfav/berlin/newPattern/ownTruckFleetwithDriver_13k_Truck_noPt/berlin-v5.3-1pct.output_plans.xml.gz";
 
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         new PopulationReader(scenario).readFile(inputPop);
@@ -79,9 +79,9 @@ public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHan
         MatsimEventsReader reader = new MatsimEventsReader(manager);
 
 
-        String input = "C:/Users/Work/svn/runs-svn/pfav/berlin/ownFleetWithDrivers_13k_Truck/berlin-v5.3-1pct.output_events.xml.gz";
+        String input = "C:/Users/Work/svn/runs-svn/pfav/berlin/newPattern/ownTruckFleetwithDriver_13k_Truck_noPt/berlin-v5.3-1pct.output_events.xml.gz";
         reader.readFile(input);
-        String output = "C:/Users/Work/svn/runs-svn/pfav/berlin/ownFleetWithDrivers_13k_Truck/vehicleOccupancy.csv";
+        String output = "C:/Users/Work/svn/runs-svn/pfav/berlin/newPattern/ownTruckFleetwithDriver_13k_Truck_noPt/vehicleOccupancy.csv";
         handler.writeStats(output);
 
         System.out.println("DONE");
