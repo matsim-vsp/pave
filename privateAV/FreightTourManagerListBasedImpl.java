@@ -56,7 +56,6 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     private final int timeSlice;
     private final FreightAVConfigGroup pfavConfigGroup;
 
-
     private Map<Link, LinkedList<FreightTourDataPlanned>> depotToFreightTour = new HashMap<>();
 
     private List<FreightTourDataPlanned> freightTours = new ArrayList<>();

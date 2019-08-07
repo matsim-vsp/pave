@@ -36,6 +36,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         this.pfavConfigGroup = pfavConfigGroup;
     }
 
+    
     @Override
     public void install() {
         DvrpModes.registerDvrpMode(binder(), getMode());

@@ -52,7 +52,6 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	private final FreightAVConfigGroup pfavConfigGroup;
 
 	private HashSet<DvrpVehicle> vehiclesOnFreightTour = new HashSet<>();
-
 	private final FreightTourManagerListBased freightManager;
 	private Map<Id<DvrpVehicle>, Double> requestedVehicles = new HashMap<>();
 

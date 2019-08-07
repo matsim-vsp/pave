@@ -35,7 +35,6 @@ public final class PFAVUtils {
 	public static final String PFAV_ID_SUFFIX = "_PFAV";
 
 	public static final String DEFAULT_VEHTYPES_FILE = "input/PFAVvehicleTypes.xml";
-
 	/**
 	 *
 	 */

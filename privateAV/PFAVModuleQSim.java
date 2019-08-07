@@ -36,6 +36,7 @@ final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
         this.pfavConfigGroup = pfavConfigGroup;
     }
 
+    
     @Override
     protected void configureQSim() {
         install(new VrpAgentSourceQSimModule(getMode()));

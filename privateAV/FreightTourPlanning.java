@@ -58,7 +58,6 @@ public final class FreightTourPlanning {
 	public FreightTourPlanning(FreightAVConfigGroup pfavConfigGroup) {
 		FreightTourPlanning.pfavConfigGroup = pfavConfigGroup;
 	}
-
     /**
 	 */
     static FreightTourDataPlanned convertToPFAVTourData(ScheduledTour freightTour, Network network, TravelTime travelTime) {
