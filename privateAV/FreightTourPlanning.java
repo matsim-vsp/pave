@@ -51,7 +51,13 @@ import java.util.List;
  */
 public final class FreightTourPlanning {
 
-    private static final Logger log = Logger.getLogger(FreightTourPlanning.class);
+	private static final Logger log = Logger.getLogger(FreightTourPlanning.class);
+	 
+	private static FreightAVConfigGroup pfavConfigGroup;
+	
+	public FreightTourPlanning(FreightAVConfigGroup pfavConfigGroup) {
+		FreightTourPlanning.pfavConfigGroup = pfavConfigGroup;
+	}
 
     /**
 	 */
@@ -59,12 +65,12 @@ public final class FreightTourPlanning {
         // we only need duration for the service tasks - id we wanted exact planned time points of daytime, we would need to derive them out of the legs (like we do for start and end activity)
         //the Start and End activities are not part of ScheduledTour.getTour.getTourElements();
         List<TaxiTask> taskList = new ArrayList<>();
-
+        
         //we could think about setting the start time of the first retool activity according to global time window (currently PFAVUtils.FREIGHTTOUR_EARLIEST_START
         //but this implicitly happens when calculating oath to depot and wait time at depot in the FreightTourManagerListBasedImpl
         double tEnd = ((Tour.Leg) freightTour.getTour().getTourElements().get(0)).getExpectedDepartureTime();
-        double tBegin = tEnd - PFAVUtils.PFAV_RETOOL_TIME;
-
+        double tBegin = tEnd - pfavConfigGroup.getPfavReToolTime();
+       
         Link depotLink = network.getLinks().get(freightTour.getTour().getStart().getLocation());
         Link location = depotLink;
         taskList.add(new PFAVRetoolTask(tBegin, tEnd, location));
@@ -100,7 +106,7 @@ public final class FreightTourPlanning {
         double travelTimeToLastService = taskList.get(taskList.size() - 2).getBeginTime();
 
         tBegin = taskList.get(taskList.size() - 1).getEndTime();
-        tEnd = tBegin + PFAVUtils.PFAV_RETOOL_TIME;
+        tEnd = tBegin + pfavConfigGroup.getPfavReToolTime();
         location = network.getLinks().get(freightTour.getTour().getEnd().getLocation());
         taskList.add(new PFAVRetoolTask(tBegin, tEnd, location));
 
@@ -152,7 +158,7 @@ public final class FreightTourPlanning {
             //get the algorithm out-of-the-box, search solution and get the best one.
             VehicleRoutingAlgorithm algorithm = new SchrimpfFactory().createAlgorithm(problem);
 
-            algorithm.setMaxIterations(PFAVUtils.NR_OF_JSPRIT_ITERATIONS);
+            algorithm.setMaxIterations(pfavConfigGroup.getNrOfJspritIterations());
 
             // variationCoefficient = stdDeviation/mean. so i set the threshold rather soft
             algorithm.addTerminationCriterion(new VariationCoefficientTermination(50, 0.01));

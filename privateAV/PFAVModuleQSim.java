@@ -28,10 +28,12 @@ import org.matsim.core.router.util.TravelTime;
 final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
 
     private final TaxiConfigGroup taxiCfg;
+    private final FreightAVConfigGroup pfavConfigGroup;
 
-    PFAVModuleQSim(TaxiConfigGroup taxiCfg) {
+    PFAVModuleQSim(TaxiConfigGroup taxiCfg, FreightAVConfigGroup pfavConfigGroup) {
         super(taxiCfg.getMode());
         this.taxiCfg = taxiCfg;
+        this.pfavConfigGroup = pfavConfigGroup;
     }
 
     @Override
@@ -76,7 +78,7 @@ final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
 //                        TravelDisutility travelDisutility = getModalInstance(
 //                                TravelDisutilityFactory.class).createTravelDisutility(travelTime);
                         TravelDisutility travelDisutility = getModalInstance(TravelDisutility.class);
-                        return new PFAVScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility, events, tourManager);
+                        return new PFAVScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility, events, tourManager, pfavConfigGroup);
                     }
                 }).asEagerSingleton();
 

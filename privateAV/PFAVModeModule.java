@@ -24,14 +24,16 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
     private final String CARRIERS_FILE;
     private final String VEHTYPES_FILE;
     private final TaxiConfigGroup taxiCfg;
+    private final FreightAVConfigGroup pfavConfigGroup;
     private Scenario scenario;
 
-    public PFAVModeModule(TaxiConfigGroup taxiCfg, Scenario scenario, String carriersFile, String vehTypesFile) {
+    public PFAVModeModule(TaxiConfigGroup taxiCfg, Scenario scenario, String carriersFile, String vehTypesFile, FreightAVConfigGroup pfavConfigGroup) {
         super(taxiCfg.getMode());
         this.taxiCfg = taxiCfg;
         this.scenario = scenario;
         this.CARRIERS_FILE = carriersFile;
         this.VEHTYPES_FILE = vehTypesFile;
+        this.pfavConfigGroup = pfavConfigGroup;
     }
 
     @Override
@@ -50,7 +52,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
 //        int timeSlice = pfavConfig.getTourPlannungTimeSlice(); TODO
         CarrierVehicleTypes vTypes = readVehicleTypes(this.VEHTYPES_FILE);
 
-        FreightTourManagerListBasedImpl tourManager = new FreightTourManagerListBasedImpl(this.CARRIERS_FILE, vTypes, PFAVUtils.timeSlice());
+        FreightTourManagerListBasedImpl tourManager = new FreightTourManagerListBasedImpl(this.CARRIERS_FILE, vTypes, PFAVUtils.timeSlice(), pfavConfigGroup);
         PFAVCostParameter pfavCostParameters = getPFAVCostParameter(vTypes);
         installQSimModule(new AbstractDvrpModeQSimModule(getMode()){
             @Override
@@ -74,7 +76,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         );
 
         addControlerListenerBinding().toInstance(tourManager);
-        installQSimModule(new PFAVModuleQSim(taxiCfg));
+        installQSimModule(new PFAVModuleQSim(taxiCfg, pfavConfigGroup));
     }
 
     private CarrierVehicleTypes readVehicleTypes(String input) {
@@ -87,9 +89,9 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
     private CarrierVehicleType retrievePFAVType(CarrierVehicleTypes vehicleTypes) {
 //        return vehicleTypes.getVehicleTypes().values().stream().filter(t -> t.getId().toString().equals(PFAVUtils.PFAV_TYPE)).findFirst();
         for (CarrierVehicleType type : vehicleTypes.getVehicleTypes().values()) {
-            if (type.getId().toString().equals(PFAVUtils.PFAV_TYPE)) return type;
+            if (type.getId().toString().equals(pfavConfigGroup.getPfavType())) return type;
         }
-        throw new IllegalArgumentException("no cost parameters for vehicle type " + PFAVUtils.PFAV_TYPE + " could be found in carriersVehicleTypes." +
+        throw new IllegalArgumentException("no cost parameters for vehicle type " + pfavConfigGroup.getPfavType() + " could be found in carriersVehicleTypes." +
                 "please make sure that PFAV_TYPE is included in carreirsVehicleTypes. Currently, no default cost parameters for pfav are implemented..");
     }
 

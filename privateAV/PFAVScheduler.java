@@ -49,6 +49,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	private final MobsimTimer timer;
 	private final TaxiConfigGroup taxiCfg;
 	private final EventsManager eventsManager;
+	private final FreightAVConfigGroup pfavConfigGroup;
 
 	private HashSet<DvrpVehicle> vehiclesOnFreightTour = new HashSet<>();
 
@@ -59,7 +60,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	 */
 	PFAVScheduler(TaxiConfigGroup taxiCfg, Fleet fleet, Network network, MobsimTimer timer,
 				  @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, TravelDisutility travelDisutility,
-				  EventsManager eventsManager, FreightTourManagerListBased tourManager) {
+				  EventsManager eventsManager, FreightTourManagerListBased tourManager, FreightAVConfigGroup pfavConfigGroup) {
 		this.freightManager = tourManager;
 		this.eventsManager = eventsManager;
 		this.taxiCfg = taxiCfg;
@@ -68,6 +69,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		this.travelTime = travelTime;
 		this.timer = timer;
 		this.network = network;
+		this.pfavConfigGroup = pfavConfigGroup;
 		delegate = new TaxiScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility);
 
 	}
@@ -109,7 +111,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 					}
 				} else if (currentTask instanceof PFAVRetoolTask
 						&& Schedules.getNextTask(schedule) instanceof TaxiEmptyDriveTask //we are at the end of a freight tour (otherwise next task would be instanceof PFAVServiceDriveTask
-						&& PFAVUtils.ALLOW_MULTIPLE_TOURS_IN_A_ROW
+						&& pfavConfigGroup.isAllowMultipleToursInaRow()
 						&& !requestedVehicles.keySet().contains(vehicle.getId())) {    //owner has not submitted a request yet
 					requestFreightTour(vehicle);
 				}
@@ -120,7 +122,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 			}
 			case EMPTY_DRIVE:
                 if (isPFAVReturningToDepot(vehicle)
-						&& PFAVUtils.ALLOW_MULTIPLE_TOURS_IN_A_ROW
+						&& pfavConfigGroup.isAllowMultipleToursInaRow()
 						&& !requestedVehicles.keySet().contains(vehicle.getId())) {
 					requestFreightTour(vehicle);
                 } else if (isPFAVReturningToOwner(vehicle)) {
@@ -165,11 +167,11 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
     }
 
 	private void requestFreightTour(DvrpVehicle vehicle) {
-		if (timer.getTimeOfDay() > PFAVUtils.FREIGHTTOUR_LATEST_START) {
+		if (timer.getTimeOfDay() > pfavConfigGroup.getFreightTourLatestStart()) {
 			log.info("No freight tour is requested for vehicle "
 					+ vehicle.getId()
 					+ " because global freight time window ended already at "
-					+ PFAVUtils.FREIGHTTOUR_LATEST_START);
+					+ pfavConfigGroup.getFreightTourLatestStart());
 			return;
 		}
 
@@ -262,7 +264,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		List<TaxiTask> tourActivities = tourData.getTourTasks();
 		Task previousTask = tourData.getAccessDriveTask();
 		for (TaxiTask currentTask : tourActivities) {
-			if (PFAVUtils.RE_ROUTE_TOURS && currentTask instanceof DriveTask) {
+			if (pfavConfigGroup.isReRouteTours() && currentTask instanceof DriveTask) {
 				DriveTaskImpl originalDriveTask = (DriveTaskImpl) currentTask;
 				VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(originalDriveTask.getPath().getFromLink(), originalDriveTask.getPath().getToLink(),
 						previousTask.getEndTime(), this.router, this.travelTime);

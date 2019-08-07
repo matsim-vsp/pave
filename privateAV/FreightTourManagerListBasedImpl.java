@@ -54,6 +54,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
 
     private final static Logger log = Logger.getLogger(FreightTourManagerListBasedImpl.class);
     private final int timeSlice;
+    private final FreightAVConfigGroup pfavConfigGroup;
 
 
     private Map<Link, LinkedList<FreightTourDataPlanned>> depotToFreightTour = new HashMap<>();
@@ -73,11 +74,12 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     /**
      *
      */
-    FreightTourManagerListBasedImpl(String pathToCarriersFile, CarrierVehicleTypes vehicleTypes, int timeSlice) {
+    FreightTourManagerListBasedImpl(String pathToCarriersFile, CarrierVehicleTypes vehicleTypes, int timeSlice, FreightAVConfigGroup pfavConfigGroup) {
 
         this.carriers = readCarriers(pathToCarriersFile);
         this.vehicleTypes = vehicleTypes;
         this.timeSlice = timeSlice;
+        this.pfavConfigGroup = pfavConfigGroup;
         log.info("loading carrier vehicle types..");
         new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(vehicleTypes);
     }
@@ -91,7 +93,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     }
 
     private List<FreightTourDataPlanned> convertCarrierPlansToTaskList(Carriers carriers) {
-        if (PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE < 0 || PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE > 1)
+        if (pfavConfigGroup.getFreightDemandSampleSize() < 0 || pfavConfigGroup.getFreightDemandSampleSize() > 1)
             throw new IllegalStateException("the sample size for the freight demand must be in between 0 and 1");
 
         //here we create a carrier copy which only contains the freight tours used in the current iteration in order to write those out in form of a carriers.xml file
@@ -107,7 +109,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
             CarrierPlan plan = carrier.getSelectedPlan();
             for (ScheduledTour freightTour : plan.getScheduledTours()) {
                 //we need to cut down here and not beforehand in the services, since the tour planning would otherwise result in longer and inaccurate tours
-                if (MatsimRandom.getRandom().nextDouble() <= PFAVUtils.FREIGHT_DEMAND_SAMPLE_SIZE) {
+                if (MatsimRandom.getRandom().nextDouble() <= pfavConfigGroup.getFreightDemandSampleSize()) {
                     freightTours.add(FreightTourPlanning.convertToPFAVTourData(freightTour, this.network, this.travelTime));
                     onlyUsedTours.add(freightTour);
                 }
@@ -140,7 +142,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
 
         FreightTourDataPlanned tour = (FreightTourDataPlanned) this.depotToFreightTour.get(depot).toArray()[MatsimRandom.getRandom().nextInt(this.depotToFreightTour.get(depot).size())];
 
-        if (PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS) {
+        if (pfavConfigGroup.isAllowEmptyTourListsForDepots()) {
             if (tour == null) {
                 return getRandomPFAVTour();
             }
@@ -184,7 +186,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     }
 
     private List<Link> findNearestDepots(Link requestLink, Stream<Link> depotLinks) {
-        StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(PFAVUtils.AMOUNT_OF_DEPOTS_TO_CONSIDER, link1 -> link1, link2 -> link2);
+        StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(pfavConfigGroup.getAmountOfDepotsToConsider(), link1 -> link1, link2 -> link2);
         return finder.findNearest(requestLink, depotLinks);
     }
 
@@ -212,12 +214,12 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
             return null;//only go on if there is a tour left at depot
         Iterator<FreightTourDataPlanned> freightTourIterator = this.depotToFreightTour.get(depot).iterator();
         VrpPathWithTravelData pathFromCurrTaskToDepot = calcPathToDepot(vehicle, depot, router);
-        if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= PFAVUtils.MAX_BEELINE_DISTANCE_TO_DEPOT    // MAX BEELINE DISTANCE TO DEPOT
-                && pathFromCurrTaskToDepot.getTravelTime() <= PFAVUtils.MAX_TRAVELTIME_TO_DEPOT                                    // MAX TRAVEL TIME TO DEPOT
-                && pathFromCurrTaskToDepot.getArrivalTime() < PFAVUtils.FREIGHTTOUR_LATEST_START) {                                  // ARRIVAL BEFORE LATEST START
+        if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= pfavConfigGroup.getMaxBeelineDistanceToDepot()    // MAX BEELINE DISTANCE TO DEPOT
+                && pathFromCurrTaskToDepot.getTravelTime() <= pfavConfigGroup.getMaxTravelTimeToDepot()                                    // MAX TRAVEL TIME TO DEPOT
+                && pathFromCurrTaskToDepot.getArrivalTime() < pfavConfigGroup.getFreightTourLatestStart()) {                                  // ARRIVAL BEFORE LATEST START
 
             log.info("computed arrival time at depot = " + pathFromCurrTaskToDepot.getArrivalTime());
-            log.info("latest start is = " + PFAVUtils.FREIGHTTOUR_LATEST_START);
+            log.info("latest start is = " + pfavConfigGroup.getFreightTourLatestStart());
             double waitTimeAtDepot = computeWaitTimeAtDepot(pathFromCurrTaskToDepot);
 
             while (freightTourIterator.hasNext()) {
@@ -232,7 +234,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
             }
             if (matchingFreightTour != null) {
                 //if no tour at the depot is left, delete depot
-                if (depotToFreightTour.get(depot).isEmpty() && !PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS)
+                if (depotToFreightTour.get(depot).isEmpty() && !pfavConfigGroup.isAllowEmptyTourListsForDepots())
                     depotToFreightTour.remove(depot);
                 log.info("size of depot to do list after removal: " + this.depotToFreightTour.get(depot).size());
             }
@@ -267,7 +269,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
                                                         FreightTourDataPlanned freightTour, LeastCostPathCalculator router) {
 
         //does the vehicle have the chance to be at the last service in time?
-        if (PFAVUtils.CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH &&
+        if (pfavConfigGroup.isConsiderServiceTimeWindowsForDispatch() &&
                 freightTour.getLatestArrivalAtLastService() < pathFromCurrTaskToDepot.getArrivalTime() + freightTour.getTravelTimeToLastService())
             return false;
 
@@ -311,7 +313,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
                 "\n tourDuration = " + tourDuration +
                 "\n pathFromDepotToOwner = " + pathFromDepotToOwner);
 
-        if (timeWhenOwnerNeedsVehicle >= currentTask.getEndTime() + totalTimeNeededToPerformFreightTour + PFAVUtils.TIME_BUFFER) {
+        if (timeWhenOwnerNeedsVehicle >= currentTask.getEndTime() + totalTimeNeededToPerformFreightTour + pfavConfigGroup.getTimeBuffer()) {
             log.info("tour duration = " + totalTimeNeededToPerformFreightTour + " seems to be okay for vehicle " + vehicle.getId() + " starting at time " + currentTask.getEndTime());
             log.warn("the owner wants the vehicle back at time " + timeWhenOwnerNeedsVehicle);
 
@@ -324,7 +326,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     private void accountForWaitTaskAndAccessDrive(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot, double waitTimeAtDepot, FreightTourDataPlanned freightTour, StayTask start) {
         if (waitTimeAtDepot > 0) {
             log.info("inserting wait task with duration= " + waitTimeAtDepot + " at the depot link " + freightTour.getDepotLink().getId() + " for vehicle " + vehicle.getId()
-                    + " in order to be consistent with earliest start time set to " + PFAVUtils.FREIGHTTOUR_EARLIEST_START);
+                    + " in order to be consistent with earliest start time set to " + pfavConfigGroup.getFreightTourEarliestStart());
             freightTour.getTourTasks().add(0, new TaxiStayTask(start.getBeginTime() - waitTimeAtDepot, start.getBeginTime(), start.getLink()));
         }
         freightTour.setAccessDriveTask(new TaxiEmptyDriveTask(pathFromCurrTaskToDepot));
@@ -333,8 +335,8 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     private double computeWaitTimeAtDepot(VrpPathWithTravelData pathFromCurrTaskToDepot) {
 //		check if vehicle arrives before earliest start. calculate the waiting time in case.
         double waitTimeAtDepot = 0;
-        if (pathFromCurrTaskToDepot.getArrivalTime() < PFAVUtils.FREIGHTTOUR_EARLIEST_START) {
-            waitTimeAtDepot = PFAVUtils.FREIGHTTOUR_EARLIEST_START - pathFromCurrTaskToDepot.getArrivalTime();
+        if (pathFromCurrTaskToDepot.getArrivalTime() < pfavConfigGroup.getFreightTourEarliestStart()) {
+            waitTimeAtDepot = pfavConfigGroup.getFreightTourEarliestStart() - pathFromCurrTaskToDepot.getArrivalTime();
         }
         log.info("wait time at depot is = " + waitTimeAtDepot);
         return waitTimeAtDepot;
@@ -366,7 +368,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     @Override
     public void notifyIterationStarts(IterationStartsEvent event) {
         if (event.getIteration() == 0) {
-            if (PFAVUtils.RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION) {
+            if (pfavConfigGroup.isRunTourPlanningBeforeFirstIteration()) {
                 log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
                 runTourPlanning();
             } else {
@@ -374,7 +376,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
             }
             //in iteration 0, always write carriers file
             writeCarriers(event);
-        } else if ((event.getIteration() % PFAVUtils.TOURPLANNING_INTERVAL == 0)) {
+        } else if ((event.getIteration() % pfavConfigGroup.getTourPlanningInterval() == 0)) {
             log.info("RUNNING FREIGHT CONTRIB TO CALCULATE FREIGHT TOURS BASED ON CURRENT TRAVEL TIMES");
             runTourPlanning();
             writeCarriers(event);
@@ -383,7 +385,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
         this.depotToFreightTour = new HashMap<>();
 
 //		if we allow empty depots, we need to initialise the manager's map of depot links to tours with empty lists.
-        if (PFAVUtils.ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS) mapDepotLinksToEmptyTourList();
+        if (pfavConfigGroup.isAllowEmptyTourListsForDepots()) mapDepotLinksToEmptyTourList();
 
         //now fill the map with the freightTours that came out of the calculator
         mapStartLinkOfToursToTour();
