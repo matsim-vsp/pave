@@ -20,12 +20,6 @@
 
 package analysis;
 
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.freight.carrier.*;
-import org.matsim.core.utils.io.IOUtils;
-import privateAV.PFAVUtils;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,15 +27,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.freight.carrier.Carrier;
+import org.matsim.contrib.freight.carrier.CarrierPlan;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
+import org.matsim.contrib.freight.carrier.Carriers;
+import org.matsim.contrib.freight.carrier.ScheduledTour;
+import org.matsim.contrib.freight.carrier.Tour;
+import org.matsim.core.utils.io.IOUtils;
+
+import privateAV.FreightAVConfigGroup;
+
 public class CarrierTourDauerAnalysis {
 
     private Carriers carriers = new Carriers();
 
     private Map<Id<Link>, List<CarrierTourAnalysisData>> depotTourData = new HashMap<>();
+    private static FreightAVConfigGroup pfavConfigGroup;
 
-    public CarrierTourDauerAnalysis(String carriersFile) {
+    public CarrierTourDauerAnalysis(String carriersFile, FreightAVConfigGroup pfavConfigGroup) {
         this.readCarriers(carriersFile);
         this.deriveTotalRetoolAndServiceTimePerCarrier();
+        CarrierTourDauerAnalysis.pfavConfigGroup = pfavConfigGroup;
     }
 
     public static void main(String[] args) {
@@ -52,7 +60,7 @@ public class CarrierTourDauerAnalysis {
         String output = "C:/Users/Work/git/freightAV/output/combinedPFAVAndCarrierTest/2019-04-29_11.53/ITERS/it.0/carriers_it0_stats.csv";
 
 
-        new CarrierTourDauerAnalysis(input).writeStats(output);
+        new CarrierTourDauerAnalysis(input, pfavConfigGroup).writeStats(output);
         System.out.println("Done");
 
     }
@@ -131,7 +139,7 @@ public class CarrierTourDauerAnalysis {
 
         CarrierTourAnalysisData(double travelTime, double serviceTime, double serviceCount, double serviceCapacity) {
             this.travelTime = travelTime;
-            this.retoolTime = 2 * PFAVUtils.PFAV_RETOOL_TIME;
+            this.retoolTime = 2 * pfavConfigGroup.getPfavReToolTime();
             this.serviceTime = serviceTime;
             this.serviceCount = serviceCount;
             this.serviceCapacity = serviceCapacity;
