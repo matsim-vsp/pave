@@ -20,13 +20,26 @@
 
 package scenarioCreation;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkWriter;
-import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.freight.carrier.Carrier;
+import org.matsim.contrib.freight.carrier.CarrierCapabilities;
+import org.matsim.contrib.freight.carrier.CarrierImpl;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
+import org.matsim.contrib.freight.carrier.CarrierService;
+import org.matsim.contrib.freight.carrier.CarrierVehicle;
+import org.matsim.contrib.freight.carrier.CarrierVehicleType;
+import org.matsim.contrib.freight.carrier.Carriers;
+import org.matsim.contrib.freight.carrier.TimeWindow;
 import org.matsim.contrib.util.CSVLineBuilder;
 import org.matsim.contrib.util.CompactCSVWriter;
 import org.matsim.core.config.Config;
@@ -41,11 +54,8 @@ import org.matsim.core.utils.io.IOUtils;
 import org.matsim.run.RunBerlinScenario;
 import org.matsim.vehicles.VehicleType;
 import org.opengis.feature.simple.SimpleFeature;
-import privateAV.PFAVUtils;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import privateAV.FreightAVConfigGroup;
 
 public class ServiceMapMatch {
     //    private final String inputNewNet = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/Network/berlin-v5.2-1pct.output_network.xml";
@@ -63,6 +73,8 @@ public class ServiceMapMatch {
 
     private Map<Geometry,Carrier> carrierMap = new HashMap();
 
+    public static final String GROUP_NAME = "dummy";
+    
     public static void main(String[] args) {
 //        new ServiceMapMatch().run();
         new ServiceMapMatch().writeServiceStatsCSV(outputCSVFile);
@@ -127,8 +139,9 @@ public class ServiceMapMatch {
     }
 
     public void run(){
-        mapGeomToCarrier(shapeFile);
-
+    	FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(GROUP_NAME);
+        mapGeomToCarrier(shapeFile, pfavConfig);
+        
         //should be referenced in GK 4 after having a look at the net in via
         Network oldSchroederNet = NetworkUtils.createNetwork();
         //is referenced in GK4
@@ -169,7 +182,7 @@ public class ServiceMapMatch {
                             CarrierService.Builder.newInstance(Id.create(service.getId(), CarrierService.class), newLink)
                                     .setCapacityDemand(service.getCapacityDemand())
                                     .setServiceDuration(service.getServiceDuration())
-                                    .setServiceStartTimeWindow(getFittedTimeWindow(service.getServiceStartTimeWindow()))
+                                    .setServiceStartTimeWindow(getFittedTimeWindow(service.getServiceStartTimeWindow(), pfavConfig))
                                     .build();
                     newCarrier.getServices().add(newService);
                     handledNewLinksToCarrier.put(newLink, newCarrier);
@@ -204,22 +217,22 @@ public class ServiceMapMatch {
         return null;
     }
 
-    private TimeWindow getFittedTimeWindow(TimeWindow oldTimeWindow) {
+    private TimeWindow getFittedTimeWindow(TimeWindow oldTimeWindow, FreightAVConfigGroup pfavConfig) {
         double start = oldTimeWindow.getStart();
         double end = oldTimeWindow.getEnd();
 
         double oldDuration = end - start;
-        if (start < PFAVUtils.FREIGHTTOUR_EARLIEST_START) {
-            start = PFAVUtils.FREIGHTTOUR_EARLIEST_START;
-            if ((start + oldDuration) > PFAVUtils.FREIGHTTOUR_LATEST_START) {
-                end = PFAVUtils.FREIGHTTOUR_LATEST_START;
+        if (start < pfavConfig.getFreightTourEarliestStart()) {
+            start = pfavConfig.getFreightTourEarliestStart();
+            if ((start + oldDuration) > pfavConfig.getFreightTourLatestStart()) {
+                end = pfavConfig.getFreightTourLatestStart();
             } else {
                 end = start + oldDuration;
             }
-        } else if (end > PFAVUtils.FREIGHTTOUR_LATEST_START) {
-            end = PFAVUtils.FREIGHTTOUR_LATEST_START;
-            if ((end - oldDuration) < PFAVUtils.FREIGHTTOUR_EARLIEST_START) {
-                start = PFAVUtils.FREIGHTTOUR_EARLIEST_START;
+        } else if (end > pfavConfig.getFreightTourLatestStart()) {
+            end = pfavConfig.getFreightTourLatestStart();
+            if ((end - oldDuration) < pfavConfig.getFreightTourEarliestStart()) {
+                start = pfavConfig.getFreightTourEarliestStart();
             } else {
                 start = end - oldDuration;
             }
@@ -227,7 +240,7 @@ public class ServiceMapMatch {
         return TimeWindow.newInstance(start, end);
     }
 
-    private void mapGeomToCarrier(String shapeFile){
+    private void mapGeomToCarrier(String shapeFile, FreightAVConfigGroup pfavConfig){
         Collection<SimpleFeature> allLORs = ShapeFileReader.getAllFeatures(shapeFile);
 
         for(SimpleFeature feature : allLORs){
@@ -242,8 +255,8 @@ public class ServiceMapMatch {
 
             CarrierVehicle veh = CarrierVehicle.Builder.newInstance(Id.createVehicleId(key + "_" + name + "_v"),
                     Id.createLinkId(depotLink))
-                    .setEarliestStart(PFAVUtils.FREIGHTTOUR_EARLIEST_START).
-                            setLatestEnd(PFAVUtils.FREIGHTTOUR_LATEST_START)
+                    .setEarliestStart(pfavConfig.getFreightTourEarliestStart()).
+                            setLatestEnd(pfavConfig.getFreightTourLatestStart())
                     .setTypeId(typeId)
                     .setType(CarrierVehicleType.Builder.newInstance(typeId).build())
                     .build();

@@ -50,6 +50,8 @@ import org.matsim.core.replanning.GenericStrategyManager;
 import org.matsim.core.replanning.selectors.BestPlanSelector;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.scoring.SumScoringFunction;
+
+import privateAV.FreightAVConfigGroup;
 import privateAV.PFAVModeModule;
 
 import java.text.SimpleDateFormat;
@@ -162,13 +164,13 @@ public class RunChessboardScenarioWithNormalFreight {
 	}
 
 	private static void configureControlerForPFAV(String carriersFile, String vehTypesFile, TaxiConfigGroup taxiCfg,
-			String mode, Scenario scenario, Controler controler) {
+			String mode, Scenario scenario, Controler controler, FreightAVConfigGroup pfavConfig) {
 		controler.addOverridingModule(new DvrpModule());
 		//		controler.addOverridingModule(new TaxiModule());
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(taxiCfg, scenario, carriersFile, vehTypesFile));
+				install(new PFAVModeModule(taxiCfg, scenario, carriersFile, vehTypesFile, pfavConfig));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));

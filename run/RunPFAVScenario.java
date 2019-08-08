@@ -29,6 +29,8 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
+
+import privateAV.FreightAVConfigGroup;
 import privateAV.PFAVModeModule;
 import privateAV.PFAVUtils;
 
@@ -48,6 +50,7 @@ public class RunPFAVScenario {
 	private static final String OUTPUT_DIR = "output/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
 			new Date()) + "/";
 
+	public static final String GROUP_NAME = "dummy";
 	/**
 	 * @param args
 	 */
@@ -71,6 +74,7 @@ public class RunPFAVScenario {
 		}
 
 		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
+		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(GROUP_NAME);
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		/*
 		 * very important: we assume that destinations of trips are known in advance.
@@ -103,7 +107,7 @@ public class RunPFAVScenario {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(taxiCfg, scenario, finalCarriers, finalVehTypes));
+				install(new PFAVModeModule(taxiCfg, scenario, finalCarriers, finalVehTypes, pfavConfig));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));

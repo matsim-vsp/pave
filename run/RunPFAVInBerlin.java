@@ -33,6 +33,8 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.run.RunBerlinScenario;
+
+import privateAV.FreightAVConfigGroup;
 import privateAV.PFAVModeModule;
 
 import java.text.SimpleDateFormat;
@@ -58,6 +60,8 @@ public class RunPFAVInBerlin {
 
 	private static final int LAST_ITERATION = 0;
 
+	public static final String GROUP_NAME = "dummy";
+	
 	public static void main(String[] args) {
 		String configPath, output, carriers, vehTypes, population, networkChangeEvents;
 		int maxIter;
@@ -84,6 +88,7 @@ public class RunPFAVInBerlin {
 
 		//setup config
 		Config config = RunBerlinScenario.prepareConfig(new String[]{configPath});
+		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(GROUP_NAME);
 		TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
 		String mode = taxiCfg.getMode();
 		config.addModule(taxiCfg);
@@ -97,7 +102,7 @@ public class RunPFAVInBerlin {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(taxiCfg, scenario, carriers, vehTypes));
+				install(new PFAVModeModule(taxiCfg, scenario, carriers, vehTypes, pfavConfig));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));

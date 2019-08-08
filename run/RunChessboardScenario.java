@@ -34,6 +34,8 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.scenario.ScenarioUtils;
+
+import privateAV.FreightAVConfigGroup;
 import privateAV.PFAVModeModule;
 
 import java.text.SimpleDateFormat;
@@ -58,6 +60,7 @@ public class RunChessboardScenario {
 	private static final String OUTPUT_DIR = "output/travelTimeTest/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
 			new Date()) + "/";
 
+	public static final String GROUP_NAME = "dummy";
 	/**
 	 * @param args
 	 */
@@ -74,6 +77,7 @@ public class RunChessboardScenario {
 			vehTypesFile = VEHTYPES_FILE_CASE2;
 		}
 
+		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(GROUP_NAME);
 		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		taxiCfg.setDestinationKnown(true);
@@ -118,7 +122,7 @@ public class RunChessboardScenario {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(taxiCfg, scenario, carriersFile, vehTypesFile));
+				install(new PFAVModeModule(taxiCfg, scenario, carriersFile, vehTypesFile, pfavConfig));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));
