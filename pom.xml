@@ -106,14 +106,22 @@
 			<!--<version>1.1.5</version>-->
 		<!--</dependency>-->
 
-		<!--<dependency>-->
 			<!--&lt;!&ndash; OVGU Algorithms &ndash;&gt;-->
-			<!--<groupId>com.github.RicosHub</groupId>-->
-			<!--<artifactId>ovgu.pave</artifactId>-->
-			<!--<version>master-SNAPSHOT</version>-->
-		<!--</dependency>-->
-
-
+		<dependency>
+			<groupId>ovgu.pave</groupId>
+			<artifactId>core</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>ovgu.pave</groupId>
+			<artifactId>handler</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>ovgu.pave</groupId>
+			<artifactId>model</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<build>
