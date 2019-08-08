@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ASCII"?>
+<con:Config xmlns:con="ovgu.pave.config" inputFolder="./scenarios/ovgu/resources/input" inputFilename="inputLMNS.zip" configPath="./scenarios/ovgu/config.xml">
+  <experiment problem="OFFLINE" numberOfRequests="200" numberOfVehicles="15" serviceDuration="1" maxDelayValue="30" startSequence="0" insideRepetitions="1" outputFolder="./scenarios/ovgu/resources/output" outsideRepetitions="1" vehicleCapacity="6" minAcceptanceProbability="0" factorOnTravelTime="1.0" vehicleMovementType="NONE"/>
+  <algorithm algorithm="LMNS" randomSeet="99">
+    <lns minSmallRequestSet="0.2" maxLargeRequestSet="60" maxSmallRequestSet="0.4" minLargeRequestSet="30" maxInsertionIterations="100" maxCalculationTime="9223372036854775807" shawDistanceWeight="2.0" shawBeginWeight="6.0" maxImprovementIterations="1000">
+      <insertionHeuristics heuristicName="REGRET2NOISE" noise="4"/>
+      <insertionHeuristics heuristicName="REGRET2"/>
+      <removalHeuristics heuristicName="SYSTEMATICREMOVAL"/>
+      <removalHeuristics heuristicName="WORSTREMOVAL" noise="4"/>
+      <removalHeuristics heuristicName="SHAWREMOVAL"/>
+      <rws/>
+    </lns>
+  </algorithm>
+</con:Config>
