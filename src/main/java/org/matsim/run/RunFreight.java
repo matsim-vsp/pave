@@ -111,39 +111,47 @@ class RunFreight {
 
 		//Create carrier with services
 		Carriers carriers = new Carriers() ;
-		Carrier carrierWServices = CarrierImpl.newInstance(Id.create("carrier", Carrier.class));
-		carrierWServices.getServices().add(createMatsimService("Service1", "i(3,9)R", 2));
-		carrierWServices.getServices().add(createMatsimService("Service2", "i(4,9)R", 2));
+		Carrier carrierWShipments = CarrierImpl.newInstance(Id.create("carrier", Carrier.class));
+		carrierWShipments.getShipments().add(createMatsimShipment("Shipment1", "i(6,0)", "i(3,9)R", 2));
+		carrierWShipments.getShipments().add(createMatsimShipment("Shipment2", "i(6,0)", "i(4,9)R", 2));
 
-		//Create vehicle and assign it to the Carrier
+		//Create vehicle type
 		CarrierVehicleType carrierVehType = createCarrierVehType();
 		CarrierVehicleTypes vehicleTypes = new CarrierVehicleTypes() ;
 		vehicleTypes.getVehicleTypes().put(carrierVehType.getId(), carrierVehType);
 
+		//create vehicle
 		final Id<Link> depotLinkId = Id.createLinkId( "i(6,0)" );
 		CarrierVehicle carrierVehicle = CarrierVehicle.Builder.newInstance(Id.create("gridVehicle", org.matsim.vehicles.Vehicle.class ),
 			  depotLinkId ).setEarliestStart(0.0 ).setLatestEnd(36000.0 ).setTypeId(carrierVehType.getId() ).build();
+		
+		
+		// capabilities -> assign vehicles or vehicle types to carrier
 		CarrierCapabilities.Builder ccBuilder = CarrierCapabilities.Builder.newInstance()
 													 .addType(carrierVehType)
 													 .addVehicle(carrierVehicle)
 													 .setFleetSize(FleetSize.INFINITE);
-		carrierWServices.setCarrierCapabilities(ccBuilder.build());
+		carrierWShipments.setCarrierCapabilities(ccBuilder.build());
 
 		// Add carrier to carriers
-		carriers.addCarrier(carrierWServices);
+		carriers.addCarrier(carrierWShipments);
 
-		// assign vehicle types to the carriers
+		// load vehicle types for the carriers
 		new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(vehicleTypes) ;
 
-		//load Network and build netbasedCosts for jsprit
+		//load Network and build netbasedCosts
 		Network network = NetworkUtils.createNetwork();
 		new MatsimNetworkReader(network).readURL(IOUtils.newUrl(scenarioUrl ,"grid9x9.xml"));
 
 		new CarrierPlanXmlWriterV2( carriers ).write( config.controler().getOutputDirectory() + "/carriers-wo-plans.xml" );
 		new CarrierVehicleTypeWriter( CarrierVehicleTypes.getVehicleTypes( carriers ) ).write( config.controler().getOutputDirectory() + "/carrierTypes.xml" );
 
+		// matrix costs between locations (cost matrix)
 		Builder netBuilder = NetworkBasedTransportCosts.Builder.newInstance( network, vehicleTypes.getVehicleTypes().values() );
 		final NetworkBasedTransportCosts netBasedCosts = netBuilder.build() ;
+		
+		
+		// time dependent network (1800 = 30 min) --> (option live request)
 		netBuilder.setTimeSliceWidth(1800) ; // !!!!, otherwise it will not do anything.
 
 		switch( optim ) {
@@ -383,7 +391,7 @@ class RunFreight {
 	private static CarrierVehicleType createCarrierVehType() {
 		CarrierVehicleType carrierVehType = CarrierVehicleType.Builder.newInstance(Id.create("gridType", VehicleType.class))
 												  .setCapacity(3)
-												  .setMaxVelocity(10)
+												  .setMaxVelocity(10) // m/s
 												  .setCostPerDistanceUnit(0.0001)
 												  .setCostPerTimeUnit(0.001)
 												  .setFixCost(130)
