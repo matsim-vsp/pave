@@ -243,15 +243,21 @@ class RunFreight {
 					
 					input.setRequests(requests);
 					log.info("prepare vehicles / vehicle types");
-
+					//TODO Fahrzeuge, Fahrzeugtypen übergeben/erstellen
+					
 					log.info("prepare network");
+					//TODO Netzwerk übergeben/erstellen
 					ovgu.pave.model.network.Network ovguNetwork = null;
+					
+					
 					log.info("run algorithm");
 					core.initInput(input);
 					core.initNetwork(ovguNetwork);
 					core.run();
 					log.info("handle alg solution");
 					core.getSolution();
+					
+					//TODO Ergebnis zurück übersetzen
 				}
 
 		}
