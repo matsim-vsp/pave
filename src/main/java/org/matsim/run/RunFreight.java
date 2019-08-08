@@ -58,11 +58,18 @@ import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.matsim.vehicles.EngineInformation.FuelType;
 import org.matsim.vehicles.EngineInformationImpl;
 import org.matsim.vehicles.VehicleType;
+
+import ovgu.pave.core.Core;
 import ovgu.pave.handler.Handler;
 import ovgu.pave.handler.modelHandler.InputHandler;
 import ovgu.pave.model.input.Edge;
+import ovgu.pave.model.input.FirstRequestActivity;
+import ovgu.pave.model.input.Input;
+import ovgu.pave.model.input.InputFactory;
 import ovgu.pave.model.input.Location;
 import ovgu.pave.model.input.Request;
+import ovgu.pave.model.input.Requests;
+import ovgu.pave.model.input.SecondRequestActivity;
 import ovgu.pave.model.input.Vehicle;
 import ovgu.pave.model.input.impl.LocationImpl;
 import ovgu.pave.model.solution.RouteElement;
@@ -112,8 +119,9 @@ class RunFreight {
 		//Create carrier with services
 		Carriers carriers = new Carriers() ;
 		Carrier carrierWShipments = CarrierImpl.newInstance(Id.create("carrier", Carrier.class));
-		carrierWShipments.getShipments().add(createMatsimShipment("Shipment1", "i(6,0)", "i(3,9)R", 2));
-		carrierWShipments.getShipments().add(createMatsimShipment("Shipment2", "i(6,0)", "i(4,9)R", 2));
+		//TODO: Geht derzeit nur als "int" für ovgu... kmt/aug19
+		carrierWShipments.getShipments().add(createMatsimShipment("1", "i(6,0)", "i(3,9)R", 2));
+		carrierWShipments.getShipments().add(createMatsimShipment("2", "i(6,0)", "i(4,9)R", 2));
 
 		//Create vehicle type
 		CarrierVehicleType carrierVehType = createCarrierVehType();
@@ -156,8 +164,9 @@ class RunFreight {
 
 		switch( optim ) {
 			case jsprit:
+				log.info("Starting with jsprit algorithm");
 				/*
-				 * Prepare and run jasprit
+				 * Prepare and run jsprit
 				 */
 
 
@@ -182,170 +191,69 @@ class RunFreight {
 				}
 				break;
 			case ovgu:
-
+				log.info("Starting with OVGU algorithm");
 				for ( Carrier carrier : carriers.getCarriers().values() ){
+					Core core = new Core();
+					
+					//load default config
+					core.initConfig("./scenarios/ovgu/defaultConfig.xml");
+					
+					Input input = InputFactory.eINSTANCE.createInput();
+					
+					Requests requests = InputFactory.eINSTANCE.createRequests();
+					
+					//Map "umdrehen? KMT/aug19
+					HashMap<Id<Link>, Integer> locationToLink= new HashMap<Id<Link>, Integer>();
 
-					List<Id<Link>> locationsMATSim = new ArrayList<>() ;
-					// yy todo make above a list of links, not a list of linkIDs
-
-					locationsMATSim.add( depotLinkId ) ;
-					for( CarrierService service : carrier.getServices() ){
-						locationsMATSim.add( service.getLocationLinkId() ) ;
-					}
-					for( CarrierShipment shipment : carrier.getShipments() ){
-						locationsMATSim.add( shipment.getFrom() ) ;
-						locationsMATSim.add( shipment.getTo() ) ;
-					}
-
-					float [][] matrix = new float[locationsMATSim.size()][locationsMATSim.size()] ;
-
-					List<Id<Link>> list = new ArrayList<>() ;
-					for( Id<Link> linkId : locationsMATSim ){
-						list.add(linkId) ;
-					}
-					Collections.sort( list ) ;
-
-					TravelTime tt = new FreeSpeedTravelTime();
-					TravelDisutility tc = new FreespeedTravelTimeAndDisutility( config.planCalcScore() );
-					LeastCostPathTree tree = new LeastCostPathTree( tt, tc );
-					for( Id<Link> startLinkId : locationsMATSim ){
-						Node originNode = network.getLinks().get( startLinkId ).getToNode() ;
-						double time = 8. * 3600.;
-						tree.calculate( scenario.getNetwork(), originNode, time );
-						int startIndex = Collections.binarySearch( list, startLinkId ) ;
-						Gbl.assertIf( startIndex>=0 );
-						Map<Id<Node>, LeastCostPathTree.NodeData> result = tree.getTree();
-						for( Id<Link> destLinkId : locationsMATSim ){
-							Node destNode = network.getLinks().get( destLinkId ).getFromNode() ;
-							LeastCostPathTree.NodeData abc = result.get( destNode.getId() );
-							int destIndex = Collections.binarySearch( list, destLinkId ) ;
-							Gbl.assertIf( destIndex >=0  );
-							matrix[startIndex][destIndex] = (float) abc.getCost();
+					log.info("prepare carrierShipments/requests");
+					for (CarrierShipment carrierShipment :carrier.getShipments()) {
+						if (!locationToLink.containsKey(carrierShipment.getFrom())){
+							locationToLink.put(carrierShipment.getFrom(), locationToLink.size());
 						}
-					}
-
-					// Erstelle eine Umwandlungstabelle, da OVGU integer als Id benötigt
-					HashMap<Id<Link>, Integer> locationsTransformator = new HashMap<Id<Link>, Integer>();
-					for (Id<Link> startLinkId : locationsMATSim) {
-						locationsTransformator.put(startLinkId, locationsTransformator.size()+1);
-					}
-
-					//Erstelle locations für OVGU
-					List<Location> locations = new ArrayList<Location>();
-					for( Id<Link> startLinkId : locationsMATSim ) {
-						locations.add(InputHandler.createLocation(locationsTransformator.get(startLinkId), network.getLinks().get(startLinkId).getCoord().getX(), network.getLinks().get(startLinkId).getCoord().getX()));
-					}
-
-					List<List<Long>> mtx = null;
-
-					Handler.getNetwork().initNetwork(Handler.getInput().getLocations());
-
-					//TODO: Matrix korrekt umwandeln. kmt, Mai 19
-					for (int x = 0; x < mtx.size(); x++) {
-						for (int y = 0; y < mtx.size(); y++) {
-							if (Handler.getNetwork().getEdges()[x][y] == null)
-								System.out.println("NEIN: "+  x + " " + y );
-							if (mtx.get(x).get(y) == null)
-								System.out.println("JA: " + x+ " "+y );
-							Handler.getNetwork().getEdges()[x][y].setDuration(mtx.get(x).get(y));
-							Handler.getInput().addEdge(Handler.getNetwork().getEdges()[x][y]);
+						if (!locationToLink.containsKey(carrierShipment.getTo())){
+							locationToLink.put(carrierShipment.getTo(), locationToLink.size());
 						}
+											
+						//TODO: OVGU hat integer als Ids. -> Übersetzungstabelle bauen. kmt/aug19
+						//TODO: OVGU hat integer als Ids für Locations. -> Übersetzungstabelle bauen zu den Link Ids. kmt/aug19
+						Location firstActivityLocation = InputHandler.createLocation(locationToLink.get(carrierShipment.getFrom()), network.getLinks().get(carrierShipment.getFrom()).getCoord().getX(), network.getLinks().get(carrierShipment.getFrom()).getCoord().getY());
+						Location secondActivityLocation = InputHandler.createLocation(locationToLink.get(carrierShipment.getTo()), network.getLinks().get(carrierShipment.getTo()).getCoord().getX(), network.getLinks().get(carrierShipment.getTo()).getCoord().getY());
+						Request request = InputHandler.createRequest(Integer.parseInt(carrierShipment.getId().toString()), firstActivityLocation, secondActivityLocation, carrierShipment.getSize());
+						
+						request.setPredicted(true); //da "offline" sind die Anfragen bereits bekannt (= true).
+						request.setRequestTime(0); //da "offline" kommen Anfragen alle zur Sekunde 0 an ;) // sollte aber irgendwo auch alleine so gesetzt werden... kmt/aug19
+
+						//From
+						//OVGU hat Millisekunden TODO: Testen ob es auch alles in Sekunden geht.);
+						request.getFirstActivity().setEarliestArrival((long) carrierShipment.getPickupTimeWindow().getStart()*1000);
+						request.getFirstActivity().setLatestArrival((long) carrierShipment.getPickupTimeWindow().getEnd()*1000); 
+						request.getFirstActivity().setServiceDuration((long) carrierShipment.getPickupServiceTime() *1000); 
+						
+						//To
+						//OVGU hat Millisekunden TODO: Testen ob es auch alles in Sekunden geht.);
+						request.getSecondActivity().setEarliestArrival((long) carrierShipment.getDeliveryTimeWindow().getStart()*1000); 
+						request.getSecondActivity().setLatestArrival((long) carrierShipment.getDeliveryTimeWindow().getEnd()*1000);
+						request.getSecondActivity().setServiceDuration((long) carrierShipment.getDeliveryServiceTime() *1000);
+
+						requests.getNew().add(request);
+						
 					}
+					
 
-//					DistanceMatrix mtx = new DistanceMatrix();
-//					mtx.setDistanceMatrix( matrix );
-//					vrpSolver vrpSolver = new vrpSolver( mtx ) ;
+					
+					input.setRequests(requests);
+					log.info("prepare vehicles / vehicle types");
 
-					//Erstelle Fahrzeugtyp -> bisher nur eigenschaft Kapzität.
-					List<ovgu.pave.model.input.VehicleType> vehicleTypesOvgu = new ArrayList<ovgu.pave.model.input.VehicleType>();
-
-					// Erstelle eine Umwandlungstabelle, da OVGU integer als Id benötigt
-					HashMap<Id<VehicleType>, Integer> vehicleTypeTransformator = new HashMap<Id<VehicleType>, Integer>();
-					for (CarrierVehicleType vehicleType : carrier.getCarrierCapabilities().getVehicleTypes()) {
-						vehicleTypeTransformator.put(vehicleType.getId(), locationsTransformator.size()+1);
-					}
-
-					//alle vehicleTypes erstellen
-					for (Id<VehicleType> id : vehicleTypeTransformator.keySet()){
-						vehicleTypesOvgu.add(InputHandler.createVehicleType(vehicleTypeTransformator.get(id), vehicleTypes.getVehicleTypes().get(id).getCarrierVehicleCapacity());
-					}
-
-
-					List<Vehicle> vehicles = new ArrayList<Vehicle>();
-					//TODO: BISHER einfach nur die erste Location -> noch auf Depot definieren.
-					//TODO: Anzahl der Fahrzeuge bisher unklar und muss explizit erstellt werden.
-					vehicles.add(InputHandler.createVehicle(1, vehicleTypesOvgu.get(0), locations.get(0), locations.get(0)));
-
-
-					// Erstelle eine Umwandlungstabelle, da OVGU integer als Id benötigt
-					HashMap<Id<CarrierService>, Integer> serviceTransformator = new HashMap<Id<CarrierService>, Integer>();
-					for (CarrierService service : carrier.getServices()) {
-						serviceTransformator.put(service.getId(), serviceTransformator.size()+1);
-					}
-
-					List<Request> requests = new ArrayList<Request>();
-					for (Id<CarrierService> serviceId : serviceTransformator.keySet()) {
-
-						Location originLocation = locations.get(0);
-						Location destinationLocation = locations.get(0); //TODO Setze sie Richtig durch Abfrage
-						int i = 2; 									 	//TODO Setze sie Richtig durch Abfrage
-						Request request = InputHandler.createRequest(serviceTransformator.get(serviceId), originLocation, destinationLocation, i));
-						request.setReceivingTime(99);										//TODO Setze sie Richtig durch Abfrage
-						request.getOriginActivity().setEarliestArrival(999);				//TODO Setze sie Richtig durch Abfrage
-						request.getOriginActivity().setServiceDuration(9);					//TODO Setze sie Richtig durch Abfrage
-						request.getOriginActivity().setLatestArrival(99999);				//TODO Setze sie Richtig durch Abfrage
-						request.getDestinationActivity().setEarliestArrival(111);			//TODO Setze sie Richtig durch Abfrage
-						request.getDestinationActivity().setServiceDuration(1);				//TODO Setze sie Richtig durch Abfrage
-						request.getDestinationActivity().setLatestArrival(11111);			//TODO Setze sie Richtig durch Abfrage
-						requests.add(request);
-					}
-
-					//TODO: noch erstellen
-					List<Edge> edges = new ArrayList<Edge>();
-
-
-					//War bisher als Umsetzungsidee drin. Bleibt noch zum nachlesen hier, allerings auskommentiert
-					/*
-
-					ArrayList<RouteElement> currentRequests = new ArrayList<>(  ) ;
-					for( CarrierService service : carrier.getServices() ){
-						int timeWindowIndex = (int) (service.getServiceStartTimeWindow().getStart()/7200.);
-						RouteElement re = new RouteElement( currentRequests.size(), timeWindowIndex, timeWindowIndex ) ;
-						int locationIndex = Collections.binarySearch( list, service.getLocationLinkId() );;
-						re.setPositionDistanceMatrix( locationIndex );
-						re.setStartTimeWindow( (float) service.getServiceStartTimeWindow().getStart() );
-						re.setEndTimeWindow( (float) service.getServiceStartTimeWindow().getEnd() );
-						// yyyyyy there is some material missing here.
-						currentRequests.add(re) ;
-					}
-					*/
-
-
-					ArrayList<ArrayList<RouteElement>> finalRoutes = null;
-					switch( Settings.algorithm ){
-						case 0:
-							finalRoutes = vrpSolver.startInsertion( currentRequests );
-							break;
-						case 1:
-							finalRoutes = vrpSolver.startLMNS( currentRequests );
-							break;
-						case 2:
-							finalRoutes = vrpSolver.startALNS( currentRequests );
-							break;
-					}
-					RouteHandler.printRoute( finalRoutes );
-
-					// in principle, matsim should generate routes in prepare for sim, i.e. just sequences of activities and legs should be enough at this point.
-					// it may, however, not work in that way for carrier because it comes from outside, then we need to fix it in the core, not here.
-
-					CarrierPlan carrierPlanServicesAndShipments = MatsimOvguFactory.createPlan(carrier, finalRoutes) ;
-					NetworkRouter.routePlan(carrierPlanServicesAndShipments,netBasedCosts) ;
-					carrier.setSelectedPlan(carrierPlanServicesAndShipments) ;
-
-
+					log.info("prepare network");
+					ovgu.pave.model.network.Network ovguNetwork = null;
+					log.info("run algorithm");
+					core.initInput(input);
+					core.initNetwork(ovguNetwork);
+					core.run();
+					log.info("handle alg solution");
+					core.getSolution();
 				}
 
-				break;
 		}
 
 		new CarrierPlanXmlWriterV2(carriers).write( config.controler().getOutputDirectory()+ "/servicesAndShipments_plannedCarriers.xml") ;
@@ -356,9 +264,9 @@ class RunFreight {
 
 
 
-		Controler controler = new Controler(scenario);
+//		Controler controler = new Controler(scenario);
 
-		controler.run();
+//		controler.run();
 
 		log.info("#### Finished ####");
 
