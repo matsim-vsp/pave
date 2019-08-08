@@ -138,7 +138,7 @@ class RunFreight {
 		CarrierCapabilities.Builder ccBuilder = CarrierCapabilities.Builder.newInstance()
 													 .addType(carrierVehType)
 													 .addVehicle(carrierVehicle)
-													 .setFleetSize(FleetSize.INFINITE);
+													 .setFleetSize(FleetSize.FINITE);
 		carrierWShipments.setCarrierCapabilities(ccBuilder.build());
 
 		// Add carrier to carriers
@@ -168,7 +168,6 @@ class RunFreight {
 				/*
 				 * Prepare and run jsprit
 				 */
-
 
 				for (Carrier carrier : carriers.getCarriers().values()) {
 					//Build VRP for jsprit
@@ -202,7 +201,7 @@ class RunFreight {
 					
 					Requests requests = InputFactory.eINSTANCE.createRequests();
 					
-					//Map "umdrehen? KMT/aug19
+					//Map ID<Link>, ovguLocation ?
 					HashMap<Id<Link>, Integer> locationToLink= new HashMap<Id<Link>, Integer>();
 
 					log.info("prepare carrierShipments/requests");
@@ -237,13 +236,40 @@ class RunFreight {
 
 						requests.getNew().add(request);
 						
-					}
-					
-
-					
+					}					
 					input.setRequests(requests);
+					
+					
 					log.info("prepare vehicles / vehicle types");
+					HashMap<Id<org.matsim.vehicles.Vehicle>, Integer> matSimToOVGUVehicle= new HashMap<Id<org.matsim.vehicles.Vehicle>, Integer>();
+					HashMap<Id<org.matsim.vehicles.VehicleType>, Integer> matSimToOVGUVehicleType= new HashMap<Id<org.matsim.vehicles.VehicleType>, Integer>();
+					
 					//TODO Fahrzeuge, Fahrzeugtypen übergeben/erstellen
+					if (carrier.getCarrierCapabilities().getFleetSize() == FleetSize.INFINITE) {
+						log.fatal("Not implemented", new RuntimeException()); //Derzeit auch bei OVGU nicht drin.
+					} else if  (carrier.getCarrierCapabilities().getFleetSize() == FleetSize.FINITE) {
+						for (CarrierVehicle cVehicle : carrier.getCarrierCapabilities().getCarrierVehicles()) {
+							if (!matSimToOVGUVehicle.containsKey(cVehicle.getVehicleId())){
+								matSimToOVGUVehicle.put(cVehicle.getVehicleId(), matSimToOVGUVehicle.size());
+							}
+							if (!matSimToOVGUVehicleType.containsKey(cVehicle.getVehicleTypeId())){
+								matSimToOVGUVehicleType.put(cVehicle.getVehicleTypeId(), matSimToOVGUVehicleType.size());
+							}
+							if (!locationToLink.containsKey(cVehicle.getLocation())){
+								locationToLink.put(cVehicle.getLocation(), locationToLink.size());
+							}
+							Location depot = InputHandler.createLocation(matSimToOVGUVehicle.get(cVehicle.getLocation()), network.getLinks().get(cVehicle.getLocation()).getCoord().getX(), network.getLinks().get(cVehicle.getLocation()).getCoord().getY());
+							ovgu.pave.model.input.VehicleType vehicleType = InputHandler.createVehicleType(matSimToOVGUVehicleType.get(cVehicle.getVehicleTypeId()), cVehicle.getVehicleType().getCarrierVehicleCapacity()); //TODO: Eigentlich nur, wenn noch nicht existent.
+							Vehicle ovguVehicle = InputHandler.createVehicle(matSimToOVGUVehicle.get(cVehicle.getVehicleId()), vehicleType, depot, depot);
+							
+							//add Vehicle to VRP
+							input.getVehicleTypes().add(vehicleType);
+							input.getVehicles().add(ovguVehicle);
+							
+						}
+					} else {
+						log.fatal("Missing FleetSize defintion", new RuntimeException());
+					}
 					
 					log.info("prepare network");
 					//TODO Netzwerk übergeben/erstellen
@@ -277,7 +303,6 @@ class RunFreight {
 		log.info("#### Finished ####");
 
 	}
-
 	/**
 	 * @return
 	 */
