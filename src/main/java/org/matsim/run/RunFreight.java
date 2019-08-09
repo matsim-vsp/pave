@@ -107,7 +107,7 @@ class RunFreight {
 		 * some preparation - set logging level
 		 */
 		//		Logger.getRootLogger().setLevel(Level.DEBUG);
-		Logger.getRootLogger().setLevel(Level.DEBUG);
+		Logger.getRootLogger().setLevel(Level.INFO);
 
 		/*
 		 * Some Preparation for MATSim
@@ -243,25 +243,11 @@ class RunFreight {
 						log.fatal("Not implemented", new RuntimeException()); //Derzeit auch bei OVGU nicht drin.
 					} else if  (carrier.getCarrierCapabilities().getFleetSize() == FleetSize.FINITE) {
 						for (CarrierVehicle cVehicle : carrier.getCarrierCapabilities().getCarrierVehicles()) {
-							if (!matSimToOVGUVehicle.containsKey(cVehicle.getVehicleId())){
-								matSimToOVGUVehicle.put(cVehicle.getVehicleId(), matSimToOVGUVehicle.size());
-							}
-							if (!matSimToOVGUVehicleType.containsKey(cVehicle.getVehicleTypeId())){
-								matSimToOVGUVehicleType.put(cVehicle.getVehicleTypeId(), matSimToOVGUVehicleType.size());
-							}
-							if (!locationToLink.containsKey(cVehicle.getLocation())){
-								locationToLink.put(cVehicle.getLocation(), locationToLink.size());
-							}
-							log.debug(locationToLink.get(cVehicle.getLocation()));
-							log.debug(network.getLinks().get(cVehicle.getLocation()).getCoord().getX());
-							log.debug(network.getLinks().get(cVehicle.getLocation()).getCoord().getY());
-							Location depot = InputHandler.createLocation(locationToLink.get(cVehicle.getLocation()), network.getLinks().get(cVehicle.getLocation()).getCoord().getX(), network.getLinks().get(cVehicle.getLocation()).getCoord().getY());
-							ovgu.pave.model.input.VehicleType vehicleType = InputHandler.createVehicleType(matSimToOVGUVehicleType.get(cVehicle.getVehicleTypeId()), cVehicle.getVehicleType().getCarrierVehicleCapacity()); //TODO: Eigentlich nur, wenn noch nicht existent.
-							Vehicle ovguVehicle = InputHandler.createVehicle(matSimToOVGUVehicle.get(cVehicle.getVehicleId()), vehicleType, depot, depot);
 							
-							//add Vehicle to VRP
-							input.getVehicleTypes().add(vehicleType);
-							input.getVehicles().add(ovguVehicle);
+							Location depot = getOVGULocation(locationToLink, cVehicle.getLocation(), network, input);
+							ovgu.pave.model.input.VehicleType vehicleType = getOVGUVehicleType(matSimToOVGUVehicleType, cVehicle.getVehicleTypeId(), input, cVehicle.getVehicleType().getCarrierVehicleCapacity());//TODO: Eigentlich nur, wenn noch nicht existent.
+							Vehicle ovguVehicle = getOVGUVehicle(matSimToOVGUVehicle, cVehicle.getVehicleId(), input, vehicleType, depot, depot);
+							
 							
 						}
 					} else {
@@ -271,7 +257,14 @@ class RunFreight {
 					log.info("prepare network");
 					//TODO Netzwerk übergeben/erstellen
 					ovgu.pave.model.network.Network ovguNetwork = null;
-
+					
+					
+					
+//					Edge edge = InputHandler.create(startLocation, endLoccation);
+//					edge .setDuration(value);
+					
+					
+					
 					
 					log.info("run algorithm");
 					core.initInput(input);
