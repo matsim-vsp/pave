@@ -85,28 +85,29 @@ import java.util.*;
 
 class RunFreight {
 	/*
-	 * todos:<ul>
-	 *       <li> do not overwrite output dir by matsim </li>
+	 * todos:<ul> <li> do not overwrite output dir by matsim </li>
 	 */
 	private static final Logger log = Logger.getLogger(RunFreight.class);
-	
-	enum Optim {jsprit, ovgu }
-	final static Optim optim = Optim.ovgu ;
-	
-	private static URL scenarioUrl ;
-	static{
-		scenarioUrl = ExamplesUtils.getTestScenarioURL( "freight-chessboard-9x9" ) ;
+
+	enum Optim {
+		jsprit, ovgu
 	}
 
+	final static Optim optim = Optim.ovgu;
 
-	//	Config config = ConfigUtils.loadConfig(configFileName );
+	private static URL scenarioUrl;
+	static {
+		scenarioUrl = ExamplesUtils.getTestScenarioURL("freight-chessboard-9x9");
+	}
+
+	// Config config = ConfigUtils.loadConfig(configFileName );
 
 	public static void main(String[] args) throws IOException {
 		/*
 		 * some preparation - set logging level
 		 */
 		//		Logger.getRootLogger().setLevel(Level.DEBUG);
-		Logger.getRootLogger().setLevel(Level.INFO);
+		Logger.getRootLogger().setLevel(Level.DEBUG);
 
 		/*
 		 * Some Preparation for MATSim
@@ -206,17 +207,10 @@ class RunFreight {
 
 					log.info("prepare carrierShipments/requests");
 					for (CarrierShipment carrierShipment :carrier.getShipments()) {
-						if (!locationToLink.containsKey(carrierShipment.getFrom())){
-							locationToLink.put(carrierShipment.getFrom(), locationToLink.size());
-						}
-						if (!locationToLink.containsKey(carrierShipment.getTo())){
-							locationToLink.put(carrierShipment.getTo(), locationToLink.size());
-						}
-											
 						//TODO: OVGU hat integer als Ids. -> Übersetzungstabelle bauen. kmt/aug19
 						//TODO: OVGU hat integer als Ids für Locations. -> Übersetzungstabelle bauen zu den Link Ids. kmt/aug19
-						Location firstActivityLocation = InputHandler.createLocation(locationToLink.get(carrierShipment.getFrom()), network.getLinks().get(carrierShipment.getFrom()).getCoord().getX(), network.getLinks().get(carrierShipment.getFrom()).getCoord().getY());
-						Location secondActivityLocation = InputHandler.createLocation(locationToLink.get(carrierShipment.getTo()), network.getLinks().get(carrierShipment.getTo()).getCoord().getX(), network.getLinks().get(carrierShipment.getTo()).getCoord().getY());
+						Location firstActivityLocation = getOVGULocation(locationToLink, carrierShipment.getFrom(), network, input);
+						Location secondActivityLocation = getOVGULocation(locationToLink, carrierShipment.getTo(), network, input);
 						Request request = InputHandler.createRequest(Integer.parseInt(carrierShipment.getId().toString()), firstActivityLocation, secondActivityLocation, carrierShipment.getSize());
 						
 						request.setPredicted(true); //da "offline" sind die Anfragen bereits bekannt (= true).
@@ -258,7 +252,10 @@ class RunFreight {
 							if (!locationToLink.containsKey(cVehicle.getLocation())){
 								locationToLink.put(cVehicle.getLocation(), locationToLink.size());
 							}
-							Location depot = InputHandler.createLocation(matSimToOVGUVehicle.get(cVehicle.getLocation()), network.getLinks().get(cVehicle.getLocation()).getCoord().getX(), network.getLinks().get(cVehicle.getLocation()).getCoord().getY());
+							log.debug(locationToLink.get(cVehicle.getLocation()));
+							log.debug(network.getLinks().get(cVehicle.getLocation()).getCoord().getX());
+							log.debug(network.getLinks().get(cVehicle.getLocation()).getCoord().getY());
+							Location depot = InputHandler.createLocation(locationToLink.get(cVehicle.getLocation()), network.getLinks().get(cVehicle.getLocation()).getCoord().getX(), network.getLinks().get(cVehicle.getLocation()).getCoord().getY());
 							ovgu.pave.model.input.VehicleType vehicleType = InputHandler.createVehicleType(matSimToOVGUVehicleType.get(cVehicle.getVehicleTypeId()), cVehicle.getVehicleType().getCarrierVehicleCapacity()); //TODO: Eigentlich nur, wenn noch nicht existent.
 							Vehicle ovguVehicle = InputHandler.createVehicle(matSimToOVGUVehicle.get(cVehicle.getVehicleId()), vehicleType, depot, depot);
 							
@@ -274,10 +271,13 @@ class RunFreight {
 					log.info("prepare network");
 					//TODO Netzwerk übergeben/erstellen
 					ovgu.pave.model.network.Network ovguNetwork = null;
-					
+
 					
 					log.info("run algorithm");
 					core.initInput(input);
+//					InputHandler ih = new InputHandler();
+//					ih.setInput(input);
+//					ih.saveInput("test.xml");
 					core.initNetwork(ovguNetwork);
 					core.run();
 					log.info("handle alg solution");
@@ -303,6 +303,55 @@ class RunFreight {
 		log.info("#### Finished ####");
 
 	}
+	
+	private static ovgu.pave.model.input.VehicleType getOVGUVehicleType(HashMap<Id<org.matsim.vehicles.VehicleType>, Integer> matSimToOVGUVehicleType, Id<org.matsim.vehicles.VehicleType> vehicleType, Input input, int capacity){
+		boolean isNew = false;
+
+		if (!matSimToOVGUVehicleType.containsKey(vehicleType)){
+			matSimToOVGUVehicleType.put(vehicleType, matSimToOVGUVehicleType.size());
+			isNew=true;
+		}
+
+		ovgu.pave.model.input.VehicleType ovguVehicleType = InputHandler.createVehicleType(matSimToOVGUVehicleType.get(vehicleType), capacity); //TODO: Eigentlich nur, wenn noch nicht existent.
+		
+		if (isNew)
+			input.getVehicleTypes().add(ovguVehicleType);
+		
+		return ovguVehicleType;
+	}
+	
+	private static Vehicle getOVGUVehicle(HashMap<Id<org.matsim.vehicles.Vehicle>, Integer> matSimToOVGUVehicle, Id<org.matsim.vehicles.Vehicle> vehicle, Input input, ovgu.pave.model.input.VehicleType vehicleType, Location startLocation, Location endLocation){
+		boolean isNew = false;
+
+		if (!matSimToOVGUVehicle.containsKey(vehicle)){
+			matSimToOVGUVehicle.put(vehicle, matSimToOVGUVehicle.size());
+			isNew = true;
+		}
+
+		Vehicle ovguVehicle = InputHandler.createVehicle(matSimToOVGUVehicle.get(vehicle), vehicleType, startLocation, endLocation);
+		
+		if (isNew)
+			input.getVehicles().add(ovguVehicle);
+		
+		return ovguVehicle;
+	}
+	
+	private static Location getOVGULocation(HashMap<Id<Link>, Integer> locationToLink, Id<Link> link, Network network, Input input){
+		boolean isNew = false;
+
+		if (!locationToLink.containsKey(link)){
+			locationToLink.put(link, locationToLink.size());
+			isNew = true;
+		}
+
+		Location location = InputHandler.createLocation(locationToLink.get(link), network.getLinks().get(link).getCoord().getX(), network.getLinks().get(link).getCoord().getY());
+		
+		if (isNew)
+			input.getLocations().add(location);
+		
+		return location;
+	}
+
 	/**
 	 * @return
 	 */
@@ -310,61 +359,55 @@ class RunFreight {
 		Config config = ConfigUtils.createConfig();
 		config.setContext(scenarioUrl);
 		config.network().setInputFile("grid9x9.xml");
-		
+
 		config.controler().setOutputDirectory("./output/freight");
-		config.controler().setOverwriteFileSetting( OverwriteFileSetting.deleteDirectoryIfExists );
-		new OutputDirectoryHierarchy( config.controler().getOutputDirectory(), config.controler().getRunId(), config.controler().getOverwriteFileSetting() ) ;
-		config.controler().setOverwriteFileSetting( OverwriteFileSetting.overwriteExistingFiles );
-		// (the directory structure is needed for jsprit output, which is before the controler starts.  Maybe there is a better alternative ...)
-	
+		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
+		new OutputDirectoryHierarchy(config.controler().getOutputDirectory(), config.controler().getRunId(),
+				config.controler().getOverwriteFileSetting());
+		config.controler().setOverwriteFileSetting(OverwriteFileSetting.overwriteExistingFiles);
+		// (the directory structure is needed for jsprit output, which is before the
+		// controler starts. Maybe there is a better alternative ...)
+
 		config.global().setRandomSeed(4177);
-		
+
 		config.controler().setLastIteration(1);
 		return config;
 	}
 
 	/**
-	 * Create vehicleType 
+	 * Create vehicleType
+	 * 
 	 * @return CarrierVehicleType
 	 */
 	private static CarrierVehicleType createCarrierVehType() {
-		CarrierVehicleType carrierVehType = CarrierVehicleType.Builder.newInstance(Id.create("gridType", VehicleType.class))
-												  .setCapacity(3)
-												  .setMaxVelocity(10) // m/s
-												  .setCostPerDistanceUnit(0.0001)
-												  .setCostPerTimeUnit(0.001)
-												  .setFixCost(130)
-												  .setEngineInformation(new EngineInformationImpl(FuelType.diesel, 0.015))
-												  .build();
+		CarrierVehicleType carrierVehType = CarrierVehicleType.Builder
+				.newInstance(Id.create("gridType", VehicleType.class)).setCapacity(3).setMaxVelocity(10) // m/s
+				.setCostPerDistanceUnit(0.0001).setCostPerTimeUnit(0.001).setFixCost(130)
+				.setEngineInformation(new EngineInformationImpl(FuelType.diesel, 0.015)).build();
 		return carrierVehType;
 	}
 
 	private static CarrierShipment createMatsimShipment(String id, String from, String to, int size) {
 		Id<CarrierShipment> shipmentId = Id.create(id, CarrierShipment.class);
 		Id<Link> fromLinkId = null;
-		Id<Link> toLinkId= null;
+		Id<Link> toLinkId = null;
 
-		if(from != null ) {
+		if (from != null) {
 			fromLinkId = Id.create(from, Link.class);
 		}
-		if(to != null ) {
+		if (to != null) {
 			toLinkId = Id.create(to, Link.class);
 		}
 
-		return CarrierShipment.Builder.newInstance(shipmentId, fromLinkId, toLinkId, size)
-							.setDeliveryServiceTime(30.0)
-							.setDeliveryTimeWindow(TimeWindow.newInstance(3600.0, 36000.0))
-							.setPickupServiceTime(5.0)
-							.setPickupTimeWindow(TimeWindow.newInstance(0.0, 7200.0))
-							.build();
+		return CarrierShipment.Builder.newInstance(shipmentId, fromLinkId, toLinkId, size).setDeliveryServiceTime(30.0)
+				.setDeliveryTimeWindow(TimeWindow.newInstance(3600.0, 36000.0)).setPickupServiceTime(5.0)
+				.setPickupTimeWindow(TimeWindow.newInstance(0.0, 7200.0)).build();
 	}
 
 	private static CarrierService createMatsimService(String id, String to, int size) {
 		return CarrierService.Builder.newInstance(Id.create(id, CarrierService.class), Id.create(to, Link.class))
-						     .setCapacityDemand(size)
-						     .setServiceDuration(31.0)
-						     .setServiceStartTimeWindow(TimeWindow.newInstance(3601.0, 36001.0))
-						     .build();
+				.setCapacityDemand(size).setServiceDuration(31.0)
+				.setServiceStartTimeWindow(TimeWindow.newInstance(3601.0, 36001.0)).build();
 	}
 
 }
