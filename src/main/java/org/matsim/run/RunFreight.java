@@ -113,8 +113,8 @@ class RunFreight {
 		/*
 		 * some preparation - set logging level
 		 */
-		//		Logger.getRootLogger().setLevel(Level.DEBUG);
-		Logger.getRootLogger().setLevel(Level.INFO);
+				Logger.getRootLogger().setLevel(Level.DEBUG);
+//		Logger.getRootLogger().setLevel(Level.INFO);
 
 		/*
 		 * Some Preparation for MATSim
@@ -263,20 +263,26 @@ class RunFreight {
 				//TODO Netzwerk übergeben/erstellen
 				ovgu.pave.model.network.Network ovguNetwork = null;
 
+				//TODO: Haben derzeit nur ein beliebeigen FZGTyp und ein beliebiges Fahrzeug!!! kmt/aug19
 				CarrierVehicleType vehTypeOne = (CarrierVehicleType) carrier.getCarrierCapabilities().getVehicleTypes().toArray()[0];
+				CarrierVehicle vehOne = (CarrierVehicle) carrier.getCarrierCapabilities().getCarrierVehicles().toArray()[0];
+				
 				double costPerMeter = vehTypeOne.getVehicleCostInformation().getPerDistanceUnit();
 				double costPerSecond = vehTypeOne.getVehicleCostInformation().getPerTimeUnit();
 				FreespeedTravelTimeAndDisutility ttCostCalculator = new FreespeedTravelTimeAndDisutility(costPerMeter, costPerSecond, costPerSecond); // TODO: Welchen nehmen wir hier eigentlich -> in freight schauen kmt/aug19
 				DijkstraFactory dijkstraFactory = new DijkstraFactory();
 				LeastCostPathCalculator costCalculator = dijkstraFactory.createPathCalculator(network, ttCostCalculator , ttCostCalculator); //Abfrage erstmal für um 8
-
+				log.debug("created dijsktra");
 				for(Location from :input.getLocations()) {
 					for (Location to: input.getLocations()) {
 
 						Node fromNode = network.getLinks().get(OVGULocationIdToMatsimLinkId.get(from.getId())).getToNode() ;
 						Node toNode = network.getLinks().get(OVGULocationIdToMatsimLinkId.get(to.getId())).getToNode() ;
+						log.debug("asking for Traveltimes from: "+ fromNode + " to: " + toNode);
 						double starttime = 8.0*3600; //Rechne mit 08:00 Fahrzeiten.
-						double travelTime = costCalculator.calcLeastCostPath(fromNode, toNode, starttime, null, null).travelTime;
+						
+						double travelTime = costCalculator.calcLeastCostPath(fromNode, toNode, starttime, null, (org.matsim.vehicles.Vehicle) vehOne).travelTime;
+						log.debug("travelTime: " + travelTime);
 						Edge edge = InputHandler.createEdge(from, to);
 						edge.setDuration((long)travelTime*1000);
 						input.getEdges().add(edge);
