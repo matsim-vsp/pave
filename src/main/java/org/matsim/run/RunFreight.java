@@ -72,11 +72,15 @@ import ovgu.pave.model.input.Input;
 import ovgu.pave.model.input.InputFactory;
 import ovgu.pave.model.input.Location;
 import ovgu.pave.model.input.Request;
+import ovgu.pave.model.input.RequestActivity;
 import ovgu.pave.model.input.Requests;
 import ovgu.pave.model.input.SecondRequestActivity;
 import ovgu.pave.model.input.Vehicle;
 import ovgu.pave.model.input.impl.LocationImpl;
+import ovgu.pave.model.solution.RequestActivityRouteElement;
+import ovgu.pave.model.solution.Route;
 import ovgu.pave.model.solution.RouteElement;
+import ovgu.pave.model.solution.Solution;
 
 import java.io.IOException;
 import java.net.URL;
@@ -297,8 +301,31 @@ class RunFreight {
 				core.initNetwork(ovguNetwork);
 				core.run();
 				log.info("handle alg solution");
-				core.getSolution();
-
+				
+				//TODO: WIP, nur Notizen, was was ist. Muss noch eingebaut werden in MATSim Freight language -> Tourenplan. kmt/aug19.
+				Solution solution = core.getSolution();
+				for (Route route : solution.getRoutes()) {
+					int vehicleId = route.getVehicle().getId(); 	//OVGU vehId
+					for(RouteElement re : route.getRouteElements()) {
+						re.getServiceBegin(); //Wann er laut Torurnplan an der Location wäre.
+						re.getServiceDuration(); //Dauer, wie lange er sich an der Location aufhält --> Dopplung zu Request -> Definition  sollte in Auftragsplan vorahnden sein, wegen online kommen ggf. noch zusätzlich Locations ohne Auftrag hinzu.
+						if (re instanceof RequestActivityRouteElement) {
+							//Dies ist ein eigentlicher Request
+							RequestActivity requestActivity = ((RequestActivityRouteElement) re).getRequestActivity();
+							int requestId = requestActivity.getRequest().getId(); //Request-Id
+							if (requestActivity instanceof FirstRequestActivity) {
+								//Pickup
+							}
+							if (requestActivity instanceof SecondRequestActivity) {
+								//Delivery
+							}
+							//Note: Not implemented; Wenn request keine Second Activity hat (=null), dann ist es "Service".
+							
+							//Offene Frage @OVGU: Was ist "Start" und "Ziel" -> Depot. Wie lassen die sich identifizieren. --> requestActivity instanceof SupportRouteElement
+						}
+					}
+				}
+				
 				//TODO Ergebnis zurück übersetzen
 			}
 
