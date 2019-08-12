@@ -81,6 +81,7 @@ import ovgu.pave.model.solution.RequestActivityRouteElement;
 import ovgu.pave.model.solution.Route;
 import ovgu.pave.model.solution.RouteElement;
 import ovgu.pave.model.solution.Solution;
+import ovgu.pave.model.solution.SupportRouteElement;
 
 import java.io.IOException;
 import java.net.URL;
@@ -321,7 +322,15 @@ class RunFreight {
 							}
 							//Note: Not implemented; Wenn request keine Second Activity hat (=null), dann ist es "Service".
 							
-							//Offene Frage @OVGU: Was ist "Start" und "Ziel" -> Depot. Wie lassen die sich identifizieren. --> requestActivity instanceof SupportRouteElement
+							//"Start" und "Ziel" -> Depot. Jede Route verfügt über ein (requestActivity instanceof SupportRouteElement) am Anfang (Start) und am Ende (Ziel) einer Route/Tour
+							if (requestActivity instanceof SupportRouteElement) {
+								if (route.getRouteElements().indexOf(re) == 0 ) {
+									//Start Element
+								}
+								if (route.getRouteElements().indexOf(re) == route.getRouteElements().size()-1 ) {
+									//Ziel Element
+								}
+							}
 						}
 					}
 				}
