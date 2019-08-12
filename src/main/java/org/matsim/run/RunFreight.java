@@ -223,7 +223,6 @@ class RunFreight {
 					Location secondActivityLocation = getOVGULocation(carrierShipment.getTo(), network, input);
 					Request request = InputHandler.createRequest(Integer.parseInt(carrierShipment.getId().toString()), firstActivityLocation, secondActivityLocation, carrierShipment.getSize());
 
-					request.setPredicted(true); //da "offline" sind die Anfragen bereits bekannt (= true).
 					request.setRequestTime(0); //da "offline" kommen Anfragen alle zur Sekunde 0 an ;) // sollte aber irgendwo auch alleine so gesetzt werden... kmt/aug19
 
 					//From
