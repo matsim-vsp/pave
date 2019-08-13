@@ -13,6 +13,8 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 	public static final String MODE = "mode";
 
 	public static final String PFAV_TYPE = "pfavType";
+	
+	public static final String GROUP_NAME = "freightav";
 
 	public static final String FREIGHTTOUR_LATEST_START = "freightTourLatestStart";
 	static final String FREIGHTTOUR_LATEST_START_EXP = "represents the latest start time of a freight tour. that means, the retool task "

@@ -25,6 +25,8 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.router.util.TravelTimeUtils;
+
+import privateAV.FreightAVConfigGroup;
 import privateAV.FreightTourPlanning;
 
 /**
@@ -53,7 +55,7 @@ public class CarrierCreator {
 
         Network network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile(INPUT_NETWORK);
-
+        FreightAVConfigGroup pfavConfigGroup = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME);
         CarrierVehicleType privateAVCarrierVehType = FreightSetUp.createPrivateFreightAVVehicleType();
         CarrierVehicleTypes vTypes = new CarrierVehicleTypes();
         vTypes.getVehicleTypes().put(privateAVCarrierVehType.getId(), privateAVCarrierVehType);
@@ -61,7 +63,7 @@ public class CarrierCreator {
         Carriers carriers = FreightSetUp.createCarriersWithRandomDepotAndServices(vTypes.getVehicleTypes().values(), FLEET_SIZE, network, NR_OF_CARRIERS, NR_OF_VEH_PER_CARRIER_PER_VEH_TYPE, NR_OF_SERVICES_PER_CARRIER);
 
         TravelTime travelTime = TravelTimeUtils.createFreeSpeedTravelTime();
-        FreightTourPlanning.runTourPlanningForCarriers(carriers, vTypes, network, travelTime, 1800);
+        FreightTourPlanning.runTourPlanningForCarriers(carriers, vTypes, network, travelTime, 1800, pfavConfigGroup);
         CarrierPlanXmlWriterV2 planWriter = new CarrierPlanXmlWriterV2(carriers);
         planWriter.write(OUTPUT_CARRIERS);
         new CarrierVehicleTypeWriter(vTypes).write(OUT_VTYPES);

@@ -109,7 +109,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
             for (ScheduledTour freightTour : plan.getScheduledTours()) {
                 //we need to cut down here and not beforehand in the services, since the tour planning would otherwise result in longer and inaccurate tours
                 if (MatsimRandom.getRandom().nextDouble() <= pfavConfigGroup.getFreightDemandSampleSize()) {
-                    freightTours.add(FreightTourPlanning.convertToPFAVTourData(freightTour, this.network, this.travelTime));
+                    freightTours.add(FreightTourPlanning.convertToPFAVTourData(freightTour, this.network, this.travelTime, pfavConfigGroup));
                     onlyUsedTours.add(freightTour);
                 }
             }
@@ -343,7 +343,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
 
     private void runTourPlanning() {
         //the travel times we hand over contain the travel times of last mobsim iteration as long as we use the OfflineEstimator (set via TaxiConfigGroup)
-        FreightTourPlanning.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime, this.timeSlice);
+        FreightTourPlanning.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime, this.timeSlice, pfavConfigGroup);
         log.info("overriding list of freight tours...");
         this.freightTours = convertCarrierPlansToTaskList(carriers);
     }

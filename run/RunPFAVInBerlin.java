@@ -59,8 +59,6 @@ public class RunPFAVInBerlin {
 
 
 	private static final int LAST_ITERATION = 0;
-
-	public static final String GROUP_NAME = "dummy";
 	
 	public static void main(String[] args) {
 		String configPath, output, carriers, vehTypes, population, networkChangeEvents;
@@ -88,7 +86,7 @@ public class RunPFAVInBerlin {
 
 		//setup config
 		Config config = RunBerlinScenario.prepareConfig(new String[]{configPath});
-		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(GROUP_NAME);
+		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME);
 		TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
 		String mode = taxiCfg.getMode();
 		config.addModule(taxiCfg);

@@ -59,8 +59,6 @@ public class RunChessboardScenario {
 
 	private static final String OUTPUT_DIR = "output/travelTimeTest/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
 			new Date()) + "/";
-
-	public static final String GROUP_NAME = "dummy";
 	/**
 	 * @param args
 	 */
@@ -77,7 +75,7 @@ public class RunChessboardScenario {
 			vehTypesFile = VEHTYPES_FILE_CASE2;
 		}
 
-		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(GROUP_NAME);
+		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME);
 		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		taxiCfg.setDestinationKnown(true);

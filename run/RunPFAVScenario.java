@@ -49,8 +49,6 @@ public class RunPFAVScenario {
 
 	private static final String OUTPUT_DIR = "output/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
 			new Date()) + "/";
-
-	public static final String GROUP_NAME = "dummy";
 	/**
 	 * @param args
 	 */
@@ -74,7 +72,7 @@ public class RunPFAVScenario {
 		}
 
 		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
-		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(GROUP_NAME);
+		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME);
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		/*
 		 * very important: we assume that destinations of trips are known in advance.
