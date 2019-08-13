@@ -82,7 +82,7 @@ public class RunPFAVScenario {
 		 */
 		taxiCfg.setDestinationKnown(true);
 
-		Config config = ConfigUtils.loadConfig(configFile, new DvrpConfigGroup(), taxiCfg);
+		Config config = ConfigUtils.loadConfig(configFile, new DvrpConfigGroup(), taxiCfg, pfavConfig);
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		//		config.controler().setLastIteration(0);
 		config.controler().setOutputDirectory(output);

@@ -90,6 +90,7 @@ public class RunPFAVInBerlin {
 		TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
 		String mode = taxiCfg.getMode();
 		config.addModule(taxiCfg);
+		config.addModule(pfavConfig);
 		adjustConfigParameters(output, population, networkChangeEvents, maxIter, increaseCapacities, config);
 
 		Scenario scenario = RunBerlinScenario.prepareScenario(config);

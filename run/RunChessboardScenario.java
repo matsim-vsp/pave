@@ -84,7 +84,7 @@ public class RunChessboardScenario {
 		taxiCfg.setTaxisFile("something");
 		taxiCfg.setTimeProfiles(true);
 
-		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), taxiCfg);
+		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), taxiCfg, pfavConfig);
 		//		config.addModule(new DvrpConfigGroup());
 		//		config.addModule(taxiCfg);
 
