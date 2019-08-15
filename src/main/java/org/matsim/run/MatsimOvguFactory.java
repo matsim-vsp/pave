@@ -1,15 +1,21 @@
-/*******************************************************************************
- * Copyright (c) 2011 Stefan Schroeder.
- * eMail: stefan.schroeder@kit.edu
- * 
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v2.0
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- * 
- * Contributors:
- *     Stefan Schroeder - initial API and implementation
- ******************************************************************************/
+/* *********************************************************************** *
+ * project: org.matsim.*
+ * *********************************************************************** *
+ *                                                                         *
+ * copyright       : (C) 2018 by the members listed in the COPYING,        *
+ *                   LICENSE and WARRANTY file.                            *
+ * email           : info at matsim dot org                                *
+ *                                                                         *
+ * *********************************************************************** *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *   See also COPYING, LICENSE and WARRANTY file                           *
+ *                                                                         *
+ * *********************************************************************** */
+
 package org.matsim.run;
 
 import com.graphhopper.jsprit.core.problem.Location;
@@ -39,7 +45,7 @@ import org.matsim.contrib.freight.carrier.TimeWindow;
 import org.matsim.contrib.freight.carrier.Tour.Leg;
 import org.matsim.contrib.freight.carrier.Tour.TourElement;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
-import ovgu.data.entity.RouteElement;
+import ovgu.pave.model.solution.RouteElement;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,9 +53,11 @@ import java.util.List;
 
 
 /**
- * A factory that creates matsim-object from algortihms provided from ovgu and vice versa.
+ * A factory that creates MATSim-object from algorithms provided from OVGU Magdeburg and vice versa.
  * 
- * @author kturner
+ * This bases on the {@Link MatsimJspritFactory} written by Stefan Schröder
+ * 
+ * @author kturner 
  *
  */
 class MatsimOvguFactory{
