@@ -2,7 +2,6 @@
 <con:Config xmlns:con="ovgu.pave.config" inputFolder="./scenarios/ovgu/resources/input" inputFilename="inputLMNS.zip" configPath="./scenarios/ovgu/config.xml">
   <experiment planningType="OFFLINE" numberOfRequests="200" numberOfVehicles="15" serviceDuration="1" maxDelayValue="30" insideRepetitions="1" outputFolder="./scenarios/ovgu/resources/output" outsideRepetitions="1" vehicleCapacity="6" factorOnTravelTime="1.0">
     <offline objective="MINDURATION"/>
-    <online minAcceptanceProbability="0"/>
   </experiment>
   <algorithm algorithm="LMNS" randomSeet="99">
     <lns minSmallRequestSet="0.2" maxLargeRequestSet="60" maxSmallRequestSet="0.4" minLargeRequestSet="30" shawDistanceWeight="2.0" shawBeginWeight="6.0">
