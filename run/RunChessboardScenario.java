@@ -34,7 +34,6 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.scenario.ScenarioUtils;
-
 import privateAV.FreightAVConfigGroup;
 import privateAV.PFAVModeModule;
 
@@ -120,7 +119,7 @@ public class RunChessboardScenario {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(taxiCfg, scenario, carriersFile, vehTypesFile, pfavConfig));
+				install(new PFAVModeModule(mode, scenario, carriersFile, vehTypesFile));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));

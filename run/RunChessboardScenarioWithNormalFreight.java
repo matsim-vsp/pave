@@ -50,7 +50,6 @@ import org.matsim.core.replanning.GenericStrategyManager;
 import org.matsim.core.replanning.selectors.BestPlanSelector;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.scoring.SumScoringFunction;
-
 import privateAV.FreightAVConfigGroup;
 import privateAV.PFAVModeModule;
 
@@ -170,7 +169,7 @@ public class RunChessboardScenarioWithNormalFreight {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(taxiCfg, scenario, carriersFile, vehTypesFile, pfavConfig));
+				install(new PFAVModeModule(mode, scenario, carriersFile, vehTypesFile));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));

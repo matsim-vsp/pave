@@ -23,22 +23,23 @@ import org.matsim.core.router.util.TravelTime;
 public final class PFAVModeModule extends AbstractDvrpModeModule {
     private final String CARRIERS_FILE;
     private final String VEHTYPES_FILE;
-    private final TaxiConfigGroup taxiCfg;
-    private final FreightAVConfigGroup pfavConfigGroup;
     private Scenario scenario;
 
-    public PFAVModeModule(TaxiConfigGroup taxiCfg, Scenario scenario, String carriersFile, String vehTypesFile, FreightAVConfigGroup pfavConfigGroup) {
-        super(taxiCfg.getMode());
-        this.taxiCfg = taxiCfg;
+    public PFAVModeModule(String mode, Scenario scenario, String carriersFile, String vehTypesFile) {
+        super(mode);
         this.scenario = scenario;
         this.CARRIERS_FILE = carriersFile;
         this.VEHTYPES_FILE = vehTypesFile;
-        this.pfavConfigGroup = pfavConfigGroup;
     }
 
     
     @Override
     public void install() {
+        FreightAVConfigGroup pfavConfigGroup = (FreightAVConfigGroup) getConfig().getModules().get(FreightAVConfigGroup.GROUP_NAME);
+        TaxiConfigGroup taxiConfigGroup = (TaxiConfigGroup) getConfig().getModules().get(TaxiConfigGroup.GROUP_NAME);
+        if (!taxiConfigGroup.getMode().equals(this.getMode()))
+            throw new RuntimeException("pfav mode must be equal to mode set in taxi config group!");
+
         DvrpModes.registerDvrpMode(binder(), getMode());
 //        bindModal(TravelDisutilityFactory.class).toInstance(TimeAsTravelDisutility::new);
         bindModal(Network.class).to(Key.get(Network.class, Names.named(DvrpRoutingNetworkProvider.DVRP_ROUTING)));
@@ -54,7 +55,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         CarrierVehicleTypes vTypes = readVehicleTypes(this.VEHTYPES_FILE);
 
         FreightTourManagerListBasedImpl tourManager = new FreightTourManagerListBasedImpl(this.CARRIERS_FILE, vTypes, PFAVUtils.timeSlice(), pfavConfigGroup);
-        PFAVCostParameter pfavCostParameters = getPFAVCostParameter(vTypes);
+        PFAVCostParameter pfavCostParameters = getPFAVCostParameter(vTypes, pfavConfigGroup);
         installQSimModule(new AbstractDvrpModeQSimModule(getMode()){
             @Override
             protected void configureQSim() {
@@ -77,7 +78,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         );
 
         addControlerListenerBinding().toInstance(tourManager);
-        installQSimModule(new PFAVModuleQSim(taxiCfg, pfavConfigGroup));
+        installQSimModule(new PFAVModuleQSim(taxiConfigGroup, pfavConfigGroup));
     }
 
     private CarrierVehicleTypes readVehicleTypes(String input) {
@@ -87,17 +88,17 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         return vTypes;
     }
 
-    private CarrierVehicleType retrievePFAVType(CarrierVehicleTypes vehicleTypes) {
+    private CarrierVehicleType retrievePFAVType(CarrierVehicleTypes vehicleTypes, String pfavType) {
 //        return vehicleTypes.getVehicleTypes().values().stream().filter(t -> t.getId().toString().equals(PFAVUtils.PFAV_TYPE)).findFirst();
         for (CarrierVehicleType type : vehicleTypes.getVehicleTypes().values()) {
-            if (type.getId().toString().equals(pfavConfigGroup.getPfavType())) return type;
+            if (type.getId().toString().equals(pfavType)) return type;
         }
-        throw new IllegalArgumentException("no cost parameters for vehicle type " + pfavConfigGroup.getPfavType() + " could be found in carriersVehicleTypes." +
+        throw new IllegalArgumentException("no cost parameters for vehicle type " + pfavType + " could be found in carriersVehicleTypes." +
                 "please make sure that PFAV_TYPE is included in carreirsVehicleTypes. Currently, no default cost parameters for pfav are implemented..");
     }
 
-    private PFAVCostParameter getPFAVCostParameter(CarrierVehicleTypes vehicleTypes) {
-        CarrierVehicleType.VehicleCostInformation cstInfo = retrievePFAVType(vehicleTypes).getVehicleCostInformation();
+    private PFAVCostParameter getPFAVCostParameter(CarrierVehicleTypes vehicleTypes, FreightAVConfigGroup cfg) {
+        CarrierVehicleType.VehicleCostInformation cstInfo = retrievePFAVType(vehicleTypes, cfg.getPfavType()).getVehicleCostInformation();
         return new PFAVCostParameter(cstInfo.getFix(), cstInfo.getPerDistanceUnit(), cstInfo.getPerTimeUnit());
     }
 }

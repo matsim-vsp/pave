@@ -33,7 +33,6 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.run.RunBerlinScenario;
-
 import privateAV.FreightAVConfigGroup;
 import privateAV.PFAVModeModule;
 
@@ -101,7 +100,7 @@ public class RunPFAVInBerlin {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(taxiCfg, scenario, carriers, vehTypes, pfavConfig));
+				install(new PFAVModeModule(mode, scenario, carriers, vehTypes));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));
