@@ -25,7 +25,7 @@ final class PFAVSpecification implements DvrpVehicleSpecification {
     // time window
     private final double serviceBeginTime;
     private final double serviceEndTime;
-    public LinkedList<PFAVehicle.MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
+    LinkedList<PFAVehicle.MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
 
     private PFAVSpecification(PFAVSpecification.Builder builder) {
         id = Objects.requireNonNull(builder.id);
@@ -36,7 +36,7 @@ final class PFAVSpecification implements DvrpVehicleSpecification {
         mustReturnToOwnerLinkTimePairs = Objects.requireNonNull(builder.mustReturnToOwnerLinkTimePairs);
     }
 
-    public static PFAVSpecification.Builder newBuilder() {
+    static PFAVSpecification.Builder newBuilder() {
         return new PFAVSpecification.Builder();
     }
 
