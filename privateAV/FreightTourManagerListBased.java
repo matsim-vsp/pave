@@ -18,6 +18,7 @@
  * *********************************************************************** */
 package privateAV;
 
+import com.google.inject.Singleton;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.core.router.util.LeastCostPathCalculator;
@@ -27,6 +28,7 @@ import java.util.List;
 /**
  * @author tschlenther
  */
+@Singleton
 public interface FreightTourManagerListBased {
     List<FreightTourDataPlanned> getPFAVTours();
 
