@@ -32,11 +32,11 @@
 			<id>ojo-snapshots</id>
 			<url>http://oss.jfrog.org/libs-snapshot</url>
 		</repository>
-		<!--<repository>-->
-			<!--&lt;!&ndash; For OVGU Algorithms &ndash;&gt;-->
-			<!--<id>jitpack.io</id>-->
-			<!--<url>https://jitpack.io</url>-->
-		<!--</repository>-->
+		<repository>
+			<!-- For OVGU Algorithms -->
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -77,8 +77,13 @@
 			<version>${matsim.version}</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
+			<groupId>com.github.ovgu-mansci</groupId>
+			<artifactId>pave</artifactId>
+			<version>-SNAPSHOT</version>
+		</dependency>
+
+		<!--<dependency>
 			<groupId>org.eclipse.emf</groupId>
 			<artifactId>org.eclipse.emf.common</artifactId>
 			<version>2.15.0</version>
@@ -91,37 +96,8 @@
 		<dependency>
 			<groupId>org.eclipse.emf</groupId>
 			<artifactId>org.eclipse.emf.ecore</artifactId>
-			<version>2.15.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.graphhopper</groupId>
-			<artifactId>graphhopper</artifactId>
-			<version>0.7.0</version>
-		</dependency>
-
-		<!--<dependency>-->
-			<!--<groupId>ch.qos.logback</groupId>-->
-			<!--<artifactId>logback-classic</artifactId>-->
-			<!--<version>1.1.5</version>-->
-		<!--</dependency>-->
-
-			<!--&lt;!&ndash; OVGU Algorithms &ndash;&gt;-->
-		<dependency>
-			<groupId>ovgu.pave</groupId>
-			<artifactId>core</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>ovgu.pave</groupId>
-			<artifactId>handler</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>ovgu.pave</groupId>
-			<artifactId>model</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
+			<version>2.15.0</version> 
+		</dependency>-->
 	</dependencies>
 
 	<build>
