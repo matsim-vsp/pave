@@ -141,7 +141,7 @@ public final class FreightTourPlanning {
         return new VrpPathWithTravelDataImpl(departureTime, totalTT, links, linkTTs);
     }
 
-    public static void runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime, int timeSlice, FreightAVConfigGroup pfavConfigGroup) {
+    public static void runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime, int timeSlice, int iterations) {
 
         NetworkBasedTransportCosts.Builder netBuilder = NetworkBasedTransportCosts.Builder.newInstance(network, vehicleTypes.getVehicleTypes().values());
         netBuilder.setTimeSliceWidth(timeSlice); // !!!! otherwise it will not do anything.
@@ -157,7 +157,7 @@ public final class FreightTourPlanning {
             //get the algorithm out-of-the-box, search solution and get the best one.
             VehicleRoutingAlgorithm algorithm = new SchrimpfFactory().createAlgorithm(problem);
 
-            algorithm.setMaxIterations(pfavConfigGroup.getNrOfJspritIterations());
+            algorithm.setMaxIterations(iterations);
 
             // variationCoefficient = stdDeviation/mean. so i set the threshold rather soft
             algorithm.addTerminationCriterion(new VariationCoefficientTermination(50, 0.01));

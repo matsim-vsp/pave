@@ -85,7 +85,7 @@ public class RunPFAVInBerlin {
 
 		//setup config
 		Config config = RunBerlinScenario.prepareConfig(new String[]{configPath});
-		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME);
+		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME, carriers, vehTypes);
 		TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
 		String mode = taxiCfg.getMode();
 		config.addModule(taxiCfg);
@@ -100,7 +100,7 @@ public class RunPFAVInBerlin {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(mode, scenario, carriers, vehTypes));
+				install(new PFAVModeModule(mode, scenario));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));

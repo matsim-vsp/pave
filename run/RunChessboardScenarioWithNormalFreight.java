@@ -169,7 +169,7 @@ public class RunChessboardScenarioWithNormalFreight {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(mode, scenario, carriersFile, vehTypesFile));
+				install(new PFAVModeModule(mode, scenario));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));

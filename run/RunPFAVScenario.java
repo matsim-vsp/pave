@@ -71,7 +71,7 @@ public class RunPFAVScenario {
 		}
 
 		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
-		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME);
+		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME, carriers, vehTypes);
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		/*
 		 * very important: we assume that destinations of trips are known in advance.
@@ -99,12 +99,10 @@ public class RunPFAVScenario {
 		Controler controler = new Controler(scenario);
 		controler.addOverridingModule(new DvrpModule());
 		//		controler.addOverridingModule(new TaxiModule());
-		String finalCarriers = carriers;
-		String finalVehTypes = vehTypes;
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(mode, scenario, finalCarriers, finalVehTypes));
+				install(new PFAVModeModule(mode, scenario));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));

@@ -20,26 +20,13 @@
 
 package scenarioCreation;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkWriter;
-import org.matsim.contrib.freight.carrier.Carrier;
-import org.matsim.contrib.freight.carrier.CarrierCapabilities;
-import org.matsim.contrib.freight.carrier.CarrierImpl;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
-import org.matsim.contrib.freight.carrier.CarrierService;
-import org.matsim.contrib.freight.carrier.CarrierVehicle;
-import org.matsim.contrib.freight.carrier.CarrierVehicleType;
-import org.matsim.contrib.freight.carrier.Carriers;
-import org.matsim.contrib.freight.carrier.TimeWindow;
+import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.util.CSVLineBuilder;
 import org.matsim.contrib.util.CompactCSVWriter;
 import org.matsim.core.config.Config;
@@ -55,7 +42,9 @@ import org.matsim.run.RunBerlinScenario;
 import org.matsim.vehicles.VehicleType;
 import org.opengis.feature.simple.SimpleFeature;
 
-import privateAV.FreightAVConfigGroup;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ServiceMapMatch {
     //    private final String inputNewNet = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/Network/berlin-v5.2-1pct.output_network.xml";
@@ -72,6 +61,9 @@ public class ServiceMapMatch {
     private final String outputNewCarriers = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks_TWsfitted_Truck.xml.gz";
 
     private Map<Geometry,Carrier> carrierMap = new HashMap();
+
+    private final double earliestStart = 8 * 3600;
+    private final double latestStart = 18 * 3600;
     
     public static void main(String[] args) {
 //        new ServiceMapMatch().run();
@@ -137,8 +129,9 @@ public class ServiceMapMatch {
     }
 
     public void run(){
-    	FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME);
-        mapGeomToCarrier(shapeFile, pfavConfig);
+
+
+        mapGeomToCarrier(shapeFile);
         
         //should be referenced in GK 4 after having a look at the net in via
         Network oldSchroederNet = NetworkUtils.createNetwork();
@@ -180,7 +173,7 @@ public class ServiceMapMatch {
                             CarrierService.Builder.newInstance(Id.create(service.getId(), CarrierService.class), newLink)
                                     .setCapacityDemand(service.getCapacityDemand())
                                     .setServiceDuration(service.getServiceDuration())
-                                    .setServiceStartTimeWindow(getFittedTimeWindow(service.getServiceStartTimeWindow(), pfavConfig))
+                                    .setServiceStartTimeWindow(getFittedTimeWindow(service.getServiceStartTimeWindow()))
                                     .build();
                     newCarrier.getServices().add(newService);
                     handledNewLinksToCarrier.put(newLink, newCarrier);
@@ -197,12 +190,12 @@ public class ServiceMapMatch {
 
 
         NetworkFilterManager oldNetFMng = new NetworkFilterManager(oldSchroederNet);
-        oldNetFMng.addLinkFilter(l -> handledOldLinksToNewLink.keySet().contains(l.getId())  );
+        oldNetFMng.addLinkFilter(l -> handledOldLinksToNewLink.containsKey(l.getId()));
 
         new NetworkWriter(oldNetFMng.applyFilters()).writeV2(outputOldLinksNet);
 
         NetworkFilterManager newNetFMng = new NetworkFilterManager(openBerlinNet);
-        newNetFMng.addLinkFilter(l -> handledNewLinksToCarrier.keySet().contains(l.getId())  );
+        newNetFMng.addLinkFilter(l -> handledNewLinksToCarrier.containsKey(l.getId()));
 
         new NetworkWriter(newNetFMng.applyFilters()).writeV2(outputNewLinksNet);
     }
@@ -215,22 +208,22 @@ public class ServiceMapMatch {
         return null;
     }
 
-    private TimeWindow getFittedTimeWindow(TimeWindow oldTimeWindow, FreightAVConfigGroup pfavConfig) {
+    private TimeWindow getFittedTimeWindow(TimeWindow oldTimeWindow) {
         double start = oldTimeWindow.getStart();
         double end = oldTimeWindow.getEnd();
 
         double oldDuration = end - start;
-        if (start < pfavConfig.getFreightTourEarliestStart()) {
-            start = pfavConfig.getFreightTourEarliestStart();
-            if ((start + oldDuration) > pfavConfig.getFreightTourLatestStart()) {
-                end = pfavConfig.getFreightTourLatestStart();
+        if (start < earliestStart) {
+            start = earliestStart;
+            if ((start + oldDuration) > latestStart) {
+                end = latestStart;
             } else {
                 end = start + oldDuration;
             }
-        } else if (end > pfavConfig.getFreightTourLatestStart()) {
-            end = pfavConfig.getFreightTourLatestStart();
-            if ((end - oldDuration) < pfavConfig.getFreightTourEarliestStart()) {
-                start = pfavConfig.getFreightTourEarliestStart();
+        } else if (end > latestStart) {
+            end = latestStart;
+            if ((end - oldDuration) < earliestStart) {
+                start = earliestStart;
             } else {
                 start = end - oldDuration;
             }
@@ -238,7 +231,7 @@ public class ServiceMapMatch {
         return TimeWindow.newInstance(start, end);
     }
 
-    private void mapGeomToCarrier(String shapeFile, FreightAVConfigGroup pfavConfig){
+    private void mapGeomToCarrier(String shapeFile) {
         Collection<SimpleFeature> allLORs = ShapeFileReader.getAllFeatures(shapeFile);
 
         for(SimpleFeature feature : allLORs){
@@ -253,8 +246,8 @@ public class ServiceMapMatch {
 
             CarrierVehicle veh = CarrierVehicle.Builder.newInstance(Id.createVehicleId(key + "_" + name + "_v"),
                     Id.createLinkId(depotLink))
-                    .setEarliestStart(pfavConfig.getFreightTourEarliestStart()).
-                            setLatestEnd(pfavConfig.getFreightTourLatestStart())
+                    .setEarliestStart(earliestStart).
+                            setLatestEnd(latestStart)
                     .setTypeId(typeId)
                     .setType(CarrierVehicleType.Builder.newInstance(typeId).build())
                     .build();

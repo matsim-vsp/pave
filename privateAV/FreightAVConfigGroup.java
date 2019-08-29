@@ -10,11 +10,14 @@ import java.util.Map;
 
 public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 
-	public static final String MODE = "mode";
-
-	public static final String PFAV_TYPE = "pfavType";
+    static final String CARRIERS_FILE = "carriersFile";
+    static final String CARRIERS_FILE_EXP = "path to the xml file containing the carriers data";
 	
 	public static final String GROUP_NAME = "freightav";
+    static final String VEHTYPES_FILE = "carriersVehicleTypesFile";
+    static final String VEHTYPES_FILE_EXP = "path to the xml file containing the carriersVehicleTypes including the type specified in pfavType attribute";
+    private static final String MODE = "mode";
+    private static final String PFAV_TYPE = "pfavType";
 
 	public static final String FREIGHTTOUR_LATEST_START = "freightTourLatestStart";
 	static final String FREIGHTTOUR_LATEST_START_EXP = "represents the latest start time of a freight tour. that means, the retool task "
@@ -92,6 +95,12 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 
 	@NotBlank
 	private String pfavType = "PFAV";
+    @NotBlank
+    private String carriersFile;
+
+    @NotBlank
+    private String vTypesFile;
+
 
 	@Positive
 	private double freightTourLatestStart = 18 * 3600;
@@ -158,14 +167,32 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 		return pfavType;
 	}
 
-	/**
-	 * @param pfavType
-	 *            the pfavType to set
-	 */
-	@StringSetter(PFAV_TYPE)
-	public void setPfavType(String pfavType) {
-		this.pfavType = pfavType;
-	}
+    public FreightAVConfigGroup(String name, String carriersFile, String vehicleTypesFile) {
+        super(name);
+        this.carriersFile = carriersFile;
+        this.vTypesFile = vehicleTypesFile;
+    }
+
+    @StringGetter(CARRIERS_FILE)
+    public String getCarriersFile() {
+        return carriersFile;
+    }
+
+    @StringSetter(CARRIERS_FILE)
+    public void setCarriersFile(String carriersFile) {
+        this.carriersFile = carriersFile;
+    }
+
+    @StringSetter(VEHTYPES_FILE)
+    public void setVehTypesFile(String vehTypesFile) {
+        this.vTypesFile = vehTypesFile;
+    }
+
+    @StringGetter(VEHTYPES_FILE)
+    public String getVehtypesFile() {
+        return vTypesFile;
+    }
+
 
 	/**
 	 * @return the freightTourLatestStart
@@ -422,32 +449,38 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 		this.allowMultipleToursInaRow = allowMultipleToursInaRow;
 	}
 
-	@Override
-	public Map<String, String> getComments() {
-		
-		Map<String, String> map = super.getComments();
-		map.put(FREIGHTTOUR_LATEST_START, FREIGHTTOUR_LATEST_START_EXP);
-		map.put(FREIGHTTOUR_EARLIEST_START, FREIGHTTOUR_EARLIEST_START_EXP);
-		map.put(PFAV_RETOOL_TIME, PFAV_RETOOL_TIME_EXP);
-		map.put(TIME_BUFFER, TIME_BUFFER_EXP);
-		map.put(FREIGHT_DEMAND_SAMPLE_SIZE, FREIGHT_DEMAND_SAMPLE_SIZE_EXP);
-		map.put(TOURPLANNING_INTERVAL, TOURPLANNING_INTERVAL_EXP);
-		map.put(RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION, RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION_EXP);
-		map.put(NR_OF_JSPRIT_ITERATIONS, NR_OF_JSPRIT_ITERATIONS_EXP);
-		map.put(ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS, ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS_EXP);
-		map.put(MAX_BEELINE_DISTANCE_TO_DEPOT, MAX_BEELINE_DISTANCE_TO_DEPOT_EXP);
-		map.put(MAX_TRAVELTIME_TO_DEPOT, MAX_TRAVELTIME_TO_DEPOT_EXP);
-		map.put(AMOUNT_OF_DEPOTS_TO_CONSIDER, AMOUNT_OF_DEPOTS_TO_CONSIDER_EXP);
-		map.put(CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH, CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH_EXP);
-		map.put(RE_ROUTE_TOURS, RE_ROUTE_TOURS_EXP);
-		map.put(ALLOW_MULTIPLE_TOURS_IN_A_ROW, ALLOW_MULTIPLE_TOURS_IN_A_ROW_EXP);
-		
-		return map;
-	}
-	
-	public FreightAVConfigGroup(String name) {
-		super(name);
-	}
+    /**
+     * @param pfavType the pfavType to set
+     */
+    @StringSetter(PFAV_TYPE)
+    public void setPfavType(String pfavType) {
+        this.pfavType = pfavType;
+    }
+
+    @Override
+    public Map<String, String> getComments() {
+
+        Map<String, String> map = super.getComments();
+        map.put(FREIGHTTOUR_LATEST_START, FREIGHTTOUR_LATEST_START_EXP);
+        map.put(FREIGHTTOUR_EARLIEST_START, FREIGHTTOUR_EARLIEST_START_EXP);
+        map.put(PFAV_RETOOL_TIME, PFAV_RETOOL_TIME_EXP);
+        map.put(TIME_BUFFER, TIME_BUFFER_EXP);
+        map.put(FREIGHT_DEMAND_SAMPLE_SIZE, FREIGHT_DEMAND_SAMPLE_SIZE_EXP);
+        map.put(TOURPLANNING_INTERVAL, TOURPLANNING_INTERVAL_EXP);
+        map.put(RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION, RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION_EXP);
+        map.put(NR_OF_JSPRIT_ITERATIONS, NR_OF_JSPRIT_ITERATIONS_EXP);
+        map.put(ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS, ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS_EXP);
+        map.put(MAX_BEELINE_DISTANCE_TO_DEPOT, MAX_BEELINE_DISTANCE_TO_DEPOT_EXP);
+        map.put(MAX_TRAVELTIME_TO_DEPOT, MAX_TRAVELTIME_TO_DEPOT_EXP);
+        map.put(AMOUNT_OF_DEPOTS_TO_CONSIDER, AMOUNT_OF_DEPOTS_TO_CONSIDER_EXP);
+        map.put(CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH, CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH_EXP);
+        map.put(RE_ROUTE_TOURS, RE_ROUTE_TOURS_EXP);
+        map.put(ALLOW_MULTIPLE_TOURS_IN_A_ROW, ALLOW_MULTIPLE_TOURS_IN_A_ROW_EXP);
+        map.put(CARRIERS_FILE, CARRIERS_FILE_EXP);
+        map.put(VEHTYPES_FILE, VEHTYPES_FILE_EXP);
+
+        return map;
+    }
 
     public static FreightAVConfigGroup get(Config config) {
         return (FreightAVConfigGroup) config.getModule(GROUP_NAME);

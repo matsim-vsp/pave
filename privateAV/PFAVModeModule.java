@@ -19,15 +19,11 @@ import org.matsim.core.router.util.TravelTime;
 
 public final class PFAVModeModule extends AbstractDvrpModeModule {
 
-    private final String CARRIERS_FILE;
-    private final String VEHTYPES_FILE;
     private Scenario scenario;
 
-    public PFAVModeModule(String mode, Scenario scenario, String carriersFile, String vehTypesFile) {
+    public PFAVModeModule(String mode, Scenario scenario) {
         super(mode);
         this.scenario = scenario;
-        this.CARRIERS_FILE = carriersFile;
-        this.VEHTYPES_FILE = vehTypesFile;
     }
 
     @Override
@@ -48,8 +44,8 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         install(new PFAVModuleAnalysis(getMode(), scenario.getNetwork()));
 
         //TODO: get those files from some kind of config group or pass it to the module as parameters
-        CarrierVehicleTypes vTypes = readVehicleTypes(this.VEHTYPES_FILE);
-        Carriers carriers = readCarriersAndLoadVehicleTypes(CARRIERS_FILE, vTypes);
+        CarrierVehicleTypes vTypes = readVehicleTypes(pfavConfigGroup);
+        Carriers carriers = readCarriersAndLoadVehicleTypes(pfavConfigGroup, vTypes);
 
         bind(CarrierVehicleTypes.class).annotatedWith(Names.named(FreightAVConfigGroup.GROUP_NAME)).toInstance(vTypes);
         bind(Carriers.class).annotatedWith(Names.named(FreightAVConfigGroup.GROUP_NAME)).toInstance(carriers);
@@ -80,17 +76,17 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
                 "please make sure that PFAV_TYPE is included in carriersVehicleTypes. Currently, no default cost parameters for pfav are implemented..");
     }
 
-    private CarrierVehicleTypes readVehicleTypes(String input) {
+    private CarrierVehicleTypes readVehicleTypes(FreightAVConfigGroup configGroup) {
         CarrierVehicleTypes vTypes = new CarrierVehicleTypes();
         CarrierVehicleTypeReader reader = new CarrierVehicleTypeReader(vTypes);
-        reader.readFile(input);
+        reader.readFile(configGroup.getVehtypesFile());
         return vTypes;
     }
 
-    private Carriers readCarriersAndLoadVehicleTypes(String carriersfile, CarrierVehicleTypes vehicleTypes) {
+    private Carriers readCarriersAndLoadVehicleTypes(FreightAVConfigGroup configGroup, CarrierVehicleTypes vehicleTypes) {
         Carriers carriers = new Carriers();
         CarrierPlanXmlReaderV2 reader = new CarrierPlanXmlReaderV2(carriers);
-        reader.readFile(carriersfile);
+        reader.readFile(configGroup.getCarriersFile());
         new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(vehicleTypes);
         return carriers;
     }

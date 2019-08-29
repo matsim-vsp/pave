@@ -74,7 +74,7 @@ public class RunChessboardScenario {
 			vehTypesFile = VEHTYPES_FILE_CASE2;
 		}
 
-		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME);
+		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME, carriersFile, vehTypesFile);
 		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		taxiCfg.setDestinationKnown(true);
@@ -119,7 +119,7 @@ public class RunChessboardScenario {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				install(new PFAVModeModule(mode, scenario, carriersFile, vehTypesFile));
+				install(new PFAVModeModule(mode, scenario));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));
