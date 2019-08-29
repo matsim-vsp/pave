@@ -36,6 +36,7 @@ import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.util.StraightLineKnnFinder;
 import org.matsim.contrib.util.distance.DistanceUtils;
+import org.matsim.core.config.Config;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.events.IterationStartsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
@@ -53,7 +54,6 @@ import java.util.stream.Stream;
 class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, IterationStartsListener, IterationEndsListener {
 
     private final static Logger log = Logger.getLogger(FreightTourManagerListBasedImpl.class);
-    private final int timeSlice;
     private final FreightAVConfigGroup pfavConfigGroup;
 
     private Map<Link, LinkedList<FreightTourDataPlanned>> depotToFreightTour = new HashMap<>();
@@ -66,29 +66,19 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     @Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
     private TravelTime travelTime;
 
+    @Inject
+    @Named(FreightAVConfigGroup.GROUP_NAME)
     private Carriers carriers;
+
     private Carriers carriersWithOnlyUsedTours;
+
+    @Inject
+    @Named(FreightAVConfigGroup.GROUP_NAME)
     private CarrierVehicleTypes vehicleTypes;
 
-    /**
-     *
-     */
-    FreightTourManagerListBasedImpl(String pathToCarriersFile, CarrierVehicleTypes vehicleTypes, int timeSlice, FreightAVConfigGroup pfavConfigGroup) {
-
-        this.carriers = readCarriers(pathToCarriersFile);
-        this.vehicleTypes = vehicleTypes;
-        this.timeSlice = timeSlice;
-        this.pfavConfigGroup = pfavConfigGroup;
-        log.info("loading carrier vehicle types..");
-        new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(vehicleTypes);
-    }
-
-
-    private Carriers readCarriers(String file) {
-        Carriers carriers = new Carriers();
-        CarrierPlanXmlReaderV2 reader = new CarrierPlanXmlReaderV2(carriers);
-        reader.readFile(file);
-        return carriers;
+    @Inject
+    FreightTourManagerListBasedImpl(Config config) {
+        this.pfavConfigGroup = FreightAVConfigGroup.get(config);
     }
 
     private List<FreightTourDataPlanned> convertCarrierPlansToTaskList(Carriers carriers) {
@@ -343,7 +333,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
 
     private void runTourPlanning() {
         //the travel times we hand over contain the travel times of last mobsim iteration as long as we use the OfflineEstimator (set via TaxiConfigGroup)
-        FreightTourPlanning.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime, this.timeSlice, pfavConfigGroup);
+        FreightTourPlanning.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime, PFAVUtils.timeSlice(), pfavConfigGroup);
         log.info("overriding list of freight tours...");
         this.freightTours = convertCarrierPlansToTaskList(carriers);
     }

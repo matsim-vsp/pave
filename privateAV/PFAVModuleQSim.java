@@ -1,6 +1,7 @@
 package privateAV;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.Fleet;
@@ -40,6 +41,9 @@ final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
 
         install(new VrpAgentSourceQSimModule(getMode()));
         install(new PassengerEngineQSimModule(getMode()));
+
+
+        bind(FreightTourManagerListBased.class).to(FreightTourManagerListBasedImpl.class).in(Singleton.class);
 
         addModalComponent(TaxiOptimizer.class, new ModalProviders.AbstractProvider<TaxiOptimizer>(taxiCfg.getMode()) {
             @Inject

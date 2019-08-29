@@ -8,19 +8,17 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
-import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
 import org.matsim.contrib.dvrp.run.DvrpModes;
 import org.matsim.contrib.dvrp.run.ModalProviders;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dynagent.run.DynRoutingModule;
-import org.matsim.contrib.freight.carrier.CarrierVehicleType;
-import org.matsim.contrib.freight.carrier.CarrierVehicleTypeReader;
-import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
+import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 
 public final class PFAVModeModule extends AbstractDvrpModeModule {
+
     private final String CARRIERS_FILE;
     private final String VEHTYPES_FILE;
     private Scenario scenario;
@@ -32,7 +30,6 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         this.VEHTYPES_FILE = vehTypesFile;
     }
 
-    
     @Override
     public void install() {
         FreightAVConfigGroup pfavConfigGroup = (FreightAVConfigGroup) getConfig().getModules().get(FreightAVConfigGroup.GROUP_NAME);
@@ -51,16 +48,11 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         install(new PFAVModuleAnalysis(getMode(), scenario.getNetwork()));
 
         //TODO: get those files from some kind of config group or pass it to the module as parameters
-//        int timeSlice = pfavConfig.getTourPlannungTimeSlice(); TODO
         CarrierVehicleTypes vTypes = readVehicleTypes(this.VEHTYPES_FILE);
+        Carriers carriers = readCarriersAndLoadVehicleTypes(CARRIERS_FILE, vTypes);
 
-        FreightTourManagerListBasedImpl tourManager = new FreightTourManagerListBasedImpl(this.CARRIERS_FILE, vTypes, PFAVUtils.timeSlice(), pfavConfigGroup);
-        installQSimModule(new AbstractDvrpModeQSimModule(getMode()){
-            @Override
-            protected void configureQSim() {
-                bind(FreightTourManagerListBased.class).toInstance(tourManager);
-            }
-        });
+        bind(CarrierVehicleTypes.class).annotatedWith(Names.named(FreightAVConfigGroup.GROUP_NAME)).toInstance(vTypes);
+        bind(Carriers.class).annotatedWith(Names.named(FreightAVConfigGroup.GROUP_NAME)).toInstance(carriers);
 
         bindModal(TravelDisutility.class).toProvider(
                 new ModalProviders.AbstractProvider<TravelDisutility>(getMode()) {
@@ -75,7 +67,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
                 }
         );
 
-        addControlerListenerBinding().toInstance(tourManager);
+        addControlerListenerBinding().to(FreightTourManagerListBasedImpl.class);
         installQSimModule(new PFAVModuleQSim(taxiConfigGroup.getMode()));
     }
 
@@ -93,5 +85,13 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         CarrierVehicleTypeReader reader = new CarrierVehicleTypeReader(vTypes);
         reader.readFile(input);
         return vTypes;
+    }
+
+    private Carriers readCarriersAndLoadVehicleTypes(String carriersfile, CarrierVehicleTypes vehicleTypes) {
+        Carriers carriers = new Carriers();
+        CarrierPlanXmlReaderV2 reader = new CarrierPlanXmlReaderV2(carriers);
+        reader.readFile(carriersfile);
+        new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(vehicleTypes);
+        return carriers;
     }
 }
