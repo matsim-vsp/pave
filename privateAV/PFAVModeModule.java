@@ -78,7 +78,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         );
 
         addControlerListenerBinding().toInstance(tourManager);
-        installQSimModule(new PFAVModuleQSim(taxiConfigGroup, pfavConfigGroup));
+        installQSimModule(new PFAVModuleQSim(taxiConfigGroup.getMode()));
     }
 
     private CarrierVehicleTypes readVehicleTypes(String input) {
@@ -94,7 +94,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
             if (type.getId().toString().equals(pfavType)) return type;
         }
         throw new IllegalArgumentException("no cost parameters for vehicle type " + pfavType + " could be found in carriersVehicleTypes." +
-                "please make sure that PFAV_TYPE is included in carreirsVehicleTypes. Currently, no default cost parameters for pfav are implemented..");
+                "please make sure that PFAV_TYPE is included in carriersVehicleTypes. Currently, no default cost parameters for pfav are implemented..");
     }
 
     private PFAVCostParameter getPFAVCostParameter(CarrierVehicleTypes vehicleTypes, FreightAVConfigGroup cfg) {

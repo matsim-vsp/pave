@@ -27,18 +27,17 @@ import org.matsim.core.router.util.TravelTime;
 
 final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
 
-    private final TaxiConfigGroup taxiCfg;
-    private final FreightAVConfigGroup pfavConfigGroup;
 
-    PFAVModuleQSim(TaxiConfigGroup taxiCfg, FreightAVConfigGroup pfavConfigGroup) {
-        super(taxiCfg.getMode());
-        this.taxiCfg = taxiCfg;
-        this.pfavConfigGroup = pfavConfigGroup;
+    PFAVModuleQSim(String mode) {
+        super(mode);
     }
 
     
     @Override
     protected void configureQSim() {
+        TaxiConfigGroup taxiCfg = TaxiConfigGroup.get(getConfig());
+        FreightAVConfigGroup pfavConfigGroup = FreightAVConfigGroup.get(getConfig());
+
         install(new VrpAgentSourceQSimModule(getMode()));
         install(new PassengerEngineQSimModule(getMode()));
 

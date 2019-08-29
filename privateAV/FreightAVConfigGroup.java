@@ -1,12 +1,12 @@
 package privateAV;
 
-import java.util.Map;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ReflectiveConfigGroup;
 
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
-
-import org.matsim.core.config.ReflectiveConfigGroup;
+import java.util.Map;
 
 public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 
@@ -447,7 +447,10 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 	
 	public FreightAVConfigGroup(String name) {
 		super(name);
-		// TODO Auto-generated constructor stub
 	}
+
+    public static FreightAVConfigGroup get(Config config) {
+        return (FreightAVConfigGroup) config.getModule(GROUP_NAME);
+    }
 
 }
