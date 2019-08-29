@@ -82,18 +82,17 @@ public class RunChessboardScenario {
 		}
 
 		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME, carriersFile, vehTypesFile);
-		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
+
+		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), new MultiModeTaxiConfigGroup(),
+				pfavConfig);
+
+		TaxiConfigGroup taxiCfg = TaxiConfigGroup.get(config);
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		taxiCfg.setDestinationKnown(true);
 		taxiCfg.setPickupDuration(60);
 		taxiCfg.setDropoffDuration(60);
 		taxiCfg.setTaxisFile("something");
 		taxiCfg.setTimeProfiles(true);
-
-		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), MultiModeTaxiConfigGroup.of(taxiCfg),
-				pfavConfig);
-		//		config.addModule(new DvrpConfigGroup());
-		//		config.addModule(taxiCfg);
 
 		System.out.println("" + taxiCfg.getPickupDuration());
 		taxiCfg.setDropoffDuration(60);

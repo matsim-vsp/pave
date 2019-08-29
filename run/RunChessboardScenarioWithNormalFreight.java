@@ -87,7 +87,7 @@ public class RunChessboardScenarioWithNormalFreight {
 	private static final String CARRIERS_FILE_CASE2 = "scenarios/chessboard/carrier1_empty.xml";
 
 	private static final String VEHTYPES_FILE_CASE2 = "scenarios/chessboard/secondCase/chessboard_vehicleTypesCase2.xml";
-    private static final String OUTPUT_DIR = "output/combinedPFAVAndCarrierTest/" + new SimpleDateFormat(
+	private static final String OUTPUT_DIR = "output/combinedPFAVAndCarrierTest/" + new SimpleDateFormat(
 			"YYYY-MM-dd_HH.mm").format(new Date()) + "/";
 
 	/**
@@ -106,7 +106,9 @@ public class RunChessboardScenarioWithNormalFreight {
 			vehTypesFile = VEHTYPES_FILE_CASE2;
 		}
 
-		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
+		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), new MultiModeTaxiConfigGroup());
+
+		TaxiConfigGroup taxiCfg = TaxiConfigGroup.get(config);
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		taxiCfg.setDestinationKnown(true);
 		taxiCfg.setPickupDuration(60);
@@ -114,12 +116,6 @@ public class RunChessboardScenarioWithNormalFreight {
 		taxiCfg.setTaxisFile("something");
 
 		taxiCfg.setTimeProfiles(true);
-
-		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(),
-				MultiModeTaxiConfigGroup.of(taxiCfg));
-		//		config.addModule(new DvrpConfigGroup());
-		//		config.addModule(taxiCfg);
-
 		config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
 		config.qsim().setEndTime(20 * 3600);
 

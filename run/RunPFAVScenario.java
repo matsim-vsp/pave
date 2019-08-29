@@ -50,6 +50,7 @@ public class RunPFAVScenario {
 
 	private static final String OUTPUT_DIR = "output/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
 			new Date()) + "/";
+
 	/**
 	 * @param args
 	 */
@@ -71,9 +72,16 @@ public class RunPFAVScenario {
 			vehTypes = PFAVUtils.DEFAULT_VEHTYPES_FILE;
 			output = OUTPUT_DIR;
 		}
-
-		TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
 		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME, carriers, vehTypes);
+		Config config = ConfigUtils.loadConfig(configFile, new DvrpConfigGroup(), new MultiModeTaxiConfigGroup(),
+				pfavConfig);
+		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
+		//		config.controler().setLastIteration(0);
+		config.controler().setOutputDirectory(output);
+
+		//		config.plans().setInputFile("plans_only_taxi_4.0_slightly_modified.xml");
+
+		TaxiConfigGroup taxiCfg = TaxiConfigGroup.get(config);
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		/*
 		 * very important: we assume that destinations of trips are known in advance.
@@ -82,14 +90,6 @@ public class RunPFAVScenario {
 		 *
 		 */
 		taxiCfg.setDestinationKnown(true);
-
-		Config config = ConfigUtils.loadConfig(configFile, new DvrpConfigGroup(), MultiModeTaxiConfigGroup.of(taxiCfg),
-				pfavConfig);
-		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
-		//		config.controler().setLastIteration(0);
-		config.controler().setOutputDirectory(output);
-
-		//		config.plans().setInputFile("plans_only_taxi_4.0_slightly_modified.xml");
 
 		taxiCfg.setTimeProfiles(true);
 
