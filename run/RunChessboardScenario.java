@@ -18,13 +18,22 @@
 
 package run;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.population.*;
+import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.Plan;
+import org.matsim.api.core.v01.population.Population;
+import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
+import org.matsim.contrib.taxi.run.MultiModeTaxiConfigGroup;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -34,11 +43,9 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.scenario.ScenarioUtils;
+
 import privateAV.FreightAVConfigGroup;
 import privateAV.PFAVModeModule;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * @author tschlenther
@@ -83,7 +90,8 @@ public class RunChessboardScenario {
 		taxiCfg.setTaxisFile("something");
 		taxiCfg.setTimeProfiles(true);
 
-		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), taxiCfg, pfavConfig);
+		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), MultiModeTaxiConfigGroup.of(taxiCfg),
+				pfavConfig);
 		//		config.addModule(new DvrpConfigGroup());
 		//		config.addModule(taxiCfg);
 
@@ -114,7 +122,7 @@ public class RunChessboardScenario {
 		// setup controler
 		Controler controler = new Controler(scenario);
 		controler.addOverridingModule(new DvrpModule());
-		//		controler.addOverridingModule(new TaxiModule());
+		//		controler.addOverridingModule(new MultiModeTaxiModule());
 
 		controler.addOverridingModule(new AbstractModule() {
 			@Override

@@ -18,22 +18,36 @@
 
 package run;
 
-import analysis.BaseCaseFreightTourStatsListener;
-import analysis.OverallTravelTimeAndDistanceListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.population.*;
+import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.Plan;
+import org.matsim.api.core.v01.population.Population;
+import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
-import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.freight.carrier.Carrier;
+import org.matsim.contrib.freight.carrier.CarrierPlan;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
+import org.matsim.contrib.freight.carrier.CarrierVehicleTypeLoader;
+import org.matsim.contrib.freight.carrier.CarrierVehicleTypeReader;
+import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
+import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.controler.CarrierModule;
 import org.matsim.contrib.freight.replanning.CarrierPlanStrategyManagerFactory;
 import org.matsim.contrib.freight.scoring.CarrierScoringFunctionFactory;
 import org.matsim.contrib.freight.usecases.analysis.CarrierScoreStats;
 import org.matsim.contrib.freight.usecases.analysis.LegHistogram;
+import org.matsim.contrib.taxi.run.MultiModeTaxiConfigGroup;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
@@ -50,11 +64,11 @@ import org.matsim.core.replanning.GenericStrategyManager;
 import org.matsim.core.replanning.selectors.BestPlanSelector;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.scoring.SumScoringFunction;
+
+import analysis.BaseCaseFreightTourStatsListener;
+import analysis.OverallTravelTimeAndDistanceListener;
 import privateAV.FreightAVConfigGroup;
 import privateAV.PFAVModeModule;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * @author tschlenther
@@ -101,7 +115,8 @@ public class RunChessboardScenarioWithNormalFreight {
 
 		taxiCfg.setTimeProfiles(true);
 
-		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), taxiCfg);
+		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(),
+				MultiModeTaxiConfigGroup.of(taxiCfg));
 		//		config.addModule(new DvrpConfigGroup());
 		//		config.addModule(taxiCfg);
 
@@ -165,7 +180,7 @@ public class RunChessboardScenarioWithNormalFreight {
 	private static void configureControlerForPFAV(String carriersFile, String vehTypesFile, TaxiConfigGroup taxiCfg,
 			String mode, Scenario scenario, Controler controler, FreightAVConfigGroup pfavConfig) {
 		controler.addOverridingModule(new DvrpModule());
-		//		controler.addOverridingModule(new TaxiModule());
+		//		controler.addOverridingModule(new MultiModeTaxiModule());
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {

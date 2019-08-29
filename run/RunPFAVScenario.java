@@ -18,10 +18,14 @@
 
 package run;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
+import org.matsim.contrib.taxi.run.MultiModeTaxiConfigGroup;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -29,12 +33,10 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
+
 import privateAV.FreightAVConfigGroup;
 import privateAV.PFAVModeModule;
 import privateAV.PFAVUtils;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * @author tschlenther
@@ -81,7 +83,8 @@ public class RunPFAVScenario {
 		 */
 		taxiCfg.setDestinationKnown(true);
 
-		Config config = ConfigUtils.loadConfig(configFile, new DvrpConfigGroup(), taxiCfg, pfavConfig);
+		Config config = ConfigUtils.loadConfig(configFile, new DvrpConfigGroup(), MultiModeTaxiConfigGroup.of(taxiCfg),
+				pfavConfig);
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		//		config.controler().setLastIteration(0);
 		config.controler().setOutputDirectory(output);
@@ -98,7 +101,7 @@ public class RunPFAVScenario {
 		// setup controler
 		Controler controler = new Controler(scenario);
 		controler.addOverridingModule(new DvrpModule());
-		//		controler.addOverridingModule(new TaxiModule());
+		//		controler.addOverridingModule(new MultiModeTaxiModule());
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {

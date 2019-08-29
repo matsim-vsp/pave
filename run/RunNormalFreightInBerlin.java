@@ -20,19 +20,28 @@
 
 package run;
 
-import analysis.BaseCaseFreightTourStatsListener;
-import analysis.OverallTravelTimeAndDistanceListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
-import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.freight.carrier.Carrier;
+import org.matsim.contrib.freight.carrier.CarrierPlan;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
+import org.matsim.contrib.freight.carrier.CarrierVehicleTypeLoader;
+import org.matsim.contrib.freight.carrier.CarrierVehicleTypeReader;
+import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
+import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.controler.CarrierModule;
 import org.matsim.contrib.freight.replanning.CarrierPlanStrategyManagerFactory;
 import org.matsim.contrib.freight.scoring.CarrierScoringFunctionFactory;
 import org.matsim.contrib.freight.usecases.analysis.CarrierScoreStats;
 import org.matsim.contrib.freight.usecases.analysis.LegHistogram;
 import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
+import org.matsim.contrib.taxi.run.MultiModeTaxiConfigGroup;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
@@ -49,8 +58,8 @@ import org.matsim.core.replanning.selectors.BestPlanSelector;
 import org.matsim.core.scoring.SumScoringFunction;
 import org.matsim.run.RunBerlinScenario;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import analysis.BaseCaseFreightTourStatsListener;
+import analysis.OverallTravelTimeAndDistanceListener;
 
 public class RunNormalFreightInBerlin {
 
@@ -95,7 +104,7 @@ public class RunNormalFreightInBerlin {
 
         TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
         String mode = taxiCfg.getMode();
-        config.addModule(taxiCfg);
+		config.addModule(MultiModeTaxiConfigGroup.of(taxiCfg));
 
         prepareConfig(output, population, networkChangeEvents, maxIter, increaseCapacities, config);
         Scenario scenario = RunBerlinScenario.prepareScenario(config);

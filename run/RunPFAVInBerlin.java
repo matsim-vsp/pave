@@ -20,11 +20,15 @@
 
 package run;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
 import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
+import org.matsim.contrib.taxi.run.MultiModeTaxiConfigGroup;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
@@ -33,11 +37,9 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.run.RunBerlinScenario;
+
 import privateAV.FreightAVConfigGroup;
 import privateAV.PFAVModeModule;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class RunPFAVInBerlin {
 
@@ -88,7 +90,7 @@ public class RunPFAVInBerlin {
 		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME, carriers, vehTypes);
 		TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
 		String mode = taxiCfg.getMode();
-		config.addModule(taxiCfg);
+		config.addModule(MultiModeTaxiConfigGroup.of(taxiCfg));
 		config.addModule(pfavConfig);
 		adjustConfigParameters(output, population, networkChangeEvents, maxIter, increaseCapacities, config);
 
