@@ -48,6 +48,7 @@ import org.matsim.core.controler.OutputDirectoryLogging;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.population.PersonUtils;
 import org.matsim.core.router.Dijkstra;
 import org.matsim.core.router.DijkstraFactory;
 import org.matsim.core.router.costcalculators.FreespeedTravelTimeAndDisutility;
@@ -61,8 +62,10 @@ import org.matsim.examples.ExamplesUtils;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.matsim.vehicles.EngineInformation.FuelType;
 import org.matsim.vehicles.EngineInformationImpl;
+import org.matsim.vehicles.VehicleImpl;
 import org.matsim.vehicles.VehicleType;
 
+import org.matsim.vehicles.VehicleUtils;
 import ovgu.pave.core.Core;
 import ovgu.pave.handler.Handler;
 import ovgu.pave.handler.modelHandler.InputHandler;
@@ -270,6 +273,8 @@ class RunFreight {
 				//TODO: Haben derzeit nur ein beliebeigen FZGTyp und ein beliebiges Fahrzeug!!! kmt/aug19
 				CarrierVehicleType vehTypeOne = (CarrierVehicleType) carrier.getCarrierCapabilities().getVehicleTypes().toArray()[0];
 				CarrierVehicle vehOne = (CarrierVehicle) carrier.getCarrierCapabilities().getCarrierVehicles().toArray()[0];
+				org.matsim.vehicles.Vehicle vehicleOne = new VehicleImpl(vehOne.getVehicleId(), vehOne.getVehicleType());
+				log.debug("maxVelocityOf vehicleOne: " + vehicleOne.getType().getMaximumVelocity());
 				
 				double costPerMeter = vehTypeOne.getVehicleCostInformation().getPerDistanceUnit();
 				double costPerSecond = vehTypeOne.getVehicleCostInformation().getPerTimeUnit();
@@ -277,15 +282,16 @@ class RunFreight {
 				DijkstraFactory dijkstraFactory = new DijkstraFactory();
 				LeastCostPathCalculator costCalculator = dijkstraFactory.createPathCalculator(network, ttCostCalculator , ttCostCalculator); //Abfrage erstmal für um 8
 				log.debug("created dijsktra");
-				for(Location from :input.getLocations()) {
+				for(Location from : input.getLocations()) {
 					for (Location to: input.getLocations()) {
 
 						Node fromNode = network.getLinks().get(OVGULocationIdToMatsimLinkId.get(from.getId())).getToNode() ;
 						Node toNode = network.getLinks().get(OVGULocationIdToMatsimLinkId.get(to.getId())).getToNode() ;
 						log.debug("asking for Traveltimes from: "+ fromNode + " to: " + toNode);
 						double starttime = 8.0*3600; //Rechne mit 08:00 Fahrzeiten.
-						
-						double travelTime = costCalculator.calcLeastCostPath(fromNode, toNode, starttime, null, (org.matsim.vehicles.Vehicle) vehOne).travelTime;
+						LeastCostPathCalculator.Path path = costCalculator.calcLeastCostPath(fromNode, toNode, starttime,  null, vehicleOne);
+						log.debug("path calculated from: " + path.getFromNode().getId() + " , to: " + path.getToNode().getId() + " , costs: " + path.travelCost + " , traveltime " + path.travelTime );
+						double travelTime = path.travelTime;
 						log.debug("travelTime: " + travelTime);
 						Edge edge = InputHandler.createEdge(from, to);
 						edge.setDuration((long)travelTime*1000);
