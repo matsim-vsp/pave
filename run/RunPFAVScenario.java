@@ -81,7 +81,7 @@ public class RunPFAVScenario {
 
 		//		config.plans().setInputFile("plans_only_taxi_4.0_slightly_modified.xml");
 
-		TaxiConfigGroup taxiCfg = TaxiConfigGroup.get(config);
+		TaxiConfigGroup taxiCfg = TaxiConfigGroup.getSingleModeTaxiConfig(config);
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		/*
 		 * very important: we assume that destinations of trips are known in advance.

@@ -86,7 +86,7 @@ public class RunChessboardScenario {
 		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), new MultiModeTaxiConfigGroup(),
 				pfavConfig);
 
-		TaxiConfigGroup taxiCfg = TaxiConfigGroup.get(config);
+		TaxiConfigGroup taxiCfg = TaxiConfigGroup.getSingleModeTaxiConfig(config);
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		taxiCfg.setDestinationKnown(true);
 		taxiCfg.setPickupDuration(60);

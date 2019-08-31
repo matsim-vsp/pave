@@ -36,7 +36,7 @@ final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
     
     @Override
     protected void configureQSim() {
-        TaxiConfigGroup taxiCfg = TaxiConfigGroup.get(getConfig());
+        TaxiConfigGroup taxiCfg = TaxiConfigGroup.getSingleModeTaxiConfig(getConfig());
         FreightAVConfigGroup pfavConfigGroup = FreightAVConfigGroup.get(getConfig());
 
         install(new VrpAgentSourceQSimModule(getMode()));
