@@ -90,7 +90,9 @@ public class RunPFAVInBerlin {
 		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME, carriers, vehTypes);
 		TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
 		String mode = taxiCfg.getMode();
-		config.addModule(MultiModeTaxiConfigGroup.of(taxiCfg));
+		MultiModeTaxiConfigGroup multiTaxiCfg = new MultiModeTaxiConfigGroup();
+		multiTaxiCfg.addParameterSet(taxiCfg);
+		config.addModule(multiTaxiCfg);
 		config.addModule(pfavConfig);
 		adjustConfigParameters(output, population, networkChangeEvents, maxIter, increaseCapacities, config);
 

@@ -104,7 +104,9 @@ public class RunNormalFreightInBerlin {
 
         TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
         String mode = taxiCfg.getMode();
-		config.addModule(MultiModeTaxiConfigGroup.of(taxiCfg));
+		MultiModeTaxiConfigGroup multiTaxiCfg = new MultiModeTaxiConfigGroup();
+		multiTaxiCfg.addParameterSet(taxiCfg);
+		config.addModule(multiTaxiCfg);
 
         prepareConfig(output, population, networkChangeEvents, maxIter, increaseCapacities, config);
         Scenario scenario = RunBerlinScenario.prepareScenario(config);
