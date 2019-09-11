@@ -276,25 +276,44 @@ class RunFreight {
 				org.matsim.vehicles.Vehicle vehicleOne = new VehicleImpl(vehOne.getVehicleId(), vehOne.getVehicleType());
 				log.debug("maxVelocityOf vehicleOne: " + vehicleOne.getType().getMaximumVelocity());
 				
-				double costPerMeter = vehTypeOne.getVehicleCostInformation().getPerDistanceUnit();
-				double costPerSecond = vehTypeOne.getVehicleCostInformation().getPerTimeUnit();
-				FreespeedTravelTimeAndDisutility ttCostCalculator = new FreespeedTravelTimeAndDisutility(costPerMeter, costPerSecond, costPerSecond); // TODO: Welchen nehmen wir hier eigentlich -> in freight schauen kmt/aug19
-				DijkstraFactory dijkstraFactory = new DijkstraFactory();
-				LeastCostPathCalculator costCalculator = dijkstraFactory.createPathCalculator(network, ttCostCalculator , ttCostCalculator); //Abfrage erstmal für um 8
-				log.debug("created dijsktra");
-				for(Location from : input.getLocations()) {
-					for (Location to: input.getLocations()) {
+//				double costPerMeter = vehTypeOne.getVehicleCostInformation().getPerDistanceUnit();
+//				double costPerSecond = vehTypeOne.getVehicleCostInformation().getPerTimeUnit();
+				
+//				FreespeedTravelTimeAndDisutility ttCostCalculator = new FreespeedTravelTimeAndDisutility(costPerMeter, costPerSecond, costPerSecond); // TODO: Welchen nehmen wir hier eigentlich -> in freight schauen kmt/aug19
+//				DijkstraFactory dijkstraFactory = new DijkstraFactory();
+//				LeastCostPathCalculator costCalculator = dijkstraFactory.createPathCalculator(network, ttCostCalculator , ttCostCalculator); //Abfrage erstmal für um 8
 
-						Node fromNode = network.getLinks().get(OVGULocationIdToMatsimLinkId.get(from.getId())).getToNode() ;
-						Node toNode = network.getLinks().get(OVGULocationIdToMatsimLinkId.get(to.getId())).getToNode() ;
+				//TODO: Das nachfolgende funktioniert. Ist aber derzeit nur a) die Freespeed TravelTime und b)Fzg-Typ/Eigenschaften UNABHÄNGIG
+				//calculate travel time
+				List<Id<Link>> listOfLinkIds = new ArrayList<>() ;
+				for( Id<Link> linkId : OVGULocationIdToMatsimLinkId.values() ){
+					listOfLinkIds.add(linkId) ;
+				}
+				Collections.sort( listOfLinkIds ) ;
+				
+				TravelTime tt = new FreeSpeedTravelTime();
+				TravelDisutility tc = new FreespeedTravelTimeAndDisutility( config.planCalcScore() );
+				LeastCostPathTree tree = new LeastCostPathTree( tt, tc );
+				
+				for(Location from : input.getLocations()) {
+					Id<Link> fromLinkId = OVGULocationIdToMatsimLinkId.get(from.getId());
+					Node fromNode = network.getLinks().get(fromLinkId).getToNode() ;
+					double starttime = 8.0*3600; //Rechne mit 08:00 Fahrzeiten.
+					tree.calculate(scenario.getNetwork(), fromNode, starttime);
+					Map<Id<Node>, LeastCostPathTree.NodeData> result = tree.getTree();
+					
+					for (Location to: input.getLocations()) {
+						Id<Link> toLinkId = OVGULocationIdToMatsimLinkId.get(to.getId());
+						Node toNode = network.getLinks().get(toLinkId).getToNode() ;
 						log.debug("asking for Traveltimes from: "+ fromNode + " to: " + toNode);
-						double starttime = 8.0*3600; //Rechne mit 08:00 Fahrzeiten.
-						LeastCostPathCalculator.Path path = costCalculator.calcLeastCostPath(fromNode, toNode, starttime,  null, vehicleOne);
-						log.debug("path calculated from: " + path.getFromNode().getId() + " , to: " + path.getToNode().getId() + " , costs: " + path.travelCost + " , traveltime " + path.travelTime );
-						double travelTime = path.travelTime;
+						LeastCostPathTree.NodeData abc = result.get( toNode.getId() );
+						
+						long travelTime = (long) abc.getTime();
+						
 						log.debug("travelTime: " + travelTime);
+						//add value to ovgu data
 						Edge edge = InputHandler.createEdge(from, to);
-						edge.setDuration((long)travelTime*1000);
+						edge.setDuration(travelTime *1000);						//TODO: @Rico: Warum war das hier *1000 ? 
 						input.getEdges().add(edge);
 					}
 				}
