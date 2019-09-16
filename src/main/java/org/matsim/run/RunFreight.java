@@ -22,7 +22,9 @@ import com.graphhopper.jsprit.analysis.toolbox.Plotter;
 import com.graphhopper.jsprit.core.algorithm.VehicleRoutingAlgorithm;
 import com.graphhopper.jsprit.core.algorithm.box.SchrimpfFactory;
 import com.graphhopper.jsprit.core.problem.VehicleRoutingProblem;
+import com.graphhopper.jsprit.core.problem.job.Shipment;
 import com.graphhopper.jsprit.core.problem.solution.VehicleRoutingProblemSolution;
+import com.graphhopper.jsprit.core.problem.solution.route.activity.TourActivity.JobActivity;
 import com.graphhopper.jsprit.core.util.Solutions;
 import com.graphhopper.jsprit.io.problem.VrpXMLWriter;
 import org.apache.log4j.Level;
@@ -35,6 +37,7 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
+import org.matsim.contrib.freight.carrier.Tour.Leg;
 import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts.Builder;
@@ -89,6 +92,8 @@ import ovgu.pave.model.solution.SupportRouteElement;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+
+import javax.management.RuntimeErrorException;
 //import ovgu.data.entity.RouteElement;
 //import ovgu.utilities.DistanceMatrix;
 //import ovgu.utilities.RouteHandler;
@@ -102,8 +107,8 @@ class RunFreight {
 	private static final Logger log = Logger.getLogger(RunFreight.class);
 	private static HashMap<Id<Link>, Integer> matsimLinkIdToOVGULocationID= new HashMap<Id<Link>, Integer>();
 	private static HashMap<Integer, Id<Link>> OVGULocationIdToMatsimLinkId= new HashMap<Integer, Id<Link>>();
-	
-	
+
+
 	enum Optim {
 		jsprit, ovgu
 	}
@@ -121,8 +126,8 @@ class RunFreight {
 		/*
 		 * some preparation - set logging level
 		 */
-				Logger.getRootLogger().setLevel(Level.DEBUG);
-//		Logger.getRootLogger().setLevel(Level.INFO);
+		Logger.getRootLogger().setLevel(Level.DEBUG);
+		//		Logger.getRootLogger().setLevel(Level.INFO);
 
 		/*
 		 * Some Preparation for MATSim
@@ -227,7 +232,7 @@ class RunFreight {
 					Request request = InputHandler.createRequest(Integer.parseInt(carrierShipment.getId().toString()), firstActivityLocation, secondActivityLocation, carrierShipment.getSize());
 
 					request.setRequestTime(0); //da "offline" kommen Anfragen alle zur Sekunde 0 an ;) // sollte aber irgendwo auch alleine so gesetzt werden... kmt/aug19
-					
+
 					//From
 					//OVGU hat Millisekunden TODO: Testen ob es auch alles in Sekunden geht.);
 					request.getFirstActivity().setEarliestArrival((long) carrierShipment.getPickupTimeWindow().getStart()*1000);
@@ -275,13 +280,13 @@ class RunFreight {
 				CarrierVehicle vehOne = (CarrierVehicle) carrier.getCarrierCapabilities().getCarrierVehicles().toArray()[0];
 				org.matsim.vehicles.Vehicle vehicleOne = new VehicleImpl(vehOne.getVehicleId(), vehOne.getVehicleType());
 				log.debug("maxVelocityOf vehicleOne: " + vehicleOne.getType().getMaximumVelocity());
-				
-//				double costPerMeter = vehTypeOne.getVehicleCostInformation().getPerDistanceUnit();
-//				double costPerSecond = vehTypeOne.getVehicleCostInformation().getPerTimeUnit();
-				
-//				FreespeedTravelTimeAndDisutility ttCostCalculator = new FreespeedTravelTimeAndDisutility(costPerMeter, costPerSecond, costPerSecond); // TODO: Welchen nehmen wir hier eigentlich -> in freight schauen kmt/aug19
-//				DijkstraFactory dijkstraFactory = new DijkstraFactory();
-//				LeastCostPathCalculator costCalculator = dijkstraFactory.createPathCalculator(network, ttCostCalculator , ttCostCalculator); //Abfrage erstmal für um 8
+
+				//				double costPerMeter = vehTypeOne.getVehicleCostInformation().getPerDistanceUnit();
+				//				double costPerSecond = vehTypeOne.getVehicleCostInformation().getPerTimeUnit();
+
+				//				FreespeedTravelTimeAndDisutility ttCostCalculator = new FreespeedTravelTimeAndDisutility(costPerMeter, costPerSecond, costPerSecond); // TODO: Welchen nehmen wir hier eigentlich -> in freight schauen kmt/aug19
+				//				DijkstraFactory dijkstraFactory = new DijkstraFactory();
+				//				LeastCostPathCalculator costCalculator = dijkstraFactory.createPathCalculator(network, ttCostCalculator , ttCostCalculator); //Abfrage erstmal für um 8
 
 				//TODO: Das nachfolgende funktioniert. Ist aber derzeit nur a) die Freespeed TravelTime und b)Fzg-Typ/Eigenschaften UNABHÄNGIG
 				//calculate travel time
@@ -290,26 +295,26 @@ class RunFreight {
 					listOfLinkIds.add(linkId) ;
 				}
 				Collections.sort( listOfLinkIds ) ;
-				
+
 				TravelTime tt = new FreeSpeedTravelTime();
 				TravelDisutility tc = new FreespeedTravelTimeAndDisutility( config.planCalcScore() );
 				LeastCostPathTree tree = new LeastCostPathTree( tt, tc );
-				
+
 				for(Location from : input.getLocations()) {
 					Id<Link> fromLinkId = OVGULocationIdToMatsimLinkId.get(from.getId());
 					Node fromNode = network.getLinks().get(fromLinkId).getToNode() ;
 					double starttime = 8.0*3600; //Rechne mit 08:00 Fahrzeiten.
 					tree.calculate(scenario.getNetwork(), fromNode, starttime);
 					Map<Id<Node>, LeastCostPathTree.NodeData> result = tree.getTree();
-					
+
 					for (Location to: input.getLocations()) {
 						Id<Link> toLinkId = OVGULocationIdToMatsimLinkId.get(to.getId());
 						Node toNode = network.getLinks().get(toLinkId).getToNode() ;
 						log.debug("asking for Traveltimes from: "+ fromNode + " to: " + toNode);
 						LeastCostPathTree.NodeData abc = result.get( toNode.getId() );
-						
+
 						long travelTime = (long) abc.getTime();
-						
+
 						log.debug("travelTime: " + travelTime);
 						//add value to ovgu data
 						Edge edge = InputHandler.createEdge(from, to);
@@ -326,11 +331,15 @@ class RunFreight {
 				core.initNetwork(ovguNetwork);
 				core.run();
 				log.info("handle alg solution");
-				
+
 				//TODO: WIP, nur Notizen, was was ist. Muss noch eingebaut werden in MATSim Freight language -> Tourenplan. kmt/aug19.
 				Solution solution = core.getSolution();
+				Collection<ScheduledTour> tours = new ArrayList<ScheduledTour>();
 				for (Route route : solution.getRoutes()) {
 					int vehicleId = route.getVehicle().getId(); 	//OVGU vehId
+					double tourDepTime = Double.NaN;
+					Tour.Builder tourBuilder = Tour.Builder.newInstance();
+
 					for(RouteElement re : route.getRouteElements()) {
 						re.getServiceBegin(); //Wann er laut Torurnplan an der Location wäre.
 						re.getServiceDuration(); //Dauer, wie lange er sich an der Location aufhält --> Dopplung zu Request -> Definition  sollte in Auftragsplan vorahnden sein, wegen online kommen ggf. noch zusätzlich Locations ohne Auftrag hinzu.
@@ -340,29 +349,50 @@ class RunFreight {
 							int requestId = requestActivity.getRequest().getId(); //Request-Id
 							if (requestActivity instanceof FirstRequestActivity) {
 								//Pickup
+								log.debug("Found FirstRequestActivity: " + requestActivity.getId() + " at location " +  requestActivity.getLocation().getId() + " : lat " + requestActivity.getLocation().getLat() + " long: "  + requestActivity.getLocation().getLon() );
+								CarrierShipment carrierShipment = findShipment(carrier, requestId);
+								tourBuilder.addLeg(new Leg());
+								tourBuilder.schedulePickup(carrierShipment);
 							}
 							if (requestActivity instanceof SecondRequestActivity) {
 								//Delivery
+								log.debug("Found SecondRequestActivity: " + requestActivity.getId() + " at location " +  requestActivity.getLocation().getId() + " : lat " + requestActivity.getLocation().getLat() + " long: "  + requestActivity.getLocation().getLon() );
+								CarrierShipment carrierShipment = findShipment(carrier, requestId);
+								tourBuilder.addLeg(new Leg());
+								tourBuilder.scheduleDelivery(carrierShipment);
 							}
-							//Note: Not implemented; Wenn request keine Second Activity hat (=null), dann ist es "Service".
-							
-							//"Start" und "Ziel" -> Depot. Jede Route verfügt über ein (requestActivity instanceof SupportRouteElement) am Anfang (Start) und am Ende (Ziel) einer Route/Tour
-							if (requestActivity instanceof SupportRouteElement) {
-								if (route.getRouteElements().indexOf(re) == 0 ) {
-									//Start Element
-								}
-								if (route.getRouteElements().indexOf(re) == route.getRouteElements().size()-1 ) {
-									//Ziel Element
-								}
+							//	TODO: Note: Not implemented; Wenn request keine Second Activity hat (=null), dann ist es "Service".
+						}
+
+						//"Start" und "Ziel" -> Depot. Jede Route verfügt über ein (requestActivity instanceof SupportRouteElement) am Anfang (Start) und am Ende (Ziel) einer Route/Tour
+						if (re instanceof SupportRouteElement) {
+							if (route.getRouteElements().indexOf(re) == 0 ) {
+								//Start Element
+								log.debug("Route Start Element begin: "+ re.getServiceBegin() );
+								tourDepTime = re.getServiceBegin()+re.getServiceDuration();
+								tourBuilder.scheduleStart(OVGULocationIdToMatsimLinkId.get(((SupportRouteElement) re).getLocation().getId()));
+							}
+							if (route.getRouteElements().indexOf(re) == route.getRouteElements().size()-1 ) {
+								tourBuilder.addLeg(new Leg());
+								tourBuilder.scheduleEnd(OVGULocationIdToMatsimLinkId.get(((SupportRouteElement) re).getLocation().getId()));
+								//Ziel Element
 							}
 						}
 					}
-				}
-				
-				//TODO Ergebnis zurück übersetzen
-			}
-
-		}
+					//build MATSim-Tour
+					org.matsim.contrib.freight.carrier.Tour vehicleTour = tourBuilder.build();
+					ScheduledTour sTour = ScheduledTour.newInstance(vehicleTour, carrierVehicle, tourDepTime);
+					//					assert route.getDepartureTime() == sTour.getDeparture() : "departureTime of both route and scheduledTour must be equal";
+					assert sTour.getTour().getStartLinkId() == sTour.getTour().getEndLinkId(); //TODO: Vielleicht für andere Cases raus. 
+					tours.add(sTour);
+				} //route/tour
+				CarrierPlan carrierPlan = new CarrierPlan(carrier, tours);
+				carrierPlan.setScore((double) (solution.getScore()*(-1)));
+				NetworkRouter.routePlan(carrierPlan,netBasedCosts) ;
+				carrier.setSelectedPlan(carrierPlan) ;
+			} //carrier
+			
+		} //ovgu
 
 		new CarrierPlanXmlWriterV2(carriers).write( config.controler().getOutputDirectory()+ "/servicesAndShipments_plannedCarriers.xml") ;
 
@@ -378,6 +408,15 @@ class RunFreight {
 
 		log.info("#### Finished ####");
 
+	}
+
+
+	private static CarrierShipment findShipment(Carrier carrier, int requestId) {
+		for(CarrierShipment shipment : carrier.getShipments()) {
+			if (Integer.parseInt(shipment.getId().toString()) == requestId)
+				return shipment;
+		}
+		throw new RuntimeException("Shipment with id not found in carrier: " + requestId + "; " + carrier.getId());
 	}
 
 	private static void clearMaps() {
