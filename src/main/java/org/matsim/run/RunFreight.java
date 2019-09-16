@@ -341,12 +341,14 @@ class RunFreight {
 					Tour.Builder tourBuilder = Tour.Builder.newInstance();
 
 					for(RouteElement re : route.getRouteElements()) {
+						log.debug("handle RouteElement:" + re.toString());
 						re.getServiceBegin(); //Wann er laut Torurnplan an der Location wäre.
 						re.getServiceDuration(); //Dauer, wie lange er sich an der Location aufhält --> Dopplung zu Request -> Definition  sollte in Auftragsplan vorahnden sein, wegen online kommen ggf. noch zusätzlich Locations ohne Auftrag hinzu.
 						if (re instanceof RequestActivityRouteElement) {
 							//Dies ist ein eigentlicher Request
 							RequestActivity requestActivity = ((RequestActivityRouteElement) re).getRequestActivity();
 							int requestId = requestActivity.getRequest().getId(); //Request-Id
+							log.debug("handle Activity: " + requestActivity.getId() + " ; requestId: " + requestId);
 							if (requestActivity instanceof FirstRequestActivity) {
 								//Pickup
 								log.debug("Found FirstRequestActivity: " + requestActivity.getId() + " at location " +  requestActivity.getLocation().getId() + " : lat " + requestActivity.getLocation().getLat() + " long: "  + requestActivity.getLocation().getLon() );
