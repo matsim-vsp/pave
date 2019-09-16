@@ -227,7 +227,7 @@ class RunFreight {
 					Request request = InputHandler.createRequest(Integer.parseInt(carrierShipment.getId().toString()), firstActivityLocation, secondActivityLocation, carrierShipment.getSize());
 
 					request.setRequestTime(0); //da "offline" kommen Anfragen alle zur Sekunde 0 an ;) // sollte aber irgendwo auch alleine so gesetzt werden... kmt/aug19
-
+					
 					//From
 					//OVGU hat Millisekunden TODO: Testen ob es auch alles in Sekunden geht.);
 					request.getFirstActivity().setEarliestArrival((long) carrierShipment.getPickupTimeWindow().getStart()*1000);
@@ -313,7 +313,7 @@ class RunFreight {
 						log.debug("travelTime: " + travelTime);
 						//add value to ovgu data
 						Edge edge = InputHandler.createEdge(from, to);
-						edge.setDuration(travelTime *1000);						//TODO: @Rico: Warum war das hier *1000 ? 
+						edge.setDuration(travelTime *1000);						//OVGU rechnet in ms
 						input.getEdges().add(edge);
 					}
 				}
