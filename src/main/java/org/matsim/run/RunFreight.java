@@ -207,7 +207,7 @@ class RunFreight {
 				carrier.setSelectedPlan(carrierPlanServicesAndShipments) ;
 
 				new VrpXMLWriter(problem, solutions).write(config.controler().getOutputDirectory()+ "/servicesAndShipments_solutions_" + carrier.getId().toString() + ".xml");
-				new Plotter( problem, bestSolution ).plot( config.controler().getOutputDirectory()+ "/solution_" + carrier.getId().toString() + ".png", carrier.getId().toString() );
+//				new Plotter( problem, bestSolution ).plot( config.controler().getOutputDirectory()+ "/solution_" + carrier.getId().toString() + ".png", carrier.getId().toString() );
 			}
 			break;
 		case ovgu:
@@ -313,7 +313,7 @@ class RunFreight {
 						log.debug("asking for Traveltimes from: "+ fromNode + " to: " + toNode);
 						LeastCostPathTree.NodeData abc = result.get( toNode.getId() );
 
-						long travelTime = (long) abc.getTime();
+						long travelTime = (long) (abc.getTime() - starttime);
 
 						log.debug("travelTime: " + travelTime);
 						//add value to ovgu data
@@ -393,20 +393,17 @@ class RunFreight {
 				NetworkRouter.routePlan(carrierPlan,netBasedCosts) ;
 				carrier.setSelectedPlan(carrierPlan) ;
 			} //carrier
-			
+
 		} //ovgu
 
 		new CarrierPlanXmlWriterV2(carriers).write( config.controler().getOutputDirectory()+ "/servicesAndShipments_plannedCarriers.xml") ;
 
 
 		//--------- now start a MATsim run:
+		//TODO: hier passiert gerade nicht viel :( -> Fahrzeuge noch in MobSim einfügen...
 
-
-
-
-		//		Controler controler = new Controler(scenario);
-
-		//		controler.run();
+		Controler controler = new Controler(scenario);
+		controler.run();
 
 		log.info("#### Finished ####");
 
@@ -505,7 +502,7 @@ class RunFreight {
 	 */
 	private static CarrierVehicleType createCarrierVehType() {
 		CarrierVehicleType carrierVehType = CarrierVehicleType.Builder
-				.newInstance(Id.create("gridType", VehicleType.class)).setCapacity(3).setMaxVelocity(10) // m/s
+				.newInstance(Id.create("gridType", VehicleType.class)).setCapacity(5).setMaxVelocity(10) // m/s
 				.setCostPerDistanceUnit(0.0001).setCostPerTimeUnit(0.001).setFixCost(130)
 				.setEngineInformation(new EngineInformationImpl(FuelType.diesel, 0.015)).build();
 		return carrierVehType;
