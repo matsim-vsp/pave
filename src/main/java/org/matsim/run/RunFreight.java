@@ -35,6 +35,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.contrib.freight.Freight;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
 import org.matsim.contrib.freight.carrier.Tour.Leg;
@@ -42,6 +43,7 @@ import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts.Builder;
 import org.matsim.contrib.freight.jsprit.NetworkRouter;
+import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
@@ -133,7 +135,7 @@ class RunFreight {
 		 * Some Preparation for MATSim
 		 */
 		Config config = prepareConfig();
-		Scenario scenario = ScenarioUtils.createScenario(config);
+		Scenario scenario = ScenarioUtils.loadScenario(config);
 
 		OutputDirectoryLogging.initLoggingWithOutputDirectory(config.controler().getOutputDirectory() +"/Logs");
 
@@ -168,14 +170,11 @@ class RunFreight {
 		// load vehicle types for the carriers
 		new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(vehicleTypes) ;
 
-		//load Network and build netbasedCosts
-		Network network = NetworkUtils.createNetwork();
-		new MatsimNetworkReader(network).readURL(IOUtils.newUrl(scenarioUrl ,"grid9x9.xml"));
-
 		new CarrierPlanXmlWriterV2( carriers ).write( config.controler().getOutputDirectory() + "/carriers-wo-plans.xml" );
 		new CarrierVehicleTypeWriter( CarrierVehicleTypes.getVehicleTypes( carriers ) ).write( config.controler().getOutputDirectory() + "/carrierTypes.xml" );
 
 		// matrix costs between locations (cost matrix)
+		Network network = scenario.getNetwork();
 		Builder netBuilder = NetworkBasedTransportCosts.Builder.newInstance( network, vehicleTypes.getVehicleTypes().values() );
 		final NetworkBasedTransportCosts netBasedCosts = netBuilder.build() ;
 
@@ -399,10 +398,11 @@ class RunFreight {
 		new CarrierPlanXmlWriterV2(carriers).write( config.controler().getOutputDirectory()+ "/servicesAndShipments_plannedCarriers.xml") ;
 
 
-		//--------- now start a MATsim run:
-		//TODO: hier passiert gerade nicht viel :( -> Fahrzeuge noch in MobSim einfügen...
-
+		//--------- now register freight and start a MATsim run:
+		scenario.addScenarioElement(FreightUtils.CARRIERS, carriers);
 		Controler controler = new Controler(scenario);
+		Freight.configure(controler);
+
 		controler.run();
 
 		log.info("#### Finished ####");
@@ -491,7 +491,7 @@ class RunFreight {
 
 		config.global().setRandomSeed(4177);
 
-		config.controler().setLastIteration(1);
+		config.controler().setLastIteration(0);
 		return config;
 	}
 
