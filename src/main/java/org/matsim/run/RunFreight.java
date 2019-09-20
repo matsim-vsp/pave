@@ -18,13 +18,10 @@
 
 package org.matsim.run;
 
-import com.graphhopper.jsprit.analysis.toolbox.Plotter;
 import com.graphhopper.jsprit.core.algorithm.VehicleRoutingAlgorithm;
 import com.graphhopper.jsprit.core.algorithm.box.SchrimpfFactory;
 import com.graphhopper.jsprit.core.problem.VehicleRoutingProblem;
-import com.graphhopper.jsprit.core.problem.job.Shipment;
 import com.graphhopper.jsprit.core.problem.solution.VehicleRoutingProblemSolution;
-import com.graphhopper.jsprit.core.problem.solution.route.activity.TourActivity.JobActivity;
 import com.graphhopper.jsprit.core.util.Solutions;
 import com.graphhopper.jsprit.io.problem.VrpXMLWriter;
 import org.apache.log4j.Level;
@@ -34,7 +31,6 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.api.core.v01.population.Person;
 import org.matsim.contrib.freight.Freight;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
@@ -50,19 +46,11 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.controler.OutputDirectoryLogging;
-import org.matsim.core.gbl.Gbl;
-import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.network.io.MatsimNetworkReader;
-import org.matsim.core.population.PersonUtils;
-import org.matsim.core.router.Dijkstra;
-import org.matsim.core.router.DijkstraFactory;
 import org.matsim.core.router.costcalculators.FreespeedTravelTimeAndDisutility;
-import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
-import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.matsim.vehicles.EngineInformation.FuelType;
@@ -70,9 +58,7 @@ import org.matsim.vehicles.EngineInformationImpl;
 import org.matsim.vehicles.VehicleImpl;
 import org.matsim.vehicles.VehicleType;
 
-import org.matsim.vehicles.VehicleUtils;
 import ovgu.pave.core.Core;
-import ovgu.pave.handler.Handler;
 import ovgu.pave.handler.modelHandler.InputHandler;
 import ovgu.pave.model.input.Edge;
 import ovgu.pave.model.input.FirstRequestActivity;
@@ -84,7 +70,6 @@ import ovgu.pave.model.input.RequestActivity;
 import ovgu.pave.model.input.Requests;
 import ovgu.pave.model.input.SecondRequestActivity;
 import ovgu.pave.model.input.Vehicle;
-import ovgu.pave.model.input.impl.LocationImpl;
 import ovgu.pave.model.solution.RequestActivityRouteElement;
 import ovgu.pave.model.solution.Route;
 import ovgu.pave.model.solution.RouteElement;
@@ -95,17 +80,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
-import javax.management.RuntimeErrorException;
-//import ovgu.data.entity.RouteElement;
-//import ovgu.utilities.DistanceMatrix;
-//import ovgu.utilities.RouteHandler;
-//import ovgu.utilities.Settings;
-//import ovgu.vrptw.vrpSolver;
-
 class RunFreight {
-	/*
-	 * todos:<ul> <li> do not overwrite output dir by matsim </li>
-	 */
+
 	private static final Logger log = Logger.getLogger(RunFreight.class);
 	private static HashMap<Id<Link>, Integer> matsimLinkIdToOVGULocationID= new HashMap<Id<Link>, Integer>();
 	private static HashMap<Integer, Id<Link>> OVGULocationIdToMatsimLinkId= new HashMap<Integer, Id<Link>>();
@@ -121,8 +97,6 @@ class RunFreight {
 	static {
 		scenarioUrl = ExamplesUtils.getTestScenarioURL("freight-chessboard-9x9");
 	}
-
-	// Config config = ConfigUtils.loadConfig(configFileName );
 
 	public static void main(String[] args) throws IOException {
 		/*
@@ -180,7 +154,7 @@ class RunFreight {
 
 
 		// time dependent network (1800 = 30 min) --> (option live request)
-		netBuilder.setTimeSliceWidth(1800) ; // !!!!, otherwise it will not do anything.
+		netBuilder.setTimeSliceWidth(1800) ; 
 
 		switch( optim ) {
 		case jsprit:
@@ -324,14 +298,10 @@ class RunFreight {
 
 				log.info("run algorithm");
 				core.initInput(input);
-				//					InputHandler ih = new InputHandler();
-				//					ih.setInput(input);
-				//					ih.saveInput("test.xml");
 				core.initNetwork(ovguNetwork);
 				core.run();
 				log.info("handle alg solution");
 
-				//TODO: WIP, nur Notizen, was was ist. Muss noch eingebaut werden in MATSim Freight language -> Tourenplan. kmt/aug19.
 				Solution solution = core.getSolution();
 				Collection<ScheduledTour> tours = new ArrayList<ScheduledTour>();
 				for (Route route : solution.getRoutes()) {
