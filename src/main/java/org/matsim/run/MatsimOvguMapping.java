@@ -7,15 +7,17 @@ import java.util.List;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.freight.carrier.CarrierShipment;
 
 import ovgu.pave.handler.modelHandler.InputHandler;
 import ovgu.pave.model.input.Location;
+import ovgu.pave.model.input.Request;
 import ovgu.pave.model.input.Vehicle;
 import ovgu.pave.model.input.VehicleType;
 
 public class MatsimOvguMapping {
-	
-	public void clear(){
+
+	public void clear() {
 		matsimToOVGUVehicleType = new HashMap<Id<org.matsim.vehicles.VehicleType>, Integer>();
 		OVGUtoMatsimVehicleType = new HashMap<Integer, Id<org.matsim.vehicles.VehicleType>>();
 		matsimToOVGUVehicle = new HashMap<Id<org.matsim.vehicles.Vehicle>, Integer>();
@@ -65,21 +67,24 @@ public class MatsimOvguMapping {
 	private HashMap<Integer, Id<org.matsim.vehicles.Vehicle>> OVGUtoMatsimVehicle = new HashMap<Integer, Id<org.matsim.vehicles.Vehicle>>();
 	private List<Vehicle> vehicles = new ArrayList<Vehicle>();
 
-	public Vehicle getOVGUVehicle(Id<org.matsim.vehicles.Vehicle> vehicleID, VehicleType vehicleType, Location startLocation, Location endLocation) {
+	public Vehicle getOVGUVehicle(Id<org.matsim.vehicles.Vehicle> vehicleID, VehicleType vehicleType,
+			Location startLocation, Location endLocation) {
 		return vehicles.get(getOVGUVehicleID(vehicleID, vehicleType, startLocation, endLocation));
 	}
 
-	private Integer getOVGUVehicleID(Id<org.matsim.vehicles.Vehicle> vehicleID, VehicleType vehicleType, Location startLocation, Location endLocation) {
+	private Integer getOVGUVehicleID(Id<org.matsim.vehicles.Vehicle> vehicleID, VehicleType vehicleType,
+			Location startLocation, Location endLocation) {
 		if (!matsimToOVGUVehicle.containsKey(vehicleID))
 			createOVGUVehicle(vehicleID, vehicleType, startLocation, endLocation);
 
 		return matsimToOVGUVehicle.get(vehicleID);
 	}
 
-	private void createOVGUVehicle(Id<org.matsim.vehicles.Vehicle> vehicleID, VehicleType vehicleType, Location startLocation, Location endLocation) {
+	private void createOVGUVehicle(Id<org.matsim.vehicles.Vehicle> vehicleID, VehicleType vehicleType,
+			Location startLocation, Location endLocation) {
 		Integer ovguVehId = matsimToOVGUVehicle.size();
 		matsimToOVGUVehicle.put(vehicleID, ovguVehId);
-		OVGUtoMatsimVehicle.put(ovguVehId,vehicleID);
+		OVGUtoMatsimVehicle.put(ovguVehId, vehicleID);
 		vehicles.add(InputHandler.createVehicle(ovguVehId, vehicleType, startLocation, endLocation));
 	}
 
@@ -123,5 +128,42 @@ public class MatsimOvguMapping {
 
 	public List<Location> getLocations() {
 		return locations;
+	}
+
+	/*
+	 * Map Shipment and Request
+	 */
+	private HashMap<Id<CarrierShipment>, Integer> matsimShipmentIdToOVGURequestID = new HashMap<Id<CarrierShipment>, Integer>();
+	private HashMap<Integer, Id<CarrierShipment>> OVGURequestIdToMatsimShipmentId = new HashMap<Integer, Id<CarrierShipment>>();
+	private List<Request> requests = new ArrayList<Request>();
+
+	public Request getOVGURequest(Id<CarrierShipment> shipment, Location firstActivityLocation,
+			Location secondActivityLocation, int shipmentSize) {
+		return requests.get(getOVGURequestID(shipment, firstActivityLocation, secondActivityLocation, shipmentSize));
+	}
+
+	private Integer getOVGURequestID(Id<CarrierShipment> shipment, Location firstActivityLocation,
+			Location secondActivityLocation, int shipmentSize) {
+		if (!matsimShipmentIdToOVGURequestID.containsKey(shipment))
+			createOVGURequest(shipment, firstActivityLocation, secondActivityLocation, shipmentSize);
+
+		return matsimShipmentIdToOVGURequestID.get(shipment);
+	}
+
+	private void createOVGURequest(Id<CarrierShipment> shipment, Location firstActivityLocation,
+			Location secondActivityLocation, int shipmentSize) {
+		Integer ovguReqId = matsimShipmentIdToOVGURequestID.size();
+		matsimShipmentIdToOVGURequestID.put(shipment, ovguReqId);
+		OVGURequestIdToMatsimShipmentId.put(ovguReqId, shipment);
+		requests.add(
+				InputHandler.createRequest(ovguReqId, firstActivityLocation, secondActivityLocation, shipmentSize));
+	}
+
+	public Id<CarrierShipment> getMATSimShipmentID(Request request) {
+		return OVGURequestIdToMatsimShipmentId.get(request.getId());
+	}
+
+	public List<Request> getRequests() {
+		return requests;
 	}
 }

@@ -45,19 +45,18 @@ public class MatsimOvguFactory {
 	private static final Logger log = Logger.getLogger(MatsimOvguFactory.class);
 	private MatsimOvguMapping maps = new MatsimOvguMapping();
 	private Carrier carrier;
-	
+
 	public MatsimOvguFactory(Carrier carrier) {
 		this.carrier = carrier;
 	}
-	
-	
+
 	public Input createOVGUInput(Network network, Config config) {
 		log.info("prepare OVGU Input");
 		// init Input
 		Input input = InputFactory.eINSTANCE.createInput();
-		//create Requests (from carrierShipments)
+		// create Requests (from carrierShipments)
 		input.setRequests(createRequests(carrier.getShipments(), network));
-		//create Vehicles and VehicleTypes
+		// create Vehicles and VehicleTypes
 		createVehiclesAndTypes(network);
 		input.getLocations().addAll(maps.getLocations());
 		input.getVehicleTypes().addAll(maps.getVehicleTypes());
@@ -67,89 +66,99 @@ public class MatsimOvguFactory {
 		return input;
 	}
 
-	
-	
 	public Collection<ScheduledTour> createMatsimTours(Solution solution) {
 		Collection<ScheduledTour> tours = new ArrayList<ScheduledTour>();
 		for (Route route : solution.getRoutes()) {
 			double tourDepTime = Double.NaN;
 			Tour.Builder tourBuilder = Tour.Builder.newInstance();
 
-			for(RouteElement re : route.getRouteElements()) {
+			for (RouteElement re : route.getRouteElements()) {
 				log.debug("handle RouteElement:" + re.toString());
-				re.getServiceBegin(); //Wann er laut Torurnplan an der Location wäre.
-				re.getServiceDuration(); //Dauer, wie lange er sich an der Location aufhält --> Dopplung zu Request -> Definition  sollte in Auftragsplan vorahnden sein, wegen online kommen ggf. noch zusätzlich Locations ohne Auftrag hinzu.
+				re.getServiceBegin(); // Wann er laut Torurnplan an der Location wäre.
+				re.getServiceDuration(); // Dauer, wie lange er sich an der Location aufhält --> Dopplung zu Request ->
+											// Definition sollte in Auftragsplan vorahnden sein, wegen online kommen
+											// ggf. noch zusätzlich Locations ohne Auftrag hinzu.
 				if (re instanceof RequestActivityRouteElement) {
-					//Dies ist ein eigentlicher Request
+					// Dies ist ein eigentlicher Request
 					RequestActivity requestActivity = ((RequestActivityRouteElement) re).getRequestActivity();
-					int requestId = requestActivity.getRequest().getId(); //Request-Id
-					log.debug("handle Activity: " + requestActivity.getId() + " ; requestId: " + requestId);
+					int requestId = requestActivity.getRequest().getId(); // Request-Id
+					Id<CarrierShipment> shipmentId = maps.getMATSimShipmentID(requestActivity.getRequest());
+					log.debug("handle Activity: " + requestActivity.getId() + " ; requestId: " + requestId
+							+ " ; shipmentId: " + shipmentId);
 					if (requestActivity instanceof FirstRequestActivity) {
-						//Pickup
-						log.debug("Found FirstRequestActivity: " + requestActivity.getId() + " at location " +  requestActivity.getLocation().getId() + " : lat " + requestActivity.getLocation().getLat() + " long: "  + requestActivity.getLocation().getLon() );
-						CarrierShipment carrierShipment = findShipment(carrier, requestId);
+						// Pickup
+						log.debug("Found FirstRequestActivity: " + requestActivity.getId() + " at location "
+								+ requestActivity.getLocation().getId() + " : lat "
+								+ requestActivity.getLocation().getLat() + " long: "
+								+ requestActivity.getLocation().getLon());
+						CarrierShipment carrierShipment = findShipment(carrier, shipmentId);
 						tourBuilder.addLeg(new Leg());
 						tourBuilder.schedulePickup(carrierShipment);
 					}
 					if (requestActivity instanceof SecondRequestActivity) {
-						//Delivery
-						log.debug("Found SecondRequestActivity: " + requestActivity.getId() + " at location " +  requestActivity.getLocation().getId() + " : lat " + requestActivity.getLocation().getLat() + " long: "  + requestActivity.getLocation().getLon() );
-						CarrierShipment carrierShipment = findShipment(carrier, requestId);
+						// Delivery
+						log.debug("Found SecondRequestActivity: " + requestActivity.getId() + " at location "
+								+ requestActivity.getLocation().getId() + " : lat "
+								+ requestActivity.getLocation().getLat() + " long: "
+								+ requestActivity.getLocation().getLon());
+						CarrierShipment carrierShipment = findShipment(carrier, shipmentId);
 						tourBuilder.addLeg(new Leg());
 						tourBuilder.scheduleDelivery(carrierShipment);
 					}
-					//	TODO: Note: Not implemented; Wenn request keine Second Activity hat (=null), dann ist es "Service".
+					// TODO: Note: Not implemented; Wenn request keine Second Activity hat (=null),
+					// dann ist es "Service".
 				}
 
-				//"Start" und "Ziel" -> Depot. Jede Route verfügt über ein (requestActivity instanceof SupportRouteElement) am Anfang (Start) und am Ende (Ziel) einer Route/Tour
+				// "Start" und "Ziel" -> Depot. Jede Route verfügt über ein (requestActivity
+				// instanceof SupportRouteElement) am Anfang (Start) und am Ende (Ziel) einer
+				// Route/Tour
 				if (re instanceof SupportRouteElement) {
-					if (route.getRouteElements().indexOf(re) == 0 ) {
-						//Start Element
-						log.debug("Route Start Element begin: "+ re.getServiceBegin() );
-						tourDepTime = re.getServiceBegin()+re.getServiceDuration();
+					if (route.getRouteElements().indexOf(re) == 0) {
+						// Start Element
+						log.debug("Route Start Element begin: " + re.getServiceBegin());
+						tourDepTime = re.getServiceBegin() + re.getServiceDuration();
 						tourBuilder.scheduleStart(maps.getMATSimLinkID(((SupportRouteElement) re).getLocation()));
 					}
-					if (route.getRouteElements().indexOf(re) == route.getRouteElements().size()-1 ) {
+					if (route.getRouteElements().indexOf(re) == route.getRouteElements().size() - 1) {
 						tourBuilder.addLeg(new Leg());
 						tourBuilder.scheduleEnd(maps.getMATSimLinkID(((SupportRouteElement) re).getLocation()));
-						//Ziel Element
+						// Ziel Element
 					}
 				}
 			}
-			//build MATSim-Tour
+			// build MATSim-Tour
 			org.matsim.contrib.freight.carrier.Tour vehicleTour = tourBuilder.build();
-			
+
 			Id<org.matsim.vehicles.Vehicle> usedVehicleID = maps.getMATSimVehicleID(route.getVehicle());
-			CarrierVehicle carrierVehicle = findVehicle(carrier, usedVehicleID);			
-			
-			ScheduledTour sTour = ScheduledTour.newInstance(vehicleTour, carrierVehicle , tourDepTime);
-			//					assert route.getDepartureTime() == sTour.getDeparture() : "departureTime of both route and scheduledTour must be equal";
-			assert sTour.getTour().getStartLinkId() == sTour.getTour().getEndLinkId(); //TODO: Vielleicht für andere Cases raus. 
+			CarrierVehicle carrierVehicle = findVehicle(carrier, usedVehicleID);
+
+			ScheduledTour sTour = ScheduledTour.newInstance(vehicleTour, carrierVehicle, tourDepTime);
+			// assert route.getDepartureTime() == sTour.getDeparture() : "departureTime of
+			// both route and scheduledTour must be equal";
+			assert sTour.getTour().getStartLinkId() == sTour.getTour().getEndLinkId(); // TODO: Vielleicht für andere
+																						// Cases raus.
 			tours.add(sTour);
-		} //route/tour
+		} // route/tour
 		return tours;
 	}
 
-	
-	
-	//TODO: better way to find a shipment? change from collection? and use a map?
-	private CarrierShipment findShipment(Carrier carrier, int requestId) {
-		for(CarrierShipment shipment : carrier.getShipments()) {
-			if (Integer.parseInt(shipment.getId().toString()) == requestId)
+	// TODO: better way to find a shipment? change from collection?
+	private CarrierShipment findShipment(Carrier carrier, Id<CarrierShipment> shipmentId) {
+		for (CarrierShipment shipment : carrier.getShipments()) {
+			if (shipment.getId() == shipmentId)
 				return shipment;
 		}
-		throw new RuntimeException("Shipment with id not found in carrier: " + requestId + "; " + carrier.getId());
+		throw new RuntimeException("Shipment with id not found in carrier: " + shipmentId + "; " + carrier.getId());
 	}
 
-	//TODO: better way to find a vehicle? change from collection?
+	// TODO: better way to find a vehicle? change from collection?
 	private CarrierVehicle findVehicle(Carrier carrier, Id<org.matsim.vehicles.Vehicle> usedVehicleID) {
-		for(CarrierVehicle vehicle : carrier.getCarrierCapabilities().getCarrierVehicles()) {
+		for (CarrierVehicle vehicle : carrier.getCarrierCapabilities().getCarrierVehicles()) {
 			if (vehicle.getVehicleId() == usedVehicleID)
 				return vehicle;
 		}
 		throw new RuntimeException("Vehicle with id not found in carrier: " + usedVehicleID + "; " + carrier.getId());
 	}
-	
 
 	/*
 	 * CarrierShipments to Requests
@@ -158,13 +167,10 @@ public class MatsimOvguFactory {
 		log.info("prepare carrierShipments/requests");
 		Requests requests = InputFactory.eINSTANCE.createRequests();
 		for (CarrierShipment carrierShipment : shipments) {
-			// TODO: OVGU hat integer als Ids. -> Übersetzungstabelle bauen. kmt/aug19
-			// TODO: OVGU hat integer als Ids für Locations. -> Übersetzungstabelle bauen zu
-			// den Link Ids. kmt/aug19
 			Location firstActivityLocation = maps.getOVGULocation(carrierShipment.getFrom(), network);
 			Location secondActivityLocation = maps.getOVGULocation(carrierShipment.getTo(), network);
-			Request request = InputHandler.createRequest(Integer.parseInt(carrierShipment.getId().toString()),
-					firstActivityLocation, secondActivityLocation, carrierShipment.getSize());
+			Request request = maps.getOVGURequest(carrierShipment.getId(), firstActivityLocation,
+					secondActivityLocation, carrierShipment.getSize());
 
 			request.setRequestTime(0); // da "offline" kommen Anfragen alle zur Sekunde 0 an ;) // sollte aber irgendwo
 										// auch alleine so gesetzt werden... kmt/aug19
@@ -189,7 +195,6 @@ public class MatsimOvguFactory {
 		}
 		return requests;
 	}
-	
 
 	/*
 	 * create Vehicles and VehicleTypes
@@ -204,7 +209,7 @@ public class MatsimOvguFactory {
 			for (CarrierVehicle cVehicle : carrier.getCarrierCapabilities().getCarrierVehicles()) {
 
 				Location depot = maps.getOVGULocation(cVehicle.getLocation(), network);
-				
+
 				// create VehicleType and Vehicle in maps (load into input later)
 				ovgu.pave.model.input.VehicleType vehicleType = maps.getOVGUVehicleType(cVehicle.getVehicleTypeId(),
 						cVehicle.getVehicleType().getCarrierVehicleCapacity());
@@ -215,12 +220,11 @@ public class MatsimOvguFactory {
 			log.fatal("Missing FleetSize defintion", new RuntimeException());
 		}
 	}
-	
 
 	/*
 	 * create Network-Edges
 	 */
-	private List<Edge> createNetworkEdges(Network network, Config config) {		
+	private List<Edge> createNetworkEdges(Network network, Config config) {
 		log.info("prepare network");
 		TravelTime tt = new FreeSpeedTravelTime();
 		TravelDisutility tc = new FreespeedTravelTimeAndDisutility(config.planCalcScore());
@@ -250,10 +254,9 @@ public class MatsimOvguFactory {
 			}
 		}
 		return edges;
-		
 
 		// TODO: wird dieser Code verwendet/benötigt? rk/240919
-		
+
 		// TODO: Haben derzeit nur ein beliebeigen FZGTyp und ein beliebiges Fahrzeug!!!
 		// kmt/aug19
 //		CarrierVehicleType vehTypeOne = (CarrierVehicleType) carrier.getCarrierCapabilities().getVehicleTypes()
