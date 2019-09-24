@@ -24,6 +24,8 @@ public class MatsimOvguMapping {
 		OVGUtoMatsimVehicle = new HashMap<Integer, Id<org.matsim.vehicles.Vehicle>>();
 		matsimLinkIdToOVGULocationID = new HashMap<Id<Link>, Integer>();
 		OVGULocationIdToMatsimLinkId = new HashMap<Integer, Id<Link>>();
+		matsimShipmentIdToOVGURequestID = new HashMap<Id<CarrierShipment>, Integer>();
+		OVGURequestIdToMatsimShipmentId = new HashMap<Integer, Id<CarrierShipment>>();
 	}
 
 	/*
