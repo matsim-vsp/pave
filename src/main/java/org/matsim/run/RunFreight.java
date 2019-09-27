@@ -229,11 +229,11 @@ class RunFreight {
 	 */
 	private static VehicleType createCarrierVehType() {
 		// m/s
-		VehicleType vehicleType = new VehicleType(Id.create("gridType", VehicleType.class))
-				.setMaximumVelocity(10);// m/s
+		VehicleType vehicleType = VehicleUtils.createVehicleType(Id.create("gridType", VehicleType.class));
+		vehicleType.setMaximumVelocity(10);	// in m/s
 		vehicleType.getCapacity().setOther(5.);
-		vehicleType.getCostInformation().setCostsPerMeter(0.0001) ;
-		vehicleType.getCostInformation().setCostsPerSecond(0.001) ;
+		vehicleType.getCostInformation().setCostsPerMeter(0.0001);
+		vehicleType.getCostInformation().setCostsPerSecond(0.001);
 		vehicleType.getCostInformation().setFixedCost((double) 130) ;
 		VehicleUtils.setHbefaTechnology(vehicleType.getEngineInformation(), "diesel");
 		VehicleUtils.setFuelConsumption(vehicleType, 0.015);
