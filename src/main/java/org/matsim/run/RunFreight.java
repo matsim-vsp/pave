@@ -40,16 +40,16 @@ import org.matsim.contrib.freight.jsprit.NetworkRouter;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.ControlerConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.controler.OutputDirectoryLogging;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.examples.ExamplesUtils;
-import org.matsim.vehicles.EngineInformation.FuelType;
-import org.matsim.vehicles.EngineInformationImpl;
 import org.matsim.vehicles.VehicleType;
 
+import org.matsim.vehicles.VehicleUtils;
 import ovgu.pave.core.Core;
 import ovgu.pave.model.input.Input;
 import ovgu.pave.model.solution.Solution;
@@ -90,13 +90,13 @@ class RunFreight {
 
 		// Create carrier with services
 		Carriers carriers = new Carriers();
-		Carrier carrierWShipments = CarrierImpl.newInstance(Id.create("carrier", Carrier.class));
+		Carrier carrierWShipments = CarrierUtils.createCarrier(Id.create("carrier", Carrier.class));
 		// TODO: Geht derzeit nur als "int" für ovgu... kmt/aug19
 		carrierWShipments.getShipments().add(createMatsimShipment("1", "i(6,0)", "i(3,9)R", 2));
 		carrierWShipments.getShipments().add(createMatsimShipment("2", "i(6,0)", "i(4,9)R", 2));
 
 		// Create vehicle type
-		CarrierVehicleType carrierVehType = createCarrierVehType();
+		VehicleType carrierVehType = createCarrierVehType();
 		CarrierVehicleTypes vehicleTypes = new CarrierVehicleTypes();
 		vehicleTypes.getVehicleTypes().put(carrierVehType.getId(), carrierVehType);
 
@@ -211,7 +211,7 @@ class RunFreight {
 		config.controler().setOutputDirectory("./output/freight");
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		new OutputDirectoryHierarchy(config.controler().getOutputDirectory(), config.controler().getRunId(),
-				config.controler().getOverwriteFileSetting());
+				config.controler().getOverwriteFileSetting(), ControlerConfigGroup.CompressionType.gzip);
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.overwriteExistingFiles);
 		// (the directory structure is needed for jsprit output, which is before the
 		// controler starts. Maybe there is a better alternative ...)
@@ -227,12 +227,17 @@ class RunFreight {
 	 * 
 	 * @return CarrierVehicleType
 	 */
-	private static CarrierVehicleType createCarrierVehType() {
-		CarrierVehicleType carrierVehType = CarrierVehicleType.Builder
-				.newInstance(Id.create("gridType", VehicleType.class)).setCapacity(5).setMaxVelocity(10) // m/s
-				.setCostPerDistanceUnit(0.0001).setCostPerTimeUnit(0.001).setFixCost(130)
-				.setEngineInformation(new EngineInformationImpl(FuelType.diesel, 0.015)).build();
-		return carrierVehType;
+	private static VehicleType createCarrierVehType() {
+		// m/s
+		VehicleType vehicleType = new VehicleType(Id.create("gridType", VehicleType.class))
+				.setMaximumVelocity(10);// m/s
+		vehicleType.getCapacity().setOther(5.);
+		vehicleType.getCostInformation().setCostsPerMeter(0.0001) ;
+		vehicleType.getCostInformation().setCostsPerSecond(0.001) ;
+		vehicleType.getCostInformation().setFixedCost((double) 130) ;
+		VehicleUtils.setHbefaTechnology(vehicleType.getEngineInformation(), "diesel");
+		VehicleUtils.setFuelConsumption(vehicleType, 0.015);
+		return vehicleType;
 	}
 
 	private static CarrierShipment createMatsimShipment(String id, String from, String to, int size) {

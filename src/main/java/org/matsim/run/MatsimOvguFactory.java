@@ -154,7 +154,7 @@ public class MatsimOvguFactory {
 	// TODO: better way to find a vehicle? change from collection?
 	private CarrierVehicle findVehicle(Carrier carrier, Id<org.matsim.vehicles.Vehicle> usedVehicleID) {
 		for (CarrierVehicle vehicle : carrier.getCarrierCapabilities().getCarrierVehicles()) {
-			if (vehicle.getVehicleId() == usedVehicleID)
+			if (vehicle.getId() == usedVehicleID)
 				return vehicle;
 		}
 		throw new RuntimeException("Vehicle with id not found in carrier: " + usedVehicleID + "; " + carrier.getId());
@@ -210,10 +210,16 @@ public class MatsimOvguFactory {
 
 				Location depot = maps.getOVGULocation(cVehicle.getLocation(), network);
 
+				final double vehicleCapacity = cVehicle.getType().getCapacity().getOther();
+				final int vehicleCapacityInt = (int) vehicleCapacity;
+				if (vehicleCapacity - vehicleCapacityInt > 0) {
+					log.warn("vehicle capacity truncated to int: before=" + vehicleCapacity + "; after=" + vehicleCapacityInt);
+					// yyyyyy this implies that we would have fewer problems if we set vehicle capacity in kg instead of in tons in our data model.  kai, aug'19
+				}
+
 				// create VehicleType and Vehicle in maps (load into input later)
-				ovgu.pave.model.input.VehicleType vehicleType = maps.getOVGUVehicleType(cVehicle.getVehicleTypeId(),
-						cVehicle.getVehicleType().getCarrierVehicleCapacity());
-				maps.getOVGUVehicle(cVehicle.getVehicleId(), vehicleType, depot, depot);
+				ovgu.pave.model.input.VehicleType vehicleType = maps.getOVGUVehicleType(cVehicle.getVehicleTypeId(),vehicleCapacityInt);
+				maps.getOVGUVehicle(cVehicle.getId(), vehicleType, depot, depot);
 
 			}
 		} else {
