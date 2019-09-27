@@ -218,7 +218,7 @@ public class MatsimOvguFactory {
 				}
 
 				// create VehicleType and Vehicle in maps (load into input later)
-				ovgu.pave.model.input.VehicleType vehicleType = maps.getOVGUVehicleType(cVehicle.getVehicleTypeId(),vehicleCapacityInt);
+				ovgu.pave.model.input.VehicleType vehicleType = maps.createOrGetOVGUVehicleType(cVehicle.getVehicleTypeId(),vehicleCapacityInt);
 				maps.getOVGUVehicle(cVehicle.getId(), vehicleType, depot, depot);
 
 			}

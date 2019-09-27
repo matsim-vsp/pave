@@ -35,17 +35,30 @@ public class MatsimOvguMapping {
 	private HashMap<Integer, Id<org.matsim.vehicles.VehicleType>> OVGUtoMatsimVehicleType = new HashMap<Integer, Id<org.matsim.vehicles.VehicleType>>();
 	private List<VehicleType> vehicleTypes = new ArrayList<VehicleType>();
 
-	public VehicleType getOVGUVehicleType(Id<org.matsim.vehicles.VehicleType> vehicleTypeID, int capacity) {
-		return vehicleTypes.get(getOVGUVehicleTypeID(vehicleTypeID, capacity));
+	public VehicleType createOrGetOVGUVehicleType(Id<org.matsim.vehicles.VehicleType> vehicleTypeID, int capacity) {
+		return vehicleTypes.get(createOrGetOVGUVehicleTypeID(vehicleTypeID, capacity));
 	}
 
-	private Integer getOVGUVehicleTypeID(Id<org.matsim.vehicles.VehicleType> vehicleTypeID, int capacity) {
+	/**
+	 * Get the (OVGU) vehicleTypeId from the matsim VehicleType.
+	 * If it does not exist at this moment it will be created in advance.
+	 * @param vehicleTypeID
+	 * @param capacity
+	 * @return
+	 */
+	private Integer createOrGetOVGUVehicleTypeID(Id<org.matsim.vehicles.VehicleType> vehicleTypeID, int capacity) {
 		if (!matsimToOVGUVehicleType.containsKey(vehicleTypeID))
 			createOVGUVehicleType(vehicleTypeID, capacity);
 
 		return matsimToOVGUVehicleType.get(vehicleTypeID);
 	}
 
+	/**
+	 * Create an OVGU Vehicle Type based on the MATSim Vehicle type ID and its capacity and register it to
+	 * maps which translates both vehicleTypes to each other.
+	 * @param vehicleTypeID
+	 * @param capacity
+	 */
 	private void createOVGUVehicleType(Id<org.matsim.vehicles.VehicleType> vehicleTypeID, int capacity) {
 		Integer ovguVehTypeId = matsimToOVGUVehicleType.size();
 		matsimToOVGUVehicleType.put(vehicleTypeID, ovguVehTypeId);
