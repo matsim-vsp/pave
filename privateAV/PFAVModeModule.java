@@ -30,7 +30,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
     @Override
     public void install() {
         FreightAVConfigGroup pfavConfigGroup = (FreightAVConfigGroup) getConfig().getModules().get(FreightAVConfigGroup.GROUP_NAME);
-        TaxiConfigGroup taxiConfigGroup = (TaxiConfigGroup) getConfig().getModules().get(TaxiConfigGroup.GROUP_NAME);
+        TaxiConfigGroup taxiConfigGroup = TaxiConfigGroup.getSingleModeTaxiConfig(getConfig());
         if (!taxiConfigGroup.getMode().equals(this.getMode()))
             throw new RuntimeException("pfav mode must be equal to mode set in taxi config group!");
 
