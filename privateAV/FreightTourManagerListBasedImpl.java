@@ -340,7 +340,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
 
     private void mapDepotLinksToEmptyTourList() {
         for (Carrier carrier : this.carriers.getCarriers().values()) {
-            for (CarrierVehicle v : carrier.getCarrierCapabilities().getCarrierVehicles()) {
+            for (CarrierVehicle v : carrier.getCarrierCapabilities().getCarrierVehicles().values()) {
                 this.depotToFreightTour.put(network.getLinks().get(v.getLocation()), new LinkedList<>());
             }
         }

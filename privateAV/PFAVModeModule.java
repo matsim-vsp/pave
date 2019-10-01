@@ -16,6 +16,7 @@ import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+import org.matsim.vehicles.VehicleType;
 
 public final class PFAVModeModule extends AbstractDvrpModeModule {
 
@@ -67,9 +68,9 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         installQSimModule(new PFAVModuleQSim(taxiConfigGroup.getMode()));
     }
 
-    private CarrierVehicleType retrievePFAVType(CarrierVehicleTypes vehicleTypes, String pfavType) {
+    private VehicleType retrievePFAVType(CarrierVehicleTypes vehicleTypes, String pfavType) {
         //        return vehicleTypes.getVehicleTypes().values().stream().filter(t -> t.getId().toString().equals(PFAVUtils.PFAV_TYPE)).findFirst();
-        for (CarrierVehicleType type : vehicleTypes.getVehicleTypes().values()) {
+        for (VehicleType type : vehicleTypes.getVehicleTypes().values()) {
             if (type.getId().toString().equals(pfavType)) return type;
         }
         throw new IllegalArgumentException("no cost parameters for vehicle type " + pfavType + " could be found in carriersVehicleTypes." +
@@ -85,7 +86,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
 
     private Carriers readCarriersAndLoadVehicleTypes(FreightAVConfigGroup configGroup, CarrierVehicleTypes vehicleTypes) {
         Carriers carriers = new Carriers();
-        CarrierPlanXmlReaderV2 reader = new CarrierPlanXmlReaderV2(carriers);
+        CarrierPlanXmlReader reader = new CarrierPlanXmlReader(carriers);
         reader.readFile(configGroup.getCarriersFile());
         new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(vehicleTypes);
         return carriers;

@@ -20,21 +20,13 @@
 
 package run;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
+import analysis.BaseCaseFreightTourStatsListener;
+import analysis.OverallTravelTimeAndDistanceListener;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
-import org.matsim.contrib.freight.carrier.Carrier;
-import org.matsim.contrib.freight.carrier.CarrierPlan;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
-import org.matsim.contrib.freight.carrier.CarrierVehicleTypeLoader;
-import org.matsim.contrib.freight.carrier.CarrierVehicleTypeReader;
-import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
-import org.matsim.contrib.freight.carrier.Carriers;
+import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.controler.CarrierModule;
 import org.matsim.contrib.freight.replanning.CarrierPlanStrategyManagerFactory;
 import org.matsim.contrib.freight.scoring.CarrierScoringFunctionFactory;
@@ -58,8 +50,8 @@ import org.matsim.core.replanning.selectors.BestPlanSelector;
 import org.matsim.core.scoring.SumScoringFunction;
 import org.matsim.run.RunBerlinScenario;
 
-import analysis.BaseCaseFreightTourStatsListener;
-import analysis.OverallTravelTimeAndDistanceListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class RunNormalFreightInBerlin {
 
@@ -140,7 +132,7 @@ public class RunNormalFreightInBerlin {
 
     private static Carriers readFreightInputAndPrepareCarrierModule(String carriersFile, String vehTypesFile, Scenario scenario, Controler controler) {
         final Carriers carriers = new Carriers();
-        new CarrierPlanXmlReaderV2(carriers).readFile(carriersFile);
+        new CarrierPlanXmlReader(carriers).readFile(carriersFile);
 
         CarrierVehicleTypes types = new CarrierVehicleTypes();
         new CarrierVehicleTypeReader(types).readFile(vehTypesFile);

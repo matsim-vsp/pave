@@ -22,9 +22,9 @@ package privateAV;
 
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.contrib.freight.carrier.CarrierVehicleType;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+import org.matsim.vehicles.CostInformation;
 import org.matsim.vehicles.Vehicle;
 
 /**
@@ -32,10 +32,10 @@ import org.matsim.vehicles.Vehicle;
  */
 class VehTypeVariableTravelDisutility implements TravelDisutility {
 
-    CarrierVehicleType.VehicleCostInformation costInformation;
+    CostInformation costInformation;
     private TravelTime travelTime;
 
-    VehTypeVariableTravelDisutility(TravelTime travelTime, CarrierVehicleType.VehicleCostInformation costInformation) {
+    VehTypeVariableTravelDisutility(TravelTime travelTime, CostInformation costInformation) {
         this.travelTime = travelTime;
         this.costInformation = costInformation;
     }
@@ -43,13 +43,13 @@ class VehTypeVariableTravelDisutility implements TravelDisutility {
     @Override
     public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
         double tt = this.travelTime.getLinkTravelTime(link, time, person, vehicle);
-        return costInformation.getPerDistanceUnit() * link.getLength() + costInformation.getPerTimeUnit() * tt;
+        return costInformation.getCostsPerMeter() * link.getLength() + costInformation.getCostsPerSecond() * tt;
     }
 
     @Override
     public double getLinkMinimumTravelDisutility(Link link) {
         double free_tt = link.getLength() / link.getFreespeed();
-        return costInformation.getPerDistanceUnit() * link.getLength() + costInformation.getPerTimeUnit() * free_tt;
+        return costInformation.getCostsPerMeter() * link.getLength() + costInformation.getCostsPerSecond() * free_tt;
     }
 
 }

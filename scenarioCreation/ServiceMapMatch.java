@@ -78,7 +78,7 @@ public class ServiceMapMatch {
             String dbl = "%.1f";
 
             Carriers oldCarriers = new Carriers();
-            CarrierPlanXmlReaderV2 carrierReader = new CarrierPlanXmlReaderV2(oldCarriers);
+            CarrierPlanXmlReader carrierReader = new CarrierPlanXmlReader(oldCarriers);
             carrierReader.readFile(outputNewCarriers);
 
             int totalCapacityDemand = 0;
@@ -88,10 +88,10 @@ public class ServiceMapMatch {
                     throw new RuntimeException("why does carrier " + carrier.getId() + " have more than one vehicle ?");
                 }
                 String depot = "";
-                for (CarrierVehicle v : carrier.getCarrierCapabilities().getCarrierVehicles()) {
+                for (CarrierVehicle v : carrier.getCarrierCapabilities().getCarrierVehicles().values()) {
                     depot += v.getLocation();
                 }
-                for (CarrierService service : carrier.getServices()) {
+                for (CarrierService service : carrier.getServices().values()) {
                     totalCapacityDemand += service.getCapacityDemand();
                     totalAmountOfServices++;
                     writeServiceData(writer, service, string, dbl, depot);
@@ -146,7 +146,7 @@ public class ServiceMapMatch {
 //        openBerlinNetReader.readFile(inputNewNet);
 
         Carriers oldCarriers = new Carriers();
-        CarrierPlanXmlReaderV2 carrierReader = new CarrierPlanXmlReaderV2(oldCarriers);
+        CarrierPlanXmlReader carrierReader = new CarrierPlanXmlReader(oldCarriers);
         carrierReader.readFile(inputOldCarriers);
 
         Map<Id<Link>,Id<Link>> handledOldLinksToNewLink = new HashMap<>();
@@ -160,7 +160,7 @@ public class ServiceMapMatch {
 
         for(Carrier carrier: oldCarriers.getCarriers().values()){
             //we only have services in this carriers file, no shipments
-            for(CarrierService service : carrier.getServices()){
+            for (CarrierService service : carrier.getServices().values()) {
                 Id<Link> newLink =handledOldLinksToNewLink.get(service.getLocationLinkId());
                 Coord oldLinkC = oldSchroederNet.getLinks().get(service.getLocationLinkId()).getCoord();
                 if(newLink == null) {
@@ -175,7 +175,7 @@ public class ServiceMapMatch {
                                     .setServiceDuration(service.getServiceDuration())
                                     .setServiceStartTimeWindow(getFittedTimeWindow(service.getServiceStartTimeWindow()))
                                     .build();
-                    newCarrier.getServices().add(newService);
+                    newCarrier.getServices().put(newService.getId(), newService);
                     handledNewLinksToCarrier.put(newLink, newCarrier);
                 }
             }
@@ -251,7 +251,7 @@ public class ServiceMapMatch {
                     .setTypeId(typeId)
                     .setType(CarrierVehicleType.Builder.newInstance(typeId).build())
                     .build();
-            carrier.getCarrierCapabilities().getCarrierVehicles().add(veh);
+            carrier.getCarrierCapabilities().getCarrierVehicles().put(veh.getId(), veh);
             carrier.getCarrierCapabilities().setFleetSize(CarrierCapabilities.FleetSize.INFINITE);
 
             Geometry geom = (Geometry) feature.getDefaultGeometry();
