@@ -10,11 +10,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.freight.carrier.CarrierShipment;
-import org.matsim.contrib.freight.carrier.CarrierVehicle;
-import org.matsim.contrib.freight.carrier.ScheduledTour;
-import org.matsim.contrib.freight.carrier.Tour;
-import org.matsim.contrib.freight.carrier.Carrier;
+import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
 import org.matsim.contrib.freight.carrier.Tour.Leg;
 import org.matsim.core.config.Config;
@@ -55,7 +51,7 @@ public class MatsimOvguFactory {
 		// init Input
 		Input input = InputFactory.eINSTANCE.createInput();
 		// create Requests (from carrierShipments)
-		input.setRequests(createRequests(carrier.getShipments(), network));
+		input.setRequests(createRequests(carrier.getShipments().values(), network));
 		// create Vehicles and VehicleTypes
 		createVehiclesAndTypes(network);
 		input.getLocations().addAll(maps.getLocations());
@@ -91,7 +87,7 @@ public class MatsimOvguFactory {
 								+ requestActivity.getLocation().getId() + " : lat "
 								+ requestActivity.getLocation().getLat() + " long: "
 								+ requestActivity.getLocation().getLon());
-						CarrierShipment carrierShipment = findShipment(carrier, shipmentId);
+						CarrierShipment carrierShipment = CarrierUtils.getShipment(carrier, shipmentId);
 						tourBuilder.addLeg(new Leg());
 						tourBuilder.schedulePickup(carrierShipment);
 					}
@@ -101,7 +97,7 @@ public class MatsimOvguFactory {
 								+ requestActivity.getLocation().getId() + " : lat "
 								+ requestActivity.getLocation().getLat() + " long: "
 								+ requestActivity.getLocation().getLon());
-						CarrierShipment carrierShipment = findShipment(carrier, shipmentId);
+						CarrierShipment carrierShipment = CarrierUtils.getShipment(carrier, shipmentId);
 						tourBuilder.addLeg(new Leg());
 						tourBuilder.scheduleDelivery(carrierShipment);
 					}
@@ -130,7 +126,7 @@ public class MatsimOvguFactory {
 			org.matsim.contrib.freight.carrier.Tour vehicleTour = tourBuilder.build();
 
 			Id<org.matsim.vehicles.Vehicle> usedVehicleID = maps.getMATSimVehicleID(route.getVehicle());
-			CarrierVehicle carrierVehicle = findVehicle(carrier, usedVehicleID);
+			CarrierVehicle carrierVehicle = CarrierUtils.getCarrierVehicle(carrier, usedVehicleID);
 
 			ScheduledTour sTour = ScheduledTour.newInstance(vehicleTour, carrierVehicle, tourDepTime);
 			// assert route.getDepartureTime() == sTour.getDeparture() : "departureTime of
@@ -140,24 +136,6 @@ public class MatsimOvguFactory {
 			tours.add(sTour);
 		} // route/tour
 		return tours;
-	}
-
-	// TODO: better way to find a shipment? change from collection?
-	private CarrierShipment findShipment(Carrier carrier, Id<CarrierShipment> shipmentId) {
-		for (CarrierShipment shipment : carrier.getShipments()) {
-			if (shipment.getId() == shipmentId)
-				return shipment;
-		}
-		throw new RuntimeException("Shipment with id not found in carrier: " + shipmentId + "; " + carrier.getId());
-	}
-
-	// TODO: better way to find a vehicle? change from collection?
-	private CarrierVehicle findVehicle(Carrier carrier, Id<org.matsim.vehicles.Vehicle> usedVehicleID) {
-		for (CarrierVehicle vehicle : carrier.getCarrierCapabilities().getCarrierVehicles()) {
-			if (vehicle.getId() == usedVehicleID)
-				return vehicle;
-		}
-		throw new RuntimeException("Vehicle with id not found in carrier: " + usedVehicleID + "; " + carrier.getId());
 	}
 
 	/*
@@ -206,7 +184,7 @@ public class MatsimOvguFactory {
 		if (carrier.getCarrierCapabilities().getFleetSize() == FleetSize.INFINITE) {
 			log.fatal("Not implemented", new RuntimeException()); // Derzeit auch bei OVGU nicht drin.
 		} else if (carrier.getCarrierCapabilities().getFleetSize() == FleetSize.FINITE) {
-			for (CarrierVehicle cVehicle : carrier.getCarrierCapabilities().getCarrierVehicles()) {
+			for (CarrierVehicle cVehicle : carrier.getCarrierCapabilities().getCarrierVehicles().values()) {
 
 				Location depot = maps.getOVGULocation(cVehicle.getLocation(), network);
 
