@@ -92,8 +92,8 @@ class RunFreight {
 		Carriers carriers = new Carriers();
 		Carrier carrierWShipments = CarrierUtils.createCarrier(Id.create("carrier", Carrier.class));
 		// TODO: Geht derzeit nur als "int" für ovgu... kmt/aug19
-		carrierWShipments.getShipments().add(createMatsimShipment("1", "i(6,0)", "i(3,9)R", 2));
-		carrierWShipments.getShipments().add(createMatsimShipment("2", "i(6,0)", "i(4,9)R", 2));
+		CarrierUtils.addShipment(carrierWShipments, createMatsimShipment("1", "i(6,0)", "i(3,9)R", 2));
+		CarrierUtils.addShipment(carrierWShipments, createMatsimShipment("2", "i(6,0)", "i(4,9)R", 2));
 
 		// Create vehicle type
 		VehicleType carrierVehType = createCarrierVehType();
