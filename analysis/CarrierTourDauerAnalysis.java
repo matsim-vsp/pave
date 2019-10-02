@@ -31,7 +31,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.freight.carrier.Carrier;
 import org.matsim.contrib.freight.carrier.CarrierPlan;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlReader;
 import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.carrier.ScheduledTour;
 import org.matsim.contrib.freight.carrier.Tour;
@@ -126,7 +126,7 @@ public class CarrierTourDauerAnalysis {
     }
 
     private void readCarriers(String file) {
-        CarrierPlanXmlReaderV2 reader = new CarrierPlanXmlReaderV2(carriers);
+        CarrierPlanXmlReader reader = new CarrierPlanXmlReader(carriers);
         reader.readFile(file);
     }
 

@@ -29,7 +29,7 @@ import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.freight.carrier.Carrier;
 import org.matsim.contrib.freight.carrier.CarrierPlan;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlReader;
 import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
 import org.matsim.contrib.freight.carrier.CarrierVehicleTypeLoader;
 import org.matsim.contrib.freight.carrier.CarrierVehicleTypeReader;
@@ -140,7 +140,7 @@ public class RunNormalFreightInBerlin {
 
     private static Carriers readFreightInputAndPrepareCarrierModule(String carriersFile, String vehTypesFile, Scenario scenario, Controler controler) {
         final Carriers carriers = new Carriers();
-        new CarrierPlanXmlReaderV2(carriers).readFile(carriersFile);
+        new CarrierPlanXmlReader(carriers).readFile(carriersFile);
 
         CarrierVehicleTypes types = new CarrierVehicleTypes();
         new CarrierVehicleTypeReader(types).readFile(vehTypesFile);

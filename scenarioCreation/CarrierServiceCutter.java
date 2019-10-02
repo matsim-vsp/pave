@@ -22,7 +22,7 @@ package scenarioCreation;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.freight.carrier.Carrier;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlReaderV2;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlReader;
 import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
 import org.matsim.contrib.freight.carrier.Carriers;
 
@@ -49,7 +49,7 @@ public class CarrierServiceCutter {
 
 
         Carriers original = new Carriers();
-        CarrierPlanXmlReaderV2 reader = new CarrierPlanXmlReaderV2(original);
+        CarrierPlanXmlReader reader = new CarrierPlanXmlReader(original);
         reader.readFile("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/MapMatch/carriers_services_openBerlinNet_withInfiniteTrucks_TWsfitted.xml.gz");
 
         for (Id<Carrier> id : original.getCarriers().keySet()) {

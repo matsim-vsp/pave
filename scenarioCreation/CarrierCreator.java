@@ -25,6 +25,8 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.router.util.TravelTimeUtils;
+import org.matsim.vehicles.VehicleType;
+
 import privateAV.FreightTourPlanning;
 
 /**
@@ -53,7 +55,7 @@ public class CarrierCreator {
 
         Network network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile(INPUT_NETWORK);
-        CarrierVehicleType privateAVCarrierVehType = FreightSetUp.createPrivateFreightAVVehicleType();
+        VehicleType privateAVCarrierVehType = FreightSetUp.createPrivateFreightAVVehicleType();
         CarrierVehicleTypes vTypes = new CarrierVehicleTypes();
         vTypes.getVehicleTypes().put(privateAVCarrierVehType.getId(), privateAVCarrierVehType);
 
