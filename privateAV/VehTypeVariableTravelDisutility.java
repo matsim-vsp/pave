@@ -44,8 +44,6 @@ class VehTypeVariableTravelDisutility implements TravelDisutility {
     public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
         double tt = this.travelTime.getLinkTravelTime(link, time, person, vehicle);
         return costInformation.getCostsPerMeter() * link.getLength() + costInformation.getCostsPerSecond() * tt;
-//        costInformation.getCostsPerMeter();
-//        costInformation.getCostsPerSecond();
     }
 
     @Override
