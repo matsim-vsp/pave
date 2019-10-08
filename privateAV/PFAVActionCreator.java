@@ -18,7 +18,6 @@
  * *********************************************************************** */
 package privateAV;
 
-import com.google.inject.Inject;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.passenger.PassengerEngine;
 import org.matsim.contrib.dvrp.passenger.SinglePassengerDropoffActivity;
@@ -45,19 +44,18 @@ import org.matsim.core.mobsim.framework.MobsimTimer;
 public final class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 
 	public static final String PICKUP_ACTIVITY_TYPE = "TaxiPickup";
-	public static final String DROPOFF_ACTIVITY_TYPE = "TaxiDropoff";
+	static final String DROPOFF_ACTIVITY_TYPE = "TaxiDropoff";
 	public static final String STAY_ACTIVITY_TYPE = "TaxiStay";
 	
 	public static final String SERVICE_ACTIVITY_TYPE = "service";
-	public static final String RETOOL_ACTIVITY_TYPE = "retool";
+	static final String RETOOL_ACTIVITY_TYPE = "retool";
 
 	private final PassengerEngine passengerEngine;
 	private final VrpLegFactory legFactory;
 	private final double pickupDuration;
 
-	@Inject
-	public PFAVActionCreator(PassengerEngine passengerEngine, TaxiConfigGroup taxiCfg,
-			TaxiOptimizer optimizer, MobsimTimer timer, DvrpConfigGroup dvrpCfg) {
+	PFAVActionCreator(PassengerEngine passengerEngine, TaxiConfigGroup taxiCfg,
+					  TaxiOptimizer optimizer, MobsimTimer timer, DvrpConfigGroup dvrpCfg) {
 		this(passengerEngine, taxiCfg.isOnlineVehicleTracker() ?
 						v -> VrpLegFactory.createWithOnlineTracker(dvrpCfg.getMobsimMode(), v, OnlineTrackerListener.NO_LISTENER, timer) :
 						v -> VrpLegFactory.createWithOfflineTracker(dvrpCfg.getMobsimMode(), v, timer),

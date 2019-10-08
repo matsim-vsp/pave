@@ -20,24 +20,18 @@
 
 package analysis;
 
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.freight.carrier.*;
+import org.matsim.core.utils.io.IOUtils;
+import privateAV.FreightAVConfigGroup;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.freight.carrier.Carrier;
-import org.matsim.contrib.freight.carrier.CarrierPlan;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlReader;
-import org.matsim.contrib.freight.carrier.Carriers;
-import org.matsim.contrib.freight.carrier.ScheduledTour;
-import org.matsim.contrib.freight.carrier.Tour;
-import org.matsim.core.utils.io.IOUtils;
-
-import privateAV.FreightAVConfigGroup;
 
 public class CarrierTourDauerAnalysis {
 

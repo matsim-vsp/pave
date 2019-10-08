@@ -18,7 +18,6 @@
  * *********************************************************************** */
 package privateAV;
 
-import analysis.PFAVUnfinishedToursDumper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
@@ -39,8 +38,6 @@ import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.events.IterationStartsEvent;
-import org.matsim.core.controler.listener.IterationEndsListener;
-import org.matsim.core.controler.listener.IterationStartsListener;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelTime;
@@ -51,7 +48,7 @@ import java.util.stream.Stream;
 /**
  * @author tschlenther
  */
-class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, IterationStartsListener, IterationEndsListener {
+class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
 
     private final static Logger log = Logger.getLogger(FreightTourManagerListBasedImpl.class);
     private final FreightAVConfigGroup pfavConfigGroup;
@@ -180,7 +177,6 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased, It
     }
 
     private FreightTourDataPlanned searchForTourAtSeveralDepots(PFAVehicle vehicle, LeastCostPathCalculator router, Link requestLink, List<Link> nearestDepots) {
-        //TODO: test this spatial dispatch algorithm, especially: is the nearestDepots list sorted??
         FreightTourDataPlanned matchingFreightTour = null;
         for (Link depot : nearestDepots) {
             matchingFreightTour = searchForTourAtDepot(depot, requestLink, vehicle, router);

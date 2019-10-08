@@ -160,7 +160,7 @@ public class ServiceMapMatch {
 
         for(Carrier carrier: oldCarriers.getCarriers().values()){
             //we only have services in this carriers file, no shipments
-            for(CarrierService service : carrier.getServices().values()){
+            for (CarrierService service : carrier.getServices().values()) {
                 Id<Link> newLink =handledOldLinksToNewLink.get(service.getLocationLinkId());
                 Coord oldLinkC = oldSchroederNet.getLinks().get(service.getLocationLinkId()).getCoord();
                 if(newLink == null) {

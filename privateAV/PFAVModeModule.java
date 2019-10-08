@@ -2,6 +2,7 @@ package privateAV;
 
 import com.google.inject.Inject;
 import com.google.inject.Key;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.matsim.api.core.v01.Scenario;
@@ -31,7 +32,6 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
     public void install() {
         FreightAVConfigGroup pfavConfigGroup = (FreightAVConfigGroup) getConfig().getModules().get(FreightAVConfigGroup.GROUP_NAME);
         TaxiConfigGroup taxiConfigGroup = TaxiConfigGroup.getSingleModeTaxiConfig(getConfig());
-        
         if (!taxiConfigGroup.getMode().equals(this.getMode()))
             throw new RuntimeException("pfav mode must be equal to mode set in taxi config group!");
 
@@ -64,8 +64,8 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
                     }
                 }
         );
-
-        addControlerListenerBinding().to(FreightTourManagerListBasedImpl.class);
+        bind(FreightTourManagerListBased.class).to(FreightTourManagerListBasedImpl.class).in(Singleton.class);
+        addControlerListenerBinding().to(FreightTourManagerListBased.class);
         installQSimModule(new PFAVModuleQSim(taxiConfigGroup.getMode()));
     }
 
@@ -75,7 +75,8 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
             if (type.getId().toString().equals(pfavType)) return type;
         }
         throw new IllegalArgumentException("no cost parameters for vehicle type " + pfavType + " could be found in carriersVehicleTypes." +
-                "please make sure that PFAV_TYPE is included in carriersVehicleTypes. Currently, no default cost parameters for pfav are implemented..");
+                "please make sure that PFAV_TYPE (currently set in cofig group to " + pfavType + ") is included in carriersVehicleTypes." +
+                "Currently, no default cost parameters for pfav are implemented..");
     }
 
     private CarrierVehicleTypes readVehicleTypes(FreightAVConfigGroup configGroup) {

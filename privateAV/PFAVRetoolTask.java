@@ -47,15 +47,15 @@ class PFAVRetoolTask extends StayTaskImpl implements TaxiTask {
 	 * if not set at some point, this will return 0.0
 	 * @return
 	 */
-	public double getEarliestStartTime() {
+	double getEarliestStartTime() {
 		return this.earliestStartTime;
 	}
-	
-	public void setEarliestStartTime(double earliestStartTime) {
+
+	void setEarliestStartTime(double earliestStartTime) {
 		this.earliestStartTime = earliestStartTime;
 	}
 
-	public void setVehicle(Id<DvrpVehicle> vehicle) {
+	void setVehicle(Id<DvrpVehicle> vehicle) {
 		this.vehicle = vehicle;
 	}
 	

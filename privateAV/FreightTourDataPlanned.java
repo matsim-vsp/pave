@@ -28,7 +28,7 @@ import org.matsim.contrib.taxi.schedule.TaxiTask;
 import java.util.List;
 import java.util.Objects;
 
-public final class FreightTourDataPlanned {
+final class FreightTourDataPlanned {
 
     private List<TaxiTask> tourTasks;
     private DriveTask accessDriveTask = null;
@@ -49,23 +49,23 @@ public final class FreightTourDataPlanned {
         this.plannedTotalCapacityDemand = plannedTotalCapacityDemand;
     }
 
-    public void setPlannedTourDuration(Double plannedTourDuration) {
-        this.plannedTourDuration = plannedTourDuration;
+    double getPlannedTourDuration() {
+        return plannedTourDuration;
     }
 
-    public double getPlannedTourDuration() {
-        return plannedTourDuration;
+    void setPlannedTourDuration(Double plannedTourDuration) {
+        this.plannedTourDuration = plannedTourDuration;
     }
 
     List<TaxiTask> getTourTasks() {
         return tourTasks;
     }
 
-    public int getPlannedTotalCapacityDemand() {
+    int getPlannedTotalCapacityDemand() {
         return plannedTotalCapacityDemand;
     }
 
-    public Link getDepotLink() {
+    Link getDepotLink() {
         return depotLink;
     }
 
@@ -77,7 +77,7 @@ public final class FreightTourDataPlanned {
         this.accessDriveTask = driveTask;
     }
 
-    public int getAmountOfRejections() {
+    int getAmountOfRejections() {
         return amountOfRejections;
     }
 

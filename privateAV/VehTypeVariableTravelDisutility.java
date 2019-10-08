@@ -32,7 +32,7 @@ import org.matsim.vehicles.Vehicle;
  */
 class VehTypeVariableTravelDisutility implements TravelDisutility {
 
-	CostInformation costInformation;
+    CostInformation costInformation;
     private TravelTime travelTime;
 
     VehTypeVariableTravelDisutility(TravelTime travelTime, CostInformation costInformation) {

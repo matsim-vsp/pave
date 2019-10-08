@@ -20,6 +20,8 @@ package privateAV;
 
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
+import org.matsim.core.controler.listener.IterationEndsListener;
+import org.matsim.core.controler.listener.IterationStartsListener;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 
 import java.util.List;
@@ -27,7 +29,7 @@ import java.util.List;
 /**
  * @author tschlenther
  */
-public interface FreightTourManagerListBased {
+interface FreightTourManagerListBased extends IterationStartsListener, IterationEndsListener {
     List<FreightTourDataPlanned> getPFAVTours();
 
     FreightTourDataPlanned getRandomPFAVTour();

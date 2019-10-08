@@ -95,6 +95,7 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 
 	@NotBlank
 	private String pfavType = "PFAV";
+
     @NotBlank
     private String carriersFile;
 
@@ -483,7 +484,7 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
     }
 
     public static FreightAVConfigGroup get(Config config) {
-        return (FreightAVConfigGroup) config.getModule(GROUP_NAME);
+        return (FreightAVConfigGroup) config.getModules().get(GROUP_NAME);
     }
 
 }

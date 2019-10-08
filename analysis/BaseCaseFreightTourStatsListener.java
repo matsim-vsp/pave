@@ -85,7 +85,7 @@ public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler
         String carriersFile = dir + "output_carriers.xml";
         final Carriers carriers = new Carriers();
         new CarrierPlanXmlReader(carriers).readFile(carriersFile);
-        
+
         EventsManager manager = EventsUtils.createEventsManager();
         Network network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile(dir + "berlin-v5.3-1pct.output_network.xml.gz");

@@ -1,24 +1,17 @@
 package scenarioCreation;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.freight.carrier.Carrier;
-import org.matsim.contrib.freight.carrier.CarrierCapabilities;
+import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
-import org.matsim.contrib.freight.carrier.CarrierImpl;
-import org.matsim.contrib.freight.carrier.CarrierService;
-import org.matsim.contrib.freight.carrier.CarrierVehicle;
-import org.matsim.contrib.freight.carrier.CarrierVehicleType;
-import org.matsim.contrib.freight.carrier.Carriers;
-import org.matsim.contrib.freight.carrier.TimeWindow;
 import org.matsim.vehicles.VehicleType;
-
+import org.matsim.vehicles.VehicleUtils;
 import privateAV.PFAVUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class FreightSetUp {
 
@@ -36,8 +29,8 @@ public class FreightSetUp {
 
             Carrier carrier = CarrierImpl.newInstance(Id.create("carrier" + i, Carrier.class));
             for (int z = 0; z < nrOfServicesPerCarrier; z++) {
-            	CarrierService service = createMatsimService("" + z, getRandomLinkId(network), 1);
-                carrier.getServices().put(service.getId(), service);
+                Id<CarrierService> serviceId = Id.create(z, CarrierService.class);
+                carrier.getServices().put(serviceId, createMatsimService(serviceId, getRandomLinkId(network), 1));
             }
 
             carrier.setCarrierCapabilities(buildCarrierCapabilities(vehicleTypes, vehList, fleetSize));
@@ -58,8 +51,8 @@ public class FreightSetUp {
     }
 
 
-    private static CarrierService createMatsimService(String id, Id<Link> linkId, int size) {
-        return CarrierService.Builder.newInstance(Id.create(id, CarrierService.class), linkId)
+    private static CarrierService createMatsimService(Id<CarrierService> id, Id<Link> linkId, int size) {
+        return CarrierService.Builder.newInstance(id, linkId)
                 .setCapacityDemand(size)
                 .setServiceDuration(31.0)
                 .setServiceStartTimeWindow(TimeWindow.newInstance(0.0, 24 * 3600.0))
@@ -67,14 +60,15 @@ public class FreightSetUp {
     }
 
     public static VehicleType createPrivateFreightAVVehicleType() {
-        return CarrierVehicleType.Builder.newInstance(Id.create("PFAV", VehicleType.class))
-                .setCapacity(PFAVUtils.DEFAULT_PFAV_CAPACITY)
-                .setMaxVelocity(13.3)
-                .setCostPerDistanceUnit(0.0001)
-                .setCostPerTimeUnit(0.001)
-                .setFixCost(130)
+        VehicleType vehicleType = VehicleUtils.createVehicleType(Id.create("PFAV", VehicleType.class));
+        vehicleType.getCapacity().setOther(PFAVUtils.DEFAULT_PFAV_CAPACITY);
+        vehicleType.setMaximumVelocity(13.3);
+        vehicleType.getCostInformation().setCostsPerMeter(0.0001);
+        vehicleType.getCostInformation().setCostsPerSecond(0.001);
+        vehicleType.getCostInformation().setFixedCost(130.);
 //                .setEngineInformation(new EngineInformationImpl(FuelType.diesel, 0.015))
-                .build();
+//        vehicleType.getEngineInformation().getAttributes()
+        return vehicleType;
     }
 
     public static CarrierVehicle createCarrierVehicleWithRandomDepotLink(VehicleType vehType, Network network, String id) {

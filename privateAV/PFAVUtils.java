@@ -28,19 +28,14 @@ import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
 /**
  * @author tschlenther
  *
- *         //TODO transfer (almost) all of this to a new type of config group
  */
 public final class PFAVUtils {
 
 	public static final String PFAV_ID_SUFFIX = "_PFAV";
 
-	public static final String DEFAULT_VEHTYPES_FILE = "input/PFAVvehicleTypes.xml";
-	/**
-	 *
-	 */
 	public static final int DEFAULT_PFAV_CAPACITY = 1;
 
-	public static TaxiDropoffTask getLastPassengerDropOff(Schedule schedule) {
+	static TaxiDropoffTask getLastPassengerDropOff(Schedule schedule) {
 		for (int i = schedule.getTasks().size() - 1; i >= 0; i--) {
 			Task task = schedule.getTasks().get(i);
 			if (task instanceof TaxiDropoffTask)
@@ -53,7 +48,7 @@ public final class PFAVUtils {
 		return Id.create(personId.toString() + PFAVUtils.PFAV_ID_SUFFIX, DvrpVehicle.class);
 	}
 
-	public static int timeSlice() {
+	static int timeSlice() {
 		return 1800;
 	}
 

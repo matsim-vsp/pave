@@ -40,7 +40,7 @@ final class PFAVSpecification implements DvrpVehicleSpecification {
         return new PFAVSpecification.Builder();
     }
 
-    public static PFAVSpecification.Builder newBuilder(PFAVSpecification copy) {
+    static PFAVSpecification.Builder newBuilder(PFAVSpecification copy) {
         PFAVSpecification.Builder builder = new PFAVSpecification.Builder();
         builder.id = copy.getId();
         builder.startLinkId = copy.getStartLinkId();
@@ -96,9 +96,9 @@ final class PFAVSpecification implements DvrpVehicleSpecification {
                 .toString();
     }
 
-    public static final class Builder {
-        public Queue<Double> actEndTimes;
-        public LinkedList<PFAVehicle.MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
+    static final class Builder {
+        Queue<Double> actEndTimes;
+        LinkedList<PFAVehicle.MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
         private Id<DvrpVehicle> id;
         private Id<Link> startLinkId;
         private Integer capacity;
@@ -108,42 +108,42 @@ final class PFAVSpecification implements DvrpVehicleSpecification {
         private Builder() {
         }
 
-        public PFAVSpecification.Builder id(Id<DvrpVehicle> val) {
+        PFAVSpecification.Builder id(Id<DvrpVehicle> val) {
             id = val;
             return this;
         }
 
-        public PFAVSpecification.Builder startLinkId(Id<Link> val) {
+        PFAVSpecification.Builder startLinkId(Id<Link> val) {
             startLinkId = val;
             return this;
         }
 
-        public PFAVSpecification.Builder capacity(int val) {
+        PFAVSpecification.Builder capacity(int val) {
             capacity = val;
             return this;
         }
 
-        public PFAVSpecification.Builder serviceBeginTime(double val) {
+        PFAVSpecification.Builder serviceBeginTime(double val) {
             serviceBeginTime = val;
             return this;
         }
 
-        public PFAVSpecification.Builder serviceEndTime(double val) {
+        PFAVSpecification.Builder serviceEndTime(double val) {
             serviceEndTime = val;
             return this;
         }
 
-        public PFAVSpecification.Builder actEndTimes(Queue<Double> list) {
+        PFAVSpecification.Builder actEndTimes(Queue<Double> list) {
             actEndTimes = list;
             return this;
         }
 
-        public PFAVSpecification.Builder mustReturnToOwnerLinkTimePairs(LinkedList<PFAVehicle.MustReturnLinkTimePair> list) {
+        PFAVSpecification.Builder mustReturnToOwnerLinkTimePairs(LinkedList<PFAVehicle.MustReturnLinkTimePair> list) {
             mustReturnToOwnerLinkTimePairs = list;
             return this;
         }
 
-        public PFAVSpecification build() {
+        PFAVSpecification build() {
             return new PFAVSpecification(this);
         }
     }

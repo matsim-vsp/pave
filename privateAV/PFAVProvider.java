@@ -29,7 +29,7 @@ import org.matsim.core.mobsim.framework.MobsimTimer;
 /**
  * @author tschlenther
  */
-public class PFAVProvider implements Provider<TaxiOptimizer> {
+class PFAVProvider implements Provider<TaxiOptimizer> {
 	private TaxiConfigGroup taxiCfg;
 	private Fleet fleet;
 	private TaxiScheduleInquiry scheduler;
@@ -38,8 +38,8 @@ public class PFAVProvider implements Provider<TaxiOptimizer> {
 	//	private TravelDisutility travelDisutility;
 	//	private Network network;
 
-	public PFAVProvider(TaxiConfigGroup taxiCfg, Fleet fleet, TaxiScheduleInquiry scheduler, MobsimTimer timer,
-			EventsManager eventsManager) {
+	PFAVProvider(TaxiConfigGroup taxiCfg, Fleet fleet, TaxiScheduleInquiry scheduler, MobsimTimer timer,
+				 EventsManager eventsManager) {
 		this.taxiCfg = taxiCfg;
 		this.fleet = fleet;
 		this.scheduler = scheduler;

@@ -65,23 +65,25 @@ public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHan
 
     public static void main(String[] args) {
 
-        String inputPop = "C:/Users/Work/svn/runs-svn/pfav/berlin/newPattern/ownTruckFleetwithDriver_13k_Truck_noPt/berlin-v5.3-1pct.output_plans.xml.gz";
-
+        String inputPop = "C:/Users/Work/svn/runs-svn/pfav/berlin/trbRuns2019/ownAVPkwFleet_13k_Pkw_noPt/berlin-v5.3-1pct.output_plans.xml.gz";
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
         new PopulationReader(scenario).readFile(inputPop);
         Population pop = scenario.getPopulation();
         EventsManager manager = EventsUtils.createEventsManager();
 
+        int totalAmountOfVehicles = 13000 + 3485; //ownAV case
+//        int totalAmountOfVehicles = 13000 + 1812; //ownTruck = base case
 
-        BaseCaseVehicleOccupancyListener handler = new BaseCaseVehicleOccupancyListener(11000, 12, pop);
+
+        BaseCaseVehicleOccupancyListener handler = new BaseCaseVehicleOccupancyListener(totalAmountOfVehicles, 12, pop);
         manager.addHandler(handler);
 
         MatsimEventsReader reader = new MatsimEventsReader(manager);
 
 
-        String input = "C:/Users/Work/svn/runs-svn/pfav/berlin/newPattern/ownTruckFleetwithDriver_13k_Truck_noPt/berlin-v5.3-1pct.output_events.xml.gz";
+        String input = "C:/Users/Work/svn/runs-svn/pfav/berlin/trbRuns2019/ownAVPkwFleet_13k_Pkw_noPt/berlin-v5.3-1pct.output_events.xml.gz";
         reader.readFile(input);
-        String output = "C:/Users/Work/svn/runs-svn/pfav/berlin/newPattern/ownTruckFleetwithDriver_13k_Truck_noPt/vehicleOccupancy.csv";
+        String output = "C:/Users/Work/svn/runs-svn/pfav/berlin/trbRuns2019/ownAVPkwFleet_13k_Pkw_noPt/vehicleOccupancy.csv";
         handler.writeStats(output);
 
         System.out.println("DONE");
@@ -145,7 +147,7 @@ public class BaseCaseVehicleOccupancyListener implements PersonDepartureEventHan
                             " and atServices = " + atService[i] );
                 }
                 bw.newLine();
-                bw.write("" + i + ";" + "parked;" + (totalAmountOfVehicles - currentVehiclesEnRoute));
+                bw.write("" + i + ";" + "parked(serviceOrNot);" + (totalAmountOfVehicles - currentVehiclesEnRoute));
                 bw.newLine();
                 bw.write("" + i + ";" + "enRoute;" + currentVehiclesEnRoute);
                 bw.newLine();

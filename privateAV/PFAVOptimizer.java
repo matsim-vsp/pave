@@ -1,6 +1,5 @@
 package privateAV;
 
-import com.google.inject.Inject;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
@@ -11,7 +10,6 @@ import org.matsim.contrib.taxi.optimizer.AbstractTaxiOptimizerParams;
 import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
 import org.matsim.contrib.taxi.passenger.TaxiRequest;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
-import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
@@ -29,25 +27,8 @@ final class PFAVOptimizer implements TaxiOptimizer {
 	//TODO: use the setting for log messages
 	private boolean printDetailedWarnings;
 
-	@Inject
-	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, TaxiScheduleInquiry scheduler, EventsManager eventsManager, MobsimTimer timer) {
-
-		if(!(scheduler instanceof PFAVScheduler)) {
-			throw new IllegalArgumentException("this OptimizerProvider can only work with a scheduler of type " + PFAVScheduler.class);
-		}
-
-		this.params = taxiCfg.getTaxiOptimizerParams();
-		
-		this.fleet = fleet;
-		this.scheduler = (PFAVScheduler) scheduler;
-		this.eventsManager = eventsManager;
-		this.timer = timer;
-		
-		this.printDetailedWarnings = taxiCfg.isPrintDetailedWarnings();
-	}
-	
-	public PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, PFAVScheduler scheduler, EventsManager eventsManager,
-			MobsimTimer timer) {
+    PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, PFAVScheduler scheduler, EventsManager eventsManager,
+                  MobsimTimer timer) {
 		
 		this.fleet = fleet;
 		this.scheduler = scheduler;
