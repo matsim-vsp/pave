@@ -2,6 +2,7 @@ package privateAV;
 
 import com.google.inject.Inject;
 import com.google.inject.Key;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.matsim.api.core.v01.Scenario;
@@ -63,8 +64,8 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
                     }
                 }
         );
-
-        addControlerListenerBinding().to(FreightTourManagerListBasedImpl.class);
+        bind(FreightTourManagerListBased.class).to(FreightTourManagerListBasedImpl.class).in(Singleton.class);
+        addControlerListenerBinding().to(FreightTourManagerListBased.class);
         installQSimModule(new PFAVModuleQSim(taxiConfigGroup.getMode()));
     }
 

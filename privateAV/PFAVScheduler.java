@@ -45,14 +45,15 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	private final TaxiScheduler delegate;
 	private final LeastCostPathCalculator router;
 	private Network network;
-	private final TravelTime travelTime;
-	private final MobsimTimer timer;
-	private final TaxiConfigGroup taxiCfg;
-	private final EventsManager eventsManager;
 	private final FreightAVConfigGroup pfavConfigGroup;
 
+	private TravelTime travelTime;
+	private MobsimTimer timer;
+	private EventsManager eventsManager;
+	private FreightTourManagerListBased freightManager;
+
+	private final TaxiConfigGroup taxiCfg;
 	private HashSet<DvrpVehicle> vehiclesOnFreightTour = new HashSet<>();
-	private final FreightTourManagerListBased freightManager;
 	private Map<Id<DvrpVehicle>, Double> requestedVehicles = new HashMap<>();
 
 	/**
