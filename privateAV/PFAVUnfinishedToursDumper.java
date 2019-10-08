@@ -18,24 +18,23 @@
  *                                                                         *
  * *********************************************************************** */
 
-package analysis;
+package privateAV;
 
 import org.matsim.contrib.util.CSVLineBuilder;
 import org.matsim.contrib.util.CompactCSVWriter;
 import org.matsim.core.utils.io.IOUtils;
-import privateAV.FreightTourDataPlanned;
 
 import java.util.Collection;
 
-public class PFAVUnfinishedToursDumper {
+class PFAVUnfinishedToursDumper {
 
     private final Collection<FreightTourDataPlanned> unfinishedTours;
 
-    public PFAVUnfinishedToursDumper(Collection<FreightTourDataPlanned> tours) {
+    PFAVUnfinishedToursDumper(Collection<FreightTourDataPlanned> tours) {
         this.unfinishedTours = tours;
     }
 
-    public void writeStats(String file) {
+    void writeStats(String file) {
         try (CompactCSVWriter writer = new CompactCSVWriter(IOUtils.getBufferedWriter(file), ';')) {
             writeHeader(writer);
 

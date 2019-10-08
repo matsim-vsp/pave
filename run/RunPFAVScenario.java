@@ -18,9 +18,6 @@
 
 package run;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
@@ -33,10 +30,11 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
-
 import privateAV.FreightAVConfigGroup;
 import privateAV.PFAVModeModule;
-import privateAV.PFAVUtils;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * @author tschlenther
@@ -69,7 +67,7 @@ public class RunPFAVScenario {
 		} else {
 			configFile = CONFIG_FILE_RULEBASED;
 			carriers = CARRIERS_FILE;
-			vehTypes = PFAVUtils.DEFAULT_VEHTYPES_FILE;
+			vehTypes = "input/PFAVvehicleTypes.xml";
 			output = OUTPUT_DIR;
 		}
 		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME, carriers, vehTypes);

@@ -47,7 +47,7 @@ class PFAVServiceTask extends StayTaskImpl implements TaxiTask {
 		return TaxiTaskType.DROPOFF;
 	}
 
-	public CarrierService getCarrierService() {
+	CarrierService getCarrierService() {
 		return this.service;
 	}
 	

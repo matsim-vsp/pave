@@ -36,7 +36,7 @@ class PFAVServiceActivity extends FirstLastSimStepDynActivity {
 	/**
 	 * @param activityType
 	 */
-    public PFAVServiceActivity(String activityType, PFAVServiceTask serviceTask, Id<DvrpVehicle> vehicleId) {
+	PFAVServiceActivity(String activityType, PFAVServiceTask serviceTask, Id<DvrpVehicle> vehicleId) {
 		super(activityType + "_" + serviceTask.getCarrierService().getId());
 		this.departureTime = serviceTask.getEndTime();
         timeWindow = serviceTask.getCarrierService().getServiceStartTimeWindow();
@@ -57,11 +57,11 @@ class PFAVServiceActivity extends FirstLastSimStepDynActivity {
 		super.beforeFirstStep(now);
 	}
 
-    public TimeWindow getTimeWindow() {
+	TimeWindow getTimeWindow() {
         return timeWindow;
     }
 
-    public Id<DvrpVehicle> getVehicleId() {
+	Id<DvrpVehicle> getVehicleId() {
         return vehicleId;
     }
 

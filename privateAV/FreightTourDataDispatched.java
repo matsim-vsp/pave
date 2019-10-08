@@ -192,7 +192,7 @@ public final class FreightTourDataDispatched {
     }
 
 
-    public static final class Builder {
+    static final class Builder {
         private Id<DvrpVehicle> vehicleId;
         private PFAVehicle.MustReturnLinkTimePair mustReturnLog;
         private double dispatchTime;
@@ -211,7 +211,7 @@ public final class FreightTourDataDispatched {
         private Builder() {
         }
 
-        public FreightTourDataDispatched.Builder dispatchTime(double val) {
+        FreightTourDataDispatched.Builder dispatchTime(double val) {
             dispatchTime = val;
             return this;
         }
@@ -221,12 +221,12 @@ public final class FreightTourDataDispatched {
 //            return this;
 //        }
 
-        public FreightTourDataDispatched.Builder requestLink(Id<Link> val) {
+        FreightTourDataDispatched.Builder requestLink(Id<Link> val) {
             requestLink = val;
             return this;
         }
 
-        public FreightTourDataDispatched.Builder tourData(FreightTourDataPlanned val) {
+        FreightTourDataDispatched.Builder tourData(FreightTourDataPlanned val) {
             this.data = val;
             return this;
         }
@@ -236,38 +236,37 @@ public final class FreightTourDataDispatched {
 //            return this;
 //        }
 //
-        public FreightTourDataDispatched.Builder plannedTourLength(double val) {
+        FreightTourDataDispatched.Builder plannedTourLength(double val) {
             plannedTourLength = val;
             return this;
         }
 
-        public FreightTourDataDispatched.Builder plannedEmptyMeters(double val) {
+        FreightTourDataDispatched.Builder plannedEmptyMeters(double val) {
             plannedEmptyMeters = val;
             return this;
         }
 
-        //
-        public FreightTourDataDispatched.Builder distanceToDepot(double val) {
+        FreightTourDataDispatched.Builder distanceToDepot(double val) {
             distanceToDepot = val;
             return this;
         }
 
-        public FreightTourDataDispatched.Builder distanceBackToOwner(double returnDistance) {
+        FreightTourDataDispatched.Builder distanceBackToOwner(double returnDistance) {
             distanceBackToOwner = returnDistance;
             return this;
         }
 
-        public FreightTourDataDispatched.Builder mustReturnLog(PFAVehicle.MustReturnLinkTimePair val) {
+        FreightTourDataDispatched.Builder mustReturnLog(PFAVehicle.MustReturnLinkTimePair val) {
             mustReturnLog = val;
             return this;
         }
 
-        public FreightTourDataDispatched.Builder vehicleId(Id<DvrpVehicle> val) {
+        FreightTourDataDispatched.Builder vehicleId(Id<DvrpVehicle> val) {
             vehicleId = val;
             return this;
         }
 
-        public FreightTourDataDispatched build() {
+        FreightTourDataDispatched build() {
             return new FreightTourDataDispatched(this);
         }
     }

@@ -59,7 +59,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
 
                     @Override
                     public TravelDisutility get() {
-                        return new VehTypeVariableTravelDisutility(travelTime, retrievePFAVType(vTypes, pfavConfigGroup.getPfavType()).getVehicleCostInformation());
+                        return new VehTypeVariableTravelDisutility(travelTime, retrievePFAVType(vTypes, pfavConfigGroup.getPfavType()).getCostInformation());
                     }
                 }
         );
@@ -74,7 +74,8 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
             if (type.getId().toString().equals(pfavType)) return type;
         }
         throw new IllegalArgumentException("no cost parameters for vehicle type " + pfavType + " could be found in carriersVehicleTypes." +
-                "please make sure that PFAV_TYPE is included in carriersVehicleTypes. Currently, no default cost parameters for pfav are implemented..");
+                "please make sure that PFAV_TYPE (currently set in cofig group to " + pfavType + ") is included in carriersVehicleTypes." +
+                "Currently, no default cost parameters for pfav are implemented..");
     }
 
     private CarrierVehicleTypes readVehicleTypes(FreightAVConfigGroup configGroup) {

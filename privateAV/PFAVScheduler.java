@@ -73,7 +73,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 
 	}
 
-	public void updateBeforeNextTask(DvrpVehicle vehicle) {
+	void updateBeforeNextTask(DvrpVehicle vehicle) {
 
 		Schedule schedule = vehicle.getSchedule();
 		// Assumption: there is no delay as long as the schedule has not been started (PLANNED)
@@ -89,7 +89,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				if (!taxiCfg.isDestinationKnown()) {
 					appendResultingTasksAfterPickup(vehicle);
 				}
-				if (!requestedVehicles.keySet().contains(vehicle.getId())) {
+				if (!requestedVehicles.containsKey(vehicle.getId())) {
 					throw new RuntimeException(
 							"vehicle performed a passenger pick up but was not on the requested vehicles list..");
 				}
@@ -111,7 +111,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				} else if (currentTask instanceof PFAVRetoolTask
 						&& Schedules.getNextTask(schedule) instanceof TaxiEmptyDriveTask //we are at the end of a freight tour (otherwise next task would be instanceof PFAVServiceDriveTask
 						&& pfavConfigGroup.isAllowMultipleToursInaRow()
-						&& !requestedVehicles.keySet().contains(vehicle.getId())) {    //owner has not submitted a request yet
+						&& !requestedVehicles.containsKey(vehicle.getId())) {    //owner has not submitted a request yet
 					requestFreightTour(vehicle);
 				}
 				break;
@@ -122,7 +122,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 			case EMPTY_DRIVE:
                 if (isPFAVReturningToDepot(vehicle)
 						&& pfavConfigGroup.isAllowMultipleToursInaRow()
-						&& !requestedVehicles.keySet().contains(vehicle.getId())) {
+						&& !requestedVehicles.containsKey(vehicle.getId())) {
 					requestFreightTour(vehicle);
                 } else if (isPFAVReturningToOwner(vehicle)) {
 					//we are at the end of a freight tour
@@ -406,7 +406,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	/**
 	 * currently not implemented. is here for use in future (other usecases than ts's master thesis)
 	 */
-	public void cancelFreightTour(DvrpVehicle veh) {
+	void cancelFreightTour(DvrpVehicle veh) {
 		// TODO: cancel the freight tour and make vehicle return to depot. insert STAY task at the depot
 		//		- first check if freight tour is started in the first place! otherwise throw exception!
 		throw new RuntimeException("currently not implemented");
