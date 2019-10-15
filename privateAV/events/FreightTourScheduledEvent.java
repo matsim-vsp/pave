@@ -105,4 +105,5 @@ public class FreightTourScheduledEvent extends Event {
 	public FreightTourDataDispatched getTourData() {
 		return tourData;
 	}
+	
 }
