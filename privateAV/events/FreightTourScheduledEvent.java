@@ -42,10 +42,9 @@ public class FreightTourScheduledEvent extends Event {
     private final double mustReturnTime;
     private final double tourDuration;
     private final double tourLength;
+    private FreightTourDataDispatched tourData;
 
-    private FreightTourDataDispatched tourData = null;
-
-    public FreightTourScheduledEvent(double time, Id<DvrpVehicle> vehicleId, Id<Link> requestLink, double mustReturnTime, double tourDuration, double tourLength) {
+	public FreightTourScheduledEvent(double time, Id<DvrpVehicle> vehicleId, Id<Link> requestLink, double mustReturnTime, double tourDuration, double tourLength) {
         super(time);
         this.vehicleId = vehicleId;
         this.requestLink = requestLink;
@@ -82,9 +81,28 @@ public class FreightTourScheduledEvent extends Event {
         attr.put(ATTRIBUTE_MUST_RETURN_TIME, mustReturnTime + "");
         return attr;
     }
+    
+    public Id<DvrpVehicle> getVehicleId() {
+		return vehicleId;
+	}
 
-    public FreightTourDataDispatched getTourData() {
-        return this.tourData;
+	public Id<Link> getRequestLink() {
+		return requestLink;
+	}
+
+	public double getTourDuration() {
+		return tourDuration;
+	}
+
+	public double getTourLength() {
+		return tourLength;
+	}
+
+	public double getMustReturnTime() {
+    	return mustReturnTime;
     }
-
+	
+	public FreightTourDataDispatched getTourData() {
+		return tourData;
+	}
 }
