@@ -24,7 +24,7 @@ import org.matsim.api.core.v01.events.*;
 import org.matsim.api.core.v01.events.handler.*;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsUtils;
-import privateAV.events.PFAVEventsReader;
+import privateAV.PFAVEventsReader;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -76,12 +76,12 @@ public class BasicAnalysis implements ActivityStartEventHandler, ActivityEndEven
     public void handleEvent(ActivityEndEvent event) {
         String person = event.getPersonId().toString();
         if(person.contains("freight")){
-            this.allFreightPersonIds.add(person);
+            allFreightPersonIds.add(person);
             nrOfActEndeWithFreight ++;
             if(! event.getActType().equals("start")) throw new IllegalStateException("person id = " + person + " event = " + event.toString());
         }
         if(event.getActType().equals("start")){
-            this.numberOfStarts ++;
+            numberOfStarts++;
             if(!person.contains("freight")) throw new IllegalStateException("person id = " + person + " event = " + event.toString());
         }
 
@@ -91,12 +91,12 @@ public class BasicAnalysis implements ActivityStartEventHandler, ActivityEndEven
     public void handleEvent(ActivityStartEvent event) {
         String person = event.getPersonId().toString();
         if(person.contains("freight")){
-            this.allFreightPersonIds.add(person);
+            allFreightPersonIds.add(person);
             nrOfActStartWithFreight ++;
             if(! event.getActType().equals("end") || event.getActType().equals("service")) throw new IllegalStateException("person id = " + person + " event = " + event.toString());
         }
         if(event.getActType().equals("end")){
-            this.numberOfEnds ++;
+            numberOfEnds++;
             if(!person.contains("freight")) throw new IllegalStateException("person id = " + person + " event = " + event.toString());
         }
     }
@@ -105,7 +105,7 @@ public class BasicAnalysis implements ActivityStartEventHandler, ActivityEndEven
     public void handleEvent(PersonArrivalEvent event) {
         String person = event.getPersonId().toString();
         if(person.contains("freight")){
-            this.allFreightPersonIds.add(person);
+            allFreightPersonIds.add(person);
             nrOfFreightArrivals ++;
         }
 
@@ -115,7 +115,7 @@ public class BasicAnalysis implements ActivityStartEventHandler, ActivityEndEven
     public void handleEvent(PersonDepartureEvent event) {
         String person = event.getPersonId().toString();
         if(person.contains("freight")){
-            this.allFreightPersonIds.add(person);
+            allFreightPersonIds.add(person);
             nrOfFreightDepartures ++;
         }
     }

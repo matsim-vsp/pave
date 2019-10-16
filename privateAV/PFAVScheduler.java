@@ -28,9 +28,6 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.misc.Time;
-import privateAV.events.FreightTourCompletedEvent;
-import privateAV.events.FreightTourRequestRejectedEvent;
-import privateAV.events.FreightTourScheduledEvent;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -132,7 +129,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 								+ "ends and scheduler did not even mark it as being on freight tour");
 
 					this.eventsManager.processEvent(
-							new FreightTourCompletedEvent(vehicle.getId(), timer.getTimeOfDay()));
+							new EventFreightTourCompleted(vehicle.getId(), timer.getTimeOfDay()));
 					this.vehiclesOnFreightTour.remove(vehicle);
 					log.warn("vehicle "
 							+ vehicle.getId()
@@ -195,7 +192,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				throw new IllegalStateException();
 			}
 			if (tourData != null) {
-				eventsManager.processEvent(new FreightTourCompletedEvent(vehicle.getId(), timer.getTimeOfDay()));
+				eventsManager.processEvent(new EventFreightTourCompleted(vehicle.getId(), timer.getTimeOfDay()));
 			}
 		}
 		if (tourData != null) {
@@ -203,7 +200,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 			scheduleFreightTour(vehicle, tourData);
 		} else {
 			Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
-			eventsManager.processEvent(new FreightTourRequestRejectedEvent((PFAVehicle)vehicle, requestLink.getId(),
+			eventsManager.processEvent(new EventFreightTourRequestRejected((PFAVehicle) vehicle, requestLink.getId(),
 					timer.getTimeOfDay()));
 			log.info("request is rejected");
 		}
@@ -228,7 +225,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		//mark this vehicle's state as "on freight tour"
 		this.vehiclesOnFreightTour.add(vehicle);
 		log.info("vehicle " + vehicle.getId() + " got assigned to a freight schedule");
-		eventsManager.processEvent(new FreightTourScheduledEvent(dispatchData));
+		eventsManager.processEvent(new EventFreightTourScheduled(dispatchData));
 	}
 
 	private FreightTourDataDispatched buildDispatchData(DvrpVehicle vehicle, FreightTourDataPlanned tourData, double distanceToDepot, double distanceBackToOwner) {

@@ -20,7 +20,6 @@
 
 package privateAV;
 
-import analysis.FreightTourDispatchAnalyzer;
 import analysis.OverallTravelTimeAndDistanceListener;
 import analysis.PFAVWaitTimesAnalyzer;
 import org.matsim.api.core.v01.network.Network;

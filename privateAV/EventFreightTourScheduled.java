@@ -18,24 +18,48 @@
  *                                                                         *
  * *********************************************************************** */
 
-package privateAV.events;
+package privateAV;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 
 import java.util.Map;
 
-public class FreightTourCompletedEvent extends Event {
-    static final String EVENT_TYPE = "freightTourCompleted";
+class EventFreightTourScheduled extends Event {
+    static final String EVENT_TYPE = "freightTourScheduled";
+
     static final String ATTRIBUTE_VEHICLE = "vehicle";
+    static final String ATTRIBUTE_REQUEST_LINK = "requestLink";
+    static final String ATTRIBUTE_FREIGHT_TOUR_DURATION = "freightTourDuration";
+    static final String ATTRIBUTE_FREIGHT_TOUR_DISTANCE = "freightTourDistance";
+    static final String ATTRIBUTE_MUST_RETURN_TIME = "mustReturnTime";
 
     private final Id<DvrpVehicle> vehicleId;
+    private final Id<Link> requestLink;
+    private final double mustReturnTime;
+    private final double tourDuration;
+    private final double tourLength;
+    private FreightTourDataDispatched tourData;
 
-
-    public FreightTourCompletedEvent(Id<DvrpVehicle> vehicleId, double timeOfDay) {
-        super(timeOfDay);
+    EventFreightTourScheduled(double time, Id<DvrpVehicle> vehicleId, Id<Link> requestLink, double mustReturnTime, double tourDuration, double tourLength) {
+        super(time);
         this.vehicleId = vehicleId;
+        this.requestLink = requestLink;
+        this.mustReturnTime = mustReturnTime;
+        this.tourDuration = tourDuration;
+        this.tourLength = tourLength;
+    }
+
+    EventFreightTourScheduled(FreightTourDataDispatched data) {
+        super(data.getDispatchTime());
+        this.tourData = data;
+        this.vehicleId = data.getVehicleId();
+        this.requestLink = data.getRequestLink();
+        this.tourDuration = data.getPlannedTourDuration();
+        this.tourLength = data.getPlannedTourLength();
+        this.mustReturnTime = data.getMustReturnLog().getTime();
     }
 
     /**
@@ -50,11 +74,35 @@ public class FreightTourCompletedEvent extends Event {
     public Map<String, String> getAttributes() {
         Map<String, String> attr = super.getAttributes();
         attr.put(ATTRIBUTE_VEHICLE, vehicleId + "");
+        attr.put(ATTRIBUTE_REQUEST_LINK, requestLink + "");
+        attr.put(ATTRIBUTE_FREIGHT_TOUR_DURATION, tourDuration + "");
+        attr.put(ATTRIBUTE_FREIGHT_TOUR_DISTANCE, tourLength + "");
+        attr.put(ATTRIBUTE_MUST_RETURN_TIME, mustReturnTime + "");
         return attr;
     }
 
-    public Id<DvrpVehicle> getVehicleId() {
-        return vehicleId;
+    Id<DvrpVehicle> getVehicleId() {
+		return vehicleId;
+	}
+
+    Id<Link> getRequestLink() {
+		return requestLink;
+	}
+
+    double getTourDuration() {
+		return tourDuration;
+	}
+
+    double getTourLength() {
+		return tourLength;
+	}
+
+    double getMustReturnTime() {
+    	return mustReturnTime;
     }
+
+    FreightTourDataDispatched getTourData() {
+		return tourData;
+	}
 
 }

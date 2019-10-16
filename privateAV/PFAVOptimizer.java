@@ -13,7 +13,6 @@ import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
-import privateAV.events.PFAVOwnerWaitsForVehicleEvent;
 
 final class PFAVOptimizer implements TaxiOptimizer {
 
@@ -57,7 +56,7 @@ final class PFAVOptimizer implements TaxiOptimizer {
 
 				log.warn("agent " + req.getPassengerId() + " submitted request at time=" + req.getSubmissionTime() + " for it's own vehicle " + personalAV +
 						" which is still on a freight tour (or maybe on the way back). currently, freight tours do not get canceled...");
-				eventsManager.processEvent(new PFAVOwnerWaitsForVehicleEvent(timer.getTimeOfDay(), personalAV, req.getPassengerId()));
+				eventsManager.processEvent(new EventPFAVOwnerWaitsForVehicle(timer.getTimeOfDay(), personalAV, req.getPassengerId()));
 //				scheduler.cancelFreightTour(veh);
 
             }

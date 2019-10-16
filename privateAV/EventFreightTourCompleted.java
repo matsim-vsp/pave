@@ -18,29 +18,24 @@
  *                                                                         *
  * *********************************************************************** */
 
-package privateAV.events;
+package privateAV;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
-import org.matsim.api.core.v01.population.Person;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 
 import java.util.Map;
 
-public class PFAVOwnerWaitsForVehicleEvent extends Event {
-
-    static final String EVENT_TYPE = "PFAVOwner waits";
-
-    static final String ATTRIBUTE_OWNER = "owner";
+class EventFreightTourCompleted extends Event {
+    static final String EVENT_TYPE = "freightTourCompleted";
     static final String ATTRIBUTE_VEHICLE = "vehicle";
 
     private final Id<DvrpVehicle> vehicleId;
-    private final Id<Person> owner;
 
-    public PFAVOwnerWaitsForVehicleEvent(double time, Id<DvrpVehicle> vehicleId, Id<Person> owner) {
-        super(time);
+
+    EventFreightTourCompleted(Id<DvrpVehicle> vehicleId, double timeOfDay) {
+        super(timeOfDay);
         this.vehicleId = vehicleId;
-        this.owner = owner;
     }
 
     /**
@@ -54,16 +49,12 @@ public class PFAVOwnerWaitsForVehicleEvent extends Event {
     @Override
     public Map<String, String> getAttributes() {
         Map<String, String> attr = super.getAttributes();
-        attr.put(ATTRIBUTE_OWNER, owner + "");
         attr.put(ATTRIBUTE_VEHICLE, vehicleId + "");
         return attr;
     }
 
-    public Id<DvrpVehicle> getVehicleId() {
+    Id<DvrpVehicle> getVehicleId() {
         return vehicleId;
     }
 
-    public Id<Person> getOwner() {
-        return owner;
-    }
 }

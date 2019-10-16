@@ -18,46 +18,29 @@
  *                                                                         *
  * *********************************************************************** */
 
-package privateAV.events;
+package privateAV;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
-import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
-import privateAV.PFAVehicle;
 
 import java.util.Map;
 
-public class FreightTourRequestRejectedEvent extends Event {
+public class EventPFAVOwnerWaitsForVehicle extends Event {
 
-    static final String EVENT_TYPE = "rejectedFreightTourRequest";
+    static final String EVENT_TYPE = "PFAVOwner waits";
 
+    static final String ATTRIBUTE_OWNER = "owner";
     static final String ATTRIBUTE_VEHICLE = "vehicle";
-    static final String ATTRIBUTE_REQUEST_LINK = "requestLink";
-    static final String ATTRIBUTE_MUST_RETURN_LINK = "mustReturnLink";
-    static final String ATTRIBUTE_MUST_RETURN_TIME = "mustReturnTime";
 
     private final Id<DvrpVehicle> vehicleId;
-    private final Id<Link> requestLink;
-    private final Id<Link> mustReturnLink;
-    private final double mustReturnTime;
+    private final Id<Person> owner;
 
-
-    public FreightTourRequestRejectedEvent(PFAVehicle vehicle, Id<Link> requestLink, double timeOfDay) {
-        super(timeOfDay);
-        vehicleId = vehicle.getId();
-        this.requestLink = requestLink;
-        PFAVehicle.MustReturnLinkTimePair returnLog = vehicle.getMustReturnToOwnerLinkTimePairs().peek();
-        this.mustReturnLink = returnLog.getLinkId();
-        this.mustReturnTime = returnLog.getTime();
-    }
-
-    public FreightTourRequestRejectedEvent(Id<DvrpVehicle> vehicle, Id<Link> requestLink, double timeOfDay, Id<Link> mustReturnLink, double mustReturnTime) {
-        super(timeOfDay);
-        this.vehicleId = vehicle;
-        this.requestLink = requestLink;
-        this.mustReturnLink = mustReturnLink;
-        this.mustReturnTime = mustReturnTime;
+    EventPFAVOwnerWaitsForVehicle(double time, Id<DvrpVehicle> vehicleId, Id<Person> owner) {
+        super(time);
+        this.vehicleId = vehicleId;
+        this.owner = owner;
     }
 
     /**
@@ -71,11 +54,8 @@ public class FreightTourRequestRejectedEvent extends Event {
     @Override
     public Map<String, String> getAttributes() {
         Map<String, String> attr = super.getAttributes();
+        attr.put(ATTRIBUTE_OWNER, owner + "");
         attr.put(ATTRIBUTE_VEHICLE, vehicleId + "");
-        attr.put(ATTRIBUTE_REQUEST_LINK, requestLink + "");
-//        attr.put(ATTRIBUTE_MUST_RETURN_LINK_TIME_PAIR, returnLog.toString());
-        attr.put(ATTRIBUTE_MUST_RETURN_LINK, mustReturnLink + "");
-        attr.put(ATTRIBUTE_MUST_RETURN_TIME, mustReturnTime + "");
         return attr;
     }
 
@@ -83,15 +63,7 @@ public class FreightTourRequestRejectedEvent extends Event {
         return vehicleId;
     }
 
-    public Id<Link> getRequestLink() {
-        return requestLink;
-    }
-
-    public Id<Link> getMustReturnLink() {
-        return mustReturnLink;
-    }
-
-    public double getMustReturnTime() {
-        return mustReturnTime;
+    public Id<Person> getOwner() {
+        return owner;
     }
 }

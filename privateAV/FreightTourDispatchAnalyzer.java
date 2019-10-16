@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package analysis;
+package privateAV;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -42,17 +42,12 @@ import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.io.IOUtils;
-import privateAV.FreightTourDataDispatched;
-import privateAV.PFAVActionCreator;
-import privateAV.events.FreightTourCompletedEvent;
-import privateAV.events.FreightTourRequestRejectedEvent;
-import privateAV.events.FreightTourScheduledEvent;
 
 import java.util.*;
 
 /**
  */
-public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSimScopeObjectListener<Fleet>,
+class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSimScopeObjectListener<Fleet>,
         LinkEnterEventHandler, ActivityStartEventHandler, ActivityEndEventHandler, IterationEndsListener {
 
     private Map<Id<DvrpVehicle>, FreightTourDataDispatched> begunFreightTours = new HashMap<>();
@@ -68,15 +63,15 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
     private Network network;
 
     @Override
-    public void handleEvent(final FreightTourScheduledEvent event) {
-        if (this.begunFreightTours.get(event.getTourData().getVehicleId()) != null) {
+    public void handleEvent(final EventFreightTourScheduled event) {
+        if (this.begunFreightTours.get(event.getVehicleId()) != null) {
             throw new IllegalStateException("a vehicle cannot perform two freight tours at the same time!");
         }
-        this.begunFreightTours.put(event.getTourData().getVehicleId(), event.getTourData());
+        this.begunFreightTours.put(event.getVehicleId(), event.getTourData());
     }
 
     @Override
-    public void handleEvent(FreightTourRequestRejectedEvent event) {
+    public void handleEvent(EventFreightTourRequestRejected event) {
         Id<DvrpVehicle> veh = event.getVehicleId();
         Double dispatchTime = event.getTime();
         Double mustReturnTime = event.getMustReturnTime();
@@ -84,7 +79,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
     }
 
     @Override
-    public void handleEvent(FreightTourCompletedEvent event) {
+    public void handleEvent(EventFreightTourCompleted event) {
         FreightTourDataDispatched data = this.begunFreightTours.get(event.getVehicleId());
         if (data == null) {
             throw new RuntimeException("vehicle " + event.getVehicleId() + " completed a freight tour that has not begun?");
@@ -97,7 +92,7 @@ public class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandl
     @Override
     public void handleEvent(LinkEnterEvent event) {
         Link link = network.getLinks().get(event.getLinkId());
-        if (this.begunFreightTours.keySet().contains(event.getVehicleId())) {
+        if (this.begunFreightTours.containsKey(event.getVehicleId())) {
 
             FreightTourDataDispatched data = this.begunFreightTours.get(event.getVehicleId());
             data.addToActualTourLength(link.getLength());

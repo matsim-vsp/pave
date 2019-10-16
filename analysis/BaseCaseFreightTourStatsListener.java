@@ -34,7 +34,7 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.vehicles.Vehicle;
-import privateAV.events.PFAVEventsReader;
+import privateAV.PFAVEventsReader;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

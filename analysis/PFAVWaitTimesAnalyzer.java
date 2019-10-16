@@ -30,9 +30,10 @@ import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.utils.io.IOUtils;
+import privateAV.EventPFAVOwnerWaitsForVehicle;
 import privateAV.PFAVActionCreator;
-import privateAV.events.PFAVEventsReader;
-import privateAV.events.PFAVOwnerWaitsForVehicleEvent;
+import privateAV.PFAVEventsReader;
+import privateAV.PFAVWaitTimesListener;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -70,7 +71,7 @@ public class PFAVWaitTimesAnalyzer implements PFAVWaitTimesListener, ActivitySta
     }
 
     @Override
-    public void handleEvent(PFAVOwnerWaitsForVehicleEvent event) {
+    public void handleEvent(EventPFAVOwnerWaitsForVehicle event) {
         if (this.awaitedVehicles.containsKey(event.getOwner())) {
             throw new IllegalStateException("owner " + event.getOwner() + " triggers two wait events without being picked up in the meantime." +
                     " second waiting event time=" + event.getTime());
