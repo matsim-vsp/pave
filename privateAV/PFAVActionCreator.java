@@ -45,7 +45,7 @@ public final class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 
 	public static final String PICKUP_ACTIVITY_TYPE = "TaxiPickup";
 	static final String DROPOFF_ACTIVITY_TYPE = "TaxiDropoff";
-	public static final String STAY_ACTIVITY_TYPE = "TaxiStay";
+	static final String STAY_ACTIVITY_TYPE = "TaxiStay";
 	
 	public static final String SERVICE_ACTIVITY_TYPE = "service";
 	static final String RETOOL_ACTIVITY_TYPE = "retool";

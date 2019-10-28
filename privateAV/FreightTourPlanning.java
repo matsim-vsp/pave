@@ -52,12 +52,7 @@ import java.util.List;
 public final class FreightTourPlanning {
 
 	private static final Logger log = Logger.getLogger(FreightTourPlanning.class);
-	 
-//	private static FreightAVConfigGroup pfavConfigGroup;
-//	
-//	public FreightTourPlanning(FreightAVConfigGroup pfavConfigGroup) {
-//		FreightTourPlanning.pfavConfigGroup = pfavConfigGroup;
-//	}
+
     /**
 	 */
     static FreightTourDataPlanned convertToPFAVTourData(ScheduledTour freightTour, Network network, TravelTime travelTime, FreightAVConfigGroup pfavConfigGroup) {
