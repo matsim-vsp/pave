@@ -58,10 +58,10 @@ public class ServiceInPLZ {
     }
 
     public static void main(String[] args) {
-        String carriersFile = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PrivatkundenDirekt/carriers_woSolution.xml.gz";
-        String netFile = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PrivatkundenDirekt/network_Schroeder_slow.xml";
-        String shapeFile = "C:/Users/Work/svn/shared-svn/studies/tschlenther/PAVE/Daten/PLZ/plz-gebiete.shp";
-        String outputFile = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PrivatkundenDirekt/TSanalyse/servicesProPLZ.csv";
+        String carriersFile = "C:/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PrivatkundenDirekt/carriers_woSolution.xml.gz";
+        String netFile = "C:/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PrivatkundenDirekt/network_Schroeder_slow.xml";
+        String shapeFile = "C:/svn/shared-svn/studies/tschlenther/PAVE/Daten/PLZ/plz-gebiete.shp";
+        String outputFile = "C:/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PrivatkundenDirekt/TSanalyse/ThallerAnalysisPLZ.csv";
 
 
         Network network = ScenarioUtils.createScenario(ConfigUtils.createConfig()).getNetwork();
@@ -70,27 +70,32 @@ public class ServiceInPLZ {
         Carriers carriers = new Carriers();
         new CarrierPlanXmlReader(carriers).readFile(carriersFile);
         ServiceInPLZ serviceInPLZ = new ServiceInPLZ(network, carriers, shapeFile);
-        serviceInPLZ.writeNumberOfServicesPerPLZToCSV(outputFile);
+        serviceInPLZ.analyzePerPLZWriteOfServicesToCSV(outputFile);
 
     }
 
-    void writeNumberOfServicesPerPLZToCSV(String path) {
+    void analyzePerPLZWriteOfServicesToCSV(String path) {
         readShapeFile();
 
         Map<Long, Integer> numberOfServicesPerPLZ = new HashMap<>();
+        Map<Long, Integer> capacityDemandPerPLZ = new HashMap<>();
         for (Carrier carrier : carriers.getCarriers().values()) {
             for (CarrierService service : carrier.getServices().values()) {
                 long plz = getPlzForService(service);
-                Integer newValue = numberOfServicesPerPLZ.containsKey(plz) ? numberOfServicesPerPLZ.get(plz) + 1 : 1;
-                numberOfServicesPerPLZ.put(plz, newValue);
+                Integer newServiceCount = numberOfServicesPerPLZ.containsKey(plz) ? numberOfServicesPerPLZ.get(plz) + 1 : 1;
+                numberOfServicesPerPLZ.put(plz, newServiceCount);
+                int cap = service.getCapacityDemand();
+                Integer newCapacityCount = capacityDemandPerPLZ.containsKey(plz) ? capacityDemandPerPLZ.get(plz) + cap : cap;
+                capacityDemandPerPLZ.put(plz, newServiceCount);
+
             }
         }
         try {
-            String header = "PLZ;AnzahlServices\n";
+            String header = "PLZ;AnzahlServices;capacityDemand\n";
             BufferedWriter writer = IOUtils.getBufferedWriter(path);
             writer.write(header);
             for (Long plz : numberOfServicesPerPLZ.keySet()) {
-                writer.write(plz + ";" + numberOfServicesPerPLZ.get(plz) + "\n");
+                writer.write(plz + ";" + numberOfServicesPerPLZ.get(plz) + ";" + capacityDemandPerPLZ.get(plz) + "\n");
             }
             writer.close();
         } catch (IOException e) {
