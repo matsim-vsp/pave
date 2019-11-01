@@ -143,7 +143,7 @@ public final class FreightTourPlanning {
         netBuilder.setTravelTime(travelTime);
         final NetworkBasedTransportCosts netBasedCosts = netBuilder.build();
 
-        for (Carrier carrier : carriers.getCarriers().values()) {
+        carriers.getCarriers().values().parallelStream().forEach(carrier -> {
             //Build VRP
             VehicleRoutingProblem.Builder vrpBuilder = MatsimJspritFactory.createRoutingProblemBuilder(carrier, network);
             vrpBuilder.setRoutingCost(netBasedCosts);
@@ -172,7 +172,7 @@ public final class FreightTourPlanning {
             NetworkRouter.routePlan(carrierPlan, netBasedCosts);
 
             carrier.setSelectedPlan(carrierPlan);
-        }
+        });
     }
 
 }
