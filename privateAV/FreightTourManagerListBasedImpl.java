@@ -367,7 +367,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
             writeCarriers(event);
         }
         log.info("initialising mapping of freight tours to link id's");
-        this.depotToFreightTour = new HashMap<>();
+        if(!this.depotToFreightTour.isEmpty()) throw new RuntimeException("the depot2FreightTourMap should be empty at this point..");
 
 //		if we allow empty depots, we need to initialise the manager's map of depot links to tours with empty lists.
         if (pfavConfigGroup.isAllowEmptyTourListsForDepots()) mapDepotLinksToEmptyTourList();
@@ -400,6 +400,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
         String dir = event.getServices().getConfig().controler().getOutputDirectory() + "/ITERS/it." + event.getIteration() + "/";
         List<FreightTourDataPlanned> unfinishedTours = new ArrayList<>();
         this.depotToFreightTour.forEach((link, tours) -> unfinishedTours.addAll(tours));
+        this.depotToFreightTour.clear(); // the map should be cleared.
         new PFAVUnfinishedToursDumper(unfinishedTours).writeStats(dir + "notDispatchedTours_it" + event.getIteration() + ".csv");
     }
 
