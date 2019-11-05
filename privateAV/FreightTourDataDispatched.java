@@ -69,12 +69,12 @@ public final class FreightTourDataDispatched {
         return new FreightTourDataDispatched.Builder();
     }
 
-    public void addToActualTourLength(double metersToAdd) {
+    void addToActualTourLength(double metersToAdd) {
         if (this.actualTourLength == Double.NEGATIVE_INFINITY) actualTourLength = metersToAdd;
         else this.actualTourLength += metersToAdd;
     }
 
-    public void addToActualEmptyMeters(double metersToAdd) {
+    void addToActualEmptyMeters(double metersToAdd) {
         if (this.actualEmptyMeters == Double.NEGATIVE_INFINITY) this.actualEmptyMeters = metersToAdd;
         else this.actualEmptyMeters += metersToAdd;
     }
@@ -90,7 +90,7 @@ public final class FreightTourDataDispatched {
         else this.actualServedCapacityDemand += actualServedCapacityDemandToAdd;
     }
 
-    public void notifyNextServiceTaskStarted(double startTime) {
+    void notifyNextServiceTaskStarted(double startTime) {
         for (int i = this.tourData.getTourTasks().size() - 1; i >= 0; i--) {
             TaxiTask task = this.tourData.getTourTasks().get(i);
             if (task instanceof PFAVServiceTask && (task.getStatus() == Task.TaskStatus.PERFORMED || task.getStatus() == Task.TaskStatus.STARTED)) {
@@ -103,15 +103,15 @@ public final class FreightTourDataDispatched {
         }
     }
 
-    public double getActualTourDuration() {
+    double getActualTourDuration() {
         return actualTourDuration;
     }
 
-    public void setActualTourDuration(double actualTourDuration) {
+    void setActualTourDuration(double actualTourDuration) {
         this.actualTourDuration = actualTourDuration;
     }
 
-    public int getAmountOfServicesPlanned() {
+    int getAmountOfServicesPlanned() {
         int services = 0;
         for (TaxiTask t : this.tourData.getTourTasks()) {
             if (t instanceof PFAVServiceTask) services++;
@@ -119,27 +119,27 @@ public final class FreightTourDataDispatched {
         return services;
     }
 
-    public double getActualTourLength() {
+    double getActualTourLength() {
         return actualTourLength;
     }
 
-    public double getPlannedEmptyMeters() {
+    double getPlannedEmptyMeters() {
         return plannedEmptyMeters;
     }
 
-    public double getActualEmptyMeters() {
+    double getActualEmptyMeters() {
         return actualEmptyMeters;
     }
 
-    public double getDistanceToDepot() {
+    double getDistanceToDepot() {
         return distanceToDepot;
     }
 
-    public double getDistanceBackToOwner() {
+    double getDistanceBackToOwner() {
         return distanceBackToOwner;
     }
 
-    public int getActualServedCapacityDemand() {
+    int getActualServedCapacityDemand() {
         return actualServedCapacityDemand;
     }
 
@@ -147,15 +147,15 @@ public final class FreightTourDataDispatched {
         return tourData.getDepotLink().getId();
     }
 
-    public double getPlannedTourDuration() {
+    double getPlannedTourDuration() {
         return tourData.getPlannedTourDuration();
     }
 
-    public double getPlannedTourLength() {
+    double getPlannedTourLength() {
         return plannedTourLength;
     }
 
-    public int getPlannedTotalCapacityDemand() {
+    int getPlannedTotalCapacityDemand() {
         return tourData.getPlannedTotalCapacityDemand();
     }
 
@@ -163,31 +163,31 @@ public final class FreightTourDataDispatched {
         return vehicleId;
     }
 
-    public double getDispatchTime() {
+    double getDispatchTime() {
         return dispatchTime;
     }
 
-    public Id<Link> getRequestLink() {
+    Id<Link> getRequestLink() {
         return requestLink;
     }
 
-    public PFAVehicle.MustReturnLinkTimePair getMustReturnLog() {
+    PFAVehicle.MustReturnLinkTimePair getMustReturnLog() {
         return mustReturnLog;
     }
 
-    public double getTotalServiceDelay() {
+    double getTotalServiceDelay() {
         return totalServiceDelay;
     }
 
-    public int getAmountOfServicesHandled() {
+    int getAmountOfServicesHandled() {
         return amountOfServicesHandled;
     }
 
-    public double getWaitTimeAtDepot() {
+    double getWaitTimeAtDepot() {
         return this.waitTimeAtDepot;
     }
 
-    public void setWaitTimeAtDepot(double v) {
+    void setWaitTimeAtDepot(double v) {
         this.waitTimeAtDepot = v;
     }
 
