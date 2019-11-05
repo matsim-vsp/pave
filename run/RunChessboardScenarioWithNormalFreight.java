@@ -69,14 +69,14 @@ public class RunChessboardScenarioWithNormalFreight {
 
 	private static final boolean SIMULATE_CASE1 = false;
 
-	private static final String CARRIERS_FILE_CASE1 = "scenarios/chessboard/carrier1_routed.xml";
-	private static final String VEHTYPES_FILE_CASE1 = "scenarios/chessboard/chessboard_vehicleTypesCase1.xml";
+	private static final String CARRIERS_FILE_CASE1 = "carrier1_routed.xml";
+	private static final String VEHTYPES_FILE_CASE1 = "chessboard_vehicleTypesCase1.xml";
 
 	//    private static final String CARRIERS_FILE_CASE2 = "scenarios/chessboard/secondCase/chessboard_carriersCase2_INFINITE.xml";
-	private static final String CARRIERS_FILE_CASE2 = "scenarios/chessboard/carrier1_empty.xml";
+	private static final String CARRIERS_FILE_CASE2 = "secondCase/chessboard_carriersCase2_INFINITE_routed.xml";
 
-	private static final String VEHTYPES_FILE_CASE2 = "scenarios/chessboard/secondCase/chessboard_vehicleTypesCase2.xml";
-	private static final String OUTPUT_DIR = "output/combinedPFAVAndCarrierTest/" + new SimpleDateFormat(
+	private static final String VEHTYPES_FILE_CASE2 = "secondCase/chessboard_vehicleTypesCase2.xml";
+	private static final String OUTPUT_DIR = "../../output/combinedPFAVAndCarrierTest/" + new SimpleDateFormat(
 			"YYYY-MM-dd_HH.mm").format(new Date()) + "/";
 
 	/**
