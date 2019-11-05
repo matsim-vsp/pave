@@ -9,7 +9,7 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicleSpecification;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public final class PFAVehicle extends DvrpVehicleImpl {
+final class PFAVehicle extends DvrpVehicleImpl {
 
     private Queue<MustReturnLinkTimePair> mustReturnToOwnerLinkTimePairs;
 
@@ -31,7 +31,7 @@ public final class PFAVehicle extends DvrpVehicleImpl {
         }
     }
 
-    public Queue<MustReturnLinkTimePair> getMustReturnToOwnerLinkTimePairs() {
+    Queue<MustReturnLinkTimePair> getMustReturnToOwnerLinkTimePairs() {
         return this.mustReturnToOwnerLinkTimePairs;
     }
 
@@ -57,7 +57,7 @@ public final class PFAVehicle extends DvrpVehicleImpl {
      * network cannot be injected into PFAVFleetStatsCalculator (it's logic is run before mobsim).
      * Furthermore, to be sure..
      */
-    public static final class MustReturnLinkTimePair implements Comparable<MustReturnLinkTimePair> {
+    static final class MustReturnLinkTimePair implements Comparable<MustReturnLinkTimePair> {
 
         final double time;
         final Id<Link> linkId;
@@ -67,11 +67,11 @@ public final class PFAVehicle extends DvrpVehicleImpl {
             this.linkId = linkId;
         }
 
-        public double getTime() {
+        double getTime() {
             return time;
         }
 
-        public Id<Link> getLinkId() {
+        Id<Link> getLinkId() {
             return linkId;
         }
 
