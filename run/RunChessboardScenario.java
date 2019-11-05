@@ -33,6 +33,8 @@ import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
+import org.matsim.contrib.freight.FreightConfigGroup;
+import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.contrib.taxi.run.MultiModeTaxiConfigGroup;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.config.Config;
@@ -81,11 +83,13 @@ public class RunChessboardScenario {
 			vehTypesFile = VEHTYPES_FILE_CASE2;
 		}
 
-		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME, carriersFile, vehTypesFile);
 
-		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), new MultiModeTaxiConfigGroup(),
-				pfavConfig);
+		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), new MultiModeTaxiConfigGroup());
 
+		//add pfav config group
+		ConfigUtils.addOrGetModule(config, FreightAVConfigGroup.class);
+
+		//add taxi config gorup
 		TaxiConfigGroup taxiCfg = TaxiConfigGroup.getSingleModeTaxiConfig(config);
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
 		taxiCfg.setDestinationKnown(true);
@@ -93,9 +97,13 @@ public class RunChessboardScenario {
 		taxiCfg.setDropoffDuration(60);
 		taxiCfg.setTaxisFile("something");
 		taxiCfg.setTimeProfiles(true);
-
 		System.out.println("" + taxiCfg.getPickupDuration());
 		taxiCfg.setDropoffDuration(60);
+
+		//add freight config group
+		FreightConfigGroup freightConfig = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
+		freightConfig.setCarriersFile(carriersFile);
+		freightConfig.setCarriersVehicleTypesFile(vehTypesFile);
 
 		config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
 		config.qsim().setEndTime(20 * 3600);
@@ -110,6 +118,9 @@ public class RunChessboardScenario {
 
 		// load scenario
 		Scenario scenario = ScenarioUtils.loadScenario(config);
+
+		//load carriers and vehicle types
+		FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
 		//create population
 		if (SIMULATE_CASE1) {

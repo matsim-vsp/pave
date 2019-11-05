@@ -28,12 +28,14 @@ import org.matsim.api.core.v01.population.*;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
+import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.controler.CarrierModule;
 import org.matsim.contrib.freight.replanning.CarrierPlanStrategyManagerFactory;
 import org.matsim.contrib.freight.scoring.CarrierScoringFunctionFactory;
 import org.matsim.contrib.freight.usecases.analysis.CarrierScoreStats;
 import org.matsim.contrib.freight.usecases.analysis.LegHistogram;
+import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.contrib.taxi.run.MultiModeTaxiConfigGroup;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
@@ -114,8 +116,13 @@ public class RunChessboardScenarioWithNormalFreight {
 
 		String mode = taxiCfg.getMode();
 
+		FreightConfigGroup freightConfigGroup = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
+		freightConfigGroup.setCarriersFile(carriersFile);
+		freightConfigGroup.setCarriersVehicleTypesFile(vehTypesFile);
+
 		// load scenario
 		Scenario scenario = ScenarioUtils.loadScenario(config);
+		FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
 		createPop(scenario.getPopulation());
 		//        addPFAVOwner(scenario.getPopulation());
@@ -123,26 +130,22 @@ public class RunChessboardScenarioWithNormalFreight {
 		// setup controler
 		Controler controler = new Controler(scenario);
 
-		//        configureControlerForPFAV(carriersFile, vehTypesFile, taxiCfg, mode, scenario, controler);
-
-		final Carriers carriers = new Carriers();
-		new CarrierPlanXmlReader(carriers).readFile(CARRIERS_FILE_CASE1);
-
-		CarrierVehicleTypes types = new CarrierVehicleTypes();
-		new CarrierVehicleTypeReader(types).readFile(VEHTYPES_FILE_CASE1);
-		new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(types);
-
-		CarrierPlanStrategyManagerFactory strategyManagerFactory = createStrategyManagerFactory(types, controler);
+		CarrierPlanStrategyManagerFactory strategyManagerFactory = createStrategyManagerFactory(FreightUtils.getCarrierVehicleTypes(scenario), controler);
 		CarrierScoringFunctionFactory scoringFunctionFactory = createScoringFunctionFactory(scenario.getNetwork());
 
-		CarrierModule carrierController = new CarrierModule(carriers, strategyManagerFactory, scoringFunctionFactory);
-		//        CarrierModule carrierController = new CarrierModule(carriers, null, null);
-
+		CarrierModule carrierController = new CarrierModule();
 		controler.addOverridingModule(carrierController);
-		prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, carriers);
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				bind(CarrierScoringFunctionFactory.class).toInstance(scoringFunctionFactory);
+				bind(CarrierPlanStrategyManagerFactory.class).toInstance(strategyManagerFactory);
+			}
+		});
+		prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, FreightUtils.getCarriers(scenario));
 
 		BaseCaseFreightTourStatsListener analyser = new BaseCaseFreightTourStatsListener(scenario.getNetwork(),
-				carriers);
+				FreightUtils.getCarriers(scenario));
 		OverallTravelTimeAndDistanceListener generalListener = new OverallTravelTimeAndDistanceListener(
 				scenario.getNetwork());
 		controler.addOverridingModule(new AbstractModule() {
@@ -172,31 +175,6 @@ public class RunChessboardScenarioWithNormalFreight {
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateModes(mode));
 	}
-
-	//    private void xxx(){
-	//
-	//        String configFile = "input/usecases/chessboard/passenger/config.xml";
-	//        Config config = ConfigUtils.loadConfig(configFile);
-	//        Scenario scenario = ScenarioUtils.loadScenario(config);
-	//
-	//        Controler controler = new Controler(config);
-	//        final Carriers carriers = new Carriers();
-	//        new CarrierPlanXmlReaderV2(carriers).readFile("input/usecases/chessboard/freight/carrierPlans.xml");
-	//
-	//        CarrierVehicleTypes types = new CarrierVehicleTypes();
-	//        new CarrierVehicleTypeReader(types).readFile("input/usecases/chessboard/freight/vehicleTypes.xml");
-	//        new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(types);
-	//
-	//        CarrierPlanStrategyManagerFactory strategyManagerFactory = createStrategyManagerFactory(types, controler);
-	//        CarrierScoringFunctionFactory scoringFunctionFactory = createScoringFunctionFactory(scenario.getNetwork());
-	//
-	//        CarrierModule carrierController = new CarrierModule(carriers, strategyManagerFactory, scoringFunctionFactory);
-	//
-	//        controler.addOverridingModule(carrierController);
-	//        prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, carriers);
-	//
-	//        controler.run();
-	//    }
 
 	private static void prepareFreightOutputDataAndStats(Scenario scenario, EventsManager eventsManager,
 			MatsimServices controler, final Carriers carriers) {

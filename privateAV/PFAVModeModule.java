@@ -51,11 +51,13 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         install(new PFAVFleetModule(getMode(), scenario));
         install(new PFAVModuleAnalysis(getMode(), scenario.getNetwork()));
 
-        //load carriers and carrierVehicleTypes into scenario
-        FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
-
         //bind carriers and carrierVehicleTypes
         CarrierVehicleTypes vTypes = FreightUtils.getCarrierVehicleTypes(scenario);
+        if(vTypes.getVehicleTypes().isEmpty()){
+            throw new RuntimeException("CarrierVehicleTypes in scneario are empty. Possible explanation: " +
+                    "\n you forgot to load carrier vehicle types into scenario before adding PFAVModeModule to the controler.." +
+                    "\n please use FreightUtils.loadCarriersAccordingToFreightConfig(scenario)");
+        }
         bind(CarrierVehicleTypes.class).annotatedWith(Names.named(FreightAVConfigGroup.GROUP_NAME)).toInstance(vTypes);
         bind(Carriers.class).annotatedWith(Names.named(FreightAVConfigGroup.GROUP_NAME)).toInstance(FreightUtils.getCarriers(scenario));
 

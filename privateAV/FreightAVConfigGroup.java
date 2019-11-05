@@ -11,12 +11,7 @@ import java.util.Map;
 
 public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 
-    static final String CARRIERS_FILE = "carriersFile";
-    static final String CARRIERS_FILE_EXP = "path to the xml file containing the carriers data";
-	
 	public static final String GROUP_NAME = "freightav";
-    static final String VEHTYPES_FILE = "carriersVehicleTypesFile";
-    static final String VEHTYPES_FILE_EXP = "path to the xml file containing the carriersVehicleTypes including the type specified in pfavType attribute";
     private static final String MODE = "mode";
     private static final String PFAV_TYPE = "pfavType";
 
@@ -97,13 +92,6 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 	@NotBlank
 	private String pfavType = "PFAV";
 
-    @NotBlank
-    private String carriersFile;
-
-    @NotBlank
-    private String vTypesFile;
-
-
 	@Positive
 	private double freightTourLatestStart = 18 * 3600;
 
@@ -170,32 +158,9 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 		return pfavType;
 	}
 
-    public FreightAVConfigGroup(String name, String carriersFile, String vehicleTypesFile) {
-        super(name);
-        this.carriersFile = carriersFile;
-        this.vTypesFile = vehicleTypesFile;
+    public FreightAVConfigGroup() {
+        super(GROUP_NAME);
     }
-
-    @StringGetter(CARRIERS_FILE)
-    public String getCarriersFile() {
-        return carriersFile;
-    }
-
-    @StringSetter(CARRIERS_FILE)
-    public void setCarriersFile(String carriersFile) {
-        this.carriersFile = carriersFile;
-    }
-
-    @StringSetter(VEHTYPES_FILE)
-    public void setVehTypesFile(String vehTypesFile) {
-        this.vTypesFile = vehTypesFile;
-    }
-
-    @StringGetter(VEHTYPES_FILE)
-    public String getVehtypesFile() {
-        return vTypesFile;
-    }
-
 
 	/**
 	 * @return the freightTourLatestStart
@@ -479,9 +444,6 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
         map.put(CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH, CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH_EXP);
         map.put(RE_ROUTE_TOURS, RE_ROUTE_TOURS_EXP);
         map.put(ALLOW_MULTIPLE_TOURS_IN_A_ROW, ALLOW_MULTIPLE_TOURS_IN_A_ROW_EXP);
-        map.put(CARRIERS_FILE, CARRIERS_FILE_EXP);
-        map.put(VEHTYPES_FILE, VEHTYPES_FILE_EXP);
-
         return map;
     }
 

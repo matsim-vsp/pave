@@ -26,17 +26,20 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
+import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.controler.CarrierModule;
 import org.matsim.contrib.freight.replanning.CarrierPlanStrategyManagerFactory;
 import org.matsim.contrib.freight.scoring.CarrierScoringFunctionFactory;
 import org.matsim.contrib.freight.usecases.analysis.CarrierScoreStats;
 import org.matsim.contrib.freight.usecases.analysis.LegHistogram;
+import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
 import org.matsim.contrib.taxi.run.MultiModeTaxiConfigGroup;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
@@ -101,18 +104,27 @@ public class RunNormalFreightInBerlin {
 		config.addModule(multiTaxiCfg);
 
         prepareConfig(output, population, networkChangeEvents, maxIter, increaseCapacities, config);
+
+        FreightConfigGroup freightConfig = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
+        freightConfig.setCarriersVehicleTypesFile(vehTypesFile);
+        freightConfig.setCarriersFile(carriersFile);
+
+        //load scenario and carriers
         Scenario scenario = RunBerlinScenario.prepareScenario(config);
+        FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
         // setup controler
         Controler controler = RunBerlinScenario.prepareControler(scenario);
 
         controler.addOverridingModule(new DvrpModule());
 
-        final Carriers carriers = readFreightInputAndPrepareCarrierModule(carriersFile, vehTypesFile, scenario, controler);
-        prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, carriers);
+
+
+        prepareCarrierModule(scenario, controler);
+        prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, FreightUtils.getCarriers(scenario));
 
         BaseCaseFreightTourStatsListener analyser = new BaseCaseFreightTourStatsListener(scenario.getNetwork(),
-                carriers);
+                FreightUtils.getCarriers(scenario));
         OverallTravelTimeAndDistanceListener generalListener = new OverallTravelTimeAndDistanceListener(
                 scenario.getNetwork());
         controler.addOverridingModule(new AbstractModule() {
@@ -130,22 +142,18 @@ public class RunNormalFreightInBerlin {
         controler.run();
     }
 
-    private static Carriers readFreightInputAndPrepareCarrierModule(String carriersFile, String vehTypesFile, Scenario scenario, Controler controler) {
-        final Carriers carriers = new Carriers();
-        new CarrierPlanXmlReader(carriers).readFile(carriersFile);
-
-        CarrierVehicleTypes types = new CarrierVehicleTypes();
-        new CarrierVehicleTypeReader(types).readFile(vehTypesFile);
-        new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(types);
-
-        CarrierPlanStrategyManagerFactory strategyManagerFactory = createStrategyManagerFactory(types, controler);
+    private static void prepareCarrierModule(Scenario scenario, Controler controler) {
+        CarrierPlanStrategyManagerFactory strategyManagerFactory = createStrategyManagerFactory(FreightUtils.getCarrierVehicleTypes(scenario), controler);
         CarrierScoringFunctionFactory scoringFunctionFactory = createScoringFunctionFactory(scenario.getNetwork());
-
-        CarrierModule carrierController = new CarrierModule(carriers, strategyManagerFactory, scoringFunctionFactory);
-        //        CarrierModule carrierController = new CarrierModule(carriers, null, null);
-
+        CarrierModule carrierController = new CarrierModule();
         controler.addOverridingModule(carrierController);
-        return carriers;
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                bind(CarrierScoringFunctionFactory.class).toInstance(scoringFunctionFactory);
+                bind(CarrierPlanStrategyManagerFactory.class).toInstance(strategyManagerFactory);
+            }
+        });
     }
 
     private static void prepareConfig(String output, String population, String networkChangeEvents, int maxIter, boolean increaseCapacities, Config config) {

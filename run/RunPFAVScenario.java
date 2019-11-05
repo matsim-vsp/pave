@@ -22,6 +22,8 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
+import org.matsim.contrib.freight.FreightConfigGroup;
+import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.contrib.taxi.run.MultiModeTaxiConfigGroup;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.config.Config;
@@ -44,11 +46,10 @@ public class RunPFAVScenario {
 	private static final String CONFIG_FILE_RULEBASED = "scenarios/mielec/mielec_taxi_config_rulebased.xml/";
 	private static final String CONFIG_FILE_ASSIGNMENT = "input/mielecScenario/mielec_taxi_config_assigment.xml";
 
-	private static final String CARRIERS_FILE = "scenarios/mielec/freight/upToDate/2carriers_a_1vehicles_INFINITE.xml";
+	private static final String CARRIERS_FILE = "freight/upToDate/2carriers_a_1vehicles_INFINITE.xml";
 
 	private static final String OUTPUT_DIR = "output/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
 			new Date()) + "/";
-
 	/**
 	 * @param args
 	 */
@@ -67,17 +68,15 @@ public class RunPFAVScenario {
 		} else {
 			configFile = CONFIG_FILE_RULEBASED;
 			carriers = CARRIERS_FILE;
-			vehTypes = "input/PFAVvehicleTypes.xml";
+			vehTypes = "../../input/PFAVvehicleTypes.xml";
 			output = OUTPUT_DIR;
 		}
-		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME, carriers, vehTypes);
-		Config config = ConfigUtils.loadConfig(configFile, new DvrpConfigGroup(), new MultiModeTaxiConfigGroup(),
-				pfavConfig);
+		Config config = ConfigUtils.loadConfig(configFile, new DvrpConfigGroup(), new MultiModeTaxiConfigGroup());
+		ConfigUtils.addOrGetModule(config, FreightAVConfigGroup.class);
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		//		config.controler().setLastIteration(0);
 		config.controler().setOutputDirectory(output);
 
-		//		config.plans().setInputFile("plans_only_taxi_4.0_slightly_modified.xml");
 
 		TaxiConfigGroup taxiCfg = TaxiConfigGroup.getSingleModeTaxiConfig(config);
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
@@ -85,16 +84,20 @@ public class RunPFAVScenario {
 		 * very important: we assume that destinations of trips are known in advance.
 		 * that leads to the occupiedDriveTask and the TaxiDropoffTask to be inserted at the same time as the PickUpTask (when the request gets scheduled).
 		 * in our scenario, this is realistic, since users must have defined their working location before the agreement on having their AV make freight trips.
-		 *
 		 */
 		taxiCfg.setDestinationKnown(true);
-
 		taxiCfg.setTimeProfiles(true);
-
 		String mode = taxiCfg.getMode();
+
+		//add freightConfigGroup to set paths for input files
+		FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
+		freightCfg.setCarriersFile(carriers);
+		freightCfg.setCarriersVehicleTypesFile(vehTypes);
 
 		// load scenario
 		Scenario scenario = ScenarioUtils.loadScenario(config);
+		//load carriers
+		FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
 		// setup controler
 		Controler controler = new Controler(scenario);

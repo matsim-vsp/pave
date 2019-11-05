@@ -27,10 +27,13 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
+import org.matsim.contrib.freight.FreightConfigGroup;
+import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
 import org.matsim.contrib.taxi.run.MultiModeTaxiConfigGroup;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
@@ -87,16 +90,28 @@ public class RunPFAVInBerlin {
 
 		//setup config
 		Config config = RunBerlinScenario.prepareConfig(new String[]{configPath});
-		FreightAVConfigGroup pfavConfig = new FreightAVConfigGroup(FreightAVConfigGroup.GROUP_NAME, carriers, vehTypes);
+
+		//add pfav config group
+		ConfigUtils.addOrGetModule(config, FreightAVConfigGroup.class);
+
+		//add taxi config group
 		TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
 		String mode = taxiCfg.getMode();
 		MultiModeTaxiConfigGroup multiTaxiCfg = new MultiModeTaxiConfigGroup();
 		multiTaxiCfg.addParameterSet(taxiCfg);
 		config.addModule(multiTaxiCfg);
-		config.addModule(pfavConfig);
+
+		//add DvrpConfigGroup
+		ConfigUtils.addOrGetModule(config, DvrpConfigGroup.class);
 		adjustConfigParameters(output, population, networkChangeEvents, maxIter, increaseCapacities, config);
 
+		//add FreightConfigGroup
+		FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
+
 		Scenario scenario = RunBerlinScenario.prepareScenario(config);
+
+		//add carriers and carrierVehicleTypes
+		FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
 		// setup controler
 		Controler controler = RunBerlinScenario.prepareControler(scenario);
@@ -114,7 +129,6 @@ public class RunPFAVInBerlin {
 	}
 
 	private static void adjustConfigParameters(String output, String population, String networkChangeEvents, int maxIter, boolean increaseCapacities, Config config) {
-		config.addModule(new DvrpConfigGroup());
 		config.strategy().setFractionOfIterationsToDisableInnovation(0);
 		PlanCalcScoreConfigGroup.ModeParams taxiModeParams = new PlanCalcScoreConfigGroup.ModeParams("taxi");
 		taxiModeParams.setMarginalUtilityOfTraveling(0.);       // car also has 0.0 in berlin scenario????
