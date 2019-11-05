@@ -60,8 +60,8 @@ public final class FreightTourPlanning {
         //the Start and End activities are not part of ScheduledTour.getTour.getTourElements();
         List<TaxiTask> taskList = new ArrayList<>();
         
-        //we could think about setting the start time of the first retool activity according to global time window (currently PFAVUtils.FREIGHTTOUR_EARLIEST_START
-        //but this implicitly happens when calculating oath to depot and wait time at depot in the FreightTourManagerListBasedImpl
+        //we could think about setting the start time of the first retool activity according to global time window (see FreightAVConfigGroup)
+        //but this implicitly happens when calculating path to depot and wait time at depot in the FreightTourManagerListBasedImpl
         double tEnd = ((Tour.Leg) freightTour.getTour().getTourElements().get(0)).getExpectedDepartureTime();
         double tBegin = tEnd - pfavConfigGroup.getPfavReToolTime();
        
@@ -75,7 +75,7 @@ public final class FreightTourPlanning {
         for (int i = 0; i < size; i++) {
             TourElement currentElement = freightTour.getTour().getTourElements().get(i);
             if (currentElement instanceof ServiceActivity) {
-                //currently we need to add PFAVUtils.PFAV_RETOOL_TIME, since we added this already to the start act duration
+                //currently we need to add FreightAVConfigGroup.PFAV_RETOOL_TIME, since we added this already to the start act duration
                 ServiceActivity serviceAct = (ServiceActivity) currentElement;
 
                 tBegin = tEnd; //serviceAct.getExpectedArrival() does always return 0. so we work with our own variable
