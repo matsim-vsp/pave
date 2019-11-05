@@ -80,11 +80,6 @@ public class RunPFAVScenario {
 
 		TaxiConfigGroup taxiCfg = TaxiConfigGroup.getSingleModeTaxiConfig(config);
 		taxiCfg.setBreakSimulationIfNotAllRequestsServed(false);
-		/*
-		 * very important: we assume that destinations of trips are known in advance.
-		 * that leads to the occupiedDriveTask and the TaxiDropoffTask to be inserted at the same time as the PickUpTask (when the request gets scheduled).
-		 * in our scenario, this is realistic, since users must have defined their working location before the agreement on having their AV make freight trips.
-		 */
 		taxiCfg.setDestinationKnown(true);
 		taxiCfg.setTimeProfiles(true);
 		String mode = taxiCfg.getMode();

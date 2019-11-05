@@ -187,12 +187,6 @@ public class RunNormalFreightInBerlin {
         TaxiConfigGroup taxiCfg = new TaxiConfigGroup();
         taxiCfg.setBreakSimulationIfNotAllRequestsServed(
                 false); //for test purposes, set this to false in order to get error stack trace
-        /*
-         * very important: we assume that destinations of trips are known in advance.
-         * that leads to the occupiedDriveTask and the TaxiDropoffTask to be inserted at the same time as the PickUpTask (when the request gets scheduled).
-         * in our scenario, this is realistic, since users must have defined their working location before the agreement on having their AV make freight trips.
-         *
-         */
         taxiCfg.setDestinationKnown(true);
         taxiCfg.setPickupDuration(60);
         taxiCfg.setDropoffDuration(60);

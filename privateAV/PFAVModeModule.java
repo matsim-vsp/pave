@@ -39,6 +39,8 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         if (!taxiConfigGroup.getMode().equals(this.getMode()))
             throw new RuntimeException("pfav mode must be equal to mode set in taxi config group!");
 
+        taxiConfigGroup.setDestinationKnown(true);
+
         FreightConfigGroup freightConfig = ConfigUtils.addOrGetModule(getConfig(), FreightConfigGroup.class);
 
         DvrpModes.registerDvrpMode(binder(), getMode());
