@@ -3,6 +3,7 @@ package privateAV;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ReflectiveConfigGroup;
 
+import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
@@ -115,7 +116,8 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 	@Positive
 	private double timeBuffer = 5 * 60;
 
-	@DecimalMin("1.0")
+	@DecimalMax("1.0")
+	@DecimalMin("0.0")
 	private double freightDemandSampleSize = 1.;
 
 	@Positive
