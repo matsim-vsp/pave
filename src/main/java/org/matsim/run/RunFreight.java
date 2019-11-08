@@ -31,16 +31,22 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.freight.Freight;
+import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
+import org.matsim.contrib.freight.controler.CarrierModule;
 import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts.Builder;
 import org.matsim.contrib.freight.jsprit.NetworkRouter;
+import org.matsim.contrib.freight.replanning.CarrierPlanStrategyManagerFactory;
+import org.matsim.contrib.freight.scoring.CarrierScoringFunctionFactory;
+import org.matsim.contrib.freight.usecases.chessboard.CarrierScoringFunctionFactoryImpl;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.ControlerConfigGroup;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
@@ -88,8 +94,9 @@ class RunFreight {
 
 		OutputDirectoryLogging.initLoggingWithOutputDirectory(config.controler().getOutputDirectory() + "/Logs");
 
-		// Create carrier with services
-		Carriers carriers = new Carriers();
+		// create and register carriers in the scenario
+		Carriers carriers = FreightUtils.getOrCreateCarriers(scenario);
+
 		Carrier carrierWShipments = CarrierUtils.createCarrier(Id.create("carrier", Carrier.class));
 		// TODO: Geht derzeit nur als "int" für ovgu... kmt/aug19
 		CarrierUtils.addShipment(carrierWShipments, createMatsimShipment("1", "i(6,0)", "i(3,9)R", 2));
@@ -97,7 +104,7 @@ class RunFreight {
 
 		// Create vehicle type
 		VehicleType carrierVehType = createCarrierVehType();
-		CarrierVehicleTypes vehicleTypes = new CarrierVehicleTypes();
+		CarrierVehicleTypes vehicleTypes = FreightUtils.getCarrierVehicleTypes(scenario); //create CarrierVehicleTypes and register in scenario;;
 		vehicleTypes.getVehicleTypes().put(carrierVehType.getId(), carrierVehType);
 
 		// create vehicle
@@ -189,10 +196,20 @@ class RunFreight {
 		new CarrierPlanXmlWriterV2(carriers)
 				.write(config.controler().getOutputDirectory() + "/servicesAndShipments_plannedCarriers.xml");
 
-		// --------- now register freight and start a MATsim run:
-		scenario.addScenarioElement(FreightUtils.CARRIERS, carriers);
+		//create MATSim controler
 		Controler controler = new Controler(scenario);
-		Freight.configure(controler);
+
+		// --------- now register freight and start a MATsim run:
+		controler.addOverridingModule(new CarrierModule());
+
+		//this is necessary for replanning and scoring of carriers. will be replaced in future..
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				bind( CarrierPlanStrategyManagerFactory.class ).toInstance( () -> null );
+				bind( CarrierScoringFunctionFactory.class ).to( CarrierScoringFunctionFactoryImpl.class  ) ;
+			}
+		});
 
 		controler.run();
 
@@ -219,6 +236,10 @@ class RunFreight {
 		config.global().setRandomSeed(4177);
 
 		config.controler().setLastIteration(0);
+
+		//register FreightConfigGroup
+		FreightConfigGroup freightConfig = ConfigUtils.addOrGetModule( config, FreightConfigGroup.class );;
+		freightConfig.setPhysicallyEnforceTimeWindowBeginnings(true); // this means that carrier agents have to wait before delivering until customer time window begins
 		return config;
 	}
 
