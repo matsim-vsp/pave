@@ -87,7 +87,7 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 			+ "if false, it might perform another freight tour after having performed the last PFAVServiceTask.";
 
 	@NotBlank
-	private String mode = "pfav";
+	private String mode = "taxi";
 
 	@NotBlank
 	private String pfavType = "PFAV";

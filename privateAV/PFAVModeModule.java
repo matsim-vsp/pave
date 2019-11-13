@@ -63,6 +63,8 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         bind(CarrierVehicleTypes.class).annotatedWith(Names.named(FreightAVConfigGroup.GROUP_NAME)).toInstance(vTypes);
         bind(Carriers.class).annotatedWith(Names.named(FreightAVConfigGroup.GROUP_NAME)).toInstance(FreightUtils.getCarriers(scenario));
 
+        VehicleType pfavType = retrievePFAVType(vTypes, pfavConfigGroup.getPfavType());
+
         bindModal(TravelDisutility.class).toProvider(
                 new ModalProviders.AbstractProvider<TravelDisutility>(getMode()) {
                     @Inject
@@ -71,7 +73,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
 
                     @Override
                     public TravelDisutility get() {
-                        return new VehTypeVariableTravelDisutility(travelTime, retrievePFAVType(vTypes, pfavConfigGroup.getPfavType()).getCostInformation());
+                        return new VehTypeVariableTravelDisutility(travelTime, pfavType.getCostInformation());
                     }
                 }
         );
