@@ -38,23 +38,20 @@ public class CarrierTourDauerAnalysis {
     private Carriers carriers = new Carriers();
 
     private Map<Id<Link>, List<CarrierTourAnalysisData>> depotTourData = new HashMap<>();
-    private static FreightAVConfigGroup pfavConfigGroup;
+    private FreightAVConfigGroup pfavConfigGroup;
 
     public CarrierTourDauerAnalysis(String carriersFile, FreightAVConfigGroup pfavConfigGroup) {
+        this.pfavConfigGroup = pfavConfigGroup;
         this.readCarriers(carriersFile);
         this.deriveTotalRetoolAndServiceTimePerCarrier();
-        CarrierTourDauerAnalysis.pfavConfigGroup = pfavConfigGroup;
     }
 
     public static void main(String[] args) {
-//        String input = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Transporter/ITERS/it.0/carriers_it0.xml";
-//        String output = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Transporter/ITERS/it.0/carriers_it0_stats.csv";
-
-        String input = "C:/Users/Work/git/freightAV/output/combinedPFAVAndCarrierTest/2019-04-29_11.53/ITERS/it.0/0.carrierPlans.xml";
-        String output = "C:/Users/Work/git/freightAV/output/combinedPFAVAndCarrierTest/2019-04-29_11.53/ITERS/it.0/carriers_it0_stats.csv";
+        String input = "C:/svn/runs-svn/pfav/berlin/trbRuns2019/hiredCar_13k_newPattern/ITERS/it.0/carriers_it0.xml";
+        String output = "C:/svn/runs-svn/pfav/berlin/trbRuns2019/hiredCar_13k_newPattern/ITERS/it.0/carriers_it0_stats.csv";
 
 
-        new CarrierTourDauerAnalysis(input, pfavConfigGroup).writeStats(output);
+        new CarrierTourDauerAnalysis(input, new FreightAVConfigGroup()).writeStats(output);
         System.out.println("Done");
 
     }
