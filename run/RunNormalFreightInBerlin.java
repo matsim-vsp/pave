@@ -23,6 +23,7 @@ package run;
 import analysis.BaseCaseFreightTourStatsListener;
 import analysis.OverallTravelTimeAndDistanceListener;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
@@ -54,22 +55,24 @@ import org.matsim.core.scoring.SumScoringFunction;
 import org.matsim.run.RunBerlinScenario;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class RunNormalFreightInBerlin {
 
-	private static final String CONFIG_v53_1pct = "input/BerlinScenario/5.3/berlin-v5.3-1pct.config.xml";
-	private static final String OUTPUTDIR = "output/Berlin/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
+    private static final String CONFIG_v53_1pct = "C:/Users/tschlenther/Desktop/input/berlin-v5.3-1pct.config_usingLocalInputFiles.xml";
+    private static final String OUTPUTDIR = "output/Berlin/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
 			new Date()) + "/";
-	private static final String CARRIERS_FILE = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PFAVScenario/test_onlyOneCarrier_only100services.xml";
-	private static final String VEHTYPES_FILE = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PFAVScenario/baseCaseVehicleTypes.xml";
+    private static final String CARRIERS_FILE = "freight/revisedVehCosts_112019/carriers_gzBerlin_TruckWithDriver.xml";
+	private static final String VEHTYPES_FILE = "freight/revisedVehCosts_112019/vehicleTypes_PFAV_Revised112019.xml";
 
-	private static final String NETWORK_CHANGE_EVENTS = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Network/changeevents-v5.3.xml.gz";
+	private static final String NETWORK_CHANGE_EVENTS = "changeevents-v5.3.xml.gz";
 
 	//only for test purposes
-	private static final String SMALL_PLANS_FILE = "C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml";
+	private static final String SMALL_PLANS_FILE = "population/13000CarUsers.xml";
 
 	private static final int LAST_ITERATION = 0;
+
 
     public static void main(String[] args) {
         String configPath, output, carriersFile, vehTypesFile, population, networkChangeEvents;
@@ -157,6 +160,13 @@ public class RunNormalFreightInBerlin {
     }
 
     private static void prepareConfig(String output, String population, String networkChangeEvents, int maxIter, boolean increaseCapacities, Config config) {
+        //delete ride mode
+        config.qsim().getMainModes().remove(TransportMode.ride);
+        config.plansCalcRoute().removeModeRoutingParams(TransportMode.ride);
+        ArrayList<String> netModes = new ArrayList<>(config.plansCalcRoute().getNetworkModes());
+        netModes.remove(TransportMode.ride);
+        config.plansCalcRoute().setNetworkModes(netModes);
+
         config.addModule(new DvrpConfigGroup());
 
         config.strategy().setFractionOfIterationsToDisableInnovation(0);        //  ???
@@ -179,8 +189,10 @@ public class RunNormalFreightInBerlin {
         config.network().setTimeVariantNetwork(true);
         config.plans().setInputFile(population);
         if (increaseCapacities) {
-            config.qsim().setFlowCapFactor(1.5);
+            config.qsim().setFlowCapFactor(2);
         }
+
+        config.plans().setInsistingOnUsingDeprecatedPersonAttributeFile(true); //TODO this needs to be done for berlinv5.3 but not for berlinv5.5
     }
 
     private static TaxiConfigGroup prepareTaxiConfigGroup() {

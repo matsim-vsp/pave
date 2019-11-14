@@ -140,7 +140,9 @@ public final class FreightTourPlanning {
 
         NetworkBasedTransportCosts.Builder netBuilder = NetworkBasedTransportCosts.Builder.newInstance(network, vehicleTypes.getVehicleTypes().values());
         netBuilder.setTimeSliceWidth(timeSlice); // !!!! otherwise it will not do anything.
-        netBuilder.setTravelTime(travelTime);
+        if(travelTime != null){
+            netBuilder.setTravelTime(travelTime);
+        }
         final NetworkBasedTransportCosts netBasedCosts = netBuilder.build();
 
         carriers.getCarriers().values().parallelStream().forEach(carrier -> {
