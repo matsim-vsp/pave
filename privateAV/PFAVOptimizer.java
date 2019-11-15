@@ -23,8 +23,6 @@ final class PFAVOptimizer implements TaxiOptimizer {
 	private Fleet fleet;
 	private PFAVScheduler scheduler;
 	private AbstractTaxiOptimizerParams params;
-	//TODO: use the setting for log messages
-	private boolean printDetailedWarnings;
 
     PFAVOptimizer(TaxiConfigGroup taxiCfg, Fleet fleet, PFAVScheduler scheduler, EventsManager eventsManager,
                   MobsimTimer timer) {
@@ -34,8 +32,6 @@ final class PFAVOptimizer implements TaxiOptimizer {
 		this.params = taxiCfg.getTaxiOptimizerParams();
 		this.eventsManager = eventsManager;
 		this.timer = timer;
-		
-		this.printDetailedWarnings = taxiCfg.isPrintDetailedWarnings();
 	}
 
 	@Override
