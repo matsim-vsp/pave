@@ -270,7 +270,6 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
         } else if (timeWhenOwnerNeedsVehicle == Double.NEGATIVE_INFINITY) {
             log.warn("vehicle " + vehicle.getId() + " has a undefined must return time. this should not happen! no freight tour will be dispatched...");
             throw new RuntimeException("should not happen !?");
-//            return false;
         } else if (timeWhenOwnerNeedsVehicle == Double.POSITIVE_INFINITY) {
             log.info("tour duration is irrelevant for vehicle " + vehicle.getId() + " because owner does not need the PFAV anymore for today");
             accountForWaitTaskAndAccessDrive(vehicle, pathFromCurrTaskToDepot, waitTimeAtDepot, freightTour, start);
