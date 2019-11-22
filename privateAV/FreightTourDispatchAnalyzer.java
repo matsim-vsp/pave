@@ -55,6 +55,7 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
     private Map<Id<DvrpVehicle>, Double> waitTimesAtDepot = new HashMap<>();
 
     private Map<Tuple<Id<DvrpVehicle>,Double>,Double> freeTimesOfPFAVWhenRequestDenied = new HashMap<>();
+    private HashMap<PFAVServiceTask,Double> currentServiceTaskStartTimes = new HashMap<>();
 
     private Fleet fleet;
 
@@ -110,6 +111,20 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
         if (event.getActType().equals(PFAVActionCreator.STAY_ACTIVITY_TYPE) && this.begunFreightTours.containsKey(vehicleId)) {
             this.begunFreightTours.get(vehicleId).setWaitTimeAtDepot(event.getTime() - this.waitTimesAtDepot.remove(vehicleId));
         }
+        if (event.getActType().contains(PFAVActionCreator.SERVICE_ACTIVITY_TYPE)) {
+            if (this.begunFreightTours.get(vehicleId) == null)
+                throw new IllegalStateException("vehicle " + vehicleId + " has just ended a service activity but no tour start is registered!" +
+                        "\n see the event=" + event);
+
+            FreightTourDataDispatched tour = this.begunFreightTours.get(vehicleId);
+            PFAVServiceTask serviceTask = this.begunFreightTours.get(vehicleId).getLastStartedServiceTask();
+            double start = this.currentServiceTaskStartTimes.remove(serviceTask);
+            double totalDuration = event.getTime() - start;
+            tour.addToTotalServiceTime(totalDuration);
+            double waitTime = totalDuration - serviceTask.getCarrierService().getServiceDuration();
+            tour.addToTotalServiceWaitTime(waitTime);
+        }
+
     }
 
     @Override
@@ -120,10 +135,14 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
         }
 
         if (event.getActType().contains(PFAVActionCreator.SERVICE_ACTIVITY_TYPE)) {
-            if (this.begunFreightTours.get(vehicleId) == null)
+            FreightTourDataDispatched tour = this.begunFreightTours.get(vehicleId);
+            if (tour == null)
                 throw new IllegalStateException("vehicle " + vehicleId + " has just started a service activity but no tour start is registered!" +
                         "\n see the event=" + event);
-            this.begunFreightTours.get(vehicleId).notifyNextServiceTaskStarted(event.getTime());
+            PFAVServiceTask serviceTask = tour.getLastStartedServiceTask();
+
+            this.currentServiceTaskStartTimes.put(serviceTask, event.getTime());
+            tour.notifyNextServiceTaskStarted(serviceTask, event.getTime());
         }
     }
 
@@ -195,6 +214,8 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
                 .add("PlannedTotalCapacityDemand")
                 .add("ActualTotalCapacityDemand")
 
+                .add("TotalServiceDuration")
+                .add("TotalServiceWaitTime")
                 .add("TotalServiceDelay");
         writer.writeNext(lineBuilder);
     }
@@ -227,6 +248,8 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
                     .addf("%d", data.getPlannedTotalCapacityDemand())
                     .addf("%d", data.getActualServedCapacityDemand())
 
+                    .addf(dblFormat, data.getTotalServiceTime())
+                    .addf(dblFormat, data.getTotalServiceWaitTime())
                     .addf(dblFormat, data.getTotalServiceDelay());
 
             writer.writeNext(lineBuilder);

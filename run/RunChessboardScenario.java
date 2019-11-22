@@ -59,14 +59,19 @@ public class RunChessboardScenario {
 
 	private static final boolean SIMULATE_CASE1 = false;
 
-	private static final String CARRIERS_FILE_CASE1 = "scenarios/chessboard/chessboard_carriersCase1.xml";
-	private static final String VEHTYPES_FILE_CASE1 = "scenarios/chessboard/chessboard_vehicleTypesCase1.xml";
+	private static final String CARRIERS_FILE_CASE1 = "chessboard_carriersCase1.xml";
+	private static final String VEHTYPES_FILE_CASE1 = "chessboard_vehicleTypesCase1.xml";
 
-	private static final String CARRIERS_FILE_CASE2 = "scenarios/chessboard/secondCase/chessboard_carriersCase2_INFINITE_routed.xml";
-	private static final String VEHTYPES_FILE_CASE2 = "scenarios/chessboard/secondCase/chessboard_vehicleTypesCase2.xml";
+//	private static final String CARRIERS_FILE_CASE2 = "chessboard_carriersCase2_INFINITE_routed.xml";
+
+	private static final String CARRIERS_FILE_CASE2 = "secondCase/chessboard_carriersCase2_lateServiceStart.xml";
+	private static final String VEHTYPES_FILE_CASE2 = "secondCase/chessboard_vehicleTypesCase2.xml";
 
 	private static final String OUTPUT_DIR = "output/travelTimeTest/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
 			new Date()) + "/";
+
+	private static final boolean RUNTOURPLANNING = true;
+
 	/**
 	 * @param args
 	 */
@@ -87,7 +92,9 @@ public class RunChessboardScenario {
 		Config config = ConfigUtils.loadConfig(CONFIG_FILE, new DvrpConfigGroup(), new MultiModeTaxiConfigGroup());
 
 		//add pfav config group
-		ConfigUtils.addOrGetModule(config, FreightAVConfigGroup.class);
+		FreightAVConfigGroup pfavCfg = ConfigUtils.addOrGetModule(config, FreightAVConfigGroup.class);
+		pfavCfg.setRunTourPlanningBeforeFirstIteration(RUNTOURPLANNING);
+
 
 		//add taxi config gorup
 		TaxiConfigGroup taxiCfg = TaxiConfigGroup.getSingleModeTaxiConfig(config);

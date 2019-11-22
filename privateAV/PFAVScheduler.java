@@ -141,6 +141,19 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 			case OCCUPIED_DRIVE:
 				//TODO here, we need to check whether the next task is a PFAVServiceTask.
 				// If so, we need to check if vehicle is too early and if so we need to insert a stay task and let the vehicle wait until service time window starts
+				if(Schedules.getNextTask(schedule) instanceof PFAVServiceTask){
+					PFAVServiceTask serviceTask = (PFAVServiceTask) Schedules.getNextTask(schedule);
+					double earliestStart = serviceTask.getCarrierService().getServiceStartTimeWindow().getStart();
+					double latestStart = serviceTask.getCarrierService().getServiceStartTimeWindow().getEnd();
+					if(earliestStart > timer.getTimeOfDay()){
+						//vehicle is too early at delivery location. we need to lengthen the serviceTask. timeLine will be updated when the stayTask ends
+						double newServiceEndTime = serviceTask.getBeginTime() + serviceTask.getCarrierService().getServiceDuration() + earliestStart - timer.getTimeOfDay();
+						serviceTask.setEndTime(newServiceEndTime);
+						schedule.getTasks().get(serviceTask.getTaskIdx() + 1).setBeginTime(newServiceEndTime);
+					} else if(latestStart < timer.getTimeOfDay()){
+						log.warn("Vehicle " + vehicle.getId() + " is about to start a service for which the latest start time expired at " + latestStart + ". time of day = " + timer.getTimeOfDay());
+					}
+				}
 				break;
 			default: {
 				throw new IllegalStateException();

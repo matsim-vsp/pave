@@ -27,6 +27,7 @@ import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.freight.carrier.TimeWindow;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 
+import java.util.HashMap;
 import java.util.Objects;
 
 public final class FreightTourDataDispatched {
@@ -52,6 +53,9 @@ public final class FreightTourDataDispatched {
 
     private double totalServiceDelay = 0;
     private double waitTimeAtDepot = 0;
+    private double totalServiceTime = 0;
+    private double totalServiceWaitTime = 0;
+    private HashMap<PFAVServiceTask, Double> currentServiceTaskStartTimes = new HashMap<>();
 
     private FreightTourDataDispatched(FreightTourDataDispatched.Builder builder) {
         this.vehicleId = Objects.requireNonNull(builder.vehicleId);
@@ -90,17 +94,39 @@ public final class FreightTourDataDispatched {
         else this.actualServedCapacityDemand += actualServedCapacityDemandToAdd;
     }
 
-    void notifyNextServiceTaskStarted(double startTime) {
+    PFAVServiceTask getLastStartedServiceTask(){
         for (int i = this.tourData.getTourTasks().size() - 1; i >= 0; i--) {
             TaxiTask task = this.tourData.getTourTasks().get(i);
             if (task instanceof PFAVServiceTask && (task.getStatus() == Task.TaskStatus.PERFORMED || task.getStatus() == Task.TaskStatus.STARTED)) {
-                PFAVServiceTask serviceTask = (PFAVServiceTask) task;
-                this.addToActualServedCapacityDemand(serviceTask.getCarrierService().getCapacityDemand());
-                this.computeAndNoteDelay(serviceTask.getCarrierService().getServiceStartTimeWindow(), startTime);
-                this.amountOfServicesHandled++;
-                return;
+                return (PFAVServiceTask) task;
             }
-        }
+        } return null;
+    }
+
+    void notifyNextServiceTaskStarted(PFAVServiceTask serviceTask, double startTime) {
+        if(! this.tourData.getTourTasks().contains(serviceTask) || serviceTask.getStatus() == Task.TaskStatus.PLANNED) throw new IllegalStateException();
+        this.addToActualServedCapacityDemand(serviceTask.getCarrierService().getCapacityDemand());
+        this.computeAndNoteDelay(serviceTask.getCarrierService().getServiceStartTimeWindow(), startTime);
+        this.amountOfServicesHandled++;
+
+        if(this.currentServiceTaskStartTimes.get(serviceTask) != null) throw new IllegalStateException();
+        this.currentServiceTaskStartTimes.put(serviceTask, startTime);
+    }
+
+    void addToTotalServiceTime(double time){
+        this.totalServiceTime += time;
+    }
+
+    double getTotalServiceTime() {
+        return totalServiceTime;
+    }
+
+    double getTotalServiceWaitTime() {
+        return totalServiceWaitTime;
+    }
+
+    void addToTotalServiceWaitTime(double time){
+        this.totalServiceWaitTime += time;
     }
 
     double getActualTourDuration() {
