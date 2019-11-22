@@ -11,6 +11,7 @@ import org.matsim.contrib.dvrp.run.QSimScopeObjectListener;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
 import org.matsim.core.controler.events.BeforeMobsimEvent;
 import org.matsim.core.controler.listener.BeforeMobsimListener;
+import org.matsim.core.router.StageActivityTypeIdentifier;
 
 import java.util.*;
 
@@ -89,9 +90,8 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
             if (pe instanceof Leg)
                 lastLeg = (Leg) pe;
             if (pe instanceof Activity) {
-                //filter stage activities - TODO: this can be surely done more properly but works so far..
 //                TODO: should we allow stage activities for PFAV owner in the first place? or delete acces and egress walks straight from the plans?
-                if (!((Activity) pe).getType().contains("interaction")) {
+                if (StageActivityTypeIdentifier.isStageActivity(((Activity) pe).getType())) {
                     //activity could be something like leisure in open berlin scenario which does not have an end time set
                     Activity act = (Activity) pe;
                     if (act.getEndTime() == Double.NEGATIVE_INFINITY) {
