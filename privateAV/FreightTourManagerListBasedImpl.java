@@ -328,7 +328,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
 
     private void runTourPlanning() {
         //the travel times we hand over contain the travel times of last mobsim iteration as long as we use the OfflineEstimator (set via TaxiConfigGroup)
-        FreightTourPlanning.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime, PFAVUtils.timeSlice(), pfavConfigGroup.getNrOfJspritIterations());
+        FreightTourPlanning.runTourPlanningForCarriers(this.carriers, this.vehicleTypes, this.network, this.travelTime, PFAVUtils.timeSlice(), pfavConfigGroup.getMaxNrOfJspritIterations());
         log.info("overriding list of freight tours...");
         this.freightTours = convertCarrierPlansToTaskList(carriers);
     }

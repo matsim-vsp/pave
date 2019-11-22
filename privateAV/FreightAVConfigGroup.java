@@ -46,8 +46,8 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 	public static final String RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION = "runTourPlanningBeforeFirstIteration";
 	static final String RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION_EXP = "defines whether the freight tour manager triggers the JSprit run in iteration 0";
 
-	public static final String NR_OF_JSPRIT_ITERATIONS = "nrOfJspritIterations";
-	static final String NR_OF_JSPRIT_ITERATIONS_EXP = "defines the number of iterations in the tour planning algorithm, see implementation of {@link FreightTourPlanning}";
+	public static final String MAX_NR_OF_JSPRIT_ITERATIONS = "maxNrOfJspritIterations";
+	static final String MAX_NR_OF_JSPRIT_ITERATIONS_EXP = "defines the maximum number of iterations in the tour planning algorithm, see implementation of {@link FreightTourPlanning}";
 
 	public static final String ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS = "allowEmptyTourListsForDepots";
 	static final String ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS_EXP = "this is a switch, which determines whether the manager is holding depots in it's "
@@ -114,7 +114,7 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 	private boolean runTourPlanningBeforeFirstIteration = false;
 
 	@Positive
-	private int nrOfJspritIterations = 300;
+	private int maxNrOfJspritIterations = 300;
 
 	private boolean allowEmptyTourListsForDepots = true;
 
@@ -284,18 +284,18 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * @return the nrOfJspritIterations
 	 */
-	@StringGetter(NR_OF_JSPRIT_ITERATIONS)
-	public int getNrOfJspritIterations() {
-		return nrOfJspritIterations;
+	@StringGetter(MAX_NR_OF_JSPRIT_ITERATIONS)
+	public int getMaxNrOfJspritIterations() {
+		return maxNrOfJspritIterations;
 	}
 
 	/**
-	 * @param nrOfJspritIterations
+	 * @param maxNrOfJspritIterations
 	 *            the nrOfJspritIterations to set
 	 */
-	@StringSetter(NR_OF_JSPRIT_ITERATIONS)
-	public void setNrOfJspritIterations(int nrOfJspritIterations) {
-		this.nrOfJspritIterations = nrOfJspritIterations;
+	@StringSetter(MAX_NR_OF_JSPRIT_ITERATIONS)
+	public void setMaxNrOfJspritIterations(int maxNrOfJspritIterations) {
+		this.maxNrOfJspritIterations = maxNrOfJspritIterations;
 	}
 
 	/**
@@ -436,7 +436,7 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
         map.put(FREIGHT_DEMAND_SAMPLE_SIZE, FREIGHT_DEMAND_SAMPLE_SIZE_EXP);
         map.put(TOURPLANNING_INTERVAL, TOURPLANNING_INTERVAL_EXP);
         map.put(RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION, RUN_TOUR_PLANNING_BEFORE_FIRST_ITERATION_EXP);
-        map.put(NR_OF_JSPRIT_ITERATIONS, NR_OF_JSPRIT_ITERATIONS_EXP);
+        map.put(MAX_NR_OF_JSPRIT_ITERATIONS, MAX_NR_OF_JSPRIT_ITERATIONS_EXP);
         map.put(ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS, ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS_EXP);
         map.put(MAX_BEELINE_DISTANCE_TO_DEPOT, MAX_BEELINE_DISTANCE_TO_DEPOT_EXP);
         map.put(MAX_TRAVELTIME_TO_DEPOT, MAX_TRAVELTIME_TO_DEPOT_EXP);
