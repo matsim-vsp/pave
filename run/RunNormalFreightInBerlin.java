@@ -27,11 +27,10 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
+import org.matsim.contrib.freight.Freight;
 import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.controler.CarrierModule;
-import org.matsim.contrib.freight.replanning.CarrierPlanStrategyManagerFactory;
-import org.matsim.contrib.freight.scoring.CarrierScoringFunctionFactory;
 import org.matsim.contrib.freight.usecases.analysis.CarrierScoreStats;
 import org.matsim.contrib.freight.usecases.analysis.LegHistogram;
 import org.matsim.contrib.freight.utils.FreightUtils;
@@ -122,8 +121,8 @@ public class RunNormalFreightInBerlin {
         controler.addOverridingModule(new DvrpModule());
 
 
+        Freight.configure(controler); //not sure if this is what we want here.. tschlenther, nov'19
 
-        prepareCarrierModule(scenario, controler);
         prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, FreightUtils.getCarriers(scenario));
 
         BaseCaseFreightTourStatsListener analyser = new BaseCaseFreightTourStatsListener(scenario.getNetwork(),
@@ -143,20 +142,6 @@ public class RunNormalFreightInBerlin {
 
         // run simulation
         controler.run();
-    }
-
-    private static void prepareCarrierModule(Scenario scenario, Controler controler) {
-        CarrierPlanStrategyManagerFactory strategyManagerFactory = createStrategyManagerFactory(FreightUtils.getCarrierVehicleTypes(scenario), controler);
-        CarrierScoringFunctionFactory scoringFunctionFactory = createScoringFunctionFactory(scenario.getNetwork());
-        CarrierModule carrierController = new CarrierModule();
-        controler.addOverridingModule(carrierController);
-        controler.addOverridingModule(new AbstractModule() {
-            @Override
-            public void install() {
-                bind(CarrierScoringFunctionFactory.class).toInstance(scoringFunctionFactory);
-                bind(CarrierPlanStrategyManagerFactory.class).toInstance(strategyManagerFactory);
-            }
-        });
     }
 
     private static void prepareConfig(String output, String population, String networkChangeEvents, int maxIter, boolean increaseCapacities, Config config) {
@@ -234,27 +219,6 @@ public class RunNormalFreightInBerlin {
 			withoutFreight.reset(event.getIteration());
 		});
 
-	}
-
-	private static CarrierScoringFunctionFactory createScoringFunctionFactory(final Network network) {
-		return carrier -> {
-			SumScoringFunction sf = new SumScoringFunction();
-			//            CarrierScoringFunctionFactoryImpl.DriversLegScoring driverLegScoring = new CarrierScoringFunctionFactoryImpl.DriversLegScoring(carrier, network);
-			//            CarrierScoringFunctionFactoryImpl.DriversActivityScoring actScoring = new CarrierScoringFunctionFactoryImpl.DriversActivityScoring();
-			//            sf.addScoringFunction(driverLegScoring);
-			//            sf.addScoringFunction(actScoring);
-			return sf;
-		};
-	}
-
-	private static CarrierPlanStrategyManagerFactory createStrategyManagerFactory(final CarrierVehicleTypes types,
-			final MatsimServices controler) {
-		return () -> {
-			final GenericStrategyManager<CarrierPlan, Carrier> strategyManager = new GenericStrategyManager<>();
-			strategyManager.addStrategy(new GenericPlanStrategyImpl<>(new BestPlanSelector<>()), null, 1);
-			//            strategyManager.addStrategy(new SelectBestPlanAndOptimizeItsVehicleRouteFactory(controler.getScenario().getNetwork(), types, controler.getLinkTravelTimes()).createStrategy(), null, 0.05);
-			return strategyManager;
-		};
 	}
 
 }
