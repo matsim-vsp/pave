@@ -156,6 +156,13 @@ public class ServiceMapMatch {
         mng.addLinkFilter(l -> {
             return l.getAllowedModes().contains("car");
         });
+
+        //no motorways
+        mng.addLinkFilter(link -> !link.getAttributes().getAttribute("type").equals("motorway"));
+
+        //no motorway-links
+        mng.addLinkFilter(link -> !link.getAttributes().getAttribute("type").equals("motorway_link"));
+
         Network newNetOnlyCar = mng.applyFilters();
 
         for(Carrier carrier: oldCarriers.getCarriers().values()){
