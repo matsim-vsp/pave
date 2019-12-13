@@ -24,18 +24,17 @@ import analysis.BaseCaseFreightTourStatsListener;
 import analysis.OverallTravelTimeAndDistanceListener;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
-import org.matsim.contrib.dvrp.run.DvrpModule;
-import org.matsim.contrib.freight.Freight;
 import org.matsim.contrib.freight.FreightConfigGroup;
-import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
+import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.controler.CarrierModule;
+import org.matsim.contrib.freight.controler.CarrierPlanStrategyManagerFactory;
+import org.matsim.contrib.freight.controler.CarrierScoringFunctionFactory;
 import org.matsim.contrib.freight.usecases.analysis.CarrierScoreStats;
 import org.matsim.contrib.freight.usecases.analysis.LegHistogram;
+import org.matsim.contrib.freight.usecases.chessboard.CarrierScoringFunctionFactoryImpl;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.contrib.taxi.optimizer.rules.RuleBasedTaxiOptimizerParams;
-import org.matsim.contrib.taxi.run.MultiModeTaxiConfigGroup;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
@@ -47,10 +46,6 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.MatsimServices;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.controler.listener.IterationEndsListener;
-import org.matsim.core.replanning.GenericPlanStrategyImpl;
-import org.matsim.core.replanning.GenericStrategyManager;
-import org.matsim.core.replanning.selectors.BestPlanSelector;
-import org.matsim.core.scoring.SumScoringFunction;
 import org.matsim.run.RunBerlinScenario;
 
 import java.text.SimpleDateFormat;
@@ -86,6 +81,7 @@ public class RunNormalFreightInBerlin {
             population = args[5];
             networkChangeEvents = args[6];
             increaseCapacities = Boolean.valueOf(args[7]);
+
         } else {
             configPath = CONFIG_v53_1pct;
             carriersFile = CARRIERS_FILE;
@@ -95,21 +91,34 @@ public class RunNormalFreightInBerlin {
             population = SMALL_PLANS_FILE;
             networkChangeEvents = NETWORK_CHANGE_EVENTS;
             increaseCapacities = false;
+
+            String dir = "C:/Users/Work/PFAV_TRB_debug/";
+
+            configPath = dir + "input/berlin-v5.3-1pct.config_usingLocalInputFiles.xml";
+            carriersFile = dir + "input/freight/revisedVehCosts_112019/PFAV_AutCar_outputCarriers_it0.xml";
+            vehTypesFile = dir + "input/freight/revisedVehCosts_112019/vehicleTypes_PFAV_Revised112019.xml";
+            output = dir + "output/";
+            maxIter = 0;
+            population = dir + "input/population/13000carUsers.xml";
+            networkChangeEvents = dir + "input/changeevents-v5.3.xml.gz";
+            increaseCapacities = true;
+
         }
 
         Config config = RunBerlinScenario.prepareConfig(new String[]{configPath});
 
-        TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
-        String mode = taxiCfg.getMode();
-		MultiModeTaxiConfigGroup multiTaxiCfg = new MultiModeTaxiConfigGroup();
-		multiTaxiCfg.addParameterSet(taxiCfg);
-		config.addModule(multiTaxiCfg);
+//        TaxiConfigGroup taxiCfg = prepareTaxiConfigGroup();
+//        String mode = taxiCfg.getMode();
+//		MultiModeTaxiConfigGroup multiTaxiCfg = new MultiModeTaxiConfigGroup();
+//		multiTaxiCfg.addParameterSet(taxiCfg);
+//		config.addModule(multiTaxiCfg);
 
         prepareConfig(output, population, networkChangeEvents, maxIter, increaseCapacities, config);
 
         FreightConfigGroup freightConfig = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
         freightConfig.setCarriersVehicleTypesFile(vehTypesFile);
         freightConfig.setCarriersFile(carriersFile);
+        freightConfig.setTimeWindowHandling(FreightConfigGroup.TimeWindowHandling.enforceBeginnings);
 
         //load scenario and carriers
         Scenario scenario = RunBerlinScenario.prepareScenario(config);
@@ -118,10 +127,18 @@ public class RunNormalFreightInBerlin {
         // setup controler
         Controler controler = RunBerlinScenario.prepareControler(scenario);
 
-        controler.addOverridingModule(new DvrpModule());
+//        controler.addOverridingModule(new DvrpModule());
+//        controler.addOverridingModule(new TaxiModeModule(taxiCfg));
+        controler.addOverridingModule(new CarrierModule());
 
-
-        Freight.configure(controler); //not sure if this is what we want here.. tschlenther, nov'19
+        //copied from Freight class
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                bind(CarrierPlanStrategyManagerFactory.class).toInstance(() -> null);
+                bind(CarrierScoringFunctionFactory.class).to(CarrierScoringFunctionFactoryImpl.class);
+            }
+        });
 
         prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, FreightUtils.getCarriers(scenario));
 
@@ -152,12 +169,31 @@ public class RunNormalFreightInBerlin {
         netModes.remove(TransportMode.ride);
         config.plansCalcRoute().setNetworkModes(netModes);
 
-        config.addModule(new DvrpConfigGroup());
+//        config.addModule(new DvrpConfigGroup());
 
-        config.strategy().setFractionOfIterationsToDisableInnovation(0);        //  ???
-        PlanCalcScoreConfigGroup.ModeParams taxiModeParams = new PlanCalcScoreConfigGroup.ModeParams("taxi");
-        taxiModeParams.setMarginalUtilityOfTraveling(0.);       // car also has 0.0 ????
-        config.planCalcScore().addModeParams(taxiModeParams);
+//        config.strategy().setFractionOfIterationsToDisableInnovation(0);        //  ???
+//        PlanCalcScoreConfigGroup.ModeParams taxiModeParams = new PlanCalcScoreConfigGroup.ModeParams("taxi");
+//        taxiModeParams.setMarginalUtilityOfTraveling(0.);       // car also has 0.0 ????
+//        config.planCalcScore().addModeParams(taxiModeParams);
+
+        {
+            //TODO remove this. this is just here in order to get this setup running once again for trb2020.
+            //TODO update everything to matsim-berlin 5.4; that means input plans, changeEvents, config and everything else
+            PlanCalcScoreConfigGroup.ActivityParams ptInteractionParams = new PlanCalcScoreConfigGroup.ActivityParams();
+            ptInteractionParams.setActivityType("pt interaction");
+            ptInteractionParams.setTypicalDuration(10);
+            ptInteractionParams.setOpeningTime(1 * 3600);
+            ptInteractionParams.setClosingTime(24 * 3600);
+            config.planCalcScore().addActivityParams(ptInteractionParams);
+            config.vspExperimental().setAbleToOverwritePtInteractionParams(true);
+
+            PlanCalcScoreConfigGroup.ActivityParams rideInteractionParams = new PlanCalcScoreConfigGroup.ActivityParams();
+            rideInteractionParams.setActivityType("ride interaction");
+            rideInteractionParams.setTypicalDuration(10);
+            rideInteractionParams.setOpeningTime(1 * 3600);
+            rideInteractionParams.setClosingTime(24 * 3600);
+            config.planCalcScore().addActivityParams(rideInteractionParams);
+        }
 
         config.controler()
                 .setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);

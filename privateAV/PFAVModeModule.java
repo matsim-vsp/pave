@@ -14,7 +14,8 @@ import org.matsim.contrib.dvrp.run.ModalProviders;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dynagent.run.DynRoutingModule;
 import org.matsim.contrib.freight.FreightConfigGroup;
-import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
+import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.core.config.ConfigUtils;
@@ -56,7 +57,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
         //bind carriers and carrierVehicleTypes
         CarrierVehicleTypes vTypes = FreightUtils.getCarrierVehicleTypes(scenario);
         if(vTypes.getVehicleTypes().isEmpty()){
-            throw new RuntimeException("CarrierVehicleTypes in scneario are empty. Possible explanation: " +
+            throw new RuntimeException("CarrierVehicleTypes in scenario are empty. Possible explanation: " +
                     "\n you forgot to load carrier vehicle types into scenario before adding PFAVModeModule to the controler.." +
                     "\n please use FreightUtils.loadCarriersAccordingToFreightConfig(scenario)");
         }
