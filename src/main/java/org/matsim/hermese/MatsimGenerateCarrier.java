@@ -67,42 +67,9 @@ public class MatsimGenerateCarrier {
 			br = new BufferedReader(new FileReader(datafile));
 			String firstRow = br.readLine();
 			String[] columnNames = firstRow.split(",");
-			int i = 0;
-			System.out.println("length column " + columnNames.length);
-			while (i < columnNames.length) {
-				String name = columnNames[i];
-				switch (name) {
 
-				case "latitude":
-					latitudeColumn = i;
-					break;
+			decideColumns(columnNames);
 
-				case "longitude":
-					longitideColumn = i;
-					break;
-
-				case "ANZAHL_SDG":
-					sizeColumn = i;
-					break;
-
-				case "GEWICHT in g":
-					weightColumn = i;
-					break;
-
-				case "ANZAHL_DAVON_RT":
-					returnPacketColumn = i;
-					break;
-
-				case "ORG_EINHEITSNAME":
-					careerName = i;
-					break;
-
-				case "STH_SCAN_ZEITPUNKT":
-					time = i;
-					break;
-				}
-				i++;
-			}
 			int n = 0;
 			while ((line = br.readLine()) != null) {
 				String[] column = line.split(",");
@@ -149,13 +116,10 @@ public class MatsimGenerateCarrier {
 			planWriter.write(OUTPUT_CARRIERS);
 
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -223,6 +187,45 @@ public class MatsimGenerateCarrier {
 	public static CarrierVehicle createCarrierVehicle(Id<Link> locationId, String id) {
 		return CarrierVehicle.Builder.newInstance(Id.create(id, org.matsim.vehicles.Vehicle.class), locationId)
 				.setEarliestStart(0.0).setLatestEnd(36000.0).setTypeId(Id.create("HERMESE", VehicleType.class)).build();
+	}
+
+	private static void decideColumns(String[] columnNames) {
+
+		int i = 0;
+		while (i < columnNames.length) {
+			String name = columnNames[i];
+			switch (name) {
+
+			case "latitude":
+				latitudeColumn = i;
+				break;
+
+			case "longitude":
+				longitideColumn = i;
+				break;
+
+			case "ANZAHL_SDG":
+				sizeColumn = i;
+				break;
+
+			case "GEWICHT in g":
+				weightColumn = i;
+				break;
+
+			case "ANZAHL_DAVON_RT":
+				returnPacketColumn = i;
+				break;
+
+			case "ORG_EINHEITSNAME":
+				careerName = i;
+				break;
+
+			case "STH_SCAN_ZEITPUNKT":
+				time = i;
+				break;
+			}
+			i++;
+		}
 	}
 
 }
