@@ -104,11 +104,16 @@ public class MatsimGenerateCarrier {
 				carrierService.getAttributes().putAttribute("return packet", column[returnPacketColumn]);
 
 				carrier.getServices().put(carrierService.getId(), carrierService);
-				tourList.add(ScheduledTour.newInstance(
-						Tour.Builder.newInstance().scheduleService(carrierService)
-								.scheduleStart(carrierService.getLocationLinkId()).build(),
-						carrier.getCarrierCapabilities().getCarrierVehicles().get(carrierName + "hermesevehicle"),
-						formatTime(column[time])));
+				
+				
+				
+				Tour tour = 	Tour.Builder.newInstance().scheduleStart(carrierService.getLocationLinkId())
+						.scheduleService(carrierService)
+						.build();
+				
+				ScheduledTour scheduledTour = ScheduledTour.newInstance(tour, carrier.getCarrierCapabilities().getCarrierVehicles().get(carrierName + "hermesevehicle"),
+				formatTime(column[time]));
+				tourList.add(scheduledTour);
 
 				n++;
 			}
