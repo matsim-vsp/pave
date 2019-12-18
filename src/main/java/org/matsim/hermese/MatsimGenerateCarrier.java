@@ -41,7 +41,7 @@ public class MatsimGenerateCarrier {
 	static int weightColumn;
 	static int sizeColumn;
 	static int returnPacketColumn;
-	static int careerName;
+	static int carrierColumn;
 	static int time;
 	static double prevLat = 0;
 	static double prevLong = 0;
@@ -73,7 +73,7 @@ public class MatsimGenerateCarrier {
 			int n = 0;
 			while ((line = br.readLine()) != null) {
 				String[] column = line.split(",");
-				String compareCarrier = column[careerName];
+				String compareCarrier = column[carrierColumn];
 
 				double latitude = (isNumeric(column[latitudeColumn])) ? Double.valueOf(column[latitudeColumn])
 						: prevLat;
@@ -86,7 +86,7 @@ public class MatsimGenerateCarrier {
 						carrier.getPlans().add(new CarrierPlan(carrier, tourList));
 						tourList = new ArrayList<ScheduledTour>();
 					}
-					carrierName = column[careerName];
+					carrierName = column[carrierColumn];
 					carrier = CarrierImpl.newInstance(Id.create(carrierName, Carrier.class));
 					CarrierVehicle vehicle = createCarrierVehicle(getNetworkLinkId(newNetOnlyCar, latitude, longitude),
 							carrierName + "vehicle");
@@ -96,7 +96,7 @@ public class MatsimGenerateCarrier {
 
 					n = 0;
 				} else {
-					carrierName = column[careerName];
+					carrierName = column[carrierColumn];
 				}
 				CarrierService carrierService = createMatsimService(carrierName + n,
 						getNetworkLinkId(newNetOnlyCar, latitude, longitude), size);
@@ -120,6 +120,7 @@ public class MatsimGenerateCarrier {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ParseException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -217,7 +218,7 @@ public class MatsimGenerateCarrier {
 				break;
 
 			case "ORG_EINHEITSNAME":
-				careerName = i;
+				carrierColumn = i;
 				break;
 
 			case "STH_SCAN_ZEITPUNKT":
