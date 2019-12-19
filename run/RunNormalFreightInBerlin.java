@@ -181,17 +181,20 @@ public class RunNormalFreightInBerlin {
             //TODO update everything to matsim-berlin 5.4; that means input plans, changeEvents, config and everything else
             PlanCalcScoreConfigGroup.ActivityParams ptInteractionParams = new PlanCalcScoreConfigGroup.ActivityParams();
             ptInteractionParams.setActivityType("pt interaction");
-            ptInteractionParams.setTypicalDuration(10);
-            ptInteractionParams.setOpeningTime(1 * 3600);
-            ptInteractionParams.setClosingTime(24 * 3600);
+            ptInteractionParams.setScoringThisActivityAtAll(false);
+//            ptInteractionParams.setTypicalDuration(10);
+//            ptInteractionParams.setOpeningTime(1 * 3600);
+//            ptInteractionParams.setClosingTime(24 * 3600);
             config.planCalcScore().addActivityParams(ptInteractionParams);
-            config.vspExperimental().setAbleToOverwritePtInteractionParams(true);
+//            config.vspExperimental().setAbleToOverwritePtInteractionParams(true);
 
             PlanCalcScoreConfigGroup.ActivityParams rideInteractionParams = new PlanCalcScoreConfigGroup.ActivityParams();
             rideInteractionParams.setActivityType("ride interaction");
-            rideInteractionParams.setTypicalDuration(10);
-            rideInteractionParams.setOpeningTime(1 * 3600);
-            rideInteractionParams.setClosingTime(24 * 3600);
+            rideInteractionParams.setScoringThisActivityAtAll(false);
+//            rideInteractionParams.setScoringThisActivityAtAll(false);
+//            rideInteractionParams.setTypicalDuration(10);
+//            rideInteractionParams.setOpeningTime(1 * 3600);
+//            rideInteractionParams.setClosingTime(24 * 3600);
             config.planCalcScore().addActivityParams(rideInteractionParams);
         }
 
