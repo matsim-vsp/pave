@@ -52,6 +52,8 @@ public class RunPFAVInBerlin {
 	private static final String OUTPUTDIR = "output/Berlin/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
 			new Date()) + "/";
 
+	private static boolean RUN_TOURPLANNING = false;
+
 	//	private static final String CARRIERS_FILE = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PFAVScenario/test_onlyOneCarrier_only100services.xml";
 	private static final String CARRIERS_FILE = "freight/revisedVehCosts_112019/carriers_gzBerlin_AutonomousTruck.xml";
 
@@ -69,19 +71,21 @@ public class RunPFAVInBerlin {
 	public static void main(String[] args) {
 		String configPath, output, carriers, vehTypes, pfavType, population, networkChangeEvents;
 		int maxIter;
-		boolean increaseCapacities;
+		boolean runTourPlanning, increaseCapacities;
 		if (args.length > 0) {
 			configPath = args[0];
-			carriers = args[1];
-			vehTypes = args[2];
-			pfavType = args[3];
-			output = args[4];
-			maxIter = Integer.valueOf(args[5]);
-			population = args[6];
-			networkChangeEvents = args[7];
-			increaseCapacities = Boolean.valueOf(args[8]);
+			runTourPlanning = Boolean.valueOf(args[1]);
+			carriers = args[2];
+			vehTypes = args[3];
+			pfavType = args[4];
+			output = args[5];
+			maxIter = Integer.valueOf(args[6]);
+			population = args[7];
+			networkChangeEvents = args[8];
+			increaseCapacities = Boolean.valueOf(args[9]);
 		} else {
 			configPath = CONFIG_v53_1pct;
+			runTourPlanning = RUN_TOURPLANNING;
 			carriers = CARRIERS_FILE;
 			vehTypes = VEHTYPES_FILE;
 			pfavType = "AutonomousTruck";
@@ -98,7 +102,7 @@ public class RunPFAVInBerlin {
 		//add pfav config group
 		FreightAVConfigGroup pfavCfg = ConfigUtils.addOrGetModule(config, FreightAVConfigGroup.class);
 		pfavCfg.setPfavType(pfavType);
-		pfavCfg.setRunTourPlanningBeforeFirstIteration(true); //run tour planning before iteration 0
+		pfavCfg.setRunTourPlanningBeforeFirstIteration(runTourPlanning); //run tour planning before iteration 0
 
 
 		//add taxi config group
