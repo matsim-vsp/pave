@@ -48,14 +48,17 @@ import privateAV.PFAVModeModule;
 
 public class RunPFAVInBerlin {
 
-	private static final String CONFIG_v53_1pct = "C:/Users/tschlenther/Desktop/input/berlin-v5.3-1pct.config_usingLocalInputFiles.xml";
-	private static final String OUTPUTDIR = "output/Berlin/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
+
+	private static final String runID = "";
+
+	private static final String CONFIG_v53_1pct = "D:/local_runs/pfav/input/berlin-v5.3-1pct.config_usingLocalInputFiles.xml";
+	private static final String OUTPUTDIR = "D:/local_runs/pfav/output/ " + runID +  new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
 			new Date()) + "/";
 
 	private static boolean RUN_TOURPLANNING = false;
 
 	//	private static final String CARRIERS_FILE = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PFAVScenario/test_onlyOneCarrier_only100services.xml";
-	private static final String CARRIERS_FILE = "freight/revisedVehCosts_112019/carriers_gzBerlin_AutonomousTruck.xml";
+	private static final String CARRIERS_FILE = "freight/revisedVehCosts_112019/carriers_gzBerlin_AutonomousTruck_ROUTED.xml";
 
 	private static final String VEHTYPES_FILE = "freight/revisedVehCosts_112019/vehicleTypes_PFAV_Revised112019.xml";
 
@@ -63,7 +66,7 @@ public class RunPFAVInBerlin {
 
 	//only for test purposes
 //	private static final String SMALL_PLANS_FILE = "C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml";
-    private static final String SMALL_PLANS_FILE = "population/13000CarUsers.xml";
+    private static final String SMALL_PLANS_FILE = "population/13000PFAVOwners.xml";
 
 
 	private static final int LAST_ITERATION = 0;
@@ -149,6 +152,18 @@ public class RunPFAVInBerlin {
 		ArrayList<String> netModes = new ArrayList<>(config.plansCalcRoute().getNetworkModes());
 		netModes.remove(TransportMode.ride);
 		config.plansCalcRoute().setNetworkModes(netModes);
+
+		//TODO remove this. this is just here in order to get this setup running once again for trb2020.
+		//TODO update everything to matsim-berlin 5.4; that means input plans, changeEvents, config and everything else
+		PlanCalcScoreConfigGroup.ActivityParams ptInteractionParams = new PlanCalcScoreConfigGroup.ActivityParams();
+		ptInteractionParams.setActivityType("pt interaction");
+		ptInteractionParams.setScoringThisActivityAtAll(false);
+		config.planCalcScore().addActivityParams(ptInteractionParams);
+
+		PlanCalcScoreConfigGroup.ActivityParams rideInteractionParams = new PlanCalcScoreConfigGroup.ActivityParams();
+		rideInteractionParams.setActivityType("ride interaction");
+		rideInteractionParams.setScoringThisActivityAtAll(false);
+		config.planCalcScore().addActivityParams(rideInteractionParams);
 
 		config.strategy().setFractionOfIterationsToDisableInnovation(0);
 		PlanCalcScoreConfigGroup.ModeParams taxiModeParams = new PlanCalcScoreConfigGroup.ModeParams("taxi");
