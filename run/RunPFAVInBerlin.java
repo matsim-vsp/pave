@@ -49,7 +49,8 @@ import privateAV.PFAVModeModule;
 public class RunPFAVInBerlin {
 
 
-	private static final String runID = "";
+	private static final String PFAV_TYPE = "AutonomousCar";
+	private static final String runID = "local_" + PFAV_TYPE + "_13k";
 
 	private static final String CONFIG_v53_1pct = "D:/local_runs/pfav/input/berlin-v5.3-1pct.config_usingLocalInputFiles.xml";
 	private static final String OUTPUTDIR = "D:/local_runs/pfav/output/ " + runID +  new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(
@@ -57,8 +58,9 @@ public class RunPFAVInBerlin {
 
 	private static boolean RUN_TOURPLANNING = false;
 
+
 	//	private static final String CARRIERS_FILE = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/FrachtNachfrage/KEP/PFAVScenario/test_onlyOneCarrier_only100services.xml";
-	private static final String CARRIERS_FILE = "freight/revisedVehCosts_112019/carriers_gzBerlin_AutonomousTruck_ROUTED.xml";
+	private static final String CARRIERS_FILE = "freight/revisedVehCosts_112019/carriers_gzBerlin_" + PFAV_TYPE + "_ROUTED.xml";
 
 	private static final String VEHTYPES_FILE = "freight/revisedVehCosts_112019/vehicleTypes_PFAV_Revised112019.xml";
 
@@ -91,12 +93,12 @@ public class RunPFAVInBerlin {
 			runTourPlanning = RUN_TOURPLANNING;
 			carriers = CARRIERS_FILE;
 			vehTypes = VEHTYPES_FILE;
-			pfavType = "AutonomousTruck";
+			pfavType = PFAV_TYPE;
 			output = OUTPUTDIR;
 			maxIter = LAST_ITERATION;
 			population = SMALL_PLANS_FILE;
 			networkChangeEvents = NETWORK_CHANGE_EVENTS;
-			increaseCapacities = false;
+			increaseCapacities = true;
 		}
 
 		//setup config

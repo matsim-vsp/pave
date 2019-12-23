@@ -41,13 +41,13 @@ public class PopulationCreator {
         Scenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
         PopulationReader reader = new PopulationReader(scenario);
 //
-        reader.readFile("C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/originalPopulation_OnlyCarUsers.xml.gz");
+        reader.readFile("D:/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/originalPopulation_OnlyCarUsers.xml.gz");
 
 
 //        new PopulationWriter(cutPopulationTo100ForEachMode(convertAgentsToPFAVOwners(scenario))).write("C:/Users/Work/git/freightAV/input/BerlinScenario/5.3/berlin100PersonsPerMode.xml");
 
-        int nrOfPFAVOwners = 13000;
-        String dir = "C:/Users/Work/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/";
+        int nrOfPFAVOwners = 14000;
+        String dir = "D:/svn/shared-svn/studies/tschlenther/freightAV/BerlinScenario/Population/";
 //        Population pop = defineAndGetXSpatialEquallyDistributedPFAVOwners(scenario.getPopulation(), nrOfPFAVOwners);
 //        new PopulationWriter(pop).write(dir + nrOfPFAVOwners + "CarUsersTransformed.xml.gz");
 

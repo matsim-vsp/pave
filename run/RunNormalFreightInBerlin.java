@@ -90,7 +90,7 @@ public class RunNormalFreightInBerlin {
             maxIter = LAST_ITERATION;
             population = SMALL_PLANS_FILE;
             networkChangeEvents = NETWORK_CHANGE_EVENTS;
-            increaseCapacities = false;
+            increaseCapacities = true;
 
             String dir = "C:/Users/Work/PFAV_TRB_debug/";
 
