@@ -69,8 +69,8 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 			+ "which the access drive takes longer than MAX_TRAVELTIME_TO_DEPOT will not "
 			+ "be dispatched to a starting from that depot.";
 
-	public static final String AMOUNT_OF_DEPOTS_TO_CONSIDER = "amountOfDepotsToConsider";
-	static final String AMOUNT_OF_DEPOTS_TO_CONSIDER_EXP = "defines the number of depots which are considered for the dispatch of a freight tour to a PFAV. "
+	public static final String NUMBER_OF_DEPOTS_TO_CONSIDER = "numberOfDepotsToConsider";
+	static final String NUMBER_OF_DEPOTS_TO_CONSIDER_EXP = "defines the number of depots which are considered for the dispatch of a freight tour to a PFAV. "
 			+ "in the dispatch algorithm, the closest AMOUNT_OF_DEPOTS_TO_CONSIDER to the PFAV'S request location are searched, based on beeline distance. "
 			+ "/n if you only look at one depot out of a bigger set of depot, you should set this value to 1 and set ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS true";
 
@@ -125,7 +125,7 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 	private double maxTravelTimeToDepot = 20 * 60;
 
 	@Positive
-	private int amountOfDepotsToConsider = 3;
+	private int numberOfDepotsToConsider = 3;
 
 	private boolean considerServiceTimeWindowsForDispatch = false;
 
@@ -352,18 +352,18 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * @return the amountOfDepotsToConsider
 	 */
-	@StringGetter(AMOUNT_OF_DEPOTS_TO_CONSIDER)
-	public int getAmountOfDepotsToConsider() {
-		return amountOfDepotsToConsider;
+	@StringGetter(NUMBER_OF_DEPOTS_TO_CONSIDER)
+	public int getNumberOfDepotsToConsider() {
+		return numberOfDepotsToConsider;
 	}
 
 	/**
-	 * @param amountOfDepotsToConsider
-	 *            the amountOfDepotsToConsider to set
+	 * @param numberOfDepotsToConsider
+	 *            the numberOfDepotsToConsider to set
 	 */
-	@StringSetter(AMOUNT_OF_DEPOTS_TO_CONSIDER)
-	public void setAmountOfDepotsToConsider(int amountOfDepotsToConsider) {
-		this.amountOfDepotsToConsider = amountOfDepotsToConsider;
+	@StringSetter(NUMBER_OF_DEPOTS_TO_CONSIDER)
+	public void setNumberOfDepotsToConsider(int numberOfDepotsToConsider) {
+		this.numberOfDepotsToConsider = numberOfDepotsToConsider;
 	}
 
 	/**
@@ -440,7 +440,7 @@ public final class FreightAVConfigGroup extends ReflectiveConfigGroup {
         map.put(ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS, ALLOW_EMPTY_TOUR_LISTS_FOR_DEPOTS_EXP);
         map.put(MAX_BEELINE_DISTANCE_TO_DEPOT, MAX_BEELINE_DISTANCE_TO_DEPOT_EXP);
         map.put(MAX_TRAVELTIME_TO_DEPOT, MAX_TRAVELTIME_TO_DEPOT_EXP);
-        map.put(AMOUNT_OF_DEPOTS_TO_CONSIDER, AMOUNT_OF_DEPOTS_TO_CONSIDER_EXP);
+        map.put(NUMBER_OF_DEPOTS_TO_CONSIDER, NUMBER_OF_DEPOTS_TO_CONSIDER_EXP);
         map.put(CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH, CONSIDER_SERVICE_TIMEWINDOWS_FOR_DISPATCH_EXP);
         map.put(RE_ROUTE_TOURS, RE_ROUTE_TOURS_EXP);
         map.put(ALLOW_MULTIPLE_TOURS_IN_A_ROW, ALLOW_MULTIPLE_TOURS_IN_A_ROW_EXP);
