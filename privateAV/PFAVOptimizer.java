@@ -42,7 +42,7 @@ final class PFAVOptimizer implements TaxiOptimizer {
 			//get the vehicle
 		Id<DvrpVehicle> personalAV = Id.create(req.getPassengerId().toString() + PFAVUtils.PFAV_ID_SUFFIX, DvrpVehicle.class);
 
-        log.info("agent " + req.getPassengerId() + " submitted a request at time= " + req.getSubmissionTime());
+//        log.info("agent " + req.getPassengerId() + " submitted a request at time= " + req.getSubmissionTime());
         DvrpVehicle veh = fleet.getVehicles().get(personalAV);
 
         if (veh == null) {

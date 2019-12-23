@@ -172,7 +172,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
     }
 
     private List<Link> findNearestDepots(Link requestLink, Stream<Link> depotLinks) {
-        StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(pfavConfigGroup.getAmountOfDepotsToConsider(), link1 -> link1, link2 -> link2);
+        StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(pfavConfigGroup.getNumberOfDepotsToConsider(), link1 -> link1, link2 -> link2);
         return finder.findNearest(requestLink, depotLinks);
     }
 
@@ -183,7 +183,8 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
             if (matchingFreightTour != null) break;
         }
         if (matchingFreightTour == null) {
-            log.info("request will be rejected. must return log of vehicle:" + vehicle.getMustReturnToOwnerLinkTimePairs().peek());
+//            log.info("request will be rejected. must return log of vehicle:" + vehicle.getMustReturnToOwnerLinkTimePairs().peek());
+
             //we could throw the EventFreightTourRequestRejected here and hand to it the depot list on which we had a look on as well as the amount of
             //freight tours we looked at etc.
             //BUT: we would need the eventsManager AND the MobsimTimer (for latter, we could normally also use currentTask.getEndTime() but that would be dirty somehow)
@@ -194,17 +195,19 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
 
     private FreightTourDataPlanned searchForTourAtDepot(Link depot, Link requestLink, PFAVehicle vehicle, LeastCostPathCalculator router) {
         FreightTourDataPlanned matchingFreightTour = null;
-        log.info("size of depot todo list: " + this.depotToFreightTour.get(depot).size());
+
+        //log.info("size of depot todo list: " + this.depotToFreightTour.get(depot).size());
+
         if (this.depotToFreightTour.get(depot).isEmpty())
             return null;//only go on if there is a tour left at depot
         Iterator<FreightTourDataPlanned> freightTourIterator = this.depotToFreightTour.get(depot).iterator();
         VrpPathWithTravelData pathFromCurrTaskToDepot = calcPathToDepot(vehicle, depot, router);
         if (DistanceUtils.calculateDistance(depot.getCoord(), requestLink.getCoord()) <= pfavConfigGroup.getMaxBeelineDistanceToDepot()    // MAX BEELINE DISTANCE TO DEPOT
                 && pathFromCurrTaskToDepot.getTravelTime() <= pfavConfigGroup.getMaxTravelTimeToDepot()                                    // MAX TRAVEL TIME TO DEPOT
-                && pathFromCurrTaskToDepot.getArrivalTime() < pfavConfigGroup.getFreightTourLatestStart()) {                                  // ARRIVAL BEFORE LATEST START
+                && pathFromCurrTaskToDepot.getArrivalTime() < pfavConfigGroup.getFreightTourLatestStart()) {                               // ARRIVAL BEFORE LATEST START
 
-            log.info("computed arrival time at depot = " + pathFromCurrTaskToDepot.getArrivalTime());
-            log.info("latest start is = " + pfavConfigGroup.getFreightTourLatestStart());
+//            log.info("computed arrival time at depot = " + pathFromCurrTaskToDepot.getArrivalTime());
+//            log.info("latest start is = " + pfavConfigGroup.getFreightTourLatestStart());
             double waitTimeAtDepot = computeWaitTimeAtDepot(pathFromCurrTaskToDepot);
 
             while (freightTourIterator.hasNext()) {
@@ -221,7 +224,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
                 //if no tour at the depot is left, delete depot
                 if (depotToFreightTour.get(depot).isEmpty() && !pfavConfigGroup.isAllowEmptyTourListsForDepots())
                     depotToFreightTour.remove(depot);
-                log.info("size of depot to do list after removal: " + this.depotToFreightTour.get(depot).size());
+//                log.info("size of depot to do list after removal: " + this.depotToFreightTour.get(depot).size());
             }
         }
         return matchingFreightTour;
@@ -271,7 +274,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
             log.warn("vehicle " + vehicle.getId() + " has a undefined must return time. this should not happen! no freight tour will be dispatched...");
             throw new RuntimeException("should not happen !?");
         } else if (timeWhenOwnerNeedsVehicle == Double.POSITIVE_INFINITY) {
-            log.info("tour duration is irrelevant for vehicle " + vehicle.getId() + " because owner does not need the PFAV anymore for today");
+//            log.info("tour duration is irrelevant for vehicle " + vehicle.getId() + " because owner does not need the PFAV anymore for today");
             accountForWaitTaskAndAccessDrive(vehicle, pathFromCurrTaskToDepot, waitTimeAtDepot, freightTour, start);
             return true;
         }
@@ -299,7 +302,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
 
         if (timeWhenOwnerNeedsVehicle >= currentTask.getEndTime() + totalTimeNeededToPerformFreightTour + pfavConfigGroup.getTimeBuffer()) {
             log.info("tour duration = " + totalTimeNeededToPerformFreightTour + " seems to be okay for vehicle " + vehicle.getId() + " starting at time " + currentTask.getEndTime());
-            log.warn("the owner wants the vehicle back at time " + timeWhenOwnerNeedsVehicle);
+            log.info("the owner wants the vehicle back at time " + timeWhenOwnerNeedsVehicle);
 
             accountForWaitTaskAndAccessDrive(vehicle, pathFromCurrTaskToDepot, waitTimeAtDepot, freightTour, start);
             return true;
@@ -309,8 +312,8 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
 
     private void accountForWaitTaskAndAccessDrive(PFAVehicle vehicle, VrpPathWithTravelData pathFromCurrTaskToDepot, double waitTimeAtDepot, FreightTourDataPlanned freightTour, StayTask start) {
         if (waitTimeAtDepot > 0) {
-            log.info("inserting wait task with duration= " + waitTimeAtDepot + " at the depot link " + freightTour.getDepotLink().getId() + " for vehicle " + vehicle.getId()
-                    + " in order to be consistent with earliest start time set to " + pfavConfigGroup.getFreightTourEarliestStart());
+//            log.info("inserting wait task with duration= " + waitTimeAtDepot + " at the depot link " + freightTour.getDepotLink().getId() + " for vehicle " + vehicle.getId()
+//                    + " in order to be consistent with earliest start time set to " + pfavConfigGroup.getFreightTourEarliestStart());
             freightTour.getTourTasks().add(0, new TaxiStayTask(start.getBeginTime() - waitTimeAtDepot, start.getBeginTime(), start.getLink()));
         }
         freightTour.setAccessDriveTask(new TaxiEmptyDriveTask(pathFromCurrTaskToDepot));
@@ -322,7 +325,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
         if (pathFromCurrTaskToDepot.getArrivalTime() < pfavConfigGroup.getFreightTourEarliestStart()) {
             waitTimeAtDepot = pfavConfigGroup.getFreightTourEarliestStart() - pathFromCurrTaskToDepot.getArrivalTime();
         }
-        log.info("wait time at depot is = " + waitTimeAtDepot);
+//        log.info("wait time at depot is = " + waitTimeAtDepot);
         return waitTimeAtDepot;
     }
 

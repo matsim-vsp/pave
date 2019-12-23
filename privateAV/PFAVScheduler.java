@@ -92,10 +92,11 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				}
 				requestedVehicles.remove(vehicle.getId());
 				//remove the must return time from vehicle specification
-				log.warn("removed must return log= "
-						+ ((PFAVehicle)vehicle).getMustReturnToOwnerLinkTimePairs().remove()
-						+ " from vehicle= "
-						+ vehicle.getId());
+				PFAVehicle.MustReturnLinkTimePair returnLog = ((PFAVehicle) vehicle).getMustReturnToOwnerLinkTimePairs().remove();
+//				log.warn("removed must return log= "
+//						+ returnLog
+//						+ " from vehicle= "
+//						+ vehicle.getId());
 				break;
 			case DROPOFF:
 				if (currentTask instanceof TaxiDropoffTask) {
@@ -123,14 +124,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 					requestFreightTour(vehicle);
                 } else if (isPFAVReturningToOwner(vehicle)) {
 					//we are at the end of a freight tour
-					if (!this.vehiclesOnFreightTour.contains(vehicle))
-						throw new IllegalStateException("freight tour of vehicle "
-								+ vehicle.getId()
-								+ "ends and scheduler did not even mark it as being on freight tour");
-
-					this.eventsManager.processEvent(
-							new EventFreightTourCompleted(vehicle.getId(), timer.getTimeOfDay()));
-					this.vehiclesOnFreightTour.remove(vehicle);
+					endFreightTour(vehicle);
 					log.warn("vehicle "
 							+ vehicle.getId()
 							+ " returns to it's owner's location at time="
@@ -146,7 +140,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 					double latestStart = serviceTask.getCarrierService().getServiceStartTimeWindow().getEnd();
 					if(earliestStart > timer.getTimeOfDay()){
 						//vehicle is too early at delivery location. we need to lengthen the serviceTask. timeLine will be updated when the stayTask ends
-						double newServiceEndTime = serviceTask.getBeginTime() + serviceTask.getCarrierService().getServiceDuration() + earliestStart - timer.getTimeOfDay();
+						double newServiceEndTime = serviceTask.getCarrierService().getServiceDuration() + earliestStart;
 						serviceTask.setEndTime(newServiceEndTime);
 						schedule.getTasks().get(serviceTask.getTaskIdx() + 1).setBeginTime(newServiceEndTime);
 					} else if(latestStart < timer.getTimeOfDay()){
@@ -182,13 +176,17 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 					+ pfavConfigGroup.getFreightTourLatestStart());
 			return;
 		}
+		if(timer.getTimeOfDay() > ((PFAVehicle) vehicle).getMustReturnToOwnerLinkTimePairs().peek().getTime()){
+			log.warn("the must return time for vehicle " + vehicle.getId() + " is in the past. Thus, it will not request a freight tour. This means the owner agent is in delay....");
+			return;
+		}
 
-		log.info("Vehicle "
-				+ vehicle.getId()
-				+ " requests a freight tour at "
-				+ timer.getTimeOfDay()
-				+ " on link "
-				+ (Tasks.getEndLink(vehicle.getSchedule().getCurrentTask())).getId());
+//		log.info("Vehicle "
+//				+ vehicle.getId()
+//				+ " requests a freight tour at "
+//				+ timer.getTimeOfDay()
+//				+ " on link "
+//				+ (Tasks.getEndLink(vehicle.getSchedule().getCurrentTask())).getId());
 		FreightTourDataPlanned tourData;
 
 		Task currentTask = vehicle.getSchedule().getCurrentTask();
@@ -204,18 +202,27 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				throw new IllegalStateException();
 			}
 			if (tourData != null) {
-				eventsManager.processEvent(new EventFreightTourCompleted(vehicle.getId(), timer.getTimeOfDay()));
+				endFreightTour(vehicle);
 			}
 		}
 		if (tourData != null) {
-			log.info("vehicle " + vehicle.getId() + " requested a freight tour and received one by the manager");
+//			log.info("vehicle " + vehicle.getId() + " requested a freight tour and received one by the manager");
 			scheduleFreightTour(vehicle, tourData);
 		} else {
 			Link requestLink = Tasks.getEndLink(vehicle.getSchedule().getCurrentTask());
 			eventsManager.processEvent(new EventFreightTourRequestRejected((PFAVehicle) vehicle, requestLink.getId(),
 					timer.getTimeOfDay()));
-			log.info("request is rejected");
+//			log.info("request is rejected");
 		}
+	}
+
+	private void endFreightTour(DvrpVehicle vehicle) {
+		if (!this.vehiclesOnFreightTour.contains(vehicle))
+			throw new IllegalStateException("freight tour of vehicle "
+					+ vehicle.getId()
+					+ "ends and scheduler did not even mark it as being on freight tour");
+		eventsManager.processEvent(new EventFreightTourCompleted(vehicle.getId(), timer.getTimeOfDay()));
+		this.vehiclesOnFreightTour.remove(vehicle);
 	}
 
 	private void scheduleFreightTour(DvrpVehicle vehicle, FreightTourDataPlanned tourData) {
