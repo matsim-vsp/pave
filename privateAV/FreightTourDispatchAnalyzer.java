@@ -20,8 +20,12 @@
 
 package privateAV;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.ActivityEndEvent;
 import org.matsim.api.core.v01.events.ActivityStartEvent;
@@ -33,7 +37,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.Fleet;
-import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
+import org.matsim.contrib.dvrp.router.DvrpGlobalRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.run.QSimScopeObjectListener;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 import org.matsim.contrib.util.CSVLineBuilder;
@@ -43,7 +47,8 @@ import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.io.IOUtils;
 
-import java.util.*;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 /**
  */
@@ -60,7 +65,7 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
     private Fleet fleet;
 
     @Inject
-    @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
+    @Named(DvrpGlobalRoutingNetworkProvider.DVRP_ROUTING)
     private Network network;
 
     @Override

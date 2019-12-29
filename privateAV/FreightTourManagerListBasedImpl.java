@@ -18,19 +18,37 @@
  * *********************************************************************** */
 package privateAV;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPaths;
-import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
+import org.matsim.contrib.dvrp.router.DvrpGlobalRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.schedule.Tasks;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
-import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.freight.carrier.Carrier;
+import org.matsim.contrib.freight.carrier.CarrierImpl;
+import org.matsim.contrib.freight.carrier.CarrierPlan;
+import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
+import org.matsim.contrib.freight.carrier.CarrierVehicle;
+import org.matsim.contrib.freight.carrier.CarrierVehicleTypes;
+import org.matsim.contrib.freight.carrier.Carriers;
+import org.matsim.contrib.freight.carrier.ScheduledTour;
 import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.util.StraightLineKnnFinder;
@@ -42,8 +60,8 @@ import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelTime;
 
-import java.util.*;
-import java.util.stream.Stream;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 /**
  * @author tschlenther
@@ -57,7 +75,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
 
     private List<FreightTourDataPlanned> freightTours = new ArrayList<>();
     @Inject
-    @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING)
+    @Named(DvrpGlobalRoutingNetworkProvider.DVRP_ROUTING)
     private Network network;
     @Inject
     @Named(DvrpTravelTimeModule.DVRP_ESTIMATED)

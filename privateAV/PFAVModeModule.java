@@ -2,8 +2,8 @@ package privateAV;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.dvrp.router.DvrpGlobalRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.router.DvrpModeRoutingModule;
-import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.router.TimeAsTravelDisutility;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.contrib.dvrp.run.DvrpModes;
@@ -40,8 +40,8 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
     public void install() {
 
         FreightAVConfigGroup pfavConfigGroup = ConfigUtils.addOrGetModule(getConfig(), FreightAVConfigGroup.class);
-        TaxiConfigGroup taxiConfigGroup = TaxiConfigGroup.getSingleModeTaxiConfig(getConfig());
-        if (!taxiConfigGroup.getMode().equals(this.getMode()))
+		TaxiConfigGroup taxiConfigGroup = TaxiConfigGroup.getSingleModeTaxiConfig(getConfig());
+		if (!taxiConfigGroup.getMode().equals(this.getMode()))
 			throw new RuntimeException("pfav mode must be equal to mode set in taxi config group!");
 
 		taxiConfigGroup.setDestinationKnown(true);
@@ -50,7 +50,7 @@ public final class PFAVModeModule extends AbstractDvrpModeModule {
 
 		DvrpModes.registerDvrpMode(binder(), getMode());
 		bindModal(TravelDisutilityFactory.class).toInstance(TimeAsTravelDisutility::new);
-		bindModal(Network.class).to(Key.get(Network.class, Names.named(DvrpRoutingNetworkProvider.DVRP_ROUTING)));
+		bindModal(Network.class).to(Key.get(Network.class, Names.named(DvrpGlobalRoutingNetworkProvider.DVRP_ROUTING)));
 
 		install(new DvrpModeRoutingModule(getMode(), new AStarEuclideanFactory()));
 
