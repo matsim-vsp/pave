@@ -53,8 +53,8 @@ public class TaxiTimeProfileConverter {
         String input;
         String output;
         if (args.length < 1) {
-            input = "C:/Users/Work/svn/runs-svn/pfav/berlin/newPattern/NoReroute_Transporter_13k_newPattern/ITERS/it.0/berlin-v5.3-1pct.0.taxi_status_time_profiles_taxi.txt";
-            output = "C:/Users/Work/svn/runs-svn/pfav/berlin/newPattern/NoReroute_Transporter_13k_newPattern/ITERS/it.0/taxi_status_time_profiles_taxi_converted.csv";
+            input = "D:/svn/runs-svn/pfav/berlin/finalTRBRuns2020/AutTruck_14k/ITERS/it.0/berlin-v5.3-1pct.0.taxi_status_time_profiles_taxi.txt";
+            output = "D:/svn/runs-svn/pfav/berlin/finalTRBRuns2020/AutTruck_14k/ITERS/it.0/taxi_status_time_profiles_taxi_converted.csv";
         } else {
             input = args[0];
             output = args[1];

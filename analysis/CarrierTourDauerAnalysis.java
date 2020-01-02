@@ -47,9 +47,8 @@ public class CarrierTourDauerAnalysis {
     }
 
     public static void main(String[] args) {
-        String input = "C:/svn/runs-svn/pfav/berlin/trbRuns2019/hiredCar_13k_newPattern/ITERS/it.0/carriers_it0.xml";
-        String output = "C:/svn/runs-svn/pfav/berlin/trbRuns2019/hiredCar_13k_newPattern/ITERS/it.0/carriers_it0_stats.csv";
-
+        String input = "D:/svn/runs-svn/pfav/berlin/finalTRBRuns2020/ownTrucksWDrivers_14k/output_carriers.xml";
+        String output = "D:/svn/runs-svn/pfav/berlin/finalTRBRuns2020/ownTrucksWDrivers_14k/ITERS/it.0/carriers_it0_stats.csv";
 
         new CarrierTourDauerAnalysis(input, new FreightAVConfigGroup()).writeStats(output);
         System.out.println("Done");
