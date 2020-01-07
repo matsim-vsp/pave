@@ -7,8 +7,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -24,6 +25,8 @@ import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.carrier.ScheduledTour;
 import org.matsim.contrib.freight.carrier.TimeWindow;
 import org.matsim.contrib.freight.carrier.Tour;
+import org.matsim.contrib.freight.carrier.Tour.Leg;
+import org.matsim.contrib.freight.carrier.Tour.ServiceActivity;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.io.MatsimNetworkReader;
@@ -42,10 +45,12 @@ public class MatsimGenerateCarrier {
 	static int sizeColumn;
 	static int returnPacketColumn;
 	static int carrierColumn;
+	static int tourNumberColumn;
 	static int time;
 	static double prevLat = 0;
 	static double prevLong = 0;
-	static Collection<ScheduledTour> tourList = new ArrayList<ScheduledTour>();
+	static List<ScheduledTour> scheduledTourList = new ArrayList<ScheduledTour>();
+	static List<CarrierService> services = new ArrayList<CarrierService>();
 
 	public static void main(String[] args) {
 		readDataFile();
@@ -54,12 +59,14 @@ public class MatsimGenerateCarrier {
 
 	private static void readDataFile() {
 
-		String datafile = "D:/Work/hermese/input/inputfile_csv.csv";
+		String datafile = "D:/Work/hermese/input/HERMES_Vogelsdorf_TS_Analyse.csv";
 		String line = "";
 		BufferedReader br;
 		String carrierName = null;
 		Carrier carrier = null;
 		Carriers carriers = new Carriers();
+		int tourNumber = 0;
+		int previousTourNumber = 0;
 
 		Network newNetOnlyCar = getFilteredBerlinNetwork();
 
@@ -74,6 +81,30 @@ public class MatsimGenerateCarrier {
 			while ((line = br.readLine()) != null) {
 				String[] column = line.split(",");
 				String compareCarrier = column[carrierColumn];
+				tourNumber = Integer.valueOf(column[tourNumberColumn]);
+
+				if (previousTourNumber == 0 || previousTourNumber != tourNumber) {
+					if (previousTourNumber != 0) {
+						Iterator<CarrierService> serviceItr = services.iterator();
+						Leg leg = new Leg();
+						Tour tour = Tour.Builder.newInstance().scheduleStart(null).addLeg(leg).scheduleEnd(null)
+								.build();
+						while (serviceItr.hasNext()) {
+							CarrierService service = serviceItr.next();
+							ServiceActivity act = new ServiceActivity(service);
+							tour.getTourElements().add(act);
+							tour.getTourElements().add(leg);
+						}
+						ScheduledTour scheduledTour = ScheduledTour.newInstance(tour,
+								carrier.getCarrierCapabilities().getCarrierVehicles().get(carrierName + "_vehicle"),
+								formatTime(column[time]));
+						scheduledTourList.add(scheduledTour);
+					}
+					services = new ArrayList<CarrierService>();
+					previousTourNumber = tourNumber;
+				} else {
+					previousTourNumber = tourNumber;
+				}
 
 				double latitude = (isNumeric(column[latitudeColumn])) ? Double.valueOf(column[latitudeColumn])
 						: prevLat;
@@ -83,15 +114,15 @@ public class MatsimGenerateCarrier {
 
 				if (carrierName == null || !carrierName.equals(compareCarrier)) {
 					if (carrierName != null) {
-						carrier.getPlans().add(new CarrierPlan(carrier, tourList));
-						tourList = new ArrayList<ScheduledTour>();
+						carrier.getPlans().add(new CarrierPlan(carrier, scheduledTourList));
+						scheduledTourList = new ArrayList<ScheduledTour>();
 					}
 					carrierName = column[carrierColumn];
 					carrier = CarrierImpl.newInstance(Id.create(carrierName, Carrier.class));
 					CarrierVehicle vehicle = createCarrierVehicle(getNetworkLinkId(newNetOnlyCar, latitude, longitude),
-							carrierName + "vehicle");
+							carrierName + "_vehicle");
 					carrier.getCarrierCapabilities().getCarrierVehicles()
-							.put(Id.create(carrierName + "hermesevehicle", Vehicle.class), vehicle);
+							.put(Id.create(carrierName + "_vehicle", Vehicle.class), vehicle);
 					carriers.addCarrier(carrier);
 
 					n = 0;
@@ -101,19 +132,10 @@ public class MatsimGenerateCarrier {
 				CarrierService carrierService = createMatsimService(carrierName + n,
 						getNetworkLinkId(newNetOnlyCar, latitude, longitude), size);
 				carrierService.getAttributes().putAttribute("weight", column[weightColumn]);
-				carrierService.getAttributes().putAttribute("return packet", column[returnPacketColumn]);
+				carrierService.getAttributes().putAttribute("return_packet", column[returnPacketColumn]);
 
 				carrier.getServices().put(carrierService.getId(), carrierService);
-				
-				
-				
-				Tour tour = 	Tour.Builder.newInstance().scheduleStart(carrierService.getLocationLinkId())
-						.scheduleService(carrierService)
-						.build();
-				
-				ScheduledTour scheduledTour = ScheduledTour.newInstance(tour, carrier.getCarrierCapabilities().getCarrierVehicles().get(carrierName + "hermesevehicle"),
-				formatTime(column[time]));
-				tourList.add(scheduledTour);
+				services.add(carrierService);
 
 				n++;
 			}
@@ -125,7 +147,6 @@ public class MatsimGenerateCarrier {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -191,7 +212,7 @@ public class MatsimGenerateCarrier {
 	}
 
 	public static CarrierVehicle createCarrierVehicle(Id<Link> locationId, String id) {
-		return CarrierVehicle.Builder.newInstance(Id.create(id, org.matsim.vehicles.Vehicle.class), locationId)
+		return CarrierVehicle.Builder.newInstance(Id.create(id, org.matsim.vehicles.Vehicle.class), null)
 				.setEarliestStart(0.0).setLatestEnd(36000.0).setTypeId(Id.create("HERMESE", VehicleType.class)).build();
 	}
 
@@ -228,6 +249,10 @@ public class MatsimGenerateCarrier {
 
 			case "STH_SCAN_ZEITPUNKT":
 				time = i;
+				break;
+
+			case "TGT_TOUR_NUMMER":
+				tourNumberColumn = i;
 				break;
 			}
 			i++;
