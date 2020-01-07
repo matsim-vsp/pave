@@ -96,6 +96,7 @@ class DefaultReservationOptimizer implements ReservationOptimizer {
             if(timer.getTimeOfDay() > reservation.getReservationValidityStartTime()){
                 log.warn("Reservation " + reservation + " could not be handled before reservation start time = " + reservation.getReservationValidityStartTime() +". It is rejected and deleted");
                 //TODO throw RejectedEvent
+                //TODO agent stuck???
                 it.remove();
             } else {
                 if(tryInsertingReservation(reservation)) it.remove();

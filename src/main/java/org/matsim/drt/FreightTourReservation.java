@@ -24,6 +24,7 @@ class FreightTourReservation implements Reservation {
         this.reservationValidityStartTime = freightTour.getTour().getStart().getExpectedArrival();
         this.submissionTime = submissionTime;
         this.tasks = convertFreightTourToDvrpTasks(freightTour);
+
     }
 
     private PriorityQueue<DrtTask> convertFreightTourToDvrpTasks(ScheduledTour freightTour) {
@@ -37,10 +38,7 @@ class FreightTourReservation implements Reservation {
 
     @Override
     public double getReservationValidityStartTime() {
-        for(DrtTask t : this.tasks){
-            if (t instanceof DriveTask) return t.getBeginTime();
-        }
-        throw new IllegalStateException();
+        return this.reservationValidityStartTime;
     }
 
     @Override
