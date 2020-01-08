@@ -37,8 +37,8 @@ import org.matsim.vehicles.VehicleType;
 
 public class MatsimGenerateCarrier {
 
-	private static final String OUTPUT_CARRIERS = "D:/Work/hermese/output/output.xml";
-	static String networkPath = "D:/Work/hermese/Network/berlin-v5.5-network.xml.gz";
+	private static final String OUTPUT_CARRIERS = "D:/svn/shared-svn/studies/countries/de/berlin_hermes/carriers_firstVersion.xml";
+	static String networkPath = "D:/svn/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-network.xml.gz";
 	static int latitudeColumn;
 	static int longitideColumn;
 	static int weightColumn;
@@ -59,7 +59,7 @@ public class MatsimGenerateCarrier {
 
 	private static void readDataFile() {
 
-		String datafile = "D:/Work/hermese/input/HERMES_Vogelsdorf_TS_Analyse.csv";
+		String datafile = "D:/svn/shared-svn/studies/countries/de/berlin_hermes/HERMES_Vogelsdorf_TS_Analyse_csv.csv";
 		String line = "";
 		BufferedReader br;
 		String carrierName = null;
@@ -96,8 +96,9 @@ public class MatsimGenerateCarrier {
 						}
 						tourBuilder.scheduleEnd(null);
 						Tour tour = tourBuilder.build();
+						CarrierVehicle carrierVehicle = carrier.getCarrierCapabilities().getCarrierVehicles().get(Id.create(carrierName + "_vehicle", CarrierVehicle.class));
 						ScheduledTour scheduledTour = ScheduledTour.newInstance(tour,
-								carrier.getCarrierCapabilities().getCarrierVehicles().get(carrierName + "_vehicle"),
+								carrierVehicle,
 								0);
 						scheduledTourList.add(scheduledTour);
 					}
@@ -107,10 +108,14 @@ public class MatsimGenerateCarrier {
 					previousTourNumber = tourNumber;
 				}
 
+//				double latitude = (isNumeric(column[latitudeColumn])) ? Double.valueOf(column[latitudeColumn])
+//						: prevLat;
+//				double longitude = (isNumeric(column[longitideColumn])) ? Double.valueOf(column[longitideColumn])
+//						: prevLong;
 				double latitude = (isNumeric(column[latitudeColumn])) ? Double.valueOf(column[latitudeColumn])
-						: prevLat;
+						: Double.MIN_VALUE;
 				double longitude = (isNumeric(column[longitideColumn])) ? Double.valueOf(column[longitideColumn])
-						: prevLong;
+						: Double.MIN_VALUE;
 				int size = (isNumeric(column[sizeColumn])) ? Integer.valueOf(column[sizeColumn]) : 0;
 
 				if (carrierName == null || !carrierName.equals(compareCarrier)) {
@@ -122,7 +127,7 @@ public class MatsimGenerateCarrier {
 					}
 					carrierName = column[carrierColumn];
 					carrier = CarrierImpl.newInstance(Id.create(carrierName, Carrier.class));
-					CarrierVehicle vehicle = createCarrierVehicle(getNetworkLinkId(newNetOnlyCar, latitude, longitude),
+					CarrierVehicle vehicle = createCarrierVehicle(null,
 							carrierName + "_vehicle");
 					carrier.getCarrierCapabilities().getCarrierVehicles()
 							.put(Id.create(carrierName + "_vehicle", Vehicle.class), vehicle);
@@ -153,8 +158,11 @@ public class MatsimGenerateCarrier {
 	}
 
 	private static Id<Link> getNetworkLinkId(Network network, double latitude, double longitude) {
-		prevLat = latitude + 0.05;
-		prevLong = longitude + 0.05;
+//		prevLat = latitude + 0.05;
+//		prevLong = longitude + 0.05;
+		if(latitude == Double.MIN_VALUE || longitude == Double.MIN_VALUE){
+			return null;
+		}
 		Coord coord = getTransformedCoordinates(latitude, longitude);
 		Link link = NetworkUtils.getNearestLink(network, coord);
 		Id<Link> linkid = link.getId();
