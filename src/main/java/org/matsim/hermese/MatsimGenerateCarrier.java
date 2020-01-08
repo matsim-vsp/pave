@@ -37,8 +37,8 @@ import org.matsim.vehicles.VehicleType;
 
 public class MatsimGenerateCarrier {
 
-	private static final String OUTPUT_CARRIERS = "D:/svn/shared-svn/studies/countries/de/berlin_hermes/carriers_firstVersion.xml";
-	static String networkPath = "D:/svn/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-network.xml.gz";
+	private static final String OUTPUT_CARRIERS = "D:/Work/hermese/output/output.xml";
+	static String networkPath = "D:/Work/hermese/input/berlin-v5.5-network.xml.gz";
 	static int latitudeColumn;
 	static int longitideColumn;
 	static int weightColumn;
@@ -46,6 +46,7 @@ public class MatsimGenerateCarrier {
 	static int returnPacketColumn;
 	static int carrierColumn;
 	static int tourNumberColumn;
+	static int volumeColumn;
 	static int time;
 	static double prevLat = 0;
 	static double prevLong = 0;
@@ -59,7 +60,7 @@ public class MatsimGenerateCarrier {
 
 	private static void readDataFile() {
 
-		String datafile = "D:/svn/shared-svn/studies/countries/de/berlin_hermes/HERMES_Vogelsdorf_TS_Analyse_csv.csv";
+		String datafile = "D:/Work/hermese/input/HERMES_Vogelsdorf_TS_Analyse_csv.csv";
 		String line = "";
 		BufferedReader br;
 		String carrierName = null;
@@ -141,7 +142,9 @@ public class MatsimGenerateCarrier {
 						getNetworkLinkId(newNetOnlyCar, latitude, longitude), size);
 				carrierService.getAttributes().putAttribute("weight", column[weightColumn]);
 				carrierService.getAttributes().putAttribute("return_packet", column[returnPacketColumn]);
-
+				carrierService.getAttributes().putAttribute("volume", column[volumeColumn]);
+				carrierService.getAttributes().putAttribute("tour_id", column[tourNumberColumn]);
+				
 				carrier.getServices().put(carrierService.getId(), carrierService);
 				services.add(carrierService);
 
@@ -262,6 +265,10 @@ public class MatsimGenerateCarrier {
 
 			case "TGT_TOUR_NUMMER":
 				tourNumberColumn = i;
+				break;
+				
+			case "VOLUMEN in deziLiter":
+				volumeColumn = i;
 				break;
 			}
 			i++;
