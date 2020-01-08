@@ -25,8 +25,8 @@ import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.carrier.ScheduledTour;
 import org.matsim.contrib.freight.carrier.TimeWindow;
 import org.matsim.contrib.freight.carrier.Tour;
+import org.matsim.contrib.freight.carrier.Tour.Builder;
 import org.matsim.contrib.freight.carrier.Tour.Leg;
-import org.matsim.contrib.freight.carrier.Tour.ServiceActivity;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.filter.NetworkFilterManager;
 import org.matsim.core.network.io.MatsimNetworkReader;
@@ -86,18 +86,19 @@ public class MatsimGenerateCarrier {
 				if (previousTourNumber == 0 || previousTourNumber != tourNumber) {
 					if (previousTourNumber != 0) {
 						Iterator<CarrierService> serviceItr = services.iterator();
-						Leg leg = new Leg();
-						Tour tour = Tour.Builder.newInstance().scheduleStart(null).addLeg(leg).scheduleEnd(null)
-								.build();
+						Builder tourBuilder = Tour.Builder.newInstance();
+						Leg leg = tourBuilder.createLeg();
+						tourBuilder.scheduleStart(null).addLeg(leg);
 						while (serviceItr.hasNext()) {
 							CarrierService service = serviceItr.next();
-							ServiceActivity act = new ServiceActivity(service);
-							tour.getTourElements().add(act);
-							tour.getTourElements().add(leg);
+							tourBuilder.scheduleService(service);
+							tourBuilder.addLeg(leg);
 						}
+						tourBuilder.scheduleEnd(null);
+						Tour tour = tourBuilder.build();
 						ScheduledTour scheduledTour = ScheduledTour.newInstance(tour,
 								carrier.getCarrierCapabilities().getCarrierVehicles().get(carrierName + "_vehicle"),
-								formatTime(column[time]));
+								0);
 						scheduledTourList.add(scheduledTour);
 					}
 					services = new ArrayList<CarrierService>();
@@ -114,7 +115,9 @@ public class MatsimGenerateCarrier {
 
 				if (carrierName == null || !carrierName.equals(compareCarrier)) {
 					if (carrierName != null) {
-						carrier.getPlans().add(new CarrierPlan(carrier, scheduledTourList));
+						CarrierPlan plan = new CarrierPlan(carrier, scheduledTourList);
+						carrier.getPlans().add(plan);
+						carrier.setSelectedPlan(plan);
 						scheduledTourList = new ArrayList<ScheduledTour>();
 					}
 					carrierName = column[carrierColumn];
@@ -145,8 +148,6 @@ public class MatsimGenerateCarrier {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
 			e.printStackTrace();
 		}
 	}
