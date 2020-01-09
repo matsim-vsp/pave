@@ -1,9 +1,6 @@
 package org.matsim.scenarioCreation;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,8 +34,12 @@ import org.matsim.vehicles.VehicleType;
 
 public class ConvertParcelData2CarrierPlans {
 
-	private static final String OUTPUT_CARRIERS = "D:/Work/hermese/output/output.xml";
-	static String networkPath = "D:/Work/hermese/input/berlin-v5.5-network.xml.gz";
+	private static final String INPUT_RAW_DATA_FILE = "D:/svn/shared-svn/studies/countries/de/berlin_hermes/HERMES_RawData_Geocoded.csv";
+
+	//output will be written to scenarios/berlin/input/[OUTPUT_CARRIERS_FILE_NAME]
+	//however everything inside scenarios/berlin/input is currently ignored by git (see .gitignore)
+	private static final String OUTPUT_CARRIERS_FILE_NAME = "parcelDemand_convertedRawData.xml";
+	static String networkPath = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-network.xml.gz";
 	static int latitudeColumn;
 	static int longitideColumn;
 	static int weightColumn;
@@ -60,7 +61,6 @@ public class ConvertParcelData2CarrierPlans {
 
 	private static void readDataFile() {
 
-		String datafile = "D:/Work/hermese/input/HERMES_Vogelsdorf_TS_Analyse_csv.csv";
 		String line = "";
 		BufferedReader br;
 		String carrierName = null;
@@ -72,7 +72,7 @@ public class ConvertParcelData2CarrierPlans {
 		Network newNetOnlyCar = getFilteredBerlinNetwork();
 
 		try {
-			br = new BufferedReader(new FileReader(datafile));
+			br = new BufferedReader(new FileReader(INPUT_RAW_DATA_FILE));
 			String firstRow = br.readLine();
 			String[] columnNames = firstRow.split(",");
 
@@ -150,8 +150,11 @@ public class ConvertParcelData2CarrierPlans {
 
 				n++;
 			}
+			String outputDir = "scenarios/berlin/input/";
+			File outputDirFile = new File(outputDir);
+			outputDirFile.mkdirs();
 			CarrierPlanXmlWriterV2 planWriter = new CarrierPlanXmlWriterV2(carriers);
-			planWriter.write(OUTPUT_CARRIERS);
+			planWriter.write(outputDir + OUTPUT_CARRIERS_FILE_NAME);
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
