@@ -35,7 +35,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 
-public class PopulationCreator {
+class PopulationCreator {
 
     public static void main(String[] args) {
         Scenario scenario = ScenarioUtils.createMutableScenario(ConfigUtils.createConfig());
@@ -157,7 +157,7 @@ public class PopulationCreator {
         return;
     }
 
-    public static Population cutPopulationTo100ForEachMode(Population pop) {
+    static Population cutPopulationTo100ForEachMode(Population pop) {
 
         Map<String, Integer> nrOfPersonsPerMode = new HashMap<>();
         Population newPop = ScenarioUtils.createScenario(ConfigUtils.createConfig()).getPopulation();
