@@ -68,6 +68,13 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.github.matsim-vsp</groupId>
+			<artifactId>matsim-berlin</artifactId>
+			<!--            <version>5.3</version>-->
+			<version>5.4</version>
+		</dependency>
+
+		<dependency>
 			<!-- Include the JUnit testing library. Not transitive. -->
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
