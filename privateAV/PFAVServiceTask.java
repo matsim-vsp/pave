@@ -38,7 +38,7 @@ class PFAVServiceTask extends StayTask implements HasTaxiTaskType {
 	 * @param link
 	 */
     PFAVServiceTask(double beginTime, double endTime, Link link, CarrierService service) {
-		super(beginTime, endTime, link, FreightConstants.DELIVERY);
+		super(TaxiTaskType.DROPOFF, beginTime, endTime, link);
 		this.service = service;
 	}
 	

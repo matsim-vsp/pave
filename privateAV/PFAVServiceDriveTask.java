@@ -29,7 +29,7 @@ import org.matsim.contrib.taxi.schedule.HasTaxiTaskType;
 class PFAVServiceDriveTask extends DriveTask implements HasTaxiTaskType {
 
     PFAVServiceDriveTask(VrpPathWithTravelData path) {
-		super(path);
+		super(TaxiTaskType.OCCUPIED_DRIVE, path);
 	}
 
 	@Override

@@ -39,7 +39,7 @@ class PFAVRetoolTask extends StayTask implements HasTaxiTaskType {
 	 * @param link
 	 */
     PFAVRetoolTask(double beginTime, double endTime, Link link) {
-		super(beginTime, endTime, link, PFAVActionCreator.RETOOL_ACTIVITY_TYPE);
+		super(TaxiTaskType.DROPOFF, beginTime, endTime, link);
 	}
 	
 	/**
