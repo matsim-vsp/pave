@@ -78,9 +78,9 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 
 		updateTimeline(vehicle);
-		HasTaxiTaskType currentTask = (HasTaxiTaskType)schedule.getCurrentTask();
+		Task currentTask = schedule.getCurrentTask();
 
-		switch (currentTask.getTaskType()) {
+		switch ((TaxiTaskType)currentTask.getTaskType()) {
 			case PICKUP:
 				if (!taxiCfg.isDestinationKnown()) {
 					appendResultingTasksAfterPickup(vehicle);
@@ -361,7 +361,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		Schedule schedule = vehicle.getSchedule();
 		Task lastTask = Schedules.getLastTask(schedule);
 
-		if (((HasTaxiTaskType)lastTask).getTaskType() != TaxiTaskType.STAY) {
+		if (lastTask.getTaskType() != TaxiTaskType.STAY) {
 			throw new IllegalStateException();
 		} else {
 
@@ -505,7 +505,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	private final static double REMOVE_STAY_TASK = Double.NEGATIVE_INFINITY;
 
 	private double calcNewEndTime(DvrpVehicle vehicle, Task task, double newBeginTime) {
-		switch (((HasTaxiTaskType)task).getTaskType()) {
+		switch (((TaxiTaskType)task.getTaskType())) {
 			case STAY: {
 				if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
 					// even if endTime=beginTime, do not remove this task!!! A taxi schedule should end with WAIT

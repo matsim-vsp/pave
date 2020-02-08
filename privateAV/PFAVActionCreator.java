@@ -72,7 +72,7 @@ public final class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 	@Override
 	public DynAction createAction(DynAgent dynAgent, DvrpVehicle vehicle, double now) {
 		Task task = vehicle.getSchedule().getCurrentTask();
-		switch (((HasTaxiTaskType)task).getTaskType()) {
+		switch (((HasTaxiTaskType.TaxiTaskType)task.getTaskType())) {
 		case EMPTY_DRIVE:
 		case OCCUPIED_DRIVE:
 			return legFactory.create(vehicle);
