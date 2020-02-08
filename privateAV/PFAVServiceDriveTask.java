@@ -19,14 +19,14 @@
 package privateAV;
 
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
-import org.matsim.contrib.dvrp.schedule.DriveTaskImpl;
+import org.matsim.contrib.dvrp.schedule.DriveTask;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 
 /**
  * @author tschlenther
  *
  */
-class PFAVServiceDriveTask extends DriveTaskImpl implements TaxiTask {
+class PFAVServiceDriveTask extends DriveTask implements TaxiTask {
 
     PFAVServiceDriveTask(VrpPathWithTravelData path) {
 		super(path);

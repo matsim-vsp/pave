@@ -27,7 +27,6 @@ import org.matsim.core.router.FastAStarEuclideanFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
-import org.matsim.core.utils.misc.Time;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -253,11 +252,11 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 
 		List<Task> remainingDriveTasks = vehicle.getSchedule().getTasks().stream()
 				.filter(t -> t.getStatus().equals(Task.TaskStatus.PLANNED))
-				.filter(t -> t instanceof DriveTaskImpl)
+				.filter(t -> t instanceof DriveTask)
 				.collect(Collectors.toList());
 
 		for (Task task : remainingDriveTasks) {
-			double distance = VrpPaths.calcDistance(((DriveTaskImpl) task).getPath());
+			double distance = VrpPaths.calcDistance(((DriveTask) task).getPath());
 			if (task instanceof TaxiEmptyDriveTask) emptyMeters += distance;
 			totalDistance += distance;
 		}
@@ -280,7 +279,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		Task previousTask = tourData.getAccessDriveTask();
 		for (TaxiTask currentTask : tourActivities) {
 			if (pfavConfigGroup.isReRouteTours() && currentTask instanceof DriveTask) {
-				DriveTaskImpl originalDriveTask = (DriveTaskImpl) currentTask;
+				DriveTask originalDriveTask = (DriveTask) currentTask;
 				VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(originalDriveTask.getPath().getFromLink(), originalDriveTask.getPath().getToLink(),
 						previousTask.getEndTime(), this.router, this.travelTime);
 				if (originalDriveTask instanceof TaxiEmptyDriveTask) {

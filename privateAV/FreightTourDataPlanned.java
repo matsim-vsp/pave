@@ -22,7 +22,6 @@ package privateAV;
 
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.schedule.DriveTask;
-import org.matsim.contrib.dvrp.schedule.DriveTaskImpl;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 
 import java.util.List;
@@ -73,7 +72,7 @@ final class FreightTourDataPlanned {
         return this.accessDriveTask;
     }
 
-    void setAccessDriveTask(DriveTaskImpl driveTask) {
+    void setAccessDriveTask(DriveTask driveTask) {
         this.accessDriveTask = driveTask;
     }
 
