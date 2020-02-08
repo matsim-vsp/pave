@@ -19,7 +19,7 @@
 package privateAV;
 
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
+import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.freight.carrier.CarrierService;
 import org.matsim.contrib.freight.carrier.FreightConstants;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
@@ -28,7 +28,7 @@ import org.matsim.contrib.taxi.schedule.TaxiTask;
  * @author tschlenther
  *
  */
-class PFAVServiceTask extends StayTaskImpl implements TaxiTask {
+class PFAVServiceTask extends StayTask implements TaxiTask {
 
 	CarrierService service;
 	

@@ -21,14 +21,14 @@ package privateAV;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
-import org.matsim.contrib.dvrp.schedule.StayTaskImpl;
+import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.taxi.schedule.TaxiTask;
 
 /**
  * @author tschlenther
  *
  */
-class PFAVRetoolTask extends StayTaskImpl implements TaxiTask {
+class PFAVRetoolTask extends StayTask implements TaxiTask {
 
 	double earliestStartTime = 0.0;
 	Id<DvrpVehicle> vehicle = null;
