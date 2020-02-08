@@ -25,7 +25,6 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.freight.carrier.TimeWindow;
-import org.matsim.contrib.taxi.schedule.TaxiTask;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -96,7 +95,7 @@ public final class FreightTourDataDispatched {
 
     PFAVServiceTask getLastStartedServiceTask(){
         for (int i = this.tourData.getTourTasks().size() - 1; i >= 0; i--) {
-            TaxiTask task = this.tourData.getTourTasks().get(i);
+            Task task = this.tourData.getTourTasks().get(i);
             if (task instanceof PFAVServiceTask && (task.getStatus() == Task.TaskStatus.PERFORMED || task.getStatus() == Task.TaskStatus.STARTED)) {
                 return (PFAVServiceTask) task;
             }
@@ -139,7 +138,7 @@ public final class FreightTourDataDispatched {
 
     int getAmountOfServicesPlanned() {
         int services = 0;
-        for (TaxiTask t : this.tourData.getTourTasks()) {
+        for (Task t : this.tourData.getTourTasks()) {
             if (t instanceof PFAVServiceTask) services++;
         }
         return services;

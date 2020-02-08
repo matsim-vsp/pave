@@ -30,6 +30,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelDataImpl;
 import org.matsim.contrib.dvrp.path.VrpPaths;
+import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.carrier.Tour.ServiceActivity;
 import org.matsim.contrib.freight.carrier.Tour.TourElement;
@@ -37,7 +38,6 @@ import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
 import org.matsim.contrib.freight.jsprit.NetworkRouter;
 import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
-import org.matsim.contrib.taxi.schedule.TaxiTask;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.util.TravelTime;
 
@@ -58,7 +58,7 @@ public final class FreightTourPlanning {
     static FreightTourDataPlanned convertToPFAVTourData(ScheduledTour freightTour, Network network, TravelTime travelTime, FreightAVConfigGroup pfavConfigGroup) {
         // we only need duration for the service tasks - id we wanted exact planned time points of daytime, we would need to derive them out of the legs (like we do for start and end activity)
         //the Start and End activities are not part of ScheduledTour.getTour.getTourElements();
-        List<TaxiTask> taskList = new ArrayList<>();
+        List<Task> taskList = new ArrayList<>();
         
         //we could think about setting the start time of the first retool activity according to global time window (see FreightAVConfigGroup)
         //but this implicitly happens when calculating path to depot and wait time at depot in the FreightTourManagerListBasedImpl
@@ -91,7 +91,7 @@ public final class FreightTourPlanning {
                 else {
                     path = createVrpPath(route, tEnd, network, travelTime);
                 }
-                TaxiTask driveTask = (i == size - 1) ? new TaxiEmptyDriveTask(path) : new PFAVServiceDriveTask(path);
+                Task driveTask = (i == size - 1) ? new TaxiEmptyDriveTask(path) : new PFAVServiceDriveTask(path);
                 taskList.add(driveTask);
                 tEnd = driveTask.getEndTime();
                 tBegin = driveTask.getBeginTime();

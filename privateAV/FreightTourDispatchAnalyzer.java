@@ -39,7 +39,7 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.router.DvrpGlobalRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.run.QSimScopeObjectListener;
-import org.matsim.contrib.taxi.schedule.TaxiTask;
+import org.matsim.contrib.taxi.schedule.HasTaxiTaskType;
 import org.matsim.contrib.util.CSVLineBuilder;
 import org.matsim.contrib.util.CompactCSVWriter;
 import org.matsim.core.controler.events.IterationEndsEvent;
@@ -103,8 +103,8 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
             FreightTourDataDispatched data = this.begunFreightTours.get(event.getVehicleId());
             data.addToActualTourLength(link.getLength());
 
-            TaxiTask t = (TaxiTask) (fleet.getVehicles().get(event.getVehicleId())).getSchedule().getCurrentTask();
-            if (t.getTaxiTaskType().equals(TaxiTask.TaxiTaskType.EMPTY_DRIVE)) {
+            HasTaxiTaskType t = (HasTaxiTaskType) (fleet.getVehicles().get(event.getVehicleId())).getSchedule().getCurrentTask();
+            if (t.getTaskType().equals(HasTaxiTaskType.TaxiTaskType.EMPTY_DRIVE)) {
                 data.addToActualEmptyMeters(link.getLength());
             }
         }

@@ -22,13 +22,13 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.freight.carrier.CarrierService;
 import org.matsim.contrib.freight.carrier.FreightConstants;
-import org.matsim.contrib.taxi.schedule.TaxiTask;
+import org.matsim.contrib.taxi.schedule.HasTaxiTaskType;
 
 /**
  * @author tschlenther
  *
  */
-class PFAVServiceTask extends StayTask implements TaxiTask {
+class PFAVServiceTask extends StayTask implements HasTaxiTaskType {
 
 	CarrierService service;
 	
@@ -43,7 +43,7 @@ class PFAVServiceTask extends StayTask implements TaxiTask {
 	}
 	
 	@Override
-	public TaxiTaskType getTaxiTaskType() {
+	public TaxiTaskType getTaskType() {
 		return TaxiTaskType.DROPOFF;
 	}
 

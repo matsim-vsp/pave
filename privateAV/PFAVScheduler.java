@@ -18,7 +18,7 @@ import org.matsim.contrib.taxi.passenger.TaxiRequest;
 import org.matsim.contrib.taxi.passenger.TaxiRequest.TaxiRequestStatus;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.schedule.*;
-import org.matsim.contrib.taxi.schedule.TaxiTask.TaxiTaskType;
+import org.matsim.contrib.taxi.schedule.HasTaxiTaskType.TaxiTaskType;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
 import org.matsim.core.api.experimental.events.EventsManager;
@@ -78,9 +78,9 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 
 		updateTimeline(vehicle);
-		TaxiTask currentTask = (TaxiTask)schedule.getCurrentTask();
+		HasTaxiTaskType currentTask = (HasTaxiTaskType)schedule.getCurrentTask();
 
-		switch (currentTask.getTaxiTaskType()) {
+		switch (currentTask.getTaskType()) {
 			case PICKUP:
 				if (!taxiCfg.isDestinationKnown()) {
 					appendResultingTasksAfterPickup(vehicle);
@@ -275,9 +275,9 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 
 	private void insertFreightTourInSchedule(DvrpVehicle vehicle, FreightTourDataPlanned tourData) {
-		List<TaxiTask> tourActivities = tourData.getTourTasks();
+		List<Task> tourActivities = tourData.getTourTasks();
 		Task previousTask = tourData.getAccessDriveTask();
-		for (TaxiTask currentTask : tourActivities) {
+		for (Task currentTask : tourActivities) {
 			if (pfavConfigGroup.isReRouteTours() && currentTask instanceof DriveTask) {
 				DriveTask originalDriveTask = (DriveTask) currentTask;
 				VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(originalDriveTask.getPath().getFromLink(), originalDriveTask.getPath().getToLink(),
@@ -359,9 +359,9 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		}
 
 		Schedule schedule = vehicle.getSchedule();
-		TaxiTask lastTask = (TaxiTask)Schedules.getLastTask(schedule);
+		Task lastTask = Schedules.getLastTask(schedule);
 
-		if (lastTask.getTaxiTaskType() != TaxiTaskType.STAY) {
+		if (((HasTaxiTaskType)lastTask).getTaskType() != TaxiTaskType.STAY) {
 			throw new IllegalStateException();
 		} else {
 
@@ -486,7 +486,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		double newBeginTime = newEndTime;
 
 		for (int i = startIdx; i < tasks.size(); i++) {
-			TaxiTask task = (TaxiTask)tasks.get(i);
+			Task task = tasks.get(i);
 			double calcEndTime = calcNewEndTime(vehicle, task, newBeginTime);
 
 			if (calcEndTime == REMOVE_STAY_TASK) {
@@ -504,8 +504,8 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 
 	private final static double REMOVE_STAY_TASK = Double.NEGATIVE_INFINITY;
 
-	private double calcNewEndTime(DvrpVehicle vehicle, TaxiTask task, double newBeginTime) {
-		switch (task.getTaxiTaskType()) {
+	private double calcNewEndTime(DvrpVehicle vehicle, Task task, double newBeginTime) {
+		switch (((HasTaxiTaskType)task).getTaskType()) {
 			case STAY: {
 				if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
 					// even if endTime=beginTime, do not remove this task!!! A taxi schedule should end with WAIT

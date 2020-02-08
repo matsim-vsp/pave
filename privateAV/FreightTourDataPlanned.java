@@ -22,14 +22,14 @@ package privateAV;
 
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.schedule.DriveTask;
-import org.matsim.contrib.taxi.schedule.TaxiTask;
+import org.matsim.contrib.dvrp.schedule.Task;
 
 import java.util.List;
 import java.util.Objects;
 
 final class FreightTourDataPlanned {
 
-    private List<TaxiTask> tourTasks;
+    private List<Task> tourTasks;
     private DriveTask accessDriveTask = null;
 
     private final Link depotLink;
@@ -40,7 +40,7 @@ final class FreightTourDataPlanned {
     private int amountOfRejections = 0;
 
 
-    FreightTourDataPlanned(List<TaxiTask> tourTasks, Link depotLinkId, double plannedTourDuration, double travelTimeToLastService, int plannedTotalCapacityDemand) {
+    FreightTourDataPlanned(List<Task> tourTasks, Link depotLinkId, double plannedTourDuration, double travelTimeToLastService, int plannedTotalCapacityDemand) {
         this.tourTasks = Objects.requireNonNull(tourTasks);
         this.depotLink = Objects.requireNonNull(depotLinkId);
         this.plannedTourDuration = plannedTourDuration;
@@ -56,7 +56,7 @@ final class FreightTourDataPlanned {
         this.plannedTourDuration = plannedTourDuration;
     }
 
-    List<TaxiTask> getTourTasks() {
+    List<Task> getTourTasks() {
         return tourTasks;
     }
 
