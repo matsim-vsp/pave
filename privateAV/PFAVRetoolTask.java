@@ -22,13 +22,13 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.StayTask;
-import org.matsim.contrib.taxi.schedule.HasTaxiTaskType;
+import org.matsim.contrib.taxi.schedule.TaxiTaskType;
 
 /**
  * @author tschlenther
  *
  */
-class PFAVRetoolTask extends StayTask implements HasTaxiTaskType {
+class PFAVRetoolTask extends StayTask {
 
 	double earliestStartTime = 0.0;
 	Id<DvrpVehicle> vehicle = null;

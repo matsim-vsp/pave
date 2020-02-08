@@ -20,13 +20,13 @@ package privateAV;
 
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.schedule.DriveTask;
-import org.matsim.contrib.taxi.schedule.HasTaxiTaskType;
+import org.matsim.contrib.taxi.schedule.TaxiTaskType;
 
 /**
  * @author tschlenther
  *
  */
-class PFAVServiceDriveTask extends DriveTask implements HasTaxiTaskType {
+class PFAVServiceDriveTask extends DriveTask {
 
     PFAVServiceDriveTask(VrpPathWithTravelData path) {
 		super(TaxiTaskType.OCCUPIED_DRIVE, path);

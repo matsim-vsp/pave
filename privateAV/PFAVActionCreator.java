@@ -35,7 +35,7 @@ import org.matsim.contrib.taxi.run.TaxiConfigGroup;
 import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
 import org.matsim.contrib.taxi.schedule.TaxiPickupTask;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
-import org.matsim.contrib.taxi.schedule.HasTaxiTaskType;
+import org.matsim.contrib.taxi.schedule.TaxiTaskType;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 
 /**
@@ -72,7 +72,7 @@ public final class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 	@Override
 	public DynAction createAction(DynAgent dynAgent, DvrpVehicle vehicle, double now) {
 		Task task = vehicle.getSchedule().getCurrentTask();
-		switch (((HasTaxiTaskType.TaxiTaskType)task.getTaskType())) {
+		switch (((TaxiTaskType)task.getTaskType())) {
 		case EMPTY_DRIVE:
 		case OCCUPIED_DRIVE:
 			return legFactory.create(vehicle);
