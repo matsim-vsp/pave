@@ -36,11 +36,4 @@ class PFAVServiceDriveTask extends DriveTaskImpl implements TaxiTask {
 	public TaxiTaskType getTaxiTaskType() {
 		return TaxiTaskType.OCCUPIED_DRIVE;
 	} 
-
-	
-	@Override
-	protected String commonToString() {
-		return "[" + getTaxiTaskType().name() + "_SERVICE]" + super.commonToString();
-	}
-
 }
