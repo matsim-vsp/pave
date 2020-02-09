@@ -1,6 +1,11 @@
 package privateAV;
 
-import com.google.inject.name.Named;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -9,15 +14,24 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPaths;
-import org.matsim.contrib.dvrp.schedule.*;
+import org.matsim.contrib.dvrp.schedule.DriveTask;
+import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.Schedule.ScheduleStatus;
+import org.matsim.contrib.dvrp.schedule.Schedules;
+import org.matsim.contrib.dvrp.schedule.StayTask;
+import org.matsim.contrib.dvrp.schedule.Task;
+import org.matsim.contrib.dvrp.schedule.Tasks;
 import org.matsim.contrib.dvrp.tracker.TaskTrackers;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.util.LinkTimePair;
 import org.matsim.contrib.taxi.passenger.TaxiRequest;
 import org.matsim.contrib.taxi.passenger.TaxiRequest.TaxiRequestStatus;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
-import org.matsim.contrib.taxi.schedule.*;
+import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
+import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
+import org.matsim.contrib.taxi.schedule.TaxiOccupiedDriveTask;
+import org.matsim.contrib.taxi.schedule.TaxiPickupTask;
+import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.taxi.schedule.TaxiTaskType;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
@@ -28,11 +42,7 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import com.google.inject.name.Named;
 
 final class PFAVScheduler implements TaxiScheduleInquiry {
 
@@ -505,7 +515,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	private final static double REMOVE_STAY_TASK = Double.NEGATIVE_INFINITY;
 
 	private double calcNewEndTime(DvrpVehicle vehicle, Task task, double newBeginTime) {
-		switch (((TaxiTaskType)task.getTaskType())) {
+		switch ((TaxiTaskType)task.getTaskType()) {
 			case STAY: {
 				if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
 					// even if endTime=beginTime, do not remove this task!!! A taxi schedule should end with WAIT

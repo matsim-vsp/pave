@@ -72,16 +72,17 @@ public final class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 	@Override
 	public DynAction createAction(DynAgent dynAgent, DvrpVehicle vehicle, double now) {
 		Task task = vehicle.getSchedule().getCurrentTask();
-		switch (((TaxiTaskType)task.getTaskType())) {
-		case EMPTY_DRIVE:
-		case OCCUPIED_DRIVE:
-			return legFactory.create(vehicle);
+		switch ((TaxiTaskType)task.getTaskType()) {
+			case EMPTY_DRIVE:
+			case OCCUPIED_DRIVE:
+				return legFactory.create(vehicle);
 
-		case PICKUP:
-			final TaxiPickupTask pst = (TaxiPickupTask)task;
-			return new SinglePassengerPickupActivity(passengerEngine, dynAgent, pst, pst.getRequest(), PICKUP_ACTIVITY_TYPE);
+			case PICKUP:
+				final TaxiPickupTask pst = (TaxiPickupTask)task;
+				return new SinglePassengerPickupActivity(passengerEngine, dynAgent, pst, pst.getRequest(),
+						PICKUP_ACTIVITY_TYPE);
 
-		case DROPOFF:
+			case DROPOFF:
 			
 			if(task instanceof TaxiDropoffTask) {
 				final TaxiDropoffTask dst = (TaxiDropoffTask)task;
