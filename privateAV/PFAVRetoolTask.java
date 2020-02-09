@@ -39,6 +39,11 @@ class PFAVRetoolTask extends StayTask {
 	 * @param link
 	 */
     PFAVRetoolTask(double beginTime, double endTime, Link link) {
+		/*
+		 * we model this as a dropoff task, since retooling is closest to "picking a new car body up" or "dropping the old car body".
+		 * but pickup task type is somehow used for TaxiStatsCalculator in correspondence with a request (which we do not have here, so we use dropoff type.
+		 * furthermore, if it was of type stay, the task could be removed by the taxischeduler if there is delay in the schedule
+		 */
 		super(TaxiTaskType.DROPOFF, beginTime, endTime, link);
 	}
 	
@@ -58,16 +63,6 @@ class PFAVRetoolTask extends StayTask {
 		this.vehicle = vehicle;
 	}
 	
-	@Override
-	public TaxiTaskType getTaskType() {
-		/*
-		 * we model this as a dropoff task, since retooling is closest to "picking a new car body up" or "dropping the old car body".
-		 * but pickup task type is somehow used for TaxiStatsCalculator in correspondence with a request (which we do not have here, so we use dropoff type.
-		 * furthermore, if it was of type stay, the task could be removed by the taxischeduler if there is delay in the schedule
-		 */
-		return TaxiTaskType.DROPOFF;
-	}
-
 	@Override
 	public String toString() {
 		return super.toString() + " [" + this.getStatus() + "] " + "vehicle=" + this.vehicle;

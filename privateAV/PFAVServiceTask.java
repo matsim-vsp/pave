@@ -41,13 +41,7 @@ class PFAVServiceTask extends StayTask {
 		this.service = service;
 	}
 	
-	@Override
-	public TaxiTaskType getTaskType() {
-		return TaxiTaskType.DROPOFF;
-	}
-
 	CarrierService getCarrierService() {
 		return this.service;
 	}
-	
 }

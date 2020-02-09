@@ -27,13 +27,7 @@ import org.matsim.contrib.taxi.schedule.TaxiTaskType;
  *
  */
 class PFAVServiceDriveTask extends DriveTask {
-
     PFAVServiceDriveTask(VrpPathWithTravelData path) {
 		super(TaxiTaskType.OCCUPIED_DRIVE, path);
 	}
-
-	@Override
-	public TaxiTaskType getTaskType() {
-		return TaxiTaskType.OCCUPIED_DRIVE;
-	} 
 }
