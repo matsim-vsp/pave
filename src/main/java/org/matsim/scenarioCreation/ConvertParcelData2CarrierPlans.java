@@ -55,11 +55,11 @@ public class ConvertParcelData2CarrierPlans {
 	static List<CarrierService> services = new ArrayList<CarrierService>();
 
 	public static void main(String[] args) {
-		readDataFile();
-
+		Carriers carriers = readDataFileAndConvertToCarriers();
+		writeCarriersToScenariosFolder(carriers);
 	}
 
-	private static void readDataFile() {
+	private static Carriers readDataFileAndConvertToCarriers() {
 
 		String line = "";
 		BufferedReader br;
@@ -149,18 +149,23 @@ public class ConvertParcelData2CarrierPlans {
 				services.add(carrierService);
 
 				n++;
-			}
-			String outputDir = "scenarios/berlin/input/";
-			File outputDirFile = new File(outputDir);
-			outputDirFile.mkdirs();
-			CarrierPlanXmlWriterV2 planWriter = new CarrierPlanXmlWriterV2(carriers);
-			planWriter.write(outputDir + OUTPUT_CARRIERS_FILE_NAME);
 
+			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		return carriers;
+	}
+
+	private static void writeCarriersToScenariosFolder(Carriers carriers) {
+		String outputDir = "scenarios/berlin/input/";
+		File outputDirFile = new File(outputDir);
+		outputDirFile.mkdirs();
+		CarrierPlanXmlWriterV2 planWriter = new CarrierPlanXmlWriterV2(carriers);
+		planWriter.write(outputDir + OUTPUT_CARRIERS_FILE_NAME);
 	}
 
 	private static Id<Link> getNetworkLinkId(Network network, double latitude, double longitude) {
