@@ -1,4 +1,4 @@
-package privateAV;
+package org.matsim.pfav.privateAV;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;

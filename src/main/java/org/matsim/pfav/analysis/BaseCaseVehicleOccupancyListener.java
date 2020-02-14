@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package analysis;
+package org.matsim.pfav.analysis;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.events.ActivityEndEvent;
@@ -37,7 +37,7 @@ import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
-import privateAV.PFAVActionCreator;
+import org.matsim.pfav.privateAV.PFAVActionCreator;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

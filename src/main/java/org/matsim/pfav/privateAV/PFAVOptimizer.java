@@ -1,4 +1,4 @@
-package privateAV;
+package org.matsim.pfav.privateAV;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;

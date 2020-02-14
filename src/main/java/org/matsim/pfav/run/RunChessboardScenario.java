@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package run;
+package org.matsim.pfav.run;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -46,8 +46,8 @@ import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.scenario.ScenarioUtils;
 
-import privateAV.FreightAVConfigGroup;
-import privateAV.PFAVModeModule;
+import org.matsim.pfav.privateAV.FreightAVConfigGroup;
+import org.matsim.pfav.privateAV.PFAVModeModule;
 
 /**
  * @author tschlenther

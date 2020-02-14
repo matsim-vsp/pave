@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package scenarioCreation;
+package org.matsim.pfav.scenarioCreation;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.freight.carrier.Carrier;

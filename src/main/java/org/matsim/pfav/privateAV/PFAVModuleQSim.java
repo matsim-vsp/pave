@@ -1,4 +1,4 @@
-package privateAV;
+package org.matsim.pfav.privateAV;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;

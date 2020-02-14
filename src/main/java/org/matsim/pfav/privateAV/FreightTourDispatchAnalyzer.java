@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package privateAV;
+package org.matsim.pfav.privateAV;
 
 import java.util.Collection;
 import java.util.HashMap;

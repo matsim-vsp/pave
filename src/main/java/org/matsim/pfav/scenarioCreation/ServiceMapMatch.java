@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package scenarioCreation;
+package org.matsim.pfav.scenarioCreation;
 
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Coord;

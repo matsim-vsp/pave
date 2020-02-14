@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package analysis;
+package org.matsim.pfav.analysis;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.ActivityStartEvent;
@@ -30,10 +30,10 @@ import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.utils.io.IOUtils;
-import privateAV.EventPFAVOwnerWaitsForVehicle;
-import privateAV.PFAVActionCreator;
-import privateAV.PFAVEventsReader;
-import privateAV.PFAVWaitTimesListener;
+import org.matsim.pfav.privateAV.EventPFAVOwnerWaitsForVehicle;
+import org.matsim.pfav.privateAV.PFAVActionCreator;
+import org.matsim.pfav.privateAV.PFAVEventsReader;
+import org.matsim.pfav.privateAV.PFAVWaitTimesListener;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

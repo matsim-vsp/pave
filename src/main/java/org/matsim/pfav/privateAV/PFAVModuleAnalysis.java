@@ -18,10 +18,10 @@
  *                                                                         *
  * *********************************************************************** */
 
-package privateAV;
+package org.matsim.pfav.privateAV;
 
-import analysis.OverallTravelTimeAndDistanceListener;
-import analysis.PFAVWaitTimesAnalyzer;
+import org.matsim.pfav.analysis.OverallTravelTimeAndDistanceListener;
+import org.matsim.pfav.analysis.PFAVWaitTimesAnalyzer;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;

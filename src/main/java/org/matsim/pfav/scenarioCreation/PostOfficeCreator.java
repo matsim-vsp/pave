@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package scenarioCreation;
+package org.matsim.pfav.scenarioCreation;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

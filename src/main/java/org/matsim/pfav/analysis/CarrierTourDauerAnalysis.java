@@ -18,13 +18,13 @@
  *                                                                         *
  * *********************************************************************** */
 
-package analysis;
+package org.matsim.pfav.analysis;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.core.utils.io.IOUtils;
-import privateAV.FreightAVConfigGroup;
+import org.matsim.pfav.privateAV.FreightAVConfigGroup;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

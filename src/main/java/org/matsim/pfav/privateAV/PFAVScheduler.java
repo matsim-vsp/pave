@@ -1,4 +1,4 @@
-package privateAV;
+package org.matsim.pfav.privateAV;
 
 import java.util.HashMap;
 import java.util.HashSet;

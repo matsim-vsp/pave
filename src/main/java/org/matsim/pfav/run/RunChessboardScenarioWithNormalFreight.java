@@ -16,10 +16,10 @@
  *                                                                         *
  * *********************************************************************** */
 
-package run;
+package org.matsim.pfav.run;
 
-import analysis.BaseCaseFreightTourStatsListener;
-import analysis.OverallTravelTimeAndDistanceListener;
+import org.matsim.pfav.analysis.BaseCaseFreightTourStatsListener;
+import org.matsim.pfav.analysis.OverallTravelTimeAndDistanceListener;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -52,8 +52,8 @@ import org.matsim.core.replanning.GenericStrategyManager;
 import org.matsim.core.replanning.selectors.BestPlanSelector;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.scoring.SumScoringFunction;
-import privateAV.FreightAVConfigGroup;
-import privateAV.PFAVModeModule;
+import org.matsim.pfav.privateAV.FreightAVConfigGroup;
+import org.matsim.pfav.privateAV.PFAVModeModule;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

@@ -16,7 +16,7 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package scenarioCreation;
+package org.matsim.pfav.scenarioCreation;
 
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
@@ -29,7 +29,7 @@ import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.router.util.TravelTimeUtils;
 import org.matsim.vehicles.VehicleType;
-import privateAV.FreightTourPlanning;
+import org.matsim.pfav.privateAV.FreightTourPlanning;
 
 /**
  * @author tschlenther

@@ -16,7 +16,7 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package privateAV;
+package org.matsim.pfav.privateAV;
 
 import com.google.inject.Provider;
 import org.matsim.contrib.dvrp.fleet.Fleet;

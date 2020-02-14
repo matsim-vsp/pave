@@ -1,13 +1,13 @@
-package scenarioCreation;
+package org.matsim.pfav.scenarioCreation;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities.FleetSize;
+import org.matsim.pfav.privateAV.PFAVUtils;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
-import privateAV.PFAVUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;

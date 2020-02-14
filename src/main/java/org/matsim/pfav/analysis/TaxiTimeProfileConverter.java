@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package analysis;
+package org.matsim.pfav.analysis;
 
 import org.matsim.core.utils.io.IOUtils;
 

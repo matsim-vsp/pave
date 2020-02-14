@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package run;
+package org.matsim.pfav.run;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,8 +43,8 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.run.RunBerlinScenario;
 
-import privateAV.FreightAVConfigGroup;
-import privateAV.PFAVModeModule;
+import org.matsim.pfav.privateAV.FreightAVConfigGroup;
+import org.matsim.pfav.privateAV.PFAVModeModule;
 
 public class RunPFAVInBerlin {
 

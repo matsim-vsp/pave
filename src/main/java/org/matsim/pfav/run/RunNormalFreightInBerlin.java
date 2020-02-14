@@ -18,10 +18,10 @@
  *                                                                         *
  * *********************************************************************** */
 
-package run;
+package org.matsim.pfav.run;
 
-import analysis.BaseCaseFreightTourStatsListener;
-import analysis.OverallTravelTimeAndDistanceListener;
+import org.matsim.pfav.analysis.BaseCaseFreightTourStatsListener;
+import org.matsim.pfav.analysis.OverallTravelTimeAndDistanceListener;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.freight.FreightConfigGroup;

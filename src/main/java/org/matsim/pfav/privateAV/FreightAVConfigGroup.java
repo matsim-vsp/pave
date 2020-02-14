@@ -1,4 +1,4 @@
-package privateAV;
+package org.matsim.pfav.privateAV;
 
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ReflectiveConfigGroup;

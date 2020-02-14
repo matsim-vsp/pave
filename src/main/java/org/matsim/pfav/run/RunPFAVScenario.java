@@ -16,7 +16,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package run;
+package org.matsim.pfav.run;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
@@ -32,8 +32,8 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
-import privateAV.FreightAVConfigGroup;
-import privateAV.PFAVModeModule;
+import org.matsim.pfav.privateAV.FreightAVConfigGroup;
+import org.matsim.pfav.privateAV.PFAVModeModule;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

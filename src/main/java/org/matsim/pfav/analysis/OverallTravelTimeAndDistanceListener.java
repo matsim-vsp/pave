@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package analysis;
+package org.matsim.pfav.analysis;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.*;
@@ -32,9 +32,9 @@ import org.matsim.core.events.EventsUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.io.IOUtils;
-import privateAV.PFAVActionCreator;
-import privateAV.PFAVEventsReader;
-import privateAV.PFAVUtils;
+import org.matsim.pfav.privateAV.PFAVActionCreator;
+import org.matsim.pfav.privateAV.PFAVEventsReader;
+import org.matsim.pfav.privateAV.PFAVUtils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

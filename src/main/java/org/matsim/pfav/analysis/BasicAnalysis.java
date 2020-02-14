@@ -18,13 +18,13 @@
  *                                                                         *
  * *********************************************************************** */
 
-package analysis;
+package org.matsim.pfav.analysis;
 
 import org.matsim.api.core.v01.events.*;
 import org.matsim.api.core.v01.events.handler.*;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsUtils;
-import privateAV.PFAVEventsReader;
+import org.matsim.pfav.privateAV.PFAVEventsReader;
 
 import java.util.HashSet;
 import java.util.Set;

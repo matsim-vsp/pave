@@ -1,4 +1,4 @@
-package privateAV;
+package org.matsim.pfav.privateAV;
 
 import com.google.common.base.MoreObjects;
 import org.matsim.api.core.v01.Id;

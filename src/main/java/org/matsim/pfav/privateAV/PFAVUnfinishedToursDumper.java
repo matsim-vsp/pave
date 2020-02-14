@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package privateAV;
+package org.matsim.pfav.privateAV;
 
 import org.matsim.contrib.util.CSVLineBuilder;
 import org.matsim.contrib.util.CompactCSVWriter;
