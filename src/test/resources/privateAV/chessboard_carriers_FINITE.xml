@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<carriers>
+    <carrier id="carrier1">
+        <capabilities fleetSize="FINITE">
+            <vehicles>
+                <vehicle id="PFAV_1" depotLinkId="155" typeId="PFAV" earliestStart="06:00:00" latestEnd="20:00:00"/>
+            </vehicles>
+
+        </capabilities>
+
+        <services>
+            <service id="0" to="157" capacityDemand="1" earliestStart="06:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="1" to="159" capacityDemand="1" earliestStart="06:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="2" to="34" capacityDemand="1" earliestStart="06:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="3" to="76" capacityDemand="1" earliestStart="06:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+        </services>
+    </carrier>
+</carriers>
