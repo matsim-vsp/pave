@@ -52,7 +52,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class RunNormalFreightInBerlin {
+class RunNormalFreightInBerlin {
 
     private static final String CONFIG_v53_1pct = "C:/Users/tschlenther/Desktop/input/berlin-v5.3-1pct.config_usingLocalInputFiles.xml";
     private static final String OUTPUTDIR = "output/Berlin/test/" + new SimpleDateFormat("YYYY-MM-dd_HH.mm").format(

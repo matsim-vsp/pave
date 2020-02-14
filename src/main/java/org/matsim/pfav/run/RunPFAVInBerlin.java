@@ -46,7 +46,7 @@ import org.matsim.run.RunBerlinScenario;
 import org.matsim.pfav.privateAV.FreightAVConfigGroup;
 import org.matsim.pfav.privateAV.PFAVModeModule;
 
-public class RunPFAVInBerlin {
+class RunPFAVInBerlin {
 
 
 	private static final String PFAV_TYPE = "AutonomousCar";

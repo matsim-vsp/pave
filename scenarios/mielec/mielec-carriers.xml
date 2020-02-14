@@ -1,0 +1,1593 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<carriers>
+    <carrier id="carrier1">
+        <capabilities fleetSize="INFINITE">
+            <vehicles>
+                <vehicle id="PFAV_1" depotLinkId="168" typeId="PFAV" earliestStart="00:00:00" latestEnd="10:00:00"/>
+                <vehicle id="PFAV_2" depotLinkId="422" typeId="PFAV" earliestStart="00:00:00" latestEnd="10:00:00"/>
+                <vehicle id="PFAV_3" depotLinkId="575" typeId="PFAV" earliestStart="00:00:00" latestEnd="10:00:00"/>
+                <vehicle id="PFAV_4" depotLinkId="253" typeId="PFAV" earliestStart="00:00:00" latestEnd="10:00:00"/>
+                <vehicle id="PFAV_5" depotLinkId="211" typeId="PFAV" earliestStart="00:00:00" latestEnd="10:00:00"/>
+            </vehicles>
+
+        </capabilities>
+
+        <services>
+            <service id="0" to="177" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="1" to="102" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="2" to="194" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="3" to="561" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="4" to="113" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="5" to="120" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="6" to="177" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="7" to="530" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="8" to="294" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="9" to="278" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="10" to="278" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="11" to="28" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="12" to="482" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="13" to="505" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="14" to="217" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="15" to="85" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="16" to="230" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="17" to="401" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="18" to="533" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="19" to="403" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="20" to="537" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="21" to="452" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="22" to="570" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="23" to="390" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="24" to="272" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="25" to="203" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="26" to="495" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="27" to="551" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="28" to="389" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="29" to="41" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="30" to="25" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="31" to="331" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="32" to="251" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="33" to="142" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="34" to="500" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="35" to="443" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="36" to="410" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="37" to="3" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="38" to="442" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="39" to="54" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="40" to="443" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="41" to="53" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="42" to="189" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="43" to="493" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="44" to="592" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="45" to="444" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="46" to="542" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="47" to="488" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="48" to="457" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="49" to="125" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="50" to="218" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="51" to="449" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="52" to="125" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="53" to="419" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="54" to="276" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="55" to="106" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="56" to="169" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="57" to="531" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="58" to="146" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="59" to="420" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="60" to="454" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="61" to="536" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="62" to="575" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="63" to="468" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="64" to="241" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="65" to="432" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="66" to="271" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="67" to="118" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="68" to="532" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="69" to="572" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="70" to="562" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="71" to="482" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="72" to="483" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="73" to="307" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="74" to="86" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="75" to="410" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="76" to="26" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="77" to="61" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="78" to="498" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="79" to="382" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="80" to="585" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="81" to="97" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="82" to="220" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="83" to="509" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="84" to="139" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="85" to="248" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="86" to="34" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="87" to="558" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="88" to="608" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="89" to="469" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="90" to="216" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="91" to="108" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="92" to="379" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="93" to="418" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="94" to="363" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="95" to="51" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="96" to="538" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="97" to="609" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="98" to="535" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="99" to="55" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+        </services>
+
+        <plan score="-3283.4160457142866" selected="true">
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:19">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="59"/>
+                <leg expected_dep_time="00:00:50" expected_transp_time="00:01:35">
+                    <route>445</route>
+                </leg>
+                <act type="service" serviceId="45"/>
+                <leg expected_dep_time="00:02:56" expected_transp_time="00:10:21">
+                    <route>325 328 317 316 587</route>
+                </leg>
+                <act type="service" serviceId="97"/>
+                <leg expected_dep_time="00:13:49" expected_transp_time="00:06:40">
+                    <route>610 607</route>
+                </leg>
+                <act type="service" serviceId="88"/>
+                <leg expected_dep_time="00:21:00" expected_transp_time="00:10:06">
+                    <route>588 315 318 327 326 443 446 419 421</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:02:49">
+                    <route>421 423 426 27 31</route>
+                </leg>
+                <act type="service" serviceId="86"/>
+                <leg expected_dep_time="00:03:20" expected_transp_time="00:00:30">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="95"/>
+                <leg expected_dep_time="00:04:22" expected_transp_time="00:03:17">
+                    <route>48 44 65 67 61 71 529</route>
+                </leg>
+                <act type="service" serviceId="98"/>
+                <leg expected_dep_time="00:08:10" expected_transp_time="00:00:21">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="68"/>
+                <leg expected_dep_time="00:09:02" expected_transp_time="00:04:10">
+                    <route>56 39 29 28 425 424</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:08:52">
+                    <route>421 423 426 311 349 591</route>
+                </leg>
+                <act type="service" serviceId="44"/>
+                <leg expected_dep_time="00:09:23" expected_transp_time="00:03:38">
+                    <route>348 346</route>
+                </leg>
+                <act type="service" serviceId="20"/>
+                <leg expected_dep_time="00:13:33" expected_transp_time="00:01:14">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="96"/>
+                <leg expected_dep_time="00:15:19" expected_transp_time="00:02:40">
+                    <route>537</route>
+                </leg>
+                <act type="service" serviceId="93"/>
+                <leg expected_dep_time="00:18:30" expected_transp_time="00:02:49">
+                    <route>39 29 28 425 424</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:00">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="62"/>
+                <leg expected_dep_time="00:00:31" expected_transp_time="00:06:06">
+                    <route>576 584 82 83 85 586 88 90 150 257 260 387 390 409</route>
+                </leg>
+                <act type="service" serviceId="75"/>
+                <leg expected_dep_time="00:07:08" expected_transp_time="00:00:26">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="28"/>
+                <leg expected_dep_time="00:08:06" expected_transp_time="00:03:54">
+                    <route>388 259 258 149 89 87 585</route>
+                </leg>
+                <act type="service" serviceId="74"/>
+                <leg expected_dep_time="00:12:31" expected_transp_time="00:00:37">
+                    <route>84 81 583</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_5">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:01:20">
+                    <route>212 91 337 336 497</route>
+                </leg>
+                <act type="service" serviceId="34"/>
+                <leg expected_dep_time="00:01:51" expected_transp_time="00:01:32">
+                    <route>494 490 487</route>
+                </leg>
+                <act type="service" serviceId="47"/>
+                <leg expected_dep_time="00:03:55" expected_transp_time="00:00:26">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="85"/>
+                <leg expected_dep_time="00:04:52" expected_transp_time="00:01:29">
+                    <route>247 487 486</route>
+                </leg>
+                <act type="service" serviceId="72"/>
+                <leg expected_dep_time="00:06:53" expected_transp_time="00:02:02">
+                    <route>491 493 499 498 335 338 92</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_4">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:55">
+                    <route>272 229 479</route>
+                </leg>
+                <act type="service" serviceId="12"/>
+                <leg expected_dep_time="00:01:26" expected_transp_time="00:00:00">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="71"/>
+                <leg expected_dep_time="00:01:57" expected_transp_time="00:02:06">
+                    <route>472 189 191 223</route>
+                </leg>
+                <act type="service" serviceId="82"/>
+                <leg expected_dep_time="00:04:35" expected_transp_time="00:02:03">
+                    <route>194 192 190 23 230</route>
+                </leg>
+                <act type="service" serviceId="66"/>
+                <leg expected_dep_time="00:07:09" expected_transp_time="00:01:22">
+                    <route>254</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:59">
+                    <route>576 584 82 83 103</route>
+                </leg>
+                <act type="service" serviceId="55"/>
+                <leg expected_dep_time="00:01:30" expected_transp_time="00:00:33">
+                    <route>105 114</route>
+                </leg>
+                <act type="service" serviceId="52"/>
+                <leg expected_dep_time="00:02:35" expected_transp_time="00:00:26">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="56"/>
+                <leg expected_dep_time="00:03:33" expected_transp_time="00:00:54">
+                    <route>172 117</route>
+                </leg>
+                <act type="service" serviceId="90"/>
+                <leg expected_dep_time="00:04:59" expected_transp_time="00:00:22">
+                    <route>573 576</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:01:03">
+                    <route>574 215</route>
+                </leg>
+                <act type="service" serviceId="14"/>
+                <leg expected_dep_time="00:01:34" expected_transp_time="00:00:25">
+                    <route>114</route>
+                </leg>
+                <act type="service" serviceId="49"/>
+                <leg expected_dep_time="00:02:31" expected_transp_time="00:01:40">
+                    <route>126 113 104 84 135 137</route>
+                </leg>
+                <act type="service" serviceId="84"/>
+                <leg expected_dep_time="00:04:43" expected_transp_time="00:00:13">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="33"/>
+                <leg expected_dep_time="00:05:27" expected_transp_time="00:00:43">
+                    <route>132 583</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:02:02">
+                    <route>576 582 255 272 229 24</route>
+                </leg>
+                <act type="service" serviceId="42"/>
+                <leg expected_dep_time="00:02:33" expected_transp_time="00:01:20">
+                    <route>190 471 470 19 17</route>
+                </leg>
+                <act type="service" serviceId="6"/>
+                <leg expected_dep_time="00:04:24" expected_transp_time="00:00:46">
+                    <route>178</route>
+                </leg>
+                <act type="service" serviceId="37"/>
+                <leg expected_dep_time="00:05:41" expected_transp_time="00:02:31">
+                    <route>2 8 100 75 74 543</route>
+                </leg>
+                <act type="service" serviceId="46"/>
+                <leg expected_dep_time="00:08:44" expected_transp_time="00:01:39">
+                    <route>146 295 226 136 81 583</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:01:05">
+                    <route>420 308</route>
+                </leg>
+                <act type="service" serviceId="73"/>
+                <leg expected_dep_time="00:01:36" expected_transp_time="00:01:07">
+                    <route>308 431</route>
+                </leg>
+                <act type="service" serviceId="38"/>
+                <leg expected_dep_time="00:03:15" expected_transp_time="00:04:10">
+                    <route>421 423 426 27 30 40</route>
+                </leg>
+                <act type="service" serviceId="99"/>
+                <leg expected_dep_time="00:07:57" expected_transp_time="00:01:26">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="19"/>
+                <leg expected_dep_time="00:09:55" expected_transp_time="00:05:37">
+                    <route>404 56 39 29 28 425 424</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_1">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:04:19">
+                    <route>283 280 130 88 90 154 267 266</route>
+                </leg>
+                <act type="service" serviceId="18"/>
+                <leg expected_dep_time="00:04:50" expected_transp_time="00:04:40">
+                    <route>532 58 395 394 302</route>
+                </leg>
+                <act type="service" serviceId="13"/>
+                <leg expected_dep_time="00:10:01" expected_transp_time="00:01:27">
+                    <route>510</route>
+                </leg>
+                <act type="service" serviceId="83"/>
+                <leg expected_dep_time="00:11:59" expected_transp_time="00:01:51">
+                    <route>508 157 293</route>
+                </leg>
+                <act type="service" serviceId="8"/>
+                <leg expected_dep_time="00:14:22" expected_transp_time="00:02:00">
+                    <route>293 290 286</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:03:20">
+                    <route>420 445 444 451</route>
+                </leg>
+                <act type="service" serviceId="60"/>
+                <leg expected_dep_time="00:03:51" expected_transp_time="00:01:23">
+                    <route>450</route>
+                </leg>
+                <act type="service" serviceId="51"/>
+                <leg expected_dep_time="00:05:46" expected_transp_time="00:01:25">
+                    <route>453</route>
+                </leg>
+                <act type="service" serviceId="21"/>
+                <leg expected_dep_time="00:07:42" expected_transp_time="00:01:13">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="40"/>
+                <leg expected_dep_time="00:09:27" expected_transp_time="00:00:54">
+                    <route>446 419 421</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:44">
+                    <route>574 215</route>
+                </leg>
+                <act type="service" serviceId="67"/>
+                <leg expected_dep_time="00:01:15" expected_transp_time="00:00:39">
+                    <route>116</route>
+                </leg>
+                <act type="service" serviceId="4"/>
+                <leg expected_dep_time="00:02:25" expected_transp_time="00:00:29">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="50"/>
+                <leg expected_dep_time="00:03:26" expected_transp_time="00:00:14">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="5"/>
+                <leg expected_dep_time="00:04:12" expected_transp_time="00:00:18">
+                    <route>583</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_5">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:03:28">
+                    <route>212 91 337 336 497 503 502 329</route>
+                </leg>
+                <act type="service" serviceId="31"/>
+                <leg expected_dep_time="00:03:59" expected_transp_time="00:04:16">
+                    <route>332 330 501 504 498 335 338 92 93 275</route>
+                </leg>
+                <act type="service" serviceId="10"/>
+                <leg expected_dep_time="00:08:46" expected_transp_time="00:00:00">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="9"/>
+                <leg expected_dep_time="00:09:17" expected_transp_time="00:00:24">
+                    <route>277</route>
+                </leg>
+                <act type="service" serviceId="54"/>
+                <leg expected_dep_time="00:10:12" expected_transp_time="00:00:32">
+                    <route>94</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:04:57">
+                    <route>576 584 82 83 85 586 88 90 150 257 260 387</route>
+                </leg>
+                <act type="service" serviceId="23"/>
+                <leg expected_dep_time="00:05:28" expected_transp_time="00:01:08">
+                    <route>409</route>
+                </leg>
+                <act type="service" serviceId="36"/>
+                <leg expected_dep_time="00:07:08" expected_transp_time="00:01:39">
+                    <route>384 380</route>
+                </leg>
+                <act type="service" serviceId="92"/>
+                <leg expected_dep_time="00:09:19" expected_transp_time="00:04:32">
+                    <route>381 397 394 302 148 89 87</route>
+                </leg>
+                <act type="service" serviceId="80"/>
+                <leg expected_dep_time="00:14:23" expected_transp_time="00:00:41">
+                    <route>86 84 81 583</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_4">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:04">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="24"/>
+                <leg expected_dep_time="00:00:35" expected_transp_time="00:00:36">
+                    <route>273 276</route>
+                </leg>
+                <act type="service" serviceId="25"/>
+                <leg expected_dep_time="00:01:42" expected_transp_time="00:00:16">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="48"/>
+                <leg expected_dep_time="00:02:29" expected_transp_time="00:01:09">
+                    <route>458 204 183 467</route>
+                </leg>
+                <act type="service" serviceId="63"/>
+                <leg expected_dep_time="00:04:10" expected_transp_time="00:00:41">
+                    <route></route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:01:08">
+                    <route>576 584 82 83 85 107</route>
+                </leg>
+                <act type="service" serviceId="91"/>
+                <leg expected_dep_time="00:01:39" expected_transp_time="00:02:35">
+                    <route>86 84 135 225 296 145 541 544 555 561</route>
+                </leg>
+                <act type="service" serviceId="70"/>
+                <leg expected_dep_time="00:04:45" expected_transp_time="00:00:28">
+                    <route>558</route>
+                </leg>
+                <act type="service" serviceId="27"/>
+                <leg expected_dep_time="00:05:45" expected_transp_time="00:00:11">
+                    <route>569</route>
+                </leg>
+                <act type="service" serviceId="22"/>
+                <leg expected_dep_time="00:06:28" expected_transp_time="00:02:54">
+                    <route>552 545 548 101 146 295 226 136 81 583</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_4">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:01:48">
+                    <route>272 95 473 476 20 21</route>
+                </leg>
+                <act type="service" serviceId="76"/>
+                <leg expected_dep_time="00:02:19" expected_transp_time="00:00:07">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="32"/>
+                <leg expected_dep_time="00:02:57" expected_transp_time="00:00:36">
+                    <route>252</route>
+                </leg>
+                <act type="service" serviceId="30"/>
+                <leg expected_dep_time="00:04:05" expected_transp_time="00:01:32">
+                    <route>22 19 475 477 480</route>
+                </leg>
+                <act type="service" serviceId="16"/>
+                <leg expected_dep_time="00:06:08" expected_transp_time="00:01:27">
+                    <route>271 254</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:05:35">
+                    <route>576 584 82 83 85 586 88 90 147 301 369 368 364</route>
+                </leg>
+                <act type="service" serviceId="94"/>
+                <leg expected_dep_time="00:06:06" expected_transp_time="00:01:38">
+                    <route>367 385</route>
+                </leg>
+                <act type="service" serviceId="79"/>
+                <leg expected_dep_time="00:08:15" expected_transp_time="00:07:32">
+                    <route>381 397 396 57 403 402</route>
+                </leg>
+                <act type="service" serviceId="17"/>
+                <leg expected_dep_time="00:16:19" expected_transp_time="00:01:48">
+                    <route>404</route>
+                </leg>
+                <act type="service" serviceId="57"/>
+                <leg expected_dep_time="00:18:38" expected_transp_time="00:04:11">
+                    <route>534 265 268 153 89 87 585 86 84 81 583</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:41">
+                    <route>576 584 82 83</route>
+                </leg>
+                <act type="service" serviceId="15"/>
+                <leg expected_dep_time="00:01:12" expected_transp_time="00:03:52">
+                    <route>586 88 90 154 267 266 533</route>
+                </leg>
+                <act type="service" serviceId="61"/>
+                <leg expected_dep_time="00:05:35" expected_transp_time="00:00:35">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="7"/>
+                <leg expected_dep_time="00:06:42" expected_transp_time="00:02:39">
+                    <route>72 62 68 66 69 553 569</route>
+                </leg>
+                <act type="service" serviceId="69"/>
+                <leg expected_dep_time="00:09:52" expected_transp_time="00:03:02">
+                    <route>564 562 556 543 542 146 295 226 136 81 583</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:44">
+                    <route>441</route>
+                </leg>
+                <act type="service" serviceId="65"/>
+                <leg expected_dep_time="00:01:15" expected_transp_time="00:03:11">
+                    <route>307 445 444</route>
+                </leg>
+                <act type="service" serviceId="35"/>
+                <leg expected_dep_time="00:04:58" expected_transp_time="00:04:43">
+                    <route>446 306 45 44 65 67</route>
+                </leg>
+                <act type="service" serviceId="77"/>
+                <leg expected_dep_time="00:10:13" expected_transp_time="00:04:42">
+                    <route>62 68 66 43 46 305</route>
+                </leg>
+                <act type="service" serviceId="53"/>
+                <leg expected_dep_time="00:15:26" expected_transp_time="00:00:13">
+                    <route>421</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_4">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:01:06">
+                    <route>272 95 473 476 17</route>
+                </leg>
+                <act type="service" serviceId="0"/>
+                <leg expected_dep_time="00:01:37" expected_transp_time="00:00:36">
+                    <route>176</route>
+                </leg>
+                <act type="service" serviceId="89"/>
+                <leg expected_dep_time="00:02:44" expected_transp_time="00:01:50">
+                    <route>472 189 191 193</route>
+                </leg>
+                <act type="service" serviceId="2"/>
+                <leg expected_dep_time="00:05:05" expected_transp_time="00:01:35">
+                    <route>192 187 237 245 242</route>
+                </leg>
+                <act type="service" serviceId="64"/>
+                <leg expected_dep_time="00:07:12" expected_transp_time="00:02:42">
+                    <route>244 208 206 277 276 183</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_5">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:33">
+                    <route>212 91</route>
+                </leg>
+                <act type="service" serviceId="81"/>
+                <leg expected_dep_time="00:01:04" expected_transp_time="00:01:22">
+                    <route>98 337 336 165</route>
+                </leg>
+                <act type="service" serviceId="26"/>
+                <leg expected_dep_time="00:02:57" expected_transp_time="00:00:41">
+                    <route>494</route>
+                </leg>
+                <act type="service" serviceId="43"/>
+                <leg expected_dep_time="00:04:09" expected_transp_time="00:00:33">
+                    <route>499</route>
+                </leg>
+                <act type="service" serviceId="78"/>
+                <leg expected_dep_time="00:05:14" expected_transp_time="00:00:46">
+                    <route>335 338 92</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:02:00">
+                    <route>576 584 82 135 225 296 145</route>
+                </leg>
+                <act type="service" serviceId="1"/>
+                <leg expected_dep_time="00:02:31" expected_transp_time="00:00:48">
+                    <route>547 546 557</route>
+                </leg>
+                <act type="service" serviceId="3"/>
+                <leg expected_dep_time="00:03:51" expected_transp_time="00:00:15">
+                    <route>562</route>
+                </leg>
+                <act type="service" serviceId="87"/>
+                <leg expected_dep_time="00:04:37" expected_transp_time="00:01:18">
+                    <route>545 548 101</route>
+                </leg>
+                <act type="service" serviceId="58"/>
+                <leg expected_dep_time="00:06:27" expected_transp_time="00:01:15">
+                    <route>295 226 136 81 583</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:04:16">
+                    <route>420 306 45 44</route>
+                </leg>
+                <act type="service" serviceId="29"/>
+                <leg expected_dep_time="00:04:47" expected_transp_time="00:00:33">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="41"/>
+                <leg expected_dep_time="00:05:52" expected_transp_time="00:00:33">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="39"/>
+                <leg expected_dep_time="00:06:57" expected_transp_time="00:02:00">
+                    <route>39 29</route>
+                </leg>
+                <act type="service" serviceId="11"/>
+                <leg expected_dep_time="00:09:28" expected_transp_time="00:00:49">
+                    <route>425 424</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+        </plan>
+
+    </carrier>
+
+    <carrier id="carrier2">
+        <capabilities fleetSize="INFINITE">
+            <vehicles>
+                <vehicle id="PFAV_1" depotLinkId="185" typeId="PFAV" earliestStart="00:00:00" latestEnd="10:00:00"/>
+                <vehicle id="PFAV_2" depotLinkId="124" typeId="PFAV" earliestStart="00:00:00" latestEnd="10:00:00"/>
+                <vehicle id="PFAV_3" depotLinkId="131" typeId="PFAV" earliestStart="00:00:00" latestEnd="10:00:00"/>
+                <vehicle id="PFAV_4" depotLinkId="299" typeId="PFAV" earliestStart="00:00:00" latestEnd="10:00:00"/>
+                <vehicle id="PFAV_5" depotLinkId="273" typeId="PFAV" earliestStart="00:00:00" latestEnd="10:00:00"/>
+            </vehicles>
+
+        </capabilities>
+
+        <services>
+            <service id="0" to="148" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="1" to="246" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="2" to="229" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="3" to="373" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="4" to="609" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="5" to="118" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="6" to="341" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="7" to="267" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="8" to="153" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="9" to="292" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="10" to="99" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="11" to="192" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="12" to="178" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="13" to="135" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="14" to="335" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="15" to="214" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="16" to="118" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="17" to="439" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="18" to="312" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="19" to="523" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="20" to="314" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="21" to="411" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="22" to="531" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="23" to="607" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="24" to="225" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="25" to="122" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="26" to="132" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="27" to="155" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="28" to="492" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="29" to="363" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="30" to="41" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="31" to="550" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="32" to="6" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="33" to="115" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="34" to="355" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="35" to="245" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="36" to="31" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="37" to="13" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="38" to="541" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="39" to="40" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="40" to="542" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="41" to="316" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="42" to="111" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="43" to="546" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="44" to="487" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="45" to="299" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="46" to="37" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="47" to="394" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="48" to="425" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="49" to="15" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="50" to="543" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="51" to="376" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="52" to="394" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="53" to="528" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="54" to="423" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="55" to="363" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="56" to="234" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="57" to="513" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="58" to="410" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="59" to="411" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="60" to="550" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="61" to="509" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="62" to="259" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="63" to="215" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="64" to="562" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="65" to="302" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="66" to="580" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="67" to="289" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="68" to="387" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="69" to="412" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="70" to="444" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="71" to="33" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="72" to="131" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="73" to="47" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="74" to="313" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="75" to="598" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="76" to="259" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="77" to="118" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="78" to="7" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="79" to="562" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="80" to="56" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="81" to="584" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="82" to="166" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="83" to="288" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="84" to="241" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="85" to="548" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="86" to="253" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="87" to="471" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="88" to="362" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="89" to="475" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="90" to="233" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="91" to="203" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="92" to="231" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="93" to="503" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="94" to="264" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="95" to="486" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="96" to="11" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="97" to="450" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="98" to="294" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+            <service id="99" to="423" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:00:31"/>
+        </services>
+
+        <plan score="-3288.8904885714282" selected="true">
+            <tour vehicleId="PFAV_5">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:09:47">
+                    <route>274 95 9 12 447 449 453 452 325 328 317</route>
+                </leg>
+                <act type="service" serviceId="41"/>
+                <leg expected_dep_time="00:10:18" expected_transp_time="00:05:32">
+                    <route>587</route>
+                </leg>
+                <act type="service" serviceId="23"/>
+                <leg expected_dep_time="00:16:22" expected_transp_time="00:04:31">
+                    <route>608</route>
+                </leg>
+                <act type="service" serviceId="4"/>
+                <leg expected_dep_time="00:21:25" expected_transp_time="00:15:25">
+                    <route>610 588 315 318 327 326 451 454 450 448 11 8</route>
+                </leg>
+                <act type="service" serviceId="32"/>
+                <leg expected_dep_time="00:37:21" expected_transp_time="00:00:54">
+                    <route>461 464 255 272</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:01:57">
+                    <route>133 225 296 145 102 547</route>
+                </leg>
+                <act type="service" serviceId="43"/>
+                <leg expected_dep_time="00:02:28" expected_transp_time="00:01:48">
+                    <route>551 554 70 43</route>
+                </leg>
+                <act type="service" serviceId="73"/>
+                <leg expected_dep_time="00:04:48" expected_transp_time="00:01:55">
+                    <route>48 44 65 63</route>
+                </leg>
+                <act type="service" serviceId="19"/>
+                <leg expected_dep_time="00:07:14" expected_transp_time="00:03:10">
+                    <route>522 71 60 265 268</route>
+                </leg>
+                <act type="service" serviceId="8"/>
+                <leg expected_dep_time="00:10:55" expected_transp_time="00:01:23">
+                    <route>89 87 585 86 84 81</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:07:05">
+                    <route>281 280 130 88 90 147 301 393 398 382 380 378</route>
+                </leg>
+                <act type="service" serviceId="51"/>
+                <leg expected_dep_time="00:07:36" expected_transp_time="00:00:38">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="21"/>
+                <leg expected_dep_time="00:08:46" expected_transp_time="00:00:34">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="58"/>
+                <leg expected_dep_time="00:09:51" expected_transp_time="00:01:31">
+                    <route>389 388</route>
+                </leg>
+                <act type="service" serviceId="76"/>
+                <leg expected_dep_time="00:11:54" expected_transp_time="00:03:26">
+                    <route>258 149 89 87 585 107 110</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_4">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:04:46">
+                    <route>401 404</route>
+                </leg>
+                <act type="service" serviceId="80"/>
+                <leg expected_dep_time="00:05:17" expected_transp_time="00:01:50">
+                    <route>39 29</route>
+                </leg>
+                <act type="service" serviceId="36"/>
+                <leg expected_dep_time="00:07:39" expected_transp_time="00:04:19">
+                    <route>34 51 48 44 65 63 523 526</route>
+                </leg>
+                <act type="service" serviceId="53"/>
+                <leg expected_dep_time="00:12:29" expected_transp_time="00:07:10">
+                    <route>535 532 403 402 300</route>
+                </leg>
+                <act type="service" serviceId="45"/>
+                <leg expected_dep_time="00:20:10" expected_transp_time="00:00:00">
+                    <route></route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:01:32">
+                    <route>121 173 285</route>
+                </leg>
+                <act type="service" serviceId="83"/>
+                <leg expected_dep_time="00:02:03" expected_transp_time="00:00:35">
+                    <route>235</route>
+                </leg>
+                <act type="service" serviceId="56"/>
+                <leg expected_dep_time="00:03:10" expected_transp_time="00:00:36">
+                    <route>172 117</route>
+                </leg>
+                <act type="service" serviceId="77"/>
+                <leg expected_dep_time="00:04:17" expected_transp_time="00:00:56">
+                    <route>171 170</route>
+                </leg>
+                <act type="service" serviceId="25"/>
+                <leg expected_dep_time="00:05:45" expected_transp_time="00:00:29">
+                    <route>123</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:30">
+                    <route>133</route>
+                </leg>
+                <act type="service" serviceId="24"/>
+                <leg expected_dep_time="00:01:01" expected_transp_time="00:02:04">
+                    <route>296 145 102 547</route>
+                </leg>
+                <act type="service" serviceId="60"/>
+                <leg expected_dep_time="00:03:37" expected_transp_time="00:00:13">
+                    <route>544</route>
+                </leg>
+                <act type="service" serviceId="50"/>
+                <leg expected_dep_time="00:04:22" expected_transp_time="00:02:14">
+                    <route>542 146 295 226 136 81 583 575</route>
+                </leg>
+                <act type="service" serviceId="66"/>
+                <leg expected_dep_time="00:07:08" expected_transp_time="00:00:44">
+                    <route>577 584</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:05:42">
+                    <route>281 280 130 88 90 147 301 369 368 364</route>
+                </leg>
+                <act type="service" serviceId="34"/>
+                <leg expected_dep_time="00:06:13" expected_transp_time="00:00:44">
+                    <route>356</route>
+                </leg>
+                <act type="service" serviceId="29"/>
+                <leg expected_dep_time="00:07:28" expected_transp_time="00:00:00">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="55"/>
+                <leg expected_dep_time="00:07:59" expected_transp_time="00:02:27">
+                    <route>367 370 393 396</route>
+                </leg>
+                <act type="service" serviceId="62"/>
+                <leg expected_dep_time="00:10:58" expected_transp_time="00:03:26">
+                    <route>258 149 89 87 585 107 110</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:01:17">
+                    <route>132 583 575 574</route>
+                </leg>
+                <act type="service" serviceId="63"/>
+                <leg expected_dep_time="00:01:48" expected_transp_time="00:00:49">
+                    <route>120 82</route>
+                </leg>
+                <act type="service" serviceId="13"/>
+                <leg expected_dep_time="00:03:09" expected_transp_time="00:01:13">
+                    <route>225 296 145</route>
+                </leg>
+                <act type="service" serviceId="38"/>
+                <leg expected_dep_time="00:04:53" expected_transp_time="00:00:28">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="40"/>
+                <leg expected_dep_time="00:05:52" expected_transp_time="00:01:44">
+                    <route>146 295 226 136 81</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_4">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:03:47">
+                    <route>401 404</route>
+                </leg>
+                <act type="service" serviceId="22"/>
+                <leg expected_dep_time="00:04:18" expected_transp_time="00:01:41">
+                    <route>532 58</route>
+                </leg>
+                <act type="service" serviceId="68"/>
+                <leg expected_dep_time="00:06:30" expected_transp_time="00:01:40">
+                    <route>390 409</route>
+                </leg>
+                <act type="service" serviceId="69"/>
+                <leg expected_dep_time="00:08:42" expected_transp_time="00:00:38">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="59"/>
+                <leg expected_dep_time="00:09:51" expected_transp_time="00:05:15">
+                    <route>416 413 406 297</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_1">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:28">
+                    <route>239</route>
+                </leg>
+                <act type="service" serviceId="35"/>
+                <leg expected_dep_time="00:00:59" expected_transp_time="00:00:12">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="1"/>
+                <leg expected_dep_time="00:01:43" expected_transp_time="00:09:37">
+                    <route>238 188 191 223 222 251 589 597</route>
+                </leg>
+                <act type="service" serviceId="75"/>
+                <leg expected_dep_time="00:11:51" expected_transp_time="00:04:22">
+                    <route>590 252 221 224</route>
+                </leg>
+                <act type="service" serviceId="11"/>
+                <leg expected_dep_time="00:16:44" expected_transp_time="00:00:37">
+                    <route>187</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:01:56">
+                    <route>121 173 285 289</route>
+                </leg>
+                <act type="service" serviceId="9"/>
+                <leg expected_dep_time="00:02:27" expected_transp_time="00:00:13">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="14"/>
+                <leg expected_dep_time="00:03:12" expected_transp_time="00:01:08">
+                    <route>343 342</route>
+                </leg>
+                <act type="service" serviceId="6"/>
+                <leg expected_dep_time="00:04:51" expected_transp_time="00:02:02">
+                    <route>344 338 97 235 234 172 117</route>
+                </leg>
+                <act type="service" serviceId="16"/>
+                <leg expected_dep_time="00:07:25" expected_transp_time="00:00:54">
+                    <route>116 111</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:02:40">
+                    <route>121 173 285 289 292 497</route>
+                </leg>
+                <act type="service" serviceId="93"/>
+                <leg expected_dep_time="00:03:11" expected_transp_time="00:00:51">
+                    <route>502 247</route>
+                </leg>
+                <act type="service" serviceId="44"/>
+                <leg expected_dep_time="00:04:33" expected_transp_time="00:02:16">
+                    <route>488 248 511 514</route>
+                </leg>
+                <act type="service" serviceId="57"/>
+                <leg expected_dep_time="00:07:21" expected_transp_time="00:01:32">
+                    <route>512 501</route>
+                </leg>
+                <act type="service" serviceId="61"/>
+                <leg expected_dep_time="00:09:25" expected_transp_time="00:02:56">
+                    <route>508 155 161 163 283 282 123</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_5">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:01:17">
+                    <route>276 183</route>
+                </leg>
+                <act type="service" serviceId="86"/>
+                <leg expected_dep_time="00:01:48" expected_transp_time="00:00:20">
+                    <route>272</route>
+                </leg>
+                <act type="service" serviceId="2"/>
+                <leg expected_dep_time="00:02:40" expected_transp_time="00:01:17">
+                    <route>479 478 476 17 177</route>
+                </leg>
+                <act type="service" serviceId="12"/>
+                <leg expected_dep_time="00:04:28" expected_transp_time="00:00:48">
+                    <route>18 475 474</route>
+                </leg>
+                <act type="service" serviceId="49"/>
+                <leg expected_dep_time="00:05:47" expected_transp_time="00:00:54">
+                    <route>461 464 255 272</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:01:39">
+                    <route>121 173 285</route>
+                </leg>
+                <act type="service" serviceId="67"/>
+                <leg expected_dep_time="00:02:10" expected_transp_time="00:01:32">
+                    <route>292 497 500 494</route>
+                </leg>
+                <act type="service" serviceId="28"/>
+                <leg expected_dep_time="00:04:14" expected_transp_time="00:02:10">
+                    <route>491 493 499 498 291</route>
+                </leg>
+                <act type="service" serviceId="98"/>
+                <leg expected_dep_time="00:06:55" expected_transp_time="00:00:51">
+                    <route>158</route>
+                </leg>
+                <act type="service" serviceId="27"/>
+                <leg expected_dep_time="00:08:18" expected_transp_time="00:02:20">
+                    <route>161 163 283 282 123</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:06:15">
+                    <route>133 225 296 145 102 547 546 551 554 70 41 39 29 28</route>
+                </leg>
+                <act type="service" serviceId="48"/>
+                <leg expected_dep_time="00:06:46" expected_transp_time="00:00:16">
+                    <route>424</route>
+                </leg>
+                <act type="service" serviceId="99"/>
+                <leg expected_dep_time="00:07:34" expected_transp_time="00:02:10">
+                    <route>424 422 420 445</route>
+                </leg>
+                <act type="service" serviceId="70"/>
+                <leg expected_dep_time="00:10:15" expected_transp_time="00:02:07">
+                    <route>451 454</route>
+                </leg>
+                <act type="service" serviceId="97"/>
+                <leg expected_dep_time="00:12:54" expected_transp_time="00:04:16">
+                    <route>448 11 10 15 461 464 581 584</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:02:15">
+                    <route>141 227 78 75 74 555 561</route>
+                </leg>
+                <act type="service" serviceId="79"/>
+                <leg expected_dep_time="00:02:46" expected_transp_time="00:03:03">
+                    <route>558 551 554 70 43 47 52</route>
+                </leg>
+                <act type="service" serviceId="46"/>
+                <leg expected_dep_time="00:06:20" expected_transp_time="00:05:35">
+                    <route>305 308 310</route>
+                </leg>
+                <act type="service" serviceId="74"/>
+                <leg expected_dep_time="00:12:26" expected_transp_time="00:01:28">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="20"/>
+                <leg expected_dep_time="00:14:26" expected_transp_time="00:08:57">
+                    <route>309 307 306 45 44 69 553 552 545 548 101 146 295 226 136 81</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_5">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:02:05">
+                    <route>274 271 256 463 462 5 100</route>
+                </leg>
+                <act type="service" serviceId="10"/>
+                <leg expected_dep_time="00:02:36" expected_transp_time="00:00:34">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="78"/>
+                <leg expected_dep_time="00:03:42" expected_transp_time="00:01:10">
+                    <route>12</route>
+                </leg>
+                <act type="service" serviceId="37"/>
+                <leg expected_dep_time="00:05:23" expected_transp_time="00:00:47">
+                    <route>4 18</route>
+                </leg>
+                <act type="service" serviceId="89"/>
+                <leg expected_dep_time="00:06:41" expected_transp_time="00:00:49">
+                    <route>474 96</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:54">
+                    <route>123 112</route>
+                </leg>
+                <act type="service" serviceId="33"/>
+                <leg expected_dep_time="00:01:25" expected_transp_time="00:00:30">
+                    <route>171</route>
+                </leg>
+                <act type="service" serviceId="90"/>
+                <leg expected_dep_time="00:02:26" expected_transp_time="00:02:52">
+                    <route>236 98 337 336 497 503 502 247 487</route>
+                </leg>
+                <act type="service" serviceId="95"/>
+                <leg expected_dep_time="00:05:50" expected_transp_time="00:01:58">
+                    <route>483 491 493 496</route>
+                </leg>
+                <act type="service" serviceId="82"/>
+                <leg expected_dep_time="00:08:20" expected_transp_time="00:02:22">
+                    <route>291 290 286 174 126 111</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:24">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="26"/>
+                <leg expected_dep_time="00:00:55" expected_transp_time="00:00:25">
+                    <route>119</route>
+                </leg>
+                <act type="service" serviceId="5"/>
+                <leg expected_dep_time="00:01:51" expected_transp_time="00:00:46">
+                    <route>117 120 583</route>
+                </leg>
+                <act type="service" serviceId="81"/>
+                <leg expected_dep_time="00:03:09" expected_transp_time="00:00:24">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="72"/>
+                <leg expected_dep_time="00:04:04" expected_transp_time="00:00:00">
+                    <route></route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:02:13">
+                    <route>133 225 296 145 102 547</route>
+                </leg>
+                <act type="service" serviceId="85"/>
+                <leg expected_dep_time="00:02:44" expected_transp_time="00:02:16">
+                    <route>547 546 551 554 70</route>
+                </leg>
+                <act type="service" serviceId="30"/>
+                <leg expected_dep_time="00:05:31" expected_transp_time="00:03:37">
+                    <route>42 69 270</route>
+                </leg>
+                <act type="service" serviceId="7"/>
+                <leg expected_dep_time="00:09:40" expected_transp_time="00:01:41">
+                    <route>264 260 395</route>
+                </leg>
+                <act type="service" serviceId="47"/>
+                <leg expected_dep_time="00:11:52" expected_transp_time="00:04:05">
+                    <route>302 148 89 87 585 86 84 81</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_5">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:00:17">
+                    <route>276</route>
+                </leg>
+                <act type="service" serviceId="91"/>
+                <leg expected_dep_time="00:00:48" expected_transp_time="00:01:53">
+                    <route>459</route>
+                </leg>
+                <act type="service" serviceId="15"/>
+                <leg expected_dep_time="00:03:13" expected_transp_time="00:00:48">
+                    <route>196</route>
+                </leg>
+                <act type="service" serviceId="84"/>
+                <leg expected_dep_time="00:04:32" expected_transp_time="00:01:13">
+                    <route>246 238 188 190</route>
+                </leg>
+                <act type="service" serviceId="87"/>
+                <leg expected_dep_time="00:06:17" expected_transp_time="00:01:03">
+                    <route>472 23 230</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_5">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:02:59">
+                    <route>274 271 256 463 462 5 100 75 74 555 561</route>
+                </leg>
+                <act type="service" serviceId="64"/>
+                <leg expected_dep_time="00:03:30" expected_transp_time="00:03:00">
+                    <route>558 551 554 70 41 39</route>
+                </leg>
+                <act type="service" serviceId="39"/>
+                <leg expected_dep_time="00:07:01" expected_transp_time="00:02:39">
+                    <route>42 69 553 552 545</route>
+                </leg>
+                <act type="service" serviceId="31"/>
+                <leg expected_dep_time="00:10:12" expected_transp_time="00:02:53">
+                    <route>544 73 76 99 7 12</route>
+                </leg>
+                <act type="service" serviceId="96"/>
+                <leg expected_dep_time="00:13:36" expected_transp_time="00:01:06">
+                    <route>10 96</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_3">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:04:46">
+                    <route>133 225 296 145 102 547 546 551 554 70 43 47 52</route>
+                </leg>
+                <act type="service" serviceId="71"/>
+                <leg expected_dep_time="00:05:17" expected_transp_time="00:02:41">
+                    <route>32 28 425 424</route>
+                </leg>
+                <act type="service" serviceId="17"/>
+                <leg expected_dep_time="00:08:29" expected_transp_time="00:00:36">
+                    <route>440</route>
+                </leg>
+                <act type="service" serviceId="54"/>
+                <leg expected_dep_time="00:09:37" expected_transp_time="00:01:13">
+                    <route>426 311</route>
+                </leg>
+                <act type="service" serviceId="18"/>
+                <leg expected_dep_time="00:11:22" expected_transp_time="00:06:23">
+                    <route>27 30 40 42 69 553 552 545 548 101 146 295 226 136 81</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:03:37">
+                    <route>281 280 130 88 90 154 267</route>
+                </leg>
+                <act type="service" serviceId="94"/>
+                <leg expected_dep_time="00:04:08" expected_transp_time="00:04:12">
+                    <route>260 395 394 302</route>
+                </leg>
+                <act type="service" serviceId="0"/>
+                <leg expected_dep_time="00:08:51" expected_transp_time="00:01:57">
+                    <route>89 87 585 86 84 81 583 575 574</route>
+                </leg>
+                <act type="service" serviceId="92"/>
+                <leg expected_dep_time="00:11:20" expected_transp_time="00:01:07">
+                    <route>234 170 126</route>
+                </leg>
+                <act type="service" serviceId="42"/>
+                <leg expected_dep_time="00:12:59" expected_transp_time="00:00:14">
+                    <route></route>
+                </leg>
+                <act type="end"/>
+            </tour>
+            <tour vehicleId="PFAV_2">
+                <act type="start" end_time="00:00:00"/>
+                <leg expected_dep_time="00:00:00" expected_transp_time="00:06:42">
+                    <route>281 280 130 88 90 147 301 369 368 364 355 361</route>
+                </leg>
+                <act type="service" serviceId="88"/>
+                <leg expected_dep_time="00:07:13" expected_transp_time="00:01:25">
+                    <route>361 360</route>
+                </leg>
+                <act type="service" serviceId="3"/>
+                <leg expected_dep_time="00:09:09" expected_transp_time="00:02:25">
+                    <route>377 379 381 397</route>
+                </leg>
+                <act type="service" serviceId="52"/>
+                <leg expected_dep_time="00:12:06" expected_transp_time="00:01:06">
+                    <route></route>
+                </leg>
+                <act type="service" serviceId="65"/>
+                <leg expected_dep_time="00:13:43" expected_transp_time="00:02:52">
+                    <route>148 89 87 585 107 110</route>
+                </leg>
+                <act type="end"/>
+            </tour>
+        </plan>
+
+    </carrier>
+
+</carriers>

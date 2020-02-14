@@ -8,7 +8,7 @@ import org.matsim.core.router.util.TravelTimeUtils;
 import org.matsim.pfav.privateAV.FreightTourPlanning;
 import org.matsim.pfav.privateAV.PFAVUtils;
 
-public class RunTourPlanning {
+class RunTourPlanning {
 
 
 
