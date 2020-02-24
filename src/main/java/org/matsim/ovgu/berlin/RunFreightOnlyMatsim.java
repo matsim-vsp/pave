@@ -286,8 +286,6 @@ public class RunFreightOnlyMatsim {
             @Override
             public void install() {
                 install(new CarrierModule());
-//                bind(CarrierPlanStrategyManagerFactory.class).toInstance( null );
-//                bind(CarrierScoringFunctionFactory.class).toInstance(null );
             }
         });
 
@@ -295,97 +293,6 @@ public class RunFreightOnlyMatsim {
     }
 
 
-//	/**
-//	 * Run the MATSim simulation
-//	 * 
-//	 * @param scenario
-//	 * @param carriers
-//	 */
-//	private static void matsimRun(Scenario scenario, Carriers carriers) {
-//		final Controler controler = new Controler( scenario ) ;
-//
-//
-//		CarrierScoringFunctionFactory scoringFunctionFactory = createMyScoringFunction2(scenario);
-//		CarrierPlanStrategyManagerFactory planStrategyManagerFactory =  createMyStrategymanager(); //Benötigt, da listener kein "Null" als StrategyFactory mehr erlaubt, KT 17.04.2015
-//
-//
-//		CarrierModule listener = new CarrierModule(carriers, planStrategyManagerFactory, scoringFunctionFactory) ;
-//		controler.addOverridingModule(listener) ;
-//		controler.run();
-//	}
-//
-//
-//	//Benötigt, da listener kein "Null" als StrategyFactory mehr erlaubt, KT 17.04.2015
-//	//Da keine Strategy notwendig, hier zunächst eine "leere" Factory
-//	private static CarrierPlanStrategyManagerFactory createMyStrategymanager(){
-//		return new CarrierPlanStrategyManagerFactory() {
-//			@Override
-//			public GenericStrategyManager<CarrierPlan, Carrier> createStrategyManager() {
-//				return null;
-//			}
-//		};
-//	}
 
-
-//	/**
-//	 * TODO: Default CarrierScoringFunctionFactoryImpl in Freight contrib hinterlegen
-//	 */
-//	private static CarrierScoringFunctionFactoryImpl_KT createMyScoringFunction2 (final Scenario scenario) {
-//
-//		return new CarrierScoringFunctionFactoryImpl_KT(scenario, scenario.getConfig().controler().getOutputDirectory()) {
-//
-//			public ScoringFunction createScoringFunction(final Carrier carrier){
-//				SumScoringFunction sumSf = new SumScoringFunction() ;
-//
-//				VehicleFixCostScoring fixCost = new VehicleFixCostScoring(carrier);
-//				sumSf.addScoringFunction(fixCost);
-//
-//				LegScoring legScoring = new LegScoring(carrier);
-//				sumSf.addScoringFunction(legScoring);
-//
-//				//Score Activity w/o correction of waitingTime @ 1st Service. -> Waiting time before first service will be scored
-//				ActivityScoring actScoring = new ActivityScoring(carrier);
-//				sumSf.addScoringFunction(actScoring);
-//
-//				//Alternativ:
-//				//Score Activity with correction of waitingTime @ 1st Service. -> Ignore waiting time before first service 
-////				ActivityScoringWithCorrection actScoring = new ActivityScoringWithCorrection(carrier);
-////				sumSf.addScoringFunction(actScoring);
-//
-//				return sumSf;
-//			}
-//		};
-//	}
-	
-//	private static Leg createLeg(Scenario scenario, Id<Link> fromLinkId, Id<Link> toLinkId, double departureTime ){
-//		Leg leg = null;
-//		
-//		Module module = new org.matsim.core.controler.AbstractModule() {
-//			
-//			@Override
-//			public void install() {
-//				install ( new NewControlerModule() );
-//				install ( new ControlerDefaultCoreListenersModule() );
-//				install ( new ControlerDefaultsModule() );
-//				install ( new ScenarioByInstanceModule(scenario) );
-//			}
-//		};
-//		com.google.inject.Injector injector = Injector.createInjector(scenario.getConfig(), module);
-//		TripRouter tripRouter = injector.getInstance(TripRouter.class);
-//		
-//		Facility fromFacility = FacilitiesUtils.wrapLink(scenario.getNetwork().getLinks().get(fromLinkId));
-//		Facility toFacility = FacilitiesUtils.wrapLink(scenario.getNetwork().getLinks().get(toLinkId));
-//		
-//		List<? extends PlanElement> result = tripRouter.calcRoute(TransportMode.car, fromFacility, toFacility, departureTime, null);
-//		
-//		for (PlanElement pE : result) {
-//			if (pE instanceof Leg) {
-//				leg = (Leg) pE;
-//			}
-//		}
-//		
-//		return leg;
-//		
-//	}
 }
 
