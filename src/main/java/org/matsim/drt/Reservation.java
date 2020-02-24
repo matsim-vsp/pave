@@ -1,9 +1,7 @@
 package org.matsim.drt;
 
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Identifiable;
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.drt.schedule.DrtTask;
+import org.matsim.contrib.dvrp.schedule.Task;
 
 import java.util.PriorityQueue;
 
@@ -15,6 +13,6 @@ interface Reservation extends Identifiable {
 
     double getSubmissionTime();
 
-    PriorityQueue<DrtTask> getTasks();
+    PriorityQueue<Task> getTasks();
 
 }

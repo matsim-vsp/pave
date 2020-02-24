@@ -4,20 +4,20 @@ import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.optimizer.DefaultDrtOptimizer;
+import org.matsim.contrib.drt.schedule.DrtDriveTask;
 import org.matsim.contrib.drt.schedule.DrtStayTask;
-import org.matsim.contrib.drt.schedule.DrtTask;
 import org.matsim.contrib.drt.scheduler.DrtScheduleInquiry;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPaths;
-import org.matsim.contrib.dvrp.router.DvrpRoutingNetworkProvider;
 import org.matsim.contrib.dvrp.router.TimeAsTravelDisutility;
 import org.matsim.contrib.dvrp.schedule.*;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 import org.matsim.core.router.DijkstraFactory;
+import org.matsim.core.router.FastAStarEuclideanFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
@@ -44,7 +44,7 @@ class DefaultReservationOptimizer implements ReservationOptimizer {
 
     Random rnd;
 
-    DefaultReservationOptimizer(DefaultDrtOptimizer optimizer, DrtScheduleInquiry scheduleInquiry, @Named(DvrpRoutingNetworkProvider.DVRP_ROUTING) Network network, MobsimTimer timer) {
+    DefaultReservationOptimizer(DefaultDrtOptimizer optimizer, DrtScheduleInquiry scheduleInquiry, Network modalNetwork, MobsimTimer timer) {
         this.optimizer = optimizer;
         this.scheduleInquiry = scheduleInquiry;
         this.timer = timer;
@@ -56,8 +56,9 @@ class DefaultReservationOptimizer implements ReservationOptimizer {
         this.rnd = MatsimRandom.getLocalInstance();
 
         this.travelTime = new FreeSpeedTravelTime();
-        this.router = new DijkstraFactory().createPathCalculator(network, new TimeAsTravelDisutility(travelTime),
+        this.router = new FastAStarEuclideanFactory().createPathCalculator(modalNetwork, new TimeAsTravelDisutility(travelTime),
                 travelTime);
+
     }
 
      @Override
@@ -83,7 +84,8 @@ class DefaultReservationOptimizer implements ReservationOptimizer {
         Iterator<Reservation> it = this.reservedVehicles.keySet().iterator();
         while (it.hasNext()){
             Reservation reservation = it.next();
-            //makes vehicle available for drt optimizer again. TODO: regarding freight, this could be a problem when freight tour is not finished yet
+            //makes vehicle available for drt optimizer again.
+            //TODO: regarding freight, this could be a problem when freight tour is not finished yet
             if(timer.getTimeOfDay() >= reservation.getReservationValidityEndTime() || scheduleInquiry.isIdle(this.reservedVehicles.get(reservation))) it.remove();
             else break;
         }
@@ -146,10 +148,10 @@ class DefaultReservationOptimizer implements ReservationOptimizer {
         VrpPathWithTravelData pathToReservationStart = VrpPaths.calcAndCreatePath(stayTask.getLink(), Tasks.getBeginLink(reservation.getTasks().peek()), stayTask.getEndTime(), router,
                 travelTime);
 
-        Task previousTask = new DriveTaskImpl(pathToReservationStart);
+        Task previousTask = new DrtDriveTask(pathToReservationStart);
         schedule.addTask(previousTask);
 
-        for (DrtTask task : reservation.getTasks()) {
+        for (Task task : reservation.getTasks()) {
             double duration = task.getEndTime() - task.getBeginTime();
             task.setBeginTime(previousTask.getEndTime());
             task.setEndTime(previousTask.getEndTime() + duration);
@@ -157,7 +159,7 @@ class DefaultReservationOptimizer implements ReservationOptimizer {
             previousTask = task;
         }
 
-        schedule.addTask(new StayTaskImpl(previousTask.getEndTime(), vehicle.getServiceEndTime(), Tasks.getEndLink(previousTask)));
+        schedule.addTask(new DrtStayTask(previousTask.getEndTime(), vehicle.getServiceEndTime(), Tasks.getEndLink(previousTask)));
     }
 
 
