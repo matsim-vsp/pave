@@ -45,12 +45,6 @@
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim</artifactId>
 			<version>${matsim.version}</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>guava</artifactId>
-					<groupId>com.google.guava</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<!--MATSim examples. Not transitive -->
@@ -61,6 +55,8 @@
 			<!--(not in weekly release!)-->
 		</dependency>
 
+
+		<!-- contribs -->
 		<dependency>
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>freight</artifactId>
@@ -83,6 +79,28 @@
 					<artifactId>matsim-examples</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.matsim.contrib</groupId>
+			<artifactId>taxi</artifactId>
+			<version>${matsim.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.matsim.contrib</groupId>
+			<artifactId>dvrp</artifactId>
+			<version>${matsim.version}</version>
+			<type>pom</type>
+		</dependency>
+
+
+		<!-- berlin scenario-->
+		<dependency>
+			<groupId>com.github.matsim-vsp</groupId>
+			<artifactId>matsim-berlin</artifactId>
+			<!--            <version>5.3</version>-->
+			<version>5.4</version>
 		</dependency>
 
 		<dependency>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vehicleTypes>
+    <vehicleType id="PFAV">
+        <description>null</description>
+        <engineInformation fuelType="diesel" gasConsumption="0.015"/>
+        <capacity>4</capacity>
+        <costInformation fix="130.0" perMeter="1.0E-4" perSecond="0.001"/>
+    </vehicleType>
+</vehicleTypes>
+
