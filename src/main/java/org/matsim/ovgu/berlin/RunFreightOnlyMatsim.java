@@ -184,7 +184,7 @@ public class RunFreightOnlyMatsim {
 	private static CarrierService createService(Id<CarrierService> id, String linkId, Double startTimeWindowBegin) {
 		CarrierService service = CarrierService.Builder.newInstance(id, Id.createLinkId(linkId))
 				.setCapacityDemand(1)
-				.setServiceDuration(0)
+				.setServiceDuration(1) //Muss mindestens 1 Sekunde lang sein, da sonst TimeWindowEnforcement (basierend auf WithinDay-Replanning) nicht geht.
 				.setServiceStartTimeWindow(TimeWindow.newInstance( startTimeWindowBegin, 36.*3600))
 				.build();
 		return service;
