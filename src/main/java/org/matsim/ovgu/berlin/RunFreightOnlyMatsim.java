@@ -140,7 +140,7 @@ public class RunFreightOnlyMatsim {
 	private static void createAndaddCarriers(Network network, Carriers carriers) {
 
     	//create one carrier for each our
-    	for (int i = 0; i<1 ; i++) { //TODO  for debug only 1 our... set to 24 h later again.
+    	for (int i = 0; i<24 ; i++) {
     		Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
     		
     		createAndAddCarrierSerivces(carrier, i);
