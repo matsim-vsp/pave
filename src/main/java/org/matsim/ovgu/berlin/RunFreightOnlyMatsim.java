@@ -19,45 +19,32 @@
  */
 package org.matsim.ovgu.berlin;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.freight.Freight;
 import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.freight.carrier.Tour.Leg;
 import org.matsim.contrib.freight.controler.CarrierModule;
-import org.matsim.contrib.freight.controler.CarrierPlanStrategyManagerFactory;
-import org.matsim.contrib.freight.controler.CarrierScoringFunctionFactory;
+import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
+import org.matsim.contrib.freight.jsprit.NetworkRouter;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.consistency.VspConfigConsistencyCheckerImpl;
-import org.matsim.core.config.groups.ControlerConfigGroup.CompressionType;
 import org.matsim.core.config.groups.PlansConfigGroup;
-import org.matsim.core.config.groups.QSimConfigGroup.TrafficDynamics;
-import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
-import org.matsim.core.config.groups.VspExperimentalConfigGroup.VspDefaultsCheckingLevel;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.controler.ControlerUtils;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
-import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
-import org.matsim.core.controler.OutputDirectoryLogging;
-import org.matsim.core.replanning.GenericStrategyManager;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.scoring.ScoringFunction;
-import org.matsim.core.scoring.SumScoringFunction;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
-import org.osgeo.proj4j.UnsupportedParameterException;
 
 import javax.management.InvalidAttributeValueException;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -72,10 +59,6 @@ public class RunFreightOnlyMatsim {
 
 	private static final Logger log = Logger.getLogger(RunFreightOnlyMatsim.class);
 
-
-
-
-
 	public static void main(String[] args) throws IOException, InvalidAttributeValueException {
 
 		 for (String arg : args) {
@@ -85,8 +68,9 @@ public class RunFreightOnlyMatsim {
 	        if ( args.length==0 ) {
 	            String inputPath = "../input/"; 	//InputOrt, wo die NetworkChangeEvents liegen.
 	            args = new String[] {
-	                    inputPath + "networkChangeEvents.xml.gz",
-	                    "../Output/MyOutput"}  ;
+//	                    inputPath + "networkChangeEvents.xml.gz",
+	            		"",
+	                    "../OutputKMT/OVGU/DemoRun"}  ;
 	        }
 
 	        Config config = prepareConfig( args ) ;
@@ -119,7 +103,7 @@ public class RunFreightOnlyMatsim {
         config.plans().setActivityDurationInterpretation(PlansConfigGroup.ActivityDurationInterpretation.tryEndTimeThenDuration );
         //freight configstuff
         FreightConfigGroup freightConfigGroup = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
-        freightConfigGroup.setTravelTimeSliceWidth(1800);
+        freightConfigGroup.setTravelTimeSliceWidth(900);
         freightConfigGroup.setTimeWindowHandling(FreightConfigGroup.TimeWindowHandling.enforceBeginnings);
 
         return config;
@@ -130,29 +114,42 @@ public class RunFreightOnlyMatsim {
         
         Carriers carriers = FreightUtils.getOrCreateCarriers(scenario);
       
-        createAndaddCarriers(carriers);
+        createAndaddCarriers(scenario.getNetwork(), carriers);
          
     	createAndLoadVehicleType(scenario);
+    	
+    	routePlans(scenario); 
 
         return scenario;
     }
 
+	
 
-	
-	
-    private static void createAndaddCarriers(Carriers carriers) {
+	private static void routePlans(Scenario scenario) {		
+		Carriers carriers = FreightUtils.getOrCreateCarriers(scenario);
+		
+		for (Carrier carrier: carriers.getCarriers().values()) {
+			NetworkBasedTransportCosts.Builder tpcostsBuilder = NetworkBasedTransportCosts.Builder.newInstance(scenario.getNetwork(), carrier.getCarrierCapabilities().getVehicleTypes() );
+			tpcostsBuilder.setTimeSliceWidth(900);
+	        //assign netBasedCosts to RoutingProblem
+	        NetworkBasedTransportCosts netbasedTransportcosts = tpcostsBuilder.build();
+			NetworkRouter.routePlan(carrier.getSelectedPlan(), netbasedTransportcosts);
+		}	
+	}
+
+	private static void createAndaddCarriers(Network network, Carriers carriers) {
 
     	//create one carrier for each our
-    	for (int i = 0; i<24 ; i++) {
+    	for (int i = 0; i<1 ; i++) { //TODO  for debug only 1 our... set to 24 h later again.
     		Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
     		
     		createAndAddCarrierSerivces(carrier, i);
     		
-    		CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", "linkId", i);
+    		CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", "9826", i);
 			CarrierUtils.addCarrierVehicle(carrier, carrierVehicle );
     		
-    		CarrierPlan carrierPlan = createPlan(carrier, i);
-			carrier.addPlan(carrierPlan);
+    		CarrierPlan carrierPlan = createPlan(network, carrier, i);
+			carrier.setSelectedPlan(carrierPlan);
 		
     		carriers.addCarrier(carrier);
     	}
@@ -160,16 +157,35 @@ public class RunFreightOnlyMatsim {
 		
 	}
 
-	private static void createAndAddCarrierSerivces(Carrier carrier, int i) {
-		CarrierUtils.addService(carrier, createService(Id.create("id",CarrierService.class), "linkId", "time" ,i)); //time = planned time after leaving depot in sec.
-	}
+	private static void createAndAddCarrierSerivces(Carrier carrier, int hour) {
+		double tourStartInSec = hour * 3600. ;
+		CarrierUtils.addService(carrier, createService(Id.create("Service1",CarrierService.class), "10837", tourStartInSec + 1387));
+		CarrierUtils.addService(carrier, createService(Id.create("Service2",CarrierService.class), "37615", tourStartInSec + 1848));
+		CarrierUtils.addService(carrier, createService(Id.create("Service3",CarrierService.class), "122985", tourStartInSec + 2509));
+		CarrierUtils.addService(carrier, createService(Id.create("Service4",CarrierService.class), "67649", tourStartInSec + 2991));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service5",CarrierService.class), "linkId", tourStartInSec + 3523));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service6",CarrierService.class), "linkId", tourStartInSec + 4138));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service7",CarrierService.class), "linkId", tourStartInSec + 4775));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service8",CarrierService.class), "linkId", tourStartInSec + 5299));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service9",CarrierService.class), "linkId", tourStartInSec + 6072));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service10",CarrierService.class), "linkId", tourStartInSec + 6873));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service11",CarrierService.class), "linkId", tourStartInSec + 7277));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service12",CarrierService.class), "linkId", tourStartInSec + 7802));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service13",CarrierService.class), "linkId", tourStartInSec + 8401));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service14",CarrierService.class), "linkId", tourStartInSec + 8995));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service15",CarrierService.class), "linkId", tourStartInSec + 9755));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service16",CarrierService.class), "linkId", tourStartInSec + 10145));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service17",CarrierService.class), "linkId", tourStartInSec + 10898));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service18",CarrierService.class), "linkId", tourStartInSec + 11504));
+//		CarrierUtils.addService(carrier, createService(Id.create("Service19",CarrierService.class), "linkId", tourStartInSec + 12341));	
+		}
 
-	//Erstellt Service entsprechend der vorgebenen Werte. Ermittelt auch aitomatishc die korrekte "ServiceBegin"Zeit -> Fahrzeuge, die eher ankommen, sollen warten!
-	private static CarrierService createService(Id<CarrierService> id, String linkId, String time, int i) {
+	//Erstellt Service entsprechend der vorgebenen Werte. Ermittelt auch automatisch die korrekte "ServiceBeginn" Zeit -> Fahrzeuge, die eher ankommen, sollen warten!
+	private static CarrierService createService(Id<CarrierService> id, String linkId, Double startTimeWindowBegin) {
 		CarrierService service = CarrierService.Builder.newInstance(id, Id.createLinkId(linkId))
 				.setCapacityDemand(1)
 				.setServiceDuration(0)
-				.setServiceStartTimeWindow(TimeWindow.newInstance(i*3600 + Double.parseDouble(time), 36.*3600))
+				.setServiceStartTimeWindow(TimeWindow.newInstance( startTimeWindowBegin, 36.*3600))
 				.build();
 		return service;
 	}
@@ -186,24 +202,79 @@ public class RunFreightOnlyMatsim {
 		VehicleType vehType = VehicleUtils.createVehicleType(Id.create("vehType", VehicleType.class));
     	vehType.setMaximumVelocity(50.0); // m/s -> soll nicht limitiert sein
     	vehType.getCapacity().setOther(30);
+    	vehType.getCostInformation().setCostsPerMeter(0.00033);
+    	vehType.getCostInformation().setCostsPerSecond(0.0049);
+    	vehType.getCostInformation().setFixedCost(42.33);
     	
         FreightUtils.getCarrierVehicleTypes(scenario).getVehicleTypes().put(vehType.getId(), vehType);
         
         new CarrierVehicleTypeLoader( FreightUtils.getCarriers(scenario) ).loadVehicleTypes( FreightUtils.getCarrierVehicleTypes(scenario) );
 	}
 
-	private static CarrierPlan createPlan(Carrier carrier, int i) {
+	private static CarrierPlan createPlan(Network network, Carrier carrier, int i) {
 		
-		Collection<ScheduledTour> scheduledTours;
-		Tour tour = Tour.Builder.newInstance()
-				.scheduleStart(CarrierUtils.getCarrierVehicle(carrier, Id.createVehicleId("vehicle")).getLocation())
-				//TODO: Create Tour
-				.scheduleEnd(CarrierUtils.getCarrierVehicle(carrier, Id.createVehicleId("vehicle")).getLocation())
-				.build();
-		ScheduledTour scheduledTour = ScheduledTour.newInstance(tour, vehicle, i*3600); 
-		CarrierPlan plan = new CarrierPlan(carrier, scheduledTours)
-		// TODO Auto-generated method stub
-		return null;
+		CarrierVehicle vehicle = CarrierUtils.getCarrierVehicle(carrier, Id.createVehicleId("vehicle"));
+		Id<Link> depotLocation = vehicle.getLocation();
+		double depTime = i * 3600. ;
+		
+		Tour.Builder tourBuilder = Tour.Builder.newInstance();
+		
+		tourBuilder.scheduleStart(depotLocation, TimeWindow.newInstance(depTime, Double.MAX_VALUE));
+		tourBuilder.addLeg(new Leg());
+		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service1", CarrierService.class)));
+		tourBuilder.addLeg(new Leg());
+		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service2", CarrierService.class)));
+		tourBuilder.addLeg(new Leg());
+		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service3", CarrierService.class)));
+		tourBuilder.addLeg(new Leg());
+		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service4", CarrierService.class)));
+		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service5", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service6", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service7", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service8", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service9", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service10", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service11", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service12", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service13", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service14", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service15", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service16", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service17", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service18", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service19", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+//		tourBuilder.scheduleService(CarrierUtils.getService(carrier, Id.create("Service20", CarrierService.class)));
+//		tourBuilder.addLeg(new Leg());
+		tourBuilder.scheduleEnd(depotLocation);
+		
+		
+		Tour vehicleTour = tourBuilder.build();
+		
+		assert(vehicleTour.getTourElements().size() == carrier.getServices().size()+2); // Alle Services + Start und Ende
+		
+		ScheduledTour scheduledTour = ScheduledTour.newInstance(vehicleTour, vehicle, depTime); 
+		
+		Collection<ScheduledTour> scheduledTours = new ArrayList<>();
+		scheduledTours.add(scheduledTour);
+		CarrierPlan plan = new CarrierPlan(carrier, scheduledTours);
+		
+		return plan;
 	}
 
 	private static Controler prepareControler(Scenario scenario) {
@@ -284,6 +355,37 @@ public class RunFreightOnlyMatsim {
 //				return sumSf;
 //			}
 //		};
+//	}
+	
+//	private static Leg createLeg(Scenario scenario, Id<Link> fromLinkId, Id<Link> toLinkId, double departureTime ){
+//		Leg leg = null;
+//		
+//		Module module = new org.matsim.core.controler.AbstractModule() {
+//			
+//			@Override
+//			public void install() {
+//				install ( new NewControlerModule() );
+//				install ( new ControlerDefaultCoreListenersModule() );
+//				install ( new ControlerDefaultsModule() );
+//				install ( new ScenarioByInstanceModule(scenario) );
+//			}
+//		};
+//		com.google.inject.Injector injector = Injector.createInjector(scenario.getConfig(), module);
+//		TripRouter tripRouter = injector.getInstance(TripRouter.class);
+//		
+//		Facility fromFacility = FacilitiesUtils.wrapLink(scenario.getNetwork().getLinks().get(fromLinkId));
+//		Facility toFacility = FacilitiesUtils.wrapLink(scenario.getNetwork().getLinks().get(toLinkId));
+//		
+//		List<? extends PlanElement> result = tripRouter.calcRoute(TransportMode.car, fromFacility, toFacility, departureTime, null);
+//		
+//		for (PlanElement pE : result) {
+//			if (pE instanceof Leg) {
+//				leg = (Leg) pE;
+//			}
+//		}
+//		
+//		return leg;
+//		
 //	}
 }
 
