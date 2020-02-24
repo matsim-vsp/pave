@@ -7,6 +7,9 @@ import java.util.PriorityQueue;
 
 interface Reservation extends Identifiable {
 
+    //TODO: decide whether this is necessary
+//    Id<Person> getPersonId();
+
     double getReservationValidityEndTime();
 
     double getReservationValidityStartTime();

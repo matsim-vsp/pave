@@ -2,10 +2,12 @@ package org.matsim.drt;
 
 import com.google.inject.name.Named;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.events.PersonStuckEvent;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.optimizer.DefaultDrtOptimizer;
 import org.matsim.contrib.drt.schedule.DrtDriveTask;
 import org.matsim.contrib.drt.schedule.DrtStayTask;
+import org.matsim.contrib.drt.schedule.DrtTaskType;
 import org.matsim.contrib.drt.scheduler.DrtScheduleInquiry;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.optimizer.Request;
@@ -56,9 +58,10 @@ class DefaultReservationOptimizer implements ReservationOptimizer {
         this.rnd = MatsimRandom.getLocalInstance();
 
         this.travelTime = new FreeSpeedTravelTime();
+
+        //TODO
         this.router = new FastAStarEuclideanFactory().createPathCalculator(modalNetwork, new TimeAsTravelDisutility(travelTime),
                 travelTime);
-
     }
 
      @Override
@@ -81,41 +84,46 @@ class DefaultReservationOptimizer implements ReservationOptimizer {
 
     @Override
     public void notifyMobsimBeforeSimStep(MobsimBeforeSimStepEvent e) {
-        Iterator<Reservation> it = this.reservedVehicles.keySet().iterator();
-        while (it.hasNext()){
-            Reservation reservation = it.next();
-            //makes vehicle available for drt optimizer again.
-            //TODO: regarding freight, this could be a problem when freight tour is not finished yet
-            if(timer.getTimeOfDay() >= reservation.getReservationValidityEndTime() || scheduleInquiry.isIdle(this.reservedVehicles.get(reservation))) it.remove();
-            else break;
-        }
-
+        checkReservationValidities();
         optimizer.notifyMobsimBeforeSimStep(e);
+        handleStoredReservations();
 
-        it = this.storedReservations.iterator();
-        while(it.hasNext()){
-            Reservation reservation = it.next();
+        Iterator<Reservation> freshReservationsIterator = this.freshSubmittedReservations.iterator();
+        while(freshReservationsIterator.hasNext()){
+            Reservation reservation = freshReservationsIterator.next();
+            if(! tryInsertingReservation(reservation)) this.storedReservations.add(reservation);
+            freshReservationsIterator.remove();
+        }
+    }
+
+    void handleStoredReservations() {
+        Iterator<Reservation> storedReservationsIterator = this.storedReservations.iterator();
+        while(storedReservationsIterator.hasNext()){
+            Reservation reservation = storedReservationsIterator.next();
             if(timer.getTimeOfDay() > reservation.getReservationValidityStartTime()){
                 log.warn("Reservation " + reservation + " could not be handled before reservation start time = " + reservation.getReservationValidityStartTime() +". It is rejected and deleted");
                 //TODO throw RejectedEvent
-                //TODO agent stuck???
-                it.remove();
+                //TODO agent stuck??? => rather let it open a conventional request
+                storedReservationsIterator.remove();
             } else {
-                if(tryInsertingReservation(reservation)) it.remove();
+                if(tryInsertingReservation(reservation)) storedReservationsIterator.remove();
             }
         }
+    }
 
-        it = this.freshSubmittedReservations.iterator();
-        while(it.hasNext()){
-            Reservation reservation = it.next();
-            if(! tryInsertingReservation(reservation)) this.storedReservations.add(reservation);
-            it.remove();
+    void checkReservationValidities() {
+        Iterator<Reservation> reservedVehiclesIterator = this.reservedVehicles.keySet().iterator();
+        while (reservedVehiclesIterator.hasNext()){
+            Reservation reservation = reservedVehiclesIterator.next();
+            //makes vehicle available for drt optimizer again.
+            //TODO: regarding freight, this could be a problem when freight tour is not finished yet
+            if(timer.getTimeOfDay() >= reservation.getReservationValidityEndTime() || scheduleInquiry.isIdle(this.reservedVehicles.get(reservation))) reservedVehiclesIterator.remove();
+            else break;
         }
     }
 
     boolean tryInsertingReservation(Reservation reservation){
         if(this.idleVehicles.isEmpty()){
-            if(this.storedReservations.contains(reservation)) this.storedReservations.add(reservation);
             return false;
         } else{
             //TODO: find suitable idle vehicle instead of random

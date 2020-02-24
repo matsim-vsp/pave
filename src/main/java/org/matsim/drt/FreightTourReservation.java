@@ -24,7 +24,6 @@ class FreightTourReservation implements Reservation {
         this.reservationValidityStartTime = freightTour.getTour().getStart().getExpectedArrival();
         this.submissionTime = submissionTime;
         this.tasks = convertFreightTourToDvrpTasks(freightTour);
-
     }
 
     private PriorityQueue<Task> convertFreightTourToDvrpTasks(ScheduledTour freightTour) {
