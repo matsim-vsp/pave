@@ -9,34 +9,34 @@ import org.matsim.core.config.Config;
 
 import javax.inject.Inject;
 
- class ReservationVehicleDataEntryFactory  implements VehicleData.EntryFactory {
+ class BlockingVehicleDataEntryFactory implements VehicleData.EntryFactory {
 
     private final VehicleDataEntryFactoryImpl delegate;
-    ReservationOptimizer reservationOptimizer;
+    BlockingOptimizer blockingOptimizer;
 
-    ReservationVehicleDataEntryFactory(DrtConfigGroup drtCfg, ReservationOptimizer optimizer) {
+    BlockingVehicleDataEntryFactory(DrtConfigGroup drtCfg, BlockingOptimizer optimizer) {
         this.delegate = new VehicleDataEntryFactoryImpl(drtCfg);
-        this.reservationOptimizer = optimizer;
+        this.blockingOptimizer = optimizer;
     }
 
     @Override
     public VehicleData.Entry create(DvrpVehicle vehicle, double currentTime) {
-        if(! reservationOptimizer.isVehicleReserved(vehicle)){
+        if(! blockingOptimizer.isVehicleBlocked(vehicle)){
             return delegate.create(vehicle, currentTime);
         }
         return null;
     }
 
-    static class ReservationVehicleDataEntryFactoryProvider implements Provider<ReservationVehicleDataEntryFactory> {
+    static class ReservationVehicleDataEntryFactoryProvider implements Provider<BlockingVehicleDataEntryFactory> {
         @Inject
         private Config config;
 
         @Inject
-        ReservationOptimizer optimizer;
+        BlockingOptimizer optimizer;
 
         @Override
-        public ReservationVehicleDataEntryFactory get() {
-            return new ReservationVehicleDataEntryFactory(DrtConfigGroup.getSingleModeDrtConfig(config), optimizer);
+        public BlockingVehicleDataEntryFactory get() {
+            return new BlockingVehicleDataEntryFactory(DrtConfigGroup.getSingleModeDrtConfig(config), optimizer);
         }
     }
 }

@@ -22,9 +22,9 @@ import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
 
 import java.util.*;
 
-class DefaultReservationOptimizer implements ReservationOptimizer {
+class DefaultBlockingOptimizer implements BlockingOptimizer {
 
-    Logger log = Logger.getLogger(DefaultReservationOptimizer.class);
+    Logger log = Logger.getLogger(DefaultBlockingOptimizer.class);
 
     private final DefaultDrtOptimizer optimizer;
     private final DrtScheduleInquiry scheduleInquiry;
@@ -42,7 +42,7 @@ class DefaultReservationOptimizer implements ReservationOptimizer {
 
     Random rnd;
 
-    DefaultReservationOptimizer(DefaultDrtOptimizer optimizer, DrtScheduleInquiry scheduleInquiry, Network modalNetwork, MobsimTimer timer) {
+    DefaultBlockingOptimizer(DefaultDrtOptimizer optimizer, DrtScheduleInquiry scheduleInquiry, Network modalNetwork, MobsimTimer timer) {
         this.optimizer = optimizer;
         this.scheduleInquiry = scheduleInquiry;
         this.timer = timer;
@@ -132,12 +132,12 @@ class DefaultReservationOptimizer implements ReservationOptimizer {
 
 
     @Override
-    public void reservationSubmitted(DrtBlocking drtBlocking) {
+    public void blockingRequestSubmitted(DrtBlocking drtBlocking) {
         freshSubmittedDrtBlockings.add(drtBlocking);
     }
 
     @Override
-    public boolean isVehicleReserved(DvrpVehicle vehicle) {
+    public boolean isVehicleBlocked(DvrpVehicle vehicle) {
         return this.reservedVehicles.values().contains(vehicle);
     }
 
