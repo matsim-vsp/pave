@@ -116,8 +116,8 @@ class DefaultReservationOptimizer implements ReservationOptimizer {
         while (reservedVehiclesIterator.hasNext()){
             Reservation reservation = reservedVehiclesIterator.next();
             //makes vehicle available for drt optimizer again.
-            //TODO: regarding freight, this could be a problem when freight tour is not finished yet
-            if(timer.getTimeOfDay() >= reservation.getReservationValidityEndTime() || scheduleInquiry.isIdle(this.reservedVehicles.get(reservation))) reservedVehiclesIterator.remove();
+            //at the moment, freight tours = reservation.getTasks() can not be interrupted. This means, we need to wait for the vehicle to complete ALL reservation tasks before unreserving
+            if(timer.getTimeOfDay() >= reservation.getReservationValidityEndTime() && scheduleInquiry.isIdle(this.reservedVehicles.get(reservation))) reservedVehiclesIterator.remove();
             else break;
         }
     }
