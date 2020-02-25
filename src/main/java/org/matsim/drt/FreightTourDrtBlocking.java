@@ -7,16 +7,16 @@ import org.matsim.contrib.freight.carrier.Tour;
 
 import java.util.PriorityQueue;
 
-class FreightTourReservation implements Reservation {
+class FreightTourDrtBlocking implements DrtBlocking {
 
-    private final Id<Reservation> id;
+    private final Id<DrtBlocking> id;
     private final double reservationValidityEndTime;
     private final double reservationValidityStartTime;
     private final double submissionTime;
 
     private PriorityQueue<Task> tasks;
 
-    FreightTourReservation(final Id<Reservation> id, final ScheduledTour freightTour, final double submissionTime) {
+    FreightTourDrtBlocking(final Id<DrtBlocking> id, final ScheduledTour freightTour, final double submissionTime) {
         this.id = id;
         Tour.Leg lastLeg = ((Tour.Leg) freightTour.getTour().getTourElements().get(freightTour.getTour().getTourElements().size() - 1));
         //TODO add a buffer for start and end time?
@@ -51,7 +51,7 @@ class FreightTourReservation implements Reservation {
     }
 
     @Override
-    public Id<Reservation> getId() {
+    public Id<DrtBlocking> getId() {
         return id;
     }
 

@@ -7,9 +7,9 @@ interface ReservationOptimizer extends DrtOptimizer {
 
     /**
      * this method is called every time a reservation request is submitted so that the ReservationOptimizer is notified of it
-     * @param reservation
+     * @param drtBlocking
      */
-    void reservationSubmitted(Reservation reservation);
+    void reservationSubmitted(DrtBlocking drtBlocking);
 
     boolean isVehicleReserved(DvrpVehicle vehicle);
 

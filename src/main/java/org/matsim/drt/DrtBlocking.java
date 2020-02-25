@@ -5,7 +5,7 @@ import org.matsim.contrib.dvrp.schedule.Task;
 
 import java.util.PriorityQueue;
 
-interface Reservation extends Identifiable {
+interface DrtBlocking extends Identifiable {
 
     //TODO: decide whether this is necessary
 //    Id<Person> getPersonId();
