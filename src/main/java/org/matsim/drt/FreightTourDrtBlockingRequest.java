@@ -1,27 +1,28 @@
 package org.matsim.drt;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.freight.carrier.ScheduledTour;
 import org.matsim.contrib.freight.carrier.Tour;
 
 import java.util.PriorityQueue;
 
-class FreightTourDrtBlocking implements DrtBlocking {
+class FreightTourDrtBlockingRequest implements DrtBlockingRequest {
 
-    private final Id<DrtBlocking> id;
-    private final double reservationValidityEndTime;
-    private final double reservationValidityStartTime;
+    private final Id<Request> id;
+    private final double endTime;
+    private final double startTime;
     private final double submissionTime;
 
     private PriorityQueue<Task> tasks;
 
-    FreightTourDrtBlocking(final Id<DrtBlocking> id, final ScheduledTour freightTour, final double submissionTime) {
+    FreightTourDrtBlockingRequest(final Id<Request> id, final ScheduledTour freightTour, final double submissionTime) {
         this.id = id;
         Tour.Leg lastLeg = ((Tour.Leg) freightTour.getTour().getTourElements().get(freightTour.getTour().getTourElements().size() - 1));
         //TODO add a buffer for start and end time?
-        this.reservationValidityEndTime = lastLeg.getExpectedDepartureTime() + lastLeg.getExpectedTransportTime();
-        this.reservationValidityStartTime = freightTour.getTour().getStart().getExpectedArrival();
+        this.endTime = lastLeg.getExpectedDepartureTime() + lastLeg.getExpectedTransportTime();
+        this.startTime = freightTour.getTour().getStart().getExpectedArrival();
         this.submissionTime = submissionTime;
         this.tasks = convertFreightTourToDvrpTasks(freightTour);
     }
@@ -31,13 +32,13 @@ class FreightTourDrtBlocking implements DrtBlocking {
     }
 
     @Override
-    public double getReservationValidityEndTime() {
-        return this.reservationValidityEndTime;
+    public double getEndTime() {
+        return this.endTime;
     }
 
     @Override
-    public double getReservationValidityStartTime() {
-        return this.reservationValidityStartTime;
+    public double getStartTime() {
+        return this.startTime;
     }
 
     @Override
@@ -51,7 +52,7 @@ class FreightTourDrtBlocking implements DrtBlocking {
     }
 
     @Override
-    public Id<DrtBlocking> getId() {
+    public Id<Request> getId() {
         return id;
     }
 

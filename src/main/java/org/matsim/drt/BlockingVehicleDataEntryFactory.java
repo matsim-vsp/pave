@@ -12,16 +12,16 @@ import javax.inject.Inject;
  class BlockingVehicleDataEntryFactory implements VehicleData.EntryFactory {
 
     private final VehicleDataEntryFactoryImpl delegate;
-    BlockingOptimizer blockingOptimizer;
+    DrtBlockingManager blockingManager;
 
-    BlockingVehicleDataEntryFactory(DrtConfigGroup drtCfg, BlockingOptimizer optimizer) {
+    BlockingVehicleDataEntryFactory(DrtConfigGroup drtCfg, DrtBlockingManager blockingManager) {
         this.delegate = new VehicleDataEntryFactoryImpl(drtCfg);
-        this.blockingOptimizer = optimizer;
+        this.blockingManager = blockingManager;
     }
 
     @Override
     public VehicleData.Entry create(DvrpVehicle vehicle, double currentTime) {
-        if(! blockingOptimizer.isVehicleBlocked(vehicle)){
+        if(! blockingManager.isVehicleBlocked(vehicle, currentTime)){
             return delegate.create(vehicle, currentTime);
         }
         return null;
@@ -32,11 +32,11 @@ import javax.inject.Inject;
         private Config config;
 
         @Inject
-        BlockingOptimizer optimizer;
+        DrtBlockingManager blockingManager;
 
         @Override
         public BlockingVehicleDataEntryFactory get() {
-            return new BlockingVehicleDataEntryFactory(DrtConfigGroup.getSingleModeDrtConfig(config), optimizer);
+            return new BlockingVehicleDataEntryFactory(DrtConfigGroup.getSingleModeDrtConfig(config), blockingManager);
         }
     }
 }
