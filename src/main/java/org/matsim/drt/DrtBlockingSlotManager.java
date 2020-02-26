@@ -36,7 +36,7 @@ class DrtBlockingSlotManager implements DrtBlockingManager {
     private final Config config;
 
 
-    public DrtBlockingSlotManager(Config config, int[] maximumNumberOfBlockings) {
+    DrtBlockingSlotManager(Config config, int[] maximumNumberOfBlockings) {
         if(maximumNumberOfBlockings.length > config.qsim().getEndTime() / (60*5) ){
             //TODO be a bit more expressive here...
             throw new RuntimeException("Please do not define slots for DrtBlocking management that are shorter than 5 minutes.. ");

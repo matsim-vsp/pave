@@ -20,6 +20,7 @@
 
 package org.matsim.drt;
 
+import com.google.inject.Inject;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.optimizer.DefaultDrtOptimizer;
 import org.matsim.contrib.drt.schedule.DrtDriveTask;
@@ -49,7 +50,9 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 
     private static final Logger log = Logger.getLogger(BlockingOptimizer.class);
 
+
     private final DefaultDrtOptimizer optimizer;
+
     private final DrtScheduleInquiry scheduleInquiry;
     private final DrtBlockingManager blockingManager;
     private final EventsManager eventsManager;
@@ -96,6 +99,9 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 
     @Override
     public void nextTask(DvrpVehicle vehicle) {
+
+        //TODO here we could run into a problem with the scheduleUpdater if tasks of type other than DrtTaskType are in the schedule..
+        //we probably have to override it
         optimizer.nextTask(vehicle);
 
         //TODO check for all blocked vehicles if it is a service task and whether service time window is met. otherwise update the schedule.
@@ -121,35 +127,17 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
         while(blockingRequestsIterator.hasNext()){
             DrtBlockingRequest drtBlockingRequest = blockingRequestsIterator.next();
 
-            if(drtBlockingRequest.getStartTime() < timer.getTimeOfDay()){
+            if(drtBlockingRequest.getStartTime() < timer.getTimeOfDay() /* + 1 TODO ???*/){
                 log.warn("drt blocking request " + drtBlockingRequest + " could not be assigned in time. It is denied.");
 //                eventsManager.processEvent(new BlockingRequestDeniedEvent()); //TODO implement BlockingRequestDeniedEvent
                 blockingRequestsIterator.remove();
+                //TODO: what to do with the unassigned blocking tasks (=freight tour) ? ReSubmit? RePlan?
             } else{
                 if(!this.idleVehicles.isEmpty()){
 
-                    //TODO dispatch a suitbale vehicle instead of any random one..
+                    //TODO dispatch a suitable vehicle instead of any random one..
                     DvrpVehicle vehicle = this.idleVehicles.get(rnd.nextInt(this.idleVehicles.size()));
                     if(blockingManager.blockVehicleIfPossible(vehicle, drtBlockingRequest.getStartTime(), drtBlockingRequest.getEndTime())){
-
-                        /* i do not like that we have to schedule (precomputed and converted) tasks that are contained in the DrtBlockingRequest here...
-                         *  i think it would be more elegant if the blocking customer just regularly opens request and tasks for the vehicle are scheduled
-                         *  trip per trip, so business as usual, with the exception that only the blocked vehicle can be assigned.
-                         *  But that would mean that we need an own implementation of UnplannedRequestInserter because the VehicleData needs to be reduced to
-                         *  the blocked vehicle and that is something which Michal apparently wants to avoid...
-                         *  That also leads to the artifact, that we send the vehicle around with no passenger agent. So that actually matches the automation business cases,
-                         *  however it prevents us from scoring the 'customer' (e.g. freight) agent and it has the consequence that either
-                         *  a) all blocking requests must be met eventually OR
-                         *  b) some of the 'tours' might not be performed by the end of the day.
-                         *  If the infrastructure would allow the blocking request customer to conventionally order a drt vehicle, he/she would also do this
-                         *  even if the blocking was denied...
-                         *
-                         *  So maybe, we have to find a compromise and split blocking requests apart from passenger requests, but anyways have a custom implementation
-                         *  of the UnplannedRequestInserter so that it checks whether the customer has blocked a vehicle (-> only this can be assigned) or not (all non-blocked vehicles can be assigned)
-                         *
-                         *  and another point: if we would have the standard freight agents: we could use the standard infrastructure for enforcing service/shipment time windows and would not
-                         *  have to do this ourselves for the vehicle tasks...
-                         */
 
                         this.idleVehicles.remove(vehicle);
                         scheduleTasksForBlockedVehicle(drtBlockingRequest, vehicle);

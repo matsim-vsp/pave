@@ -1,20 +1,48 @@
 package org.matsim.drt;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Identifiable;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.schedule.Task;
 
 import java.util.PriorityQueue;
 
-interface DrtBlockingRequest extends Request {
+class DrtBlockingRequest implements Request {
 
-    //TODO: decide whether this is necessary. If yes implement HasPersonId interface
-//    Id<Person> getPersonId();
+    private final Id<Request> id;
+    private final double endTime;
+    private final double startTime;
+    private final double submissionTime;
 
-    double getEndTime();
+    private PriorityQueue<Task> tasks;
 
-    double getStartTime();
+    DrtBlockingRequest(final Id<Request> id, final double submissionTime, final double startTime, final double endTime, PriorityQueue<Task> dvrpVehicleTasks) {
+        this.id = id;
+        this.submissionTime = submissionTime;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.tasks = dvrpVehicleTasks;
+    }
 
-    PriorityQueue<Task> getTasks();
+    @Override
+    public Id<Request> getId() {
+        return id;
+    }
 
+    @Override
+    public double getSubmissionTime() {
+        return this.submissionTime;
+    }
+
+    public double getEndTime() {
+        return this.endTime;
+    }
+
+    public double getStartTime() {
+        return this.startTime;
+    }
+
+    public PriorityQueue<Task> getTasks() {
+        return this.tasks;
+    }
 }
