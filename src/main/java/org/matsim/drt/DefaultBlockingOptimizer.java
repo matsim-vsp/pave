@@ -20,7 +20,6 @@
 
 package org.matsim.drt;
 
-import com.google.inject.Inject;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.optimizer.DefaultDrtOptimizer;
 import org.matsim.contrib.drt.schedule.DrtDriveTask;
@@ -67,14 +66,13 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 
     private PriorityQueue<DrtBlockingRequest> blockingRequests;
 
-
-    DefaultBlockingOptimizer(DefaultDrtOptimizer optimizer, DrtScheduleInquiry scheduleInquiry, DrtBlockingManager blockingManager, EventsManager eventsManager,
-                             Network modalNetwork, MobsimTimer timer) {
+    DefaultBlockingOptimizer(DefaultDrtOptimizer optimizer, DrtScheduleInquiry scheduleInquiry, DrtBlockingManager blockingManager,
+                             EventsManager eventsManager, Network modalNetwork, MobsimTimer timer) {
         this.optimizer = optimizer;
         this.scheduleInquiry = scheduleInquiry;
         this.blockingManager = blockingManager;
         this.eventsManager = eventsManager;
-        
+
         this.timer = timer;
         this.travelTime = new FreeSpeedTravelTime(); //TODO USE UPDATED TRAVEL TIMES..
         this.rnd = MatsimRandom.getLocalInstance();
@@ -100,11 +98,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
     @Override
     public void nextTask(DvrpVehicle vehicle) {
 
-        //TODO here we could run into a problem with the scheduleUpdater if tasks of type other than DrtTaskType are in the schedule..
-        //we probably have to override it
         optimizer.nextTask(vehicle);
-
-        //TODO check for all blocked vehicles if it is a service task and whether service time window is met. otherwise update the schedule.
 
         if(scheduleInquiry.isIdle(vehicle)){
             this.idleVehicles.add(vehicle);

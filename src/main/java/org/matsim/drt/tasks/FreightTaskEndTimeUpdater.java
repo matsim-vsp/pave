@@ -20,11 +20,24 @@
 
 package org.matsim.drt.tasks;
 
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.schedule.StayTask;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
+import org.matsim.contrib.drt.schedule.DrtStayTaskEndTimeUpdater;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import org.matsim.contrib.dvrp.schedule.Task;
 
-public class FreightWaitTask extends StayTask {
-    public FreightWaitTask(double beginTime, double endTime, Link link) {
-        super(FreightTaskType.WAIT, beginTime, endTime, link);
+public class FreightTaskEndTimeUpdater extends DrtStayTaskEndTimeUpdater {
+
+    public FreightTaskEndTimeUpdater(DrtConfigGroup drtConfigGroup) {
+        super(drtConfigGroup);
+    }
+
+    @Override
+    public double calcNewEndTime(DvrpVehicle vehicle, Task task, double newBeginTime) {
+        if(task.getTaskType() instanceof FreightTaskType){
+            double duration = task.getEndTime() - task.getBeginTime();
+            return newBeginTime + duration;
+        } else {
+            return super.calcNewEndTime(vehicle, task, newBeginTime);
+        }
     }
 }

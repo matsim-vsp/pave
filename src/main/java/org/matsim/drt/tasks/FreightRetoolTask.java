@@ -27,7 +27,7 @@ import org.matsim.contrib.dvrp.schedule.StayTask;
 public class FreightRetoolTask extends StayTask {
 
     public FreightRetoolTask(double beginTime, double endTime, Link link) {
-        super(FreightTaskType.STAY, beginTime, endTime, link);
+        super(FreightTaskType.RETOOL, beginTime, endTime, link);
     }
 
 

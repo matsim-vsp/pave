@@ -23,9 +23,8 @@ package org.matsim.drt.tasks;
 import org.matsim.contrib.dvrp.schedule.Task;
 
 public enum FreightTaskType implements Task.TaskType {
-    WAIT,
+    RETOOL,     //equipping the vehicle
     DELIVERY,   //unload the vehicle to a certain extent
     PICKUP,     //load the vehicle to a certain extent
-    STAY,       //retooling, ..
     DRIVE       //empty or loaded
 }

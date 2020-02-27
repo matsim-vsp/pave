@@ -25,6 +25,7 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelDataImpl;
@@ -51,20 +52,22 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
     private static double RETOOL_DURATION = 15*60;
     private static final double SUBMISSION_LOOK_AHEAD = 30*60;
 
+    private final String mode;
     private final Network network;
     private final TravelTime travelTime;
 
-    public FreightBlockingRequestCreator(Network network, TravelTime travelTime) {
+    public FreightBlockingRequestCreator(Network network, TravelTime travelTime, DrtConfigGroup drtConfigGroup) {
         this.network = network;
         this.travelTime = travelTime;
+        this.mode = drtConfigGroup.getMode();
     }
-
+    
     @Override
     public Set<DrtBlockingRequest> createRequestsForIteration(Scenario scenario) {
         Set<DrtBlockingRequest> requests = new HashSet<>();
 
         FreightUtils.getCarriers(scenario).getCarriers().values().forEach(carrier -> {
-            if(CarrierUtils.getCarrierMode(carrier).equals(TransportMode.drt)){
+            if(CarrierUtils.getCarrierMode(carrier).equals(mode)){
                 carrier.getSelectedPlan().getScheduledTours().forEach(tour -> {
                     requests.add(createRequest(tour));
                 });
