@@ -22,27 +22,37 @@ package org.matsim.drt;
 
 import com.google.inject.Inject;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.drt.optimizer.DrtOptimizer;
 import org.matsim.contrib.dvrp.optimizer.Request;
-import org.matsim.core.controler.events.BeforeMobsimEvent;
-import org.matsim.core.controler.listener.BeforeMobsimListener;
 import org.matsim.core.mobsim.framework.events.MobsimAfterSimStepEvent;
+import org.matsim.core.mobsim.framework.events.MobsimInitializedEvent;
 import org.matsim.core.mobsim.framework.listeners.MobsimAfterSimStepListener;
+import org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
-class BlockingRequestEngine implements BeforeMobsimListener, MobsimAfterSimStepListener {
+class BlockingRequestEngine implements MobsimInitializedListener, MobsimAfterSimStepListener {
 
-    @Inject
+    private Scenario scenario;
     private BlockingOptimizer optimizer;
-    @Inject
     private BlockingRequestCreator blockingRequestCreator;
+
+    BlockingRequestEngine(Scenario scenario, DrtOptimizer optimizer, BlockingRequestCreator blockingRequestCreator) {
+        this.scenario = scenario;
+
+        //TODO fix this!!
+        if(! (optimizer instanceof BlockingOptimizer) ){
+            throw new IllegalArgumentException();
+        }
+        this.optimizer = (BlockingOptimizer) optimizer;
+        this.blockingRequestCreator = blockingRequestCreator;
+    }
 
     private final PriorityQueue<DrtBlockingRequest> requests = new PriorityQueue<>(Comparator.comparing(Request::getSubmissionTime));
 
     @Override
-    public void notifyBeforeMobsim(BeforeMobsimEvent event) {
-        Scenario scenario = event.getServices().getScenario();
+    public void notifyMobsimInitialized(MobsimInitializedEvent event) {
         this.requests.clear();
         this.requests.addAll(blockingRequestCreator.createRequestsForIteration(scenario));
     }
@@ -50,7 +60,7 @@ class BlockingRequestEngine implements BeforeMobsimListener, MobsimAfterSimStepL
     @Override
     public void notifyMobsimAfterSimStep(MobsimAfterSimStepEvent e) {
         while (isReadyForSubmission(requests.peek(), e.getSimulationTime())) {
-            optimizer.requestSubmitted(requests.poll());
+            optimizer.blockingRequestSubmitted(requests.poll());
         }
     }
 
