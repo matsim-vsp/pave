@@ -21,18 +21,18 @@
 package org.matsim.drt.tasks;
 
 import org.matsim.contrib.drt.run.DrtConfigGroup;
-import org.matsim.contrib.drt.schedule.DrtStayTaskEndTimeUpdater;
+import org.matsim.contrib.drt.schedule.DrtStayTaskEndTimeCalculator;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
-import org.matsim.contrib.dvrp.schedule.Task;
+import org.matsim.contrib.dvrp.schedule.StayTask;
 
-public class FreightTaskEndTimeUpdater extends DrtStayTaskEndTimeUpdater {
+public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
 
-    public FreightTaskEndTimeUpdater(DrtConfigGroup drtConfigGroup) {
+    public FreightTaskEndTimeCalculator(DrtConfigGroup drtConfigGroup) {
         super(drtConfigGroup);
     }
 
     @Override
-    public double calcNewEndTime(DvrpVehicle vehicle, Task task, double newBeginTime) {
+    public double calcNewEndTime(DvrpVehicle vehicle, StayTask task, double newBeginTime) {
         if(task.getTaskType() instanceof FreightTaskType){
             double duration = task.getEndTime() - task.getBeginTime();
             return newBeginTime + duration;
