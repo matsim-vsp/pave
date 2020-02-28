@@ -153,7 +153,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
             }
             stayTask.setEndTime(timer.getTimeOfDay()); // finish STAY
 
-            VrpPathWithTravelData pathToReservationStart = VrpPaths.calcAndCreatePath(stayTask.getLink(), Tasks.getBeginLink(drtBlockingRequest.getTasks().peek()), stayTask.getEndTime(), router,
+            VrpPathWithTravelData pathToReservationStart = VrpPaths.calcAndCreatePath(stayTask.getLink(), Tasks.getBeginLink(drtBlockingRequest.getTasks().get(0)), stayTask.getEndTime(), router,
                     travelTime);
 
             Task previousTask = new DrtDriveTask(pathToReservationStart);

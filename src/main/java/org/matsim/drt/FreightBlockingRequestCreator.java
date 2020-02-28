@@ -36,6 +36,7 @@ import org.matsim.contrib.freight.carrier.ScheduledTour;
 import org.matsim.contrib.freight.carrier.Tour;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
+import org.matsim.core.config.Config;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.drt.tasks.FreightDeliveryTask;
@@ -55,11 +56,13 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
     private final String mode;
     private final Network network;
     private final TravelTime travelTime;
+    private final double qSimStartTime;
 
-    public FreightBlockingRequestCreator(Network network, TravelTime travelTime, DrtConfigGroup drtConfigGroup) {
+    public FreightBlockingRequestCreator(Network network, TravelTime travelTime, Config config) {
         this.network = network;
         this.travelTime = travelTime;
-        this.mode = drtConfigGroup.getMode();
+        this.mode = DrtConfigGroup.getSingleModeDrtConfig(config).getMode();
+        this.qSimStartTime = Math.max(0, config.qsim().getStartTime());
     }
     
     @Override
@@ -79,16 +82,15 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
     private DrtBlockingRequest createRequest(ScheduledTour scheduledTour) {
         //TODO Id
         Id<Request> id = Id.create("blockingRequest_customer_" + scheduledTour.getVehicle().getId().toString(), Request.class);
-        double blockingStart = scheduledTour.getDeparture() - RETOOL_DURATION;
+        double blockingStart = Math.max(qSimStartTime, scheduledTour.getDeparture() - RETOOL_DURATION);
         List<Task> tourTasks = convertScheduledTour2DvrpTasks(scheduledTour, blockingStart);
         double blockingEnd = tourTasks.get(tourTasks.size() - 1).getEndTime();
-
-        return new DrtBlockingRequest(id,blockingStart - SUBMISSION_LOOK_AHEAD, blockingStart, blockingEnd, new PriorityQueue<>(Comparator.comparing(Task::getBeginTime)));
+        return new DrtBlockingRequest(id, Math.max(qSimStartTime, blockingStart - SUBMISSION_LOOK_AHEAD), blockingStart, blockingEnd, tourTasks);
     }
 
     private List<Task> convertScheduledTour2DvrpTasks(ScheduledTour scheduledTour, double blockingStart) {
         List<Task> tourTasks = new ArrayList<>();
-        double previousTaskEndTime = scheduledTour.getDeparture();
+        double previousTaskEndTime = blockingStart + RETOOL_DURATION;
         tourTasks.add(new FreightRetoolTask(blockingStart, previousTaskEndTime, network.getLinks().get(scheduledTour.getTour().getStartLinkId())));
 
         List<Tour.TourElement> tourElements = scheduledTour.getTour().getTourElements();
