@@ -27,6 +27,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsReaderXMLv1;
+import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.utils.io.MatsimXmlParser;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -51,8 +52,8 @@ public class PFAVEventsReader extends MatsimXmlParser {
         delegate.characters(ch, start, length);
     }
 
-    private EventsReaderXMLv1.CustomEventMapper<EventFreightTourCompleted> getFreightTourCompletedEventMapper() {
-        return new EventsReaderXMLv1.CustomEventMapper<EventFreightTourCompleted>() {
+    private MatsimEventsReader.CustomEventMapper<EventFreightTourCompleted> getFreightTourCompletedEventMapper() {
+        return new MatsimEventsReader.CustomEventMapper<EventFreightTourCompleted>() {
             @Override
             public EventFreightTourCompleted apply(GenericEvent event) {
 
@@ -66,8 +67,8 @@ public class PFAVEventsReader extends MatsimXmlParser {
         };
     }
 
-    private EventsReaderXMLv1.CustomEventMapper<EventFreightTourRequestRejected> getFreightTourRequestDeniedEventMapper() {
-        return new EventsReaderXMLv1.CustomEventMapper<EventFreightTourRequestRejected>() {
+    private MatsimEventsReader.CustomEventMapper<EventFreightTourRequestRejected> getFreightTourRequestDeniedEventMapper() {
+        return new MatsimEventsReader.CustomEventMapper<EventFreightTourRequestRejected>() {
             @Override
             public EventFreightTourRequestRejected apply(GenericEvent event) {
 
@@ -84,8 +85,8 @@ public class PFAVEventsReader extends MatsimXmlParser {
         };
     }
 
-    private EventsReaderXMLv1.CustomEventMapper<EventFreightTourScheduled> getFreightTourScheduledEventMapper() {
-        return new EventsReaderXMLv1.CustomEventMapper<EventFreightTourScheduled>() {
+    private MatsimEventsReader.CustomEventMapper<EventFreightTourScheduled> getFreightTourScheduledEventMapper() {
+        return new MatsimEventsReader.CustomEventMapper<EventFreightTourScheduled>() {
             @Override
             public EventFreightTourScheduled apply(GenericEvent event) {
 
@@ -103,8 +104,8 @@ public class PFAVEventsReader extends MatsimXmlParser {
         };
     }
 
-    private EventsReaderXMLv1.CustomEventMapper<EventPFAVOwnerWaitsForVehicle> getPFAVOwnerWaitsEventMapper() {
-        return new EventsReaderXMLv1.CustomEventMapper<EventPFAVOwnerWaitsForVehicle>() {
+    private MatsimEventsReader.CustomEventMapper<EventPFAVOwnerWaitsForVehicle> getPFAVOwnerWaitsEventMapper() {
+        return new MatsimEventsReader.CustomEventMapper<EventPFAVOwnerWaitsForVehicle>() {
             @Override
             public EventPFAVOwnerWaitsForVehicle apply(GenericEvent event) {
 
