@@ -20,29 +20,40 @@
 
 package org.matsim.drt;
 
+import org.apache.log4j.Logger;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.core.config.Config;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-class DrtBlockingSlotManager implements DrtBlockingManager {
+class SlotBasedDrtBlockingManager implements DrtBlockingManager {
 
-    private final List<Set<DvrpVehicle>> blockedVehicles;
+    private List<Set<DvrpVehicle>> blockedVehicles;
     private final int[] maximumNumberOfBlockings;
-
     private final Config config;
+    private static Logger log = Logger.getLogger(SlotBasedDrtBlockingManager.class);
 
-
-    DrtBlockingSlotManager(Config config, int[] maximumNumberOfBlockings) {
+    SlotBasedDrtBlockingManager(Config config, int[] maximumNumberOfBlockings) {
         if(maximumNumberOfBlockings.length > config.qsim().getEndTime() / (60*5) ){
             //TODO be a bit more expressive here...
             throw new RuntimeException("Please do not define slots for DrtBlocking management that are shorter than 5 minutes.. ");
         }
         this.config = config;
         this.maximumNumberOfBlockings = maximumNumberOfBlockings;
+        initializeVehicleList();
+    }
+
+    SlotBasedDrtBlockingManager(Config config, int maximimNumberOfBlockedVehiclesAtATime) {
+        this.config = config;
+        log.info("no slot width defined. will work with 15 minutes time slots. the maximum amount of drt blockings\n" +
+                "for each time slot is set to " + maximimNumberOfBlockedVehiclesAtATime);
+
+        this.maximumNumberOfBlockings = new int[(int) config.qsim().getEndTime() / 15*60];
+        Arrays.fill(this.maximumNumberOfBlockings, maximimNumberOfBlockedVehiclesAtATime);
+        initializeVehicleList();
+    }
+
+    private void initializeVehicleList() {
         this.blockedVehicles = new ArrayList<>();
         for(int i = 0; i < maximumNumberOfBlockings.length; i++){
             this.blockedVehicles.add(new HashSet<>());

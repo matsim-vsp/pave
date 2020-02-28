@@ -20,28 +20,41 @@
 
 package org.matsim.drt;
 
-import org.matsim.contrib.drt.optimizer.DefaultDrtOptimizer;
-import org.matsim.contrib.drt.optimizer.DrtOptimizer;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.name.Named;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
-import org.matsim.contrib.drt.run.DrtModeQSimModule;
-import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
+import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
+import org.matsim.contrib.dvrp.run.ModalProviders;
+import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
+import org.matsim.core.controler.AbstractModule;
+import org.matsim.core.router.util.TravelTime;
 
-public class DrtBlockingModule extends AbstractDvrpModeQSimModule {
+public class DrtBlockingModeModule extends AbstractDvrpModeModule {
 
     private final DrtConfigGroup drtCfg;
 
-    DrtBlockingModule(DrtConfigGroup drtConfigGroup){
-        super(drtConfigGroup.getMode());
-        this.drtCfg = drtConfigGroup;
+    public DrtBlockingModeModule(DrtConfigGroup drtCfg) {
+        super(drtCfg.getMode());
+        this.drtCfg = drtCfg;
     }
 
     @Override
-    protected void configureQSim() {
-        install(new DrtModeQSimModule(drtCfg));
+    public void install() {
+        addMobsimListenerBinding().to(BlockingRequestEngine.class);
+        addControlerListenerBinding().to(BlockingRequestEngine.class);
+        bindModal(BlockingRequestEngine.class).to(BlockingRequestEngine.class);
 
+        bindModal(BlockingRequestCreator.class).toProvider(new ModalProviders.AbstractProvider<BlockingRequestCreator>(getMode()) {
+            @Inject
+            @Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
+            private TravelTime travelTime;
 
-        addModalComponent(DrtOptimizer.class, modalProvider(
-                getter -> new DefaultBlockingOptimizer(new DefaultDrtOptimizer())
-
+            @Override
+            public BlockingRequestCreator get() {
+                return new FreightBlockingRequestCreator(getModalInstance(Network.class), travelTime, drtCfg);
+            }
+        });
     }
 }

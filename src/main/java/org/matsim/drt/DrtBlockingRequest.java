@@ -34,15 +34,15 @@ class DrtBlockingRequest implements Request {
         return this.submissionTime;
     }
 
-    public double getEndTime() {
+    double getEndTime() {
         return this.endTime;
     }
 
-    public double getStartTime() {
+    double getStartTime() {
         return this.startTime;
     }
 
-    public PriorityQueue<Task> getTasks() {
+    PriorityQueue<Task> getTasks() {
         return this.tasks;
     }
 }
