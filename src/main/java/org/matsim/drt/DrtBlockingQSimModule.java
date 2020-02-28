@@ -23,6 +23,7 @@ package org.matsim.drt;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.optimizer.*;
 import org.matsim.contrib.drt.optimizer.depot.DepotFinder;
@@ -61,7 +62,7 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
     //TODO configurable
     private static int defaultMaxAmountOfBlockings = 1;
 
-    DrtBlockingQSimModule(DrtConfigGroup drtConfigGroup){
+    public DrtBlockingQSimModule(DrtConfigGroup drtConfigGroup){
         super(drtConfigGroup.getMode());
         this.drtCfg = drtConfigGroup;
     }
@@ -74,12 +75,11 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
         addModalComponent(DrtOptimizer.class, modalProvider(
                 getter -> new DefaultBlockingOptimizer(getter.getModal(DefaultDrtOptimizer.class),
                         getter.getModal(DrtScheduleInquiry.class),
-                        new SlotBasedDrtBlockingManager(getConfig(), defaultMaxAmountOfBlockings ),
+                        getter.getModal(DrtBlockingManager.class),
                         getter.get(EventsManager.class),
                         getter.getModal(Network.class),
                         getter.get(MobsimTimer.class)) {
-                }));
-
+        }));
 
         bindModal(DefaultDrtOptimizer.class).toProvider(modalProvider(
                 getter -> new DefaultDrtOptimizer(drtCfg, getter.getModal(Fleet.class), getter.get(MobsimTimer.class),
@@ -88,11 +88,33 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getModal(EmptyVehicleRelocator.class), getter.getModal(UnplannedRequestInserter.class))))
                 .asEagerSingleton();
 
-        bindModal(DrtBlockingManager.class).to(SlotBasedDrtBlockingManager.class).asEagerSingleton();
+        bindModal(DrtBlockingManager.class).toInstance( new SlotBasedDrtBlockingManager(getConfig(), defaultMaxAmountOfBlockings));
 
         bindModal(VehicleData.EntryFactory.class).toProvider(modalProvider(
                 getter -> new BlockingVehicleDataEntryFactory(drtCfg, getter.getModal(DrtBlockingManager.class))))
                 .asEagerSingleton();
+
+
+        addModalComponent(BlockingRequestEngine.class, new ModalProviders.AbstractProvider<BlockingRequestEngine>(drtCfg.getMode()) {
+            @Inject
+            Scenario scenario;
+
+            @Override
+            public BlockingRequestEngine get() {
+                return new BlockingRequestEngine(scenario, getModalInstance(DrtOptimizer.class), getModalInstance(BlockingRequestCreator.class));
+            }
+        });
+
+        bindModal(BlockingRequestCreator.class).toProvider(new ModalProviders.AbstractProvider<BlockingRequestCreator>(getMode()) {
+            @Inject
+            @Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
+            private TravelTime travelTime;
+
+            @Override
+            public BlockingRequestCreator get() {
+                return new FreightBlockingRequestCreator(getModalInstance(Network.class), travelTime, getConfig());
+            }
+        });
 
         configureStandardDrt();
     }
