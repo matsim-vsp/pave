@@ -26,6 +26,7 @@ import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.StrategyConfigGroup;
 import org.matsim.core.gbl.MatsimRandom;
+import org.matsim.core.population.PopulationUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,8 +37,6 @@ import java.util.stream.Collectors;
  * anywhere else.
  */
 class PAVEBerlinModifier {
-
-    private static final String SUBPOP_ATTRIB_NAME = "subpopulation";
 
     private static String SUBPOP_FLEXIBLE = "flexible";
     private static String SUBPOP_PRICE_SENSITIVE = "priceSensitive";
@@ -53,7 +52,6 @@ class PAVEBerlinModifier {
     }
 
     static void configureMobilityTypeSubPopulations(Config config){
-        config.plans().setSubpopulationAttributeName(SUBPOP_ATTRIB_NAME); /* This is the default anyway. */
         configureStrategies(config);
         configureScoring(config);
     }
@@ -136,14 +134,15 @@ class PAVEBerlinModifier {
         Random r = MatsimRandom.getLocalInstance();
 
         population.getPersons().values().stream()
-                .filter(p -> p.getAttributes().getAttribute(SUBPOP_ATTRIB_NAME).equals("person"))
+
+                .filter(p -> PopulationUtils.getSubpopulation(p).equals("person"))
                 .forEach(person -> {
                     double drawnRnd = r.nextDouble() * weightSum;
                     double sum = 0.0;
                     for (String mobilityType : mobilityType2Weight.keySet()) {
                         sum += mobilityType2Weight.get(mobilityType);
                         if(drawnRnd <= sum){
-                            person.getAttributes().putAttribute(SUBPOP_ATTRIB_NAME, "person_" + mobilityType);
+                            PopulationUtils.putSubpopulation(person, "person_" + mobilityType);
                             break;
                         }
                     }
