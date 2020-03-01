@@ -20,19 +20,19 @@
 
 package org.matsim.pfav.privateAV;
 
+import java.util.Map;
+import java.util.Stack;
+
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.events.GenericEvent;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsReaderXMLv1;
+import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.utils.io.MatsimXmlParser;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-
-import java.util.Map;
-import java.util.Stack;
 
 public class PFAVEventsReader extends MatsimXmlParser {
 
@@ -51,71 +51,59 @@ public class PFAVEventsReader extends MatsimXmlParser {
         delegate.characters(ch, start, length);
     }
 
-    private EventsReaderXMLv1.CustomEventMapper<EventFreightTourCompleted> getFreightTourCompletedEventMapper() {
-        return new EventsReaderXMLv1.CustomEventMapper<EventFreightTourCompleted>() {
-            @Override
-            public EventFreightTourCompleted apply(GenericEvent event) {
+    private MatsimEventsReader.CustomEventMapper<EventFreightTourCompleted> getFreightTourCompletedEventMapper() {
+        return event -> {
 
-                Map<String, String> attributes = event.getAttributes();
+            Map<String, String> attributes = event.getAttributes();
 
-                double time = Double.parseDouble(attributes.get(EventFreightTourCompleted.ATTRIBUTE_TIME));
-                Id<DvrpVehicle> vid = Id.create(attributes.get(EventFreightTourCompleted.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
+            double time = Double.parseDouble(attributes.get(EventFreightTourCompleted.ATTRIBUTE_TIME));
+            Id<DvrpVehicle> vid = Id.create(attributes.get(EventFreightTourCompleted.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
 
-                return new EventFreightTourCompleted(vid, time);
-            }
+            return new EventFreightTourCompleted(vid, time);
         };
     }
 
-    private EventsReaderXMLv1.CustomEventMapper<EventFreightTourRequestRejected> getFreightTourRequestDeniedEventMapper() {
-        return new EventsReaderXMLv1.CustomEventMapper<EventFreightTourRequestRejected>() {
-            @Override
-            public EventFreightTourRequestRejected apply(GenericEvent event) {
+    private MatsimEventsReader.CustomEventMapper<EventFreightTourRequestRejected> getFreightTourRequestDeniedEventMapper() {
+        return event -> {
 
-                Map<String, String> attributes = event.getAttributes();
+            Map<String, String> attributes = event.getAttributes();
 
-                double time = Double.parseDouble(attributes.get(EventFreightTourRequestRejected.ATTRIBUTE_TIME));
-                Id<DvrpVehicle> vid = Id.create(attributes.get(EventFreightTourRequestRejected.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
-                Id<Link> requestLink = Id.createLinkId(attributes.get(EventFreightTourRequestRejected.ATTRIBUTE_REQUEST_LINK));
-                Id<Link> returnLink = Id.createLinkId(attributes.get(EventFreightTourRequestRejected.ATTRIBUTE_MUST_RETURN_LINK));
-                double returnTime = Double.parseDouble(attributes.get(EventFreightTourRequestRejected.ATTRIBUTE_MUST_RETURN_TIME));
+            double time = Double.parseDouble(attributes.get(EventFreightTourRequestRejected.ATTRIBUTE_TIME));
+            Id<DvrpVehicle> vid = Id.create(attributes.get(EventFreightTourRequestRejected.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
+            Id<Link> requestLink = Id.createLinkId(attributes.get(EventFreightTourRequestRejected.ATTRIBUTE_REQUEST_LINK));
+            Id<Link> returnLink = Id.createLinkId(attributes.get(EventFreightTourRequestRejected.ATTRIBUTE_MUST_RETURN_LINK));
+            double returnTime = Double.parseDouble(attributes.get(EventFreightTourRequestRejected.ATTRIBUTE_MUST_RETURN_TIME));
 
-                return new EventFreightTourRequestRejected(vid, requestLink, time, returnLink, returnTime);
-            }
+            return new EventFreightTourRequestRejected(vid, requestLink, time, returnLink, returnTime);
         };
     }
 
-    private EventsReaderXMLv1.CustomEventMapper<EventFreightTourScheduled> getFreightTourScheduledEventMapper() {
-        return new EventsReaderXMLv1.CustomEventMapper<EventFreightTourScheduled>() {
-            @Override
-            public EventFreightTourScheduled apply(GenericEvent event) {
+    private MatsimEventsReader.CustomEventMapper<EventFreightTourScheduled> getFreightTourScheduledEventMapper() {
+        return event -> {
 
-                Map<String, String> attributes = event.getAttributes();
+            Map<String, String> attributes = event.getAttributes();
 
-                double time = Double.parseDouble(attributes.get(EventFreightTourScheduled.ATTRIBUTE_TIME));
-                Id<DvrpVehicle> vid = Id.create(attributes.get(EventFreightTourScheduled.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
-                Id<Link> requestLink = Id.createLinkId(attributes.get(EventFreightTourScheduled.ATTRIBUTE_REQUEST_LINK));
-                double returnTime = Double.parseDouble(attributes.get(EventFreightTourScheduled.ATTRIBUTE_MUST_RETURN_TIME));
-                double tourDuration = Double.parseDouble(attributes.get(EventFreightTourScheduled.ATTRIBUTE_FREIGHT_TOUR_DURATION));
-                double tourLength = Double.parseDouble(attributes.get(EventFreightTourScheduled.ATTRIBUTE_FREIGHT_TOUR_DISTANCE));
+            double time = Double.parseDouble(attributes.get(EventFreightTourScheduled.ATTRIBUTE_TIME));
+            Id<DvrpVehicle> vid = Id.create(attributes.get(EventFreightTourScheduled.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
+            Id<Link> requestLink = Id.createLinkId(attributes.get(EventFreightTourScheduled.ATTRIBUTE_REQUEST_LINK));
+            double returnTime = Double.parseDouble(attributes.get(EventFreightTourScheduled.ATTRIBUTE_MUST_RETURN_TIME));
+            double tourDuration = Double.parseDouble(attributes.get(EventFreightTourScheduled.ATTRIBUTE_FREIGHT_TOUR_DURATION));
+            double tourLength = Double.parseDouble(attributes.get(EventFreightTourScheduled.ATTRIBUTE_FREIGHT_TOUR_DISTANCE));
 
-                return new EventFreightTourScheduled(time, vid, requestLink, returnTime, tourDuration, tourLength);
-            }
+            return new EventFreightTourScheduled(time, vid, requestLink, returnTime, tourDuration, tourLength);
         };
     }
 
-    private EventsReaderXMLv1.CustomEventMapper<EventPFAVOwnerWaitsForVehicle> getPFAVOwnerWaitsEventMapper() {
-        return new EventsReaderXMLv1.CustomEventMapper<EventPFAVOwnerWaitsForVehicle>() {
-            @Override
-            public EventPFAVOwnerWaitsForVehicle apply(GenericEvent event) {
+    private MatsimEventsReader.CustomEventMapper<EventPFAVOwnerWaitsForVehicle> getPFAVOwnerWaitsEventMapper() {
+        return event -> {
 
-                Map<String, String> attributes = event.getAttributes();
+            Map<String, String> attributes = event.getAttributes();
 
-                double time = Double.parseDouble(attributes.get(EventPFAVOwnerWaitsForVehicle.ATTRIBUTE_TIME));
-                Id<DvrpVehicle> vid = Id.create(attributes.get(EventPFAVOwnerWaitsForVehicle.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
-                Id<Person> owner = Id.createPersonId(attributes.get(EventPFAVOwnerWaitsForVehicle.ATTRIBUTE_OWNER));
+            double time = Double.parseDouble(attributes.get(EventPFAVOwnerWaitsForVehicle.ATTRIBUTE_TIME));
+            Id<DvrpVehicle> vid = Id.create(attributes.get(EventPFAVOwnerWaitsForVehicle.ATTRIBUTE_VEHICLE), DvrpVehicle.class);
+            Id<Person> owner = Id.createPersonId(attributes.get(EventPFAVOwnerWaitsForVehicle.ATTRIBUTE_OWNER));
 
-                return new EventPFAVOwnerWaitsForVehicle(time, vid, owner);
-            }
+            return new EventPFAVOwnerWaitsForVehicle(time, vid, owner);
         };
     }
 
