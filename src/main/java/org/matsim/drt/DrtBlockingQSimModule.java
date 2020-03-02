@@ -22,6 +22,7 @@ package org.matsim.drt;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
@@ -86,13 +87,13 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getModal(DepotFinder.class), getter.getModal(RebalancingStrategy.class),
                         getter.getModal(DrtScheduleInquiry.class), getter.getModal(ScheduleTimingUpdater.class),
                         getter.getModal(EmptyVehicleRelocator.class), getter.getModal(UnplannedRequestInserter.class))))
-                .asEagerSingleton();
+                .in(Singleton.class);
 
         bindModal(DrtBlockingManager.class).toInstance( new SlotBasedDrtBlockingManager(getConfig(), defaultMaxAmountOfBlockings));
 
         bindModal(VehicleData.EntryFactory.class).toProvider(modalProvider(
                 getter -> new BlockingVehicleDataEntryFactory(drtCfg, getter.getModal(DrtBlockingManager.class))))
-                .asEagerSingleton();
+                .in(Singleton.class);
 
 
         addModalComponent(BlockingRequestEngine.class, new ModalProviders.AbstractProvider<BlockingRequestEngine>(drtCfg.getMode()) {

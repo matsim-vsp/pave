@@ -62,7 +62,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
     Random rnd;
 
     private final List<DvrpVehicle> idleVehicles;
-    private final Map<DrtBlockingRequest, DvrpVehicle> blockedVehicles;
+    private final Map<DvrpVehicle, DrtBlockingRequest> blockedVehicles;
 
     private PriorityQueue<DrtBlockingRequest> blockingRequests;
 
@@ -81,7 +81,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 
         this.idleVehicles = new ArrayList<>();
         this.blockingRequests = new PriorityQueue<>(Comparator.comparing(DrtBlockingRequest::getSubmissionTime));
-        this.blockedVehicles = new TreeMap<>(Comparator.comparing(DrtBlockingRequest::getEndTime));
+        this.blockedVehicles = new HashMap<>();
     }
 
 
@@ -103,13 +103,16 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
         if(scheduleInquiry.isIdle(vehicle)){
             this.idleVehicles.add(vehicle);
 
-            //unblock the vehicle
-            this.blockedVehicles.remove(vehicle);
-            this.blockingManager.unblockVehicleAfterTime(vehicle, timer.getTimeOfDay());
+            //if the blocking request has started and the vehicle is idle then we can unblock the vehicle..
+            //if we do not check for the submission time, it might be that the vehicle is idle before the start of the blocking tasks (for instance at iteration start)
+            if(this.blockedVehicles.containsKey(vehicle) && this.timer.getTimeOfDay() > this.blockedVehicles.get(vehicle).getSubmissionTime()){
+                //unblock the vehicle
+                this.blockedVehicles.remove(vehicle);
+                this.blockingManager.unblockVehicleAfterTime(vehicle, timer.getTimeOfDay());
+            }
         } else {
             this.idleVehicles.remove(vehicle);
         }
-
     }
 
     @Override
@@ -129,14 +132,24 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
             } else{
                 if(!this.idleVehicles.isEmpty()){
 
-                    //TODO dispatch a suitable vehicle instead of any random one..
-                    DvrpVehicle vehicle = this.idleVehicles.get(rnd.nextInt(this.idleVehicles.size()));
+                    DvrpVehicle vehicle;
+
+                    {//TODO dispatch a suitable vehicle instead of any random one..
+                        int maxTries = this.idleVehicles.size();
+                        do {
+                            vehicle = this.idleVehicles.get(rnd.nextInt(this.idleVehicles.size()));
+                            maxTries --;
+                        }
+                        while(this.blockedVehicles.containsKey(vehicle) && maxTries > 0); //if the idle vehicle is blocked in the future, do not assign it
+                    }
+
                     if(blockingManager.blockVehicleIfPossible(vehicle, drtBlockingRequest.getStartTime(), drtBlockingRequest.getEndTime())){
 
                         this.idleVehicles.remove(vehicle);
                         scheduleTasksForBlockedVehicle(drtBlockingRequest, vehicle);
-//                        eventsManager.processEvent(new BlockingRequestAcceptedEvent()); //TODO BlockingRequestAcceptedEvent
+                        this.blockedVehicles.put(vehicle, drtBlockingRequest);
                         blockingRequestsIterator.remove();
+//                        eventsManager.processEvent(new BlockingRequestAcceptedEvent()); //TODO BlockingRequestAcceptedEvent
                     }
                 } else{
                     break;
