@@ -17,6 +17,8 @@ hs_err_pid*
 /target/
 /test/output/
 /output/
+/input/
+/tourEvaluation/
 /bin/
 
 /.idea/
