@@ -94,15 +94,15 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
                 if (StageActivityTypeIdentifier.isStageActivity(((Activity) pe).getType())) {
                     //activity could be something like leisure in open berlin scenario which does not have an end time set
                     Activity act = (Activity) pe;
-                    if (act.getEndTime() == Double.NEGATIVE_INFINITY) {
+                    if (act.getEndTime().isUndefined()) {
                         if (lastLeg.getDepartureTime() == Double.NEGATIVE_INFINITY) {
-                            if (act.getMaximumDuration() == Double.NEGATIVE_INFINITY) {
+                            if (act.getMaximumDuration().isUndefined()) {
                                 throw new RuntimeException("cannot compute must return time for PFAVehicle of person " + plan.getPerson().getId() + " for activity " + act.toString());
                             }
                             //does the leg *before* the activity have a departure time and a travel time?
                             Leg legBeforeAct = (Leg) plan.getPlanElements().get(i - 1);
                             if (legBeforeAct.getDepartureTime() != Double.NEGATIVE_INFINITY && legBeforeAct.getRoute().getTravelTime() != Double.NEGATIVE_INFINITY) {
-                                return legBeforeAct.getDepartureTime() + legBeforeAct.getRoute().getTravelTime() + act.getMaximumDuration();
+                                return legBeforeAct.getDepartureTime() + legBeforeAct.getRoute().getTravelTime() + act.getMaximumDuration().seconds();
                             }
                             //no it does not, so we need to calculate the must return time by computing end time of the activity element by element
                             return computeMustReturnTimeConsecutivelyFromTheStart(plan, i);
@@ -110,7 +110,7 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
                             return lastLeg.getDepartureTime();
                         }
                     } else {
-                        return act.getEndTime();
+                        return act.getEndTime().seconds();
                     }
                 }
             }
@@ -131,15 +131,15 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
                     //activity could be something like leisure in open berlin scenario which does not have an end time set
                     Activity act = (Activity) pe;
                     Double returnTime = null;
-                    if (act.getEndTime() == Double.NEGATIVE_INFINITY) {
+                    if (act.getEndTime().isUndefined()) {
                         if (lastLeg.getDepartureTime() == Double.NEGATIVE_INFINITY) {
-                            if (act.getMaximumDuration() == Double.NEGATIVE_INFINITY) {
+                            if (act.getMaximumDuration().isUndefined()) {
                                 throw new RuntimeException("cannot compute must return time for PFAVehicle of person " + plan.getPerson().getId() + " for activity " + act.toString());
                             }
                             //does the leg *before* the activity have a departure time and a travel time?
                             Leg legBeforeAct = (Leg) plan.getPlanElements().get(i - 1);
                             if (legBeforeAct.getDepartureTime() != Double.NEGATIVE_INFINITY && legBeforeAct.getRoute().getTravelTime() != Double.NEGATIVE_INFINITY) {
-                                returnTime = legBeforeAct.getDepartureTime() + legBeforeAct.getRoute().getTravelTime() + act.getMaximumDuration();
+                                returnTime = legBeforeAct.getDepartureTime() + legBeforeAct.getRoute().getTravelTime() + act.getMaximumDuration().seconds();
                             } else {
                                 //no it does not, so we need to calculate the must return time by computing end time of the activity element by element
                                 returnTime = computeMustReturnTimeConsecutivelyFromTheStart(plan, i);
@@ -148,7 +148,7 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
                             returnTime = lastLeg.getDepartureTime();
                         }
                     } else {
-                        returnTime = act.getEndTime();
+                        returnTime = act.getEndTime().seconds();
                     }
                     return new PFAVehicle.MustReturnLinkTimePair(returnTime, act.getLinkId());
                 }
@@ -158,16 +158,16 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
     }
 
     private double computeMustReturnTimeConsecutivelyFromTheStart(Plan plan, int i) {
-        double time = ((Activity) plan.getPlanElements().get(0)).getEndTime();
-        if (Double.isInfinite(time)) throw new IllegalStateException("end time of first activity of agent " + plan.getPerson().getId()
+        if ( ((Activity) plan.getPlanElements().get(0)).getEndTime().isUndefined()) throw new IllegalStateException("end time of first activity of agent " + plan.getPerson().getId()
                 + " is not set.");
+        double time = ((Activity) plan.getPlanElements().get(0)).getEndTime().seconds();
         for (int z = 1; z <= i; z++) {
             PlanElement current = plan.getPlanElements().get(z);
             if (current instanceof Activity) {
-                if (((Activity) current).getEndTime() != Double.NEGATIVE_INFINITY) {
-                    time = ((Activity) current).getEndTime();
+                if (((Activity) current).getEndTime().isDefined()) {
+                    time = ((Activity) current).getEndTime().seconds();
                 } else {
-                    time += ((Activity) current).getMaximumDuration();
+                    time += ((Activity) current).getMaximumDuration().seconds();
                 }
             } else if (current instanceof Leg) {
                 if (((Leg) current).getDepartureTime() != Double.NEGATIVE_INFINITY) {
