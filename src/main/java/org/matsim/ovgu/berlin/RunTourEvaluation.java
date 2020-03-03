@@ -16,6 +16,7 @@ import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
+import org.matsim.core.config.groups.PlansConfigGroup.HandlingOfPlansWithoutRoutingMode;
 import org.matsim.core.config.groups.QSimConfigGroup.TrafficDynamics;
 import org.matsim.core.config.groups.PlansConfigGroup;
 import org.matsim.core.config.groups.VspExperimentalConfigGroup;
@@ -39,9 +40,9 @@ public class RunTourEvaluation {
 
 	private static final Logger log = Logger.getLogger(RunTourEvaluation.class);
 
-	private static final String inputDirectory = "input/1pc";
+	private static final String inputDirectory = "../tubCloud/kturner/Arbeit/40 Projekte/40.10 PAVE/PAVE-Cloud/PAVE-Projekte/Daten/Repo/input/example";
 	private static final String configFile = "finalA.config.xml";
-	private static final String changeEventsFile = "scenario-A.15.networkChangeEvents.xml.gz";
+//	private static final String changeEventsFile = "scenario-A.15.networkChangeEvents.xml.gz";
 	private static final String networkFile = "scenario-A.output_network.xml.gz";
 	private static final String outputDirectory = "tourEvaluation";
 
@@ -74,14 +75,15 @@ public class RunTourEvaluation {
 		Config config = prepareConfig(args);
 		
 		// use changeEvents -->
-		config.network().setTimeVariantNetwork(true);
-		config.network().setChangeEventsInputFile(changeEventsFile);
+//		config.network().setTimeVariantNetwork(true);
+//		config.network().setChangeEventsInputFile(changeEventsFile);
 		config.plans().setActivityDurationInterpretation(
 				PlansConfigGroup.ActivityDurationInterpretation.tryEndTimeThenDuration);
 //		config.network().setInputFile("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.4-10pct/input/berlin-v5-network.xml.gz");
 		config.network().setInputFile(networkFile);
 		// <-- use changeEvents
 
+		config.plans().setHandlingOfPlansWithoutRoutingMode(HandlingOfPlansWithoutRoutingMode.useMainModeIdentifier);
 
 		Scenario scenario = prepareScenario(config);
 		Controler controler = prepareControler(scenario);
@@ -394,31 +396,33 @@ public class RunTourEvaluation {
 		Gbl.assertNotNull(scenario);
 
 		final Controler controler = new Controler(scenario);
+		
+// KMT: Wozu brauchtest du das Folgende?		
 
-		if (controler.getConfig().transit().isUsingTransitInMobsim()) {
-			// use the sbb pt raptor router
-			controler.addOverridingModule(new AbstractModule() {
-				@Override
-				public void install() {
-					install(new SwissRailRaptorModule());
-				}
-			});
-		} else {
-			log.warn("Public transit will be teleported and not simulated in the mobsim! "
-					+ "This will have a significant effect on pt-related parameters (travel times, modal split, and so on). "
-					+ "Should only be used for testing or car-focused studies with a fixed modal split.  ");
-		}
+//		if (controler.getConfig().transit().isUsingTransitInMobsim()) {
+//			// use the sbb pt raptor router
+//			controler.addOverridingModule(new AbstractModule() {
+//				@Override
+//				public void install() {
+//					install(new SwissRailRaptorModule());
+//				}
+//			});
+//		} else {
+//			log.warn("Public transit will be teleported and not simulated in the mobsim! "
+//					+ "This will have a significant effect on pt-related parameters (travel times, modal split, and so on). "
+//					+ "Should only be used for testing or car-focused studies with a fixed modal split.  ");
+//		}
 
-		// use the (congested) car travel time for the teleported ride mode
-		controler.addOverridingModule(new AbstractModule() {
-
-			@Override
-			public void install() {
-				addTravelTimeBinding(TransportMode.ride).to(networkTravelTime());
-				addTravelDisutilityFactoryBinding(TransportMode.ride).to(carTravelDisutilityFactoryKey());
-			}
-
-		});
+//		// use the (congested) car travel time for the teleported ride mode
+//		controler.addOverridingModule(new AbstractModule() {
+//
+//			@Override
+//			public void install() {
+//				addTravelTimeBinding(TransportMode.ride).to(networkTravelTime());
+//				addTravelDisutilityFactoryBinding(TransportMode.ride).to(carTravelDisutilityFactoryKey());
+//			}
+//
+//		});
 
 		return controler;
 	}
@@ -445,35 +449,38 @@ public class RunTourEvaluation {
 		final Config config = ConfigUtils.loadConfig(args[0]); // I need this to set the context
 
 		config.controler().setRoutingAlgorithmType(FastAStarLandmarks);
+		
+		// KMT: Wozu brauchtest du das Folgende?	
+		//Damit veränderst du die Config Werte auch für die bisherigen Pläne mit der Folge, dass des bei potenziellem Replanning nun auf einmal andere Verhaltensweisen gibt...
 
-		config.subtourModeChoice().setProbaForRandomSingleTripMode(0.5);
-
-		config.plansCalcRoute().setRoutingRandomness(3.);
-		config.plansCalcRoute().removeModeRoutingParams(TransportMode.ride);
-		config.plansCalcRoute().removeModeRoutingParams(TransportMode.pt);
-		config.plansCalcRoute().removeModeRoutingParams(TransportMode.bike);
-		config.plansCalcRoute().removeModeRoutingParams("undefined");
-
-		config.qsim().setInsertingWaitingVehiclesBeforeDrivingVehicles(true);
-
-		// vsp defaults
-		config.vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.info);
-		config.plansCalcRoute().setInsertingAccessEgressWalk(true);
-		config.qsim().setUsingTravelTimeCheckInTeleportation(true);
-		config.qsim().setTrafficDynamics(TrafficDynamics.kinematicWaves);
-
-		// activities:
-		for (long ii = 600; ii <= 97200; ii += 600) {
-			config.planCalcScore().addActivityParams(new ActivityParams("home_" + ii + ".0").setTypicalDuration(ii));
-			config.planCalcScore().addActivityParams(new ActivityParams("work_" + ii + ".0").setTypicalDuration(ii)
-					.setOpeningTime(6. * 3600.).setClosingTime(20. * 3600.));
-			config.planCalcScore().addActivityParams(new ActivityParams("leisure_" + ii + ".0").setTypicalDuration(ii)
-					.setOpeningTime(9. * 3600.).setClosingTime(27. * 3600.));
-			config.planCalcScore().addActivityParams(new ActivityParams("shopping_" + ii + ".0").setTypicalDuration(ii)
-					.setOpeningTime(8. * 3600.).setClosingTime(20. * 3600.));
-			config.planCalcScore().addActivityParams(new ActivityParams("other_" + ii + ".0").setTypicalDuration(ii));
-		}
-		config.planCalcScore().addActivityParams(new ActivityParams("freight").setTypicalDuration(12. * 3600.));
+//		config.subtourModeChoice().setProbaForRandomSingleTripMode(0.5);
+//
+//		config.plansCalcRoute().setRoutingRandomness(3.);
+//		config.plansCalcRoute().removeModeRoutingParams(TransportMode.ride);
+//		config.plansCalcRoute().removeModeRoutingParams(TransportMode.pt);
+//		config.plansCalcRoute().removeModeRoutingParams(TransportMode.bike);
+//		config.plansCalcRoute().removeModeRoutingParams("undefined");
+//
+//		config.qsim().setInsertingWaitingVehiclesBeforeDrivingVehicles(true);
+//
+//		// vsp defaults
+//		config.vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.info);
+//		config.plansCalcRoute().setInsertingAccessEgressWalk(true);
+//		config.qsim().setUsingTravelTimeCheckInTeleportation(true);
+//		config.qsim().setTrafficDynamics(TrafficDynamics.kinematicWaves);
+//
+//		// activities:
+//		for (long ii = 600; ii <= 97200; ii += 600) {
+//			config.planCalcScore().addActivityParams(new ActivityParams("home_" + ii + ".0").setTypicalDuration(ii));
+//			config.planCalcScore().addActivityParams(new ActivityParams("work_" + ii + ".0").setTypicalDuration(ii)
+//					.setOpeningTime(6. * 3600.).setClosingTime(20. * 3600.));
+//			config.planCalcScore().addActivityParams(new ActivityParams("leisure_" + ii + ".0").setTypicalDuration(ii)
+//					.setOpeningTime(9. * 3600.).setClosingTime(27. * 3600.));
+//			config.planCalcScore().addActivityParams(new ActivityParams("shopping_" + ii + ".0").setTypicalDuration(ii)
+//					.setOpeningTime(8. * 3600.).setClosingTime(20. * 3600.));
+//			config.planCalcScore().addActivityParams(new ActivityParams("other_" + ii + ".0").setTypicalDuration(ii));
+//		}
+//		config.planCalcScore().addActivityParams(new ActivityParams("freight").setTypicalDuration(12. * 3600.));
 
 		ConfigUtils.applyCommandline(config, typedArgs);
 
