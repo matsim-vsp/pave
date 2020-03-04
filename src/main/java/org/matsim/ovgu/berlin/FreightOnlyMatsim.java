@@ -57,7 +57,7 @@ import java.util.Collection;
  */
 public class FreightOnlyMatsim {
 
-	private static final Logger log = Logger.getLogger(RunFreightOnlyMatsim.class);
+	private static final Logger log = Logger.getLogger(FreightOnlyMatsim.class);
 	private String[] linkIDsTour;
 	private double[] expectedTravelTime;
 	private double serviceTime;
