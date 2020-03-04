@@ -143,13 +143,14 @@ public class RunFreightOnlyMatsim {
 		double[] expectedAvgTT = new double[] { 0, 1386.78514, 461.0143096, 660.7601614, 482.7117253, 531.2474148,
 				615.2137168, 636.927544, 524.2512817, 773.1225155, 800.9296293, 404.1527514, 525.0083581,
 				599.2197634, 593.5771799, 760.3694996, 389.5929394, 753.3953592, 605.2273493, 837.7488374 };
-		
+
 		double serviceTime = 2 * 60;
+		double timewindow = 10 * 60;
 		
 		// create one carrier for each our
 		for (int i = 0; i < 24; i++) {
 			Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
-			createAndAddCarrierSerivces(carrier, i, linkIDs, expectedAvgTT, serviceTime);
+			createAndAddCarrierSerivces(carrier, i, linkIDs, expectedAvgTT, serviceTime, timewindow);
 
 			CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", "9826", i);
 			CarrierUtils.addCarrierVehicle(carrier, carrierVehicle);
@@ -163,7 +164,7 @@ public class RunFreightOnlyMatsim {
 	}
 
 	private static void createAndAddCarrierSerivces(Carrier carrier, int hour, String[] linkIDs, double[] expectedTT,
-			double serviceTime) {
+			double serviceTime, double timewindow) {
 //		
 		double tourStartInSec = hour * 3600.;
 //
@@ -177,22 +178,23 @@ public class RunFreightOnlyMatsim {
 		for (int customer = 0; customer < linkIDs.length / 2; customer++) {
 			int x = customer * 2;
 
+			double earliestStart = expectedArrival[x] - timewindow/2;
+			
 			Id<CarrierService> customerOriginID = Id.create("c" + (customer + 1) + "-origin", CarrierService.class);
-			CarrierUtils.addService(carrier, createService(customerOriginID, linkIDs[x], expectedArrival[x]));
+			CarrierUtils.addService(carrier, createService(customerOriginID, linkIDs[x], earliestStart, serviceTime));
 
 			Id<CarrierService> customerDestID = Id.create("c" + (customer + 1) + "-dest", CarrierService.class);
-//			CarrierUtils.addService(carrier, createService(customerDestID, linkIDs[x+1], expectedArrival[x+1]));
 			// set possibility to start service (drop-off) at destination earlier than expected:
-			CarrierUtils.addService(carrier, createService(customerDestID, linkIDs[x + 1], expectedArrival[x]));
+			CarrierUtils.addService(carrier, createService(customerDestID, linkIDs[x + 1], earliestStart, serviceTime));
 		}
 	}
 
 	// Erstellt Service entsprechend der vorgebenen Werte. Ermittelt auch
 	// automatisch die korrekte "ServiceBeginn" Zeit -> Fahrzeuge, die eher
 	// ankommen, sollen warten!
-	private static CarrierService createService(Id<CarrierService> id, String linkId, Double startTimeWindowBegin) {
+	private static CarrierService createService(Id<CarrierService> id, String linkId, Double startTimeWindowBegin, double serviceTime) {
 		CarrierService service = CarrierService.Builder.newInstance(id, Id.createLinkId(linkId)).setCapacityDemand(1)
-				.setServiceDuration(1) // Muss mindestens 1 Sekunde lang sein, da sonst TimeWindowEnforcement
+				.setServiceDuration(serviceTime) // Muss mindestens 1 Sekunde lang sein, da sonst TimeWindowEnforcement
 										// (basierend auf WithinDay-Replanning) nicht geht.
 				.setServiceStartTimeWindow(TimeWindow.newInstance(startTimeWindowBegin, 36. * 3600)).build();
 		return service;
