@@ -1,9 +1,21 @@
 package org.matsim.pfav.privateAV;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.population.*;
+import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.Plan;
+import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.api.core.v01.population.Population;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.fleet.FleetSpecification;
@@ -12,8 +24,6 @@ import org.matsim.contrib.dvrp.util.LinkTimePair;
 import org.matsim.core.controler.events.BeforeMobsimEvent;
 import org.matsim.core.controler.listener.BeforeMobsimListener;
 import org.matsim.core.router.StageActivityTypeIdentifier;
-
-import java.util.*;
 
 final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, BeforeMobsimListener {
 
@@ -158,9 +168,9 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
     }
 
     private double computeMustReturnTimeConsecutivelyFromTheStart(Plan plan, int i) {
-        if ( ((Activity) plan.getPlanElements().get(0)).getEndTime().isUndefined()) throw new IllegalStateException("end time of first activity of agent " + plan.getPerson().getId()
-                + " is not set.");
         double time = ((Activity) plan.getPlanElements().get(0)).getEndTime().seconds();
+        if (Double.isInfinite(time)) throw new IllegalStateException("end time of first activity of agent " + plan.getPerson().getId()
+                + " is not set.");
         for (int z = 1; z <= i; z++) {
             PlanElement current = plan.getPlanElements().get(z);
             if (current instanceof Activity) {
