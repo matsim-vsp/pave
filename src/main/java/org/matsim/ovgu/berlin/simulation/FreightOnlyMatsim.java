@@ -17,7 +17,7 @@
   *                                                                         *
   * *********************************************************************** *
  */
-package org.matsim.ovgu.berlin;
+package org.matsim.ovgu.berlin.simulation;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
@@ -27,6 +27,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.freight.Freight;
 import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.freight.carrier.Tour;
 import org.matsim.contrib.freight.carrier.Tour.Leg;
 import org.matsim.contrib.freight.controler.CarrierModule;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
@@ -39,6 +40,7 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.ovgu.berlin.input.Input;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 
@@ -101,16 +103,10 @@ public class FreightOnlyMatsim {
 	}
 
 	private void setDefaultInput() {
-
-		linkIDsTour = new String[] { "9826", "10837", "37615", "122985", "34319", "97538", "82306", "113960", "76890",
-				"64709", "18863", "14787", "116212", "63691", "30311", "76811", "20545", "142877", "118271", "29572" };
-
-		expectedTravelTime = new double[] { 0, 1386.78514, 461.0143096, 660.7601614, 482.7117253, 531.2474148,
-				615.2137168, 636.927544, 524.2512817, 773.1225155, 800.9296293, 404.1527514, 525.0083581, 599.2197634,
-				593.5771799, 760.3694996, 389.5929394, 753.3953592, 605.2273493, 837.7488374 };
-
-		serviceTime = 2 * 60;
-		timewindow = 10 * 60;
+		linkIDsTour = Input.tour;
+		expectedTravelTime = Input.avgTT;
+		serviceTime = Input.serviceTime;
+		timewindow = Input.standardTW;
 	}
 
 	private Config prepareConfig(String networkChangeEventsFileLocation, String outputLocation) {
@@ -175,7 +171,7 @@ public class FreightOnlyMatsim {
 			Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
 			createAndAddCarrierSerivces(carrier, i, linkIDsTour, expectedTravelTime, serviceTime, timewindow);
 
-			CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", "9826", i);
+			CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", Input.depot, i);
 			CarrierUtils.addCarrierVehicle(carrier, carrierVehicle);
 
 			CarrierPlan carrierPlan = createPlan(network, carrier, i);
