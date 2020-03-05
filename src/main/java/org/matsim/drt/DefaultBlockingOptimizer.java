@@ -140,8 +140,10 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
                             vehicle = this.idleVehicles.get(rnd.nextInt(this.idleVehicles.size()));
                             maxTries --;
                         }
-                        while(this.blockedVehicles.containsKey(vehicle) && maxTries > 0); //if the idle vehicle is blocked in the future, do not assign it
+                        while(this.blockedVehicles.containsKey(vehicle) && maxTries > 0);   //if the idle vehicle is blocked in the future, do not assign it
+                        if(this.blockedVehicles.containsKey(vehicle)) break;                //stop dispatching blocking requests if no suitable idle vehicle can be found
                     }
+
 
                     if(blockingManager.blockVehicleIfPossible(vehicle, drtBlockingRequest.getStartTime(), drtBlockingRequest.getEndTime())){
 
