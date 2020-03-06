@@ -32,6 +32,7 @@ class SlotBasedDrtBlockingManager implements DrtBlockingManager {
     private final int[] maximumNumberOfBlockings;
     private final Config config;
     private static Logger log = Logger.getLogger(SlotBasedDrtBlockingManager.class);
+    private int endTime;
 
     SlotBasedDrtBlockingManager(Config config, int[] maximumNumberOfBlockings) {
         if(maximumNumberOfBlockings.length > config.qsim().getEndTime() / (60*5) ){
@@ -40,6 +41,7 @@ class SlotBasedDrtBlockingManager implements DrtBlockingManager {
         }
         this.config = config;
         this.maximumNumberOfBlockings = maximumNumberOfBlockings;
+        initializeEndTime(config);
         initializeVehicleList();
     }
 
@@ -47,14 +49,24 @@ class SlotBasedDrtBlockingManager implements DrtBlockingManager {
         this.config = config;
         log.info("no slot width defined. will work with 15 minutes time slots. the maximum amount of drt blockings\n" +
                 "for each time slot is set to " + maximumNumberOfBlockedVehiclesAtATime);
-
-        this.maximumNumberOfBlockings = new int[(int) config.qsim().getEndTime() / (15*60)];
+        initializeEndTime(config);
+        this.maximumNumberOfBlockings = new int[endTime / (15*60)];
         Arrays.fill(this.maximumNumberOfBlockings, maximumNumberOfBlockedVehiclesAtATime);
         initializeVehicleList();
     }
 
+    private void initializeEndTime(Config config) {
+        this.endTime = (int) config.qsim().getEndTime();
+        if (this.endTime == 0){
+            log.warn("neither end time for qsim nor number of slots are defined. we will split 30 hours into 15 minute slots." +
+                    "This might lead to breakdown later if qsim runs longer than 30 hours");
+            this.endTime = 30*3600;
+        }
+    }
+
     private void initializeVehicleList() {
         this.blockedVehicles = new ArrayList<>();
+        if(maximumNumberOfBlockings.length == 0) throw new IllegalStateException();
         for(int i = 0; i < maximumNumberOfBlockings.length; i++){
             this.blockedVehicles.add(new HashSet<>());
         }
@@ -62,16 +74,16 @@ class SlotBasedDrtBlockingManager implements DrtBlockingManager {
 
     @Override
     public boolean isVehicleBlocked(DvrpVehicle vehicle, double time) {
-        int slot = (int) Math.floor(time / (config.qsim().getEndTime()/ maximumNumberOfBlockings.length));
+        int slot = (int) Math.floor(time / (this.endTime/ maximumNumberOfBlockings.length));
         return (blockedVehicles.get(slot).contains(vehicle));
     }
 
     @Override
     public boolean blockVehicleIfPossible(DvrpVehicle vehicle, double startTime, double endTime) {
-        int startSlot = (int) Math.floor(startTime / (config.qsim().getEndTime()/ maximumNumberOfBlockings.length));
+        int startSlot = (int) Math.floor(startTime / (this.endTime/ maximumNumberOfBlockings.length));
 
         //TODO: this probably breaks if endTime == config.qsim().getEndTime() ....
-        int endSlot = (int) Math.floor(endTime / (config.qsim().getEndTime()/ maximumNumberOfBlockings.length));
+        int endSlot = (int) Math.floor(endTime / (this.endTime/ maximumNumberOfBlockings.length));
         if (! isBlockIsPossible(startSlot, endSlot, vehicle)) return false;
 
         //actually block the vehicle
@@ -99,7 +111,7 @@ class SlotBasedDrtBlockingManager implements DrtBlockingManager {
 
     @Override
     public void unblockVehicleAfterTime(DvrpVehicle vehicle, double time) {
-        int startSlot = (int) Math.ceil(time / (config.qsim().getEndTime()/ maximumNumberOfBlockings.length));
+        int startSlot = (int) Math.ceil(time / (this.endTime/ maximumNumberOfBlockings.length));
         for(int i = startSlot; i < maximumNumberOfBlockings.length; i++){
             this.blockedVehicles.get(i).remove(vehicle);
         }
