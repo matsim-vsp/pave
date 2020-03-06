@@ -55,6 +55,7 @@ import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+import org.matsim.drt.tasks.FreightTaskEndTimeCalculator;
 
 public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
 
@@ -117,6 +118,10 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
             }
         });
 
+        bindModal(ScheduleTimingUpdater.class).toProvider(modalProvider(
+                getter -> new ScheduleTimingUpdater(getter.get(MobsimTimer.class), new FreightTaskEndTimeCalculator(drtCfg))))
+                .asEagerSingleton();
+
         configureStandardDrt();
     }
 
@@ -172,10 +177,6 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                         getter.get(MobsimTimer.class),
                         getter.getNamed(TravelTime.class, DvrpTravelTimeModule.DVRP_ESTIMATED),
                         getter.getModal(ScheduleTimingUpdater.class), getter.getModal(DrtTaskFactory.class))))
-                .asEagerSingleton();
-
-        bindModal(ScheduleTimingUpdater.class).toProvider(modalProvider(
-                getter -> new ScheduleTimingUpdater(getter.get(MobsimTimer.class), new DrtStayTaskEndTimeCalculator(drtCfg))))
                 .asEagerSingleton();
 
         addModalComponent(ParallelPathDataProvider.class,
