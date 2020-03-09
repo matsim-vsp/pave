@@ -122,6 +122,11 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                 getter -> new ScheduleTimingUpdater(getter.get(MobsimTimer.class), new FreightTaskEndTimeCalculator(drtCfg))))
                 .asEagerSingleton();
 
+        bindModal(VrpAgentLogic.DynActionCreator.class).
+                toProvider(modalProvider(getter -> new FreightDrtActionCreator(getter.getModal(PassengerEngine.class),
+                        getter.get(MobsimTimer.class), getter.get(DvrpConfigGroup.class)))).
+                asEagerSingleton();
+
         configureStandardDrt();
     }
 
@@ -194,11 +199,6 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                     }
                 });
         bindModal(PrecalculablePathDataProvider.class).to(modalKey(ParallelPathDataProvider.class));
-
-        bindModal(VrpAgentLogic.DynActionCreator.class).
-                toProvider(modalProvider(getter -> new DrtActionCreator(getter.getModal(PassengerEngine.class),
-                        getter.get(MobsimTimer.class), getter.get(DvrpConfigGroup.class)))).
-                asEagerSingleton();
 
         bindModal(PassengerRequestCreator.class).toProvider(new Provider<DrtRequestCreator>() {
             @Inject
