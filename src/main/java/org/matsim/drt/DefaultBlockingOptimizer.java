@@ -100,6 +100,10 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 
         optimizer.nextTask(vehicle);
 
+        considerUnblocking(vehicle);
+    }
+
+    private void considerUnblocking(DvrpVehicle vehicle) {
         if(scheduleInquiry.isIdle(vehicle)){
             this.idleVehicles.add(vehicle);
 
@@ -146,7 +150,8 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 
 
                     if(blockingManager.blockVehicleIfPossible(vehicle, drtBlockingRequest.getStartTime(), drtBlockingRequest.getEndTime())){
-
+                        log.info("blocking vehicle " + vehicle.getId() + " for time period start=" +drtBlockingRequest.getStartTime()
+                         + " end=" + drtBlockingRequest.getEndTime());
                         this.idleVehicles.remove(vehicle);
                         scheduleTasksForBlockedVehicle(drtBlockingRequest, vehicle);
                         this.blockedVehicles.put(vehicle, drtBlockingRequest);
