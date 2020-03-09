@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.freight.Freight;
 import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.*;
@@ -35,10 +36,17 @@ import org.matsim.contrib.freight.jsprit.NetworkRouter;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.config.groups.PlansConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
+import org.matsim.core.router.util.LeastCostPathCalculator;
+import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
+import org.matsim.core.router.util.TravelDisutility;
+import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.router.util.LeastCostPathCalculator.Path;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.ovgu.berlin.input.Input;
 import org.matsim.vehicles.VehicleType;
@@ -95,11 +103,60 @@ public class FreightOnlyMatsim {
 	}
 
 	private void run(String pathChangeEvents, String pathOutput) {
+
+		if (linkIDsTour == null) {
+			linkIDsTour = new String[] {};
+			expectedTravelTime = new double[] {};
+		}
+
 		Config config = prepareConfig(pathChangeEvents, pathOutput);
 		Scenario scenario = prepareScenario(config);
 		Controler controler = prepareControler(scenario);
 
 		controler.run();
+		preparePathCalculator(controler);
+	}
+
+	private Network network;
+	private LeastCostPathCalculator calc;
+
+	private void preparePathCalculator(Controler controler) {
+		((PlansCalcRouteConfigGroup) controler.getConfig().getModules().get("planscalcroute")).setRoutingRandomness(0);
+		
+		controler.getTripRouterProvider();
+		LeastCostPathCalculatorFactory calcFac = controler.getLeastCostPathCalculatorFactory();
+		TravelDisutilityFactory disuFac = controler.getTravelDisutilityFactory();
+		TravelTime travelTimes = controler.getLinkTravelTimes();
+		TravelTime timeCalculator = controler.getLinkTravelTimes();
+
+		TravelDisutility travelCosts = disuFac.createTravelDisutility(timeCalculator);
+
+		network = controler.getScenario().getNetwork();
+		calc = calcFac.createPathCalculator(network, travelCosts, travelTimes);
+	}
+
+	public Path getTravelPath(Node from, Node to, double departure) {
+		double day = 24 * 60 * 60;
+		departure = departure % day;
+
+		return calc.calcLeastCostPath(from, to, departure, null, null);
+	}
+
+	public Path getTravelPathWithFromNodes(String from, String to, double departure) {
+		return getTravelPathWithFromNodes(Id.createLinkId(from), Id.createLinkId(to), departure);
+	}
+
+	public Path getTravelPathWithFromNodes(Id<Link> from, Id<Link> to, double departure) {
+		return getTravelPath(network.getLinks().get(from).getFromNode(), network.getLinks().get(to).getFromNode(),
+				departure);
+	}
+
+	public Path getTravelPath(long from, long to, double departure) {
+		return getTravelPath(Id.createNodeId(from), Id.createNodeId(to), departure);
+	}
+
+	public Path getTravelPath(Id<Node> from, Id<Node> to, double departure) {
+		return getTravelPath(network.getNodes().get(from), network.getNodes().get(to), departure);
 	}
 
 	private void setDefaultInput() {
@@ -133,19 +190,14 @@ public class FreightOnlyMatsim {
 		FreightConfigGroup freightConfigGroup = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
 		freightConfigGroup.setTravelTimeSliceWidth(900);
 		freightConfigGroup.setTimeWindowHandling(FreightConfigGroup.TimeWindowHandling.enforceBeginnings);
-
 		return config;
 	}
 
 	private Scenario prepareScenario(Config config) {
 		Scenario scenario = ScenarioUtils.loadScenario(config);
-
 		Carriers carriers = FreightUtils.getOrCreateCarriers(scenario);
-
 		createAndaddCarriers(scenario.getNetwork(), carriers);
-
 		createAndLoadVehicleType(scenario);
-
 		routePlans(scenario);
 
 		return scenario;
@@ -167,18 +219,19 @@ public class FreightOnlyMatsim {
 	private void createAndaddCarriers(Network network, Carriers carriers) {
 
 		// create one carrier for each our
-		for (int i = 0; i < 24; i++) {
-			Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
-			createAndAddCarrierSerivces(carrier, i, linkIDsTour, expectedTravelTime, serviceTime, timewindow);
+		if (linkIDsTour.length > 0)
+			for (int i = 0; i < 24; i++) {
+				Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
+				createAndAddCarrierSerivces(carrier, i, linkIDsTour, expectedTravelTime, serviceTime, timewindow);
 
-			CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", Input.depot, i);
-			CarrierUtils.addCarrierVehicle(carrier, carrierVehicle);
+				CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", Input.depot, i);
+				CarrierUtils.addCarrierVehicle(carrier, carrierVehicle);
 
-			CarrierPlan carrierPlan = createPlan(network, carrier, i);
-			carrier.setSelectedPlan(carrierPlan);
+				CarrierPlan carrierPlan = createPlan(network, carrier, i);
+				carrier.setSelectedPlan(carrierPlan);
 
-			carriers.addCarrier(carrier);
-		}
+				carriers.addCarrier(carrier);
+			}
 
 	}
 
