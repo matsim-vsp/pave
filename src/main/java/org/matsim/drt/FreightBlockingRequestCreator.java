@@ -57,12 +57,14 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
     private final Network network;
     private final TravelTime travelTime;
     private final double qSimStartTime;
+    private final Config config;
 
     public FreightBlockingRequestCreator(Network network, TravelTime travelTime, Config config) {
         this.network = network;
         this.travelTime = travelTime;
         this.mode = DrtConfigGroup.getSingleModeDrtConfig(config).getMode();
         this.qSimStartTime = Math.max(0, config.qsim().getStartTime());
+        this.config = config;
     }
     
     @Override
@@ -82,10 +84,30 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
     private DrtBlockingRequest createRequest(ScheduledTour scheduledTour) {
         //TODO Id
         Id<Request> id = Id.create("blockingRequest_customer_" + scheduledTour.getVehicle().getId().toString(), Request.class);
-        double blockingStart = Math.max(qSimStartTime, scheduledTour.getDeparture() - RETOOL_DURATION);
+        double blockingStart = determineStartOfBlocking(scheduledTour);
         List<Task> tourTasks = convertScheduledTour2DvrpTasks(scheduledTour, blockingStart);
         double blockingEnd = tourTasks.get(tourTasks.size() - 1).getEndTime();
         return new DrtBlockingRequest(id, Math.max(qSimStartTime, blockingStart - SUBMISSION_LOOK_AHEAD), blockingStart, blockingEnd, tourTasks);
+    }
+
+
+    /**
+     * a problem is that JSprit calculates the departure for a ScheduledTour in a way that vehicles start as early as possible and
+     * then wait at the location of the first delivery. We account for this by setting the earliest departure to 1.5*travelTime between depot
+     * and first delivery.
+     *
+     * @param scheduledTour
+     * @return
+     */
+    private double determineStartOfBlocking(ScheduledTour scheduledTour) {
+        double vehicleEarliestStart = scheduledTour.getVehicle().getEarliestStartTime();
+        double ttDepot2FirstDelivery = ((Tour.Leg) scheduledTour.getTour().getTourElements().get(0)).getExpectedTransportTime();
+        double firstDeliveryEarliestStart =((Tour.TourActivity) scheduledTour.getTour().getTourElements().get(1)).getTimeWindow().getStart();
+
+        double calculatedStart = firstDeliveryEarliestStart - ttDepot2FirstDelivery * 1.5 - RETOOL_DURATION;
+//        double bufferFactor = config.plansCalcRoute().getTeleportedModeFreespeedFactors().get(TransportMode.ride);
+
+        return Math.max(qSimStartTime, Math.max(vehicleEarliestStart, calculatedStart));
     }
 
     private List<Task> convertScheduledTour2DvrpTasks(ScheduledTour scheduledTour, double blockingStart) {
