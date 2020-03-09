@@ -7,9 +7,9 @@ public class Input {
 	public static final double serviceTime = 2 * 60;
 	public static final double standardTW = 10 * 60;
 	public static final double premiumTW = 2 * 60;
-	public static final double staticBuffer = 0 * 60;
 	public static final String depot = "9826";
 
+	///// Main Example Tour
 	// link id's for example tour
 	public static final String[] tour = new String[] { "9826", "10837", "37615", "122985", "34319", "97538", "82306",
 			"113960", "76890", "64709", "18863", "14787", "116212", "63691", "30311", "76811", "20545", "142877",
@@ -29,6 +29,21 @@ public class Input {
 	public static final double[] maxTT = new double[] { 0.0, 1592.517231, 533.4664708, 738.1203464, 582.9350352,
 			582.2497275, 663.5987905, 702.907558, 653.5758981, 896.8119032, 892.120581, 445.7765853, 560.4866599,
 			667.6098697, 677.0537879, 839.0182749, 474.0636164, 887.3781677, 750.0190174, 1049.122674 };
+
+	
+	////// Buffering
+	//simple buffer add or subtract static value
+	public static final double noStaticBuffer = 0 * 60;
+	public static final double plusStaticBuffer = 5 * 60;
+	public static final double minusStaticBuffer = -5 * 60;
+	
+	//adaptive buffer for each trip
+	public static final double[] noAdaptiveBuffer = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+			0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+	public static final double[] adaptiveBuffer = new double[] { 0.0, 85.73326354, 46.62820789, 30.97045138,
+			41.66466925, 25.29628171, 19.50129223, 32.75372911, 46.29139309, 37.8633148, 48.5075136, 17.74839453,
+			19.30589754, 38.66120037, 41.73473778, 57.63299611, 33.96263181, 68.88419599, 66.03484477, 71.02103778 }; // standard
+																														// deviation
 
 	// link id's for a larger example tour
 	public static final String[] lTour = new String[] { "9826", "10837", "37615", "122985", "34319", "97538", "82306",

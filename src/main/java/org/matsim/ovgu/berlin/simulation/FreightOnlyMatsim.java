@@ -73,6 +73,7 @@ public class FreightOnlyMatsim {
 	private double serviceTime;
 	private double timewindow;
 	private double staticBuffer;
+	private double[] adaptiveBuffer;
 
 	public static void main(String[] args) throws IOException, InvalidAttributeValueException {
 
@@ -88,13 +89,15 @@ public class FreightOnlyMatsim {
 	}
 
 	public FreightOnlyMatsim(String pathChangeEvents, String pathOutput, String[] linkIDsTour,
-			double[] expectedTravelTime, double serviceTime, double timewindow, double staticBuffer) {
+			double[] expectedTravelTime, double serviceTime, double timewindow, double staticBuffer,
+			double[] adaptiveBuffer) {
 
 		this.linkIDsTour = linkIDsTour;
 		this.expectedTravelTime = expectedTravelTime;
 		this.serviceTime = serviceTime;
 		this.timewindow = timewindow;
 		this.staticBuffer = staticBuffer;
+		this.adaptiveBuffer = adaptiveBuffer;
 
 		run(pathChangeEvents, pathOutput);
 	}
@@ -166,7 +169,8 @@ public class FreightOnlyMatsim {
 		expectedTravelTime = Input.avgTT;
 		serviceTime = Input.serviceTime;
 		timewindow = Input.standardTW;
-		staticBuffer = Input.staticBuffer;
+		staticBuffer = Input.noStaticBuffer;
+		adaptiveBuffer = Input.noAdaptiveBuffer;
 	}
 
 	private Config prepareConfig(String networkChangeEventsFileLocation, String outputLocation) {
@@ -225,8 +229,7 @@ public class FreightOnlyMatsim {
 		if (linkIDsTour.length > 0)
 			for (int i = 0; i < 24; i++) {
 				Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
-				createAndAddCarrierSerivces(carrier, i, linkIDsTour, expectedTravelTime, serviceTime, timewindow,
-						staticBuffer);
+				createAndAddCarrierSerivces(carrier, i);
 
 				CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", Input.depot, i);
 				CarrierUtils.addCarrierVehicle(carrier, carrierVehicle);
@@ -239,30 +242,32 @@ public class FreightOnlyMatsim {
 
 	}
 
-	private void createAndAddCarrierSerivces(Carrier carrier, int hour, String[] linkIDs, double[] expectedTT,
-			double serviceTime, double timewindow, double staticBuffer) {
+	private void createAndAddCarrierSerivces(Carrier carrier, int hour) {
 //		
 		double tourStartInSec = hour * 3600.;
 //
 		// calculate expected arrival times from expected travel times
-		double[] expectedArrival = new double[expectedTT.length];
-		expectedArrival[0] = tourStartInSec + expectedTT[0];
+		double[] expectedArrival = new double[expectedTravelTime.length];
+		expectedArrival[0] = tourStartInSec + expectedTravelTime[0];
 		for (int x = 1; x < expectedArrival.length; x++)
-			expectedArrival[x] = expectedArrival[x - 1] + serviceTime + expectedTT[x] + staticBuffer;
+			expectedArrival[x] = expectedArrival[x - 1] + serviceTime + expectedTravelTime[x] + staticBuffer
+					+ adaptiveBuffer[x - 1];
 
 		// create customer services at origin and destination
-		for (int customer = 0; customer < linkIDs.length / 2; customer++) {
+		for (int customer = 0; customer < linkIDsTour.length / 2; customer++) {
 			int x = customer * 2;
 
 			double earliestStart = expectedArrival[x] - timewindow / 2;
 
 			Id<CarrierService> customerOriginID = Id.create("c" + (customer + 1) + "-origin", CarrierService.class);
-			CarrierUtils.addService(carrier, createService(customerOriginID, linkIDs[x], earliestStart, serviceTime));
+			CarrierUtils.addService(carrier,
+					createService(customerOriginID, linkIDsTour[x], earliestStart, serviceTime));
 
 			Id<CarrierService> customerDestID = Id.create("c" + (customer + 1) + "-dest", CarrierService.class);
 			// set possibility to start service (drop-off) at destination earlier than
 			// expected:
-			CarrierUtils.addService(carrier, createService(customerDestID, linkIDs[x + 1], earliestStart, serviceTime));
+			CarrierUtils.addService(carrier,
+					createService(customerDestID, linkIDsTour[x + 1], earliestStart, serviceTime));
 		}
 	}
 
