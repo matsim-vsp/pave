@@ -72,6 +72,7 @@ public class FreightOnlyMatsim {
 	private double[] expectedTravelTime;
 	private double serviceTime;
 	private double timewindow;
+	private double staticBuffer;
 
 	public static void main(String[] args) throws IOException, InvalidAttributeValueException {
 
@@ -87,12 +88,13 @@ public class FreightOnlyMatsim {
 	}
 
 	public FreightOnlyMatsim(String pathChangeEvents, String pathOutput, String[] linkIDsTour,
-			double[] expectedTravelTime, double serviceTime, double timewindow) {
+			double[] expectedTravelTime, double serviceTime, double timewindow, double staticBuffer) {
 
 		this.linkIDsTour = linkIDsTour;
 		this.expectedTravelTime = expectedTravelTime;
 		this.serviceTime = serviceTime;
 		this.timewindow = timewindow;
+		this.staticBuffer = staticBuffer;
 
 		run(pathChangeEvents, pathOutput);
 	}
@@ -122,7 +124,7 @@ public class FreightOnlyMatsim {
 
 	private void preparePathCalculator(Controler controler) {
 		((PlansCalcRouteConfigGroup) controler.getConfig().getModules().get("planscalcroute")).setRoutingRandomness(0);
-		
+
 		controler.getTripRouterProvider();
 		LeastCostPathCalculatorFactory calcFac = controler.getLeastCostPathCalculatorFactory();
 		TravelDisutilityFactory disuFac = controler.getTravelDisutilityFactory();
@@ -164,6 +166,7 @@ public class FreightOnlyMatsim {
 		expectedTravelTime = Input.avgTT;
 		serviceTime = Input.serviceTime;
 		timewindow = Input.standardTW;
+		staticBuffer = Input.staticBuffer;
 	}
 
 	private Config prepareConfig(String networkChangeEventsFileLocation, String outputLocation) {
@@ -222,7 +225,8 @@ public class FreightOnlyMatsim {
 		if (linkIDsTour.length > 0)
 			for (int i = 0; i < 24; i++) {
 				Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
-				createAndAddCarrierSerivces(carrier, i, linkIDsTour, expectedTravelTime, serviceTime, timewindow);
+				createAndAddCarrierSerivces(carrier, i, linkIDsTour, expectedTravelTime, serviceTime, timewindow,
+						staticBuffer);
 
 				CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", Input.depot, i);
 				CarrierUtils.addCarrierVehicle(carrier, carrierVehicle);
@@ -236,7 +240,7 @@ public class FreightOnlyMatsim {
 	}
 
 	private void createAndAddCarrierSerivces(Carrier carrier, int hour, String[] linkIDs, double[] expectedTT,
-			double serviceTime, double timewindow) {
+			double serviceTime, double timewindow, double staticBuffer) {
 //		
 		double tourStartInSec = hour * 3600.;
 //
@@ -244,7 +248,7 @@ public class FreightOnlyMatsim {
 		double[] expectedArrival = new double[expectedTT.length];
 		expectedArrival[0] = tourStartInSec + expectedTT[0];
 		for (int x = 1; x < expectedArrival.length; x++)
-			expectedArrival[x] = expectedArrival[x - 1] + serviceTime + expectedTT[x];
+			expectedArrival[x] = expectedArrival[x - 1] + serviceTime + expectedTT[x] + staticBuffer;
 
 		// create customer services at origin and destination
 		for (int customer = 0; customer < linkIDs.length / 2; customer++) {

@@ -17,33 +17,33 @@ public class RunSimulation {
 	private static void runTour(String pathChangeEvents, String pathOutput) {
 
 		new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/minStandard/", Input.tour, Input.minTT,
-				Input.serviceTime, Input.standardTW);
+				Input.serviceTime, Input.standardTW, Input.staticBuffer);
 		new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/minPremium/", Input.tour, Input.minTT, Input.serviceTime,
-				Input.premiumTW);
+				Input.premiumTW, Input.staticBuffer);
 		new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/avgStandard/", Input.tour, Input.avgTT,
-				Input.serviceTime, Input.standardTW);
+				Input.serviceTime, Input.standardTW, Input.staticBuffer);
 		new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/avgPremium/", Input.tour, Input.avgTT, Input.serviceTime,
-				Input.premiumTW);
+				Input.premiumTW, Input.staticBuffer);
 		new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/maxStandard/", Input.tour, Input.maxTT,
-				Input.serviceTime, Input.standardTW);
+				Input.serviceTime, Input.standardTW, Input.staticBuffer);
 		new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/maxPremium/", Input.tour, Input.maxTT, Input.serviceTime,
-				Input.premiumTW);
+				Input.premiumTW, Input.staticBuffer);
 	}
 
 	private static void runTourXL(String pathChangeEvents, String pathOutput) {
 
 		new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/xl/minStandard/", Input.lTour, Input.lMinTT,
-				Input.serviceTime, Input.standardTW);
+				Input.serviceTime, Input.standardTW, Input.staticBuffer);
 		new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/xl/minPremium/", Input.lTour, Input.lMinTT,
-				Input.serviceTime, Input.premiumTW);
+				Input.serviceTime, Input.premiumTW, Input.staticBuffer);
 		new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/xl/avgStandard/", Input.lTour, Input.lAvgTT,
-				Input.serviceTime, Input.standardTW);
+				Input.serviceTime, Input.standardTW, Input.staticBuffer);
 		new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/xl/avgPremium/", Input.lTour, Input.lAvgTT,
-				Input.serviceTime, Input.premiumTW);
+				Input.serviceTime, Input.premiumTW, Input.staticBuffer);
 		new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/xl/maxStandard/", Input.lTour, Input.lMaxTT,
-				Input.serviceTime, Input.standardTW);
+				Input.serviceTime, Input.standardTW, Input.staticBuffer);
 		new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/xl/maxPremium/", Input.lTour, Input.lMaxTT,
-				Input.serviceTime, Input.premiumTW);
+				Input.serviceTime, Input.premiumTW, Input.staticBuffer);
 	}
 
 }

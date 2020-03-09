@@ -15,11 +15,11 @@ public class CreateTravelTimeMatrix {
 		String pathChangeEvents = "input/10pc/scenario-A.15.networkChangeEvents.xml.gz";
 		String pathOutput = "OutputKMT/OVGU/10pc/Matrix/";
 
-		FreightOnlyMatsim sim = new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/Iteration/", null, null, 0, 0);
-		
+		FreightOnlyMatsim sim = new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/Iteration/", null, null, 0, 0, 0);
+
 		printMatrix("test", pathOutput, sim, Input.tour);
 	}
-	
+
 	private static void printMatrix(String name, String pathOutput, FreightOnlyMatsim sim, String[] links) {
 		try {
 
@@ -44,7 +44,6 @@ public class CreateTravelTimeMatrix {
 		}
 
 	}
-	
 
 	private static void print(FreightOnlyMatsim calc, String fromLink, String toLink, FileWriter csvWriter)
 			throws IOException {
@@ -73,14 +72,12 @@ public class CreateTravelTimeMatrix {
 		printPerHour(calc, fromLink, toLink, 22, csvWriter);
 		printPerHour(calc, fromLink, toLink, 23, csvWriter);
 	}
-	
 
 	private static void printPerHour(FreightOnlyMatsim sim, String fromLink, String toLink, int hour,
 			FileWriter csvWriter) throws IOException {
 		double starttime = hour * 3600;
 		Path path = sim.getTravelPathWithFromNodes(fromLink, toLink, starttime);
-		String str = fromLink + "; " + toLink + "; " + hour + "; " + path.travelTime + "; "
-				+ path.travelCost + ";  ";
+		String str = fromLink + "; " + toLink + "; " + hour + "; " + path.travelTime + "; " + path.travelCost + ";  ";
 		for (Node node : path.nodes) {
 			str = str + node.getId() + ",";
 		}
