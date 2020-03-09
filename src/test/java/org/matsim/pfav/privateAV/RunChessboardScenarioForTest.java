@@ -70,7 +70,7 @@ class RunChessboardScenarioForTest {
 		String inputDir = "test/input/" + classDirectory;
 		String packageInputDirectory = inputDir.substring(0, inputDir.lastIndexOf(47));
 //		input = packageInputDirectory.substring(0, packageInputDirectory.lastIndexOf(47) + 1);
-		input = "privateAV/";
+		input = "chessboard/";
 		output = "test/output/" + classDirectory;
 	}
 
