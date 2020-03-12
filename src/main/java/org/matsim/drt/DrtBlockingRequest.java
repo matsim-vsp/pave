@@ -9,7 +9,7 @@ import java.util.List;
 class DrtBlockingRequest implements Request {
 
     private final Id<Request> id;
-    private final double endTime;
+    private double endTime;
     private final double startTime;
     private final double submissionTime;
 
@@ -56,5 +56,9 @@ class DrtBlockingRequest implements Request {
 
     List<Task> getTasks() {
         return this.tasks;
+    }
+
+    void setEndTime(double endTime) {
+        this.endTime = endTime;
     }
 }

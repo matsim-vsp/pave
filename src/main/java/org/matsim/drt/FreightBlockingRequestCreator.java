@@ -50,8 +50,8 @@ import java.util.*;
 class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
     //TODO make this configurable
-    private static double RETOOL_DURATION = 15*60;
-    private static final double SUBMISSION_LOOK_AHEAD = 30*60;
+    private static double RETOOL_DURATION = 5*60;
+    private static final double SUBMISSION_LOOK_AHEAD = 15*60;
 
     private final String mode;
     private final Network network;
@@ -73,9 +73,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
         FreightUtils.getCarriers(scenario).getCarriers().values().forEach(carrier -> {
             if(CarrierUtils.getCarrierMode(carrier).equals(mode)){
-                carrier.getSelectedPlan().getScheduledTours().forEach(tour -> {
-                    requests.add(createRequest(tour));
-                });
+                carrier.getSelectedPlan().getScheduledTours().forEach(tour -> requests.add(createRequest(tour)));
             }
         });
         return requests;

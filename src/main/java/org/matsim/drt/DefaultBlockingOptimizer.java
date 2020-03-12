@@ -26,6 +26,7 @@ import org.matsim.contrib.drt.schedule.DrtDriveTask;
 import org.matsim.contrib.drt.schedule.DrtStayTask;
 import org.matsim.contrib.drt.scheduler.DrtScheduleInquiry;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPaths;
@@ -43,7 +44,12 @@ import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.log4j.Logger;
+import org.matsim.core.utils.misc.OptionalTime;
+import org.matsim.drt.tasks.FreightRetoolTask;
 
 class DefaultBlockingOptimizer implements BlockingOptimizer {
 
@@ -51,6 +57,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 
 
     private final DefaultDrtOptimizer optimizer;
+    private final Fleet fleet;
 
     private final DrtScheduleInquiry scheduleInquiry;
     private final DrtBlockingManager blockingManager;
@@ -61,14 +68,14 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
     private final TravelTime travelTime;
     Random rnd;
 
-    private final List<DvrpVehicle> idleVehicles;
     private final Map<DvrpVehicle, DrtBlockingRequest> blockedVehicles;
 
     private PriorityQueue<DrtBlockingRequest> blockingRequests;
 
-    DefaultBlockingOptimizer(DefaultDrtOptimizer optimizer, DrtScheduleInquiry scheduleInquiry, DrtBlockingManager blockingManager,
+    DefaultBlockingOptimizer(DefaultDrtOptimizer optimizer, Fleet fleet, DrtScheduleInquiry scheduleInquiry, DrtBlockingManager blockingManager,
                              EventsManager eventsManager, Network modalNetwork, MobsimTimer timer) {
         this.optimizer = optimizer;
+        this.fleet = fleet;
         this.scheduleInquiry = scheduleInquiry;
         this.blockingManager = blockingManager;
         this.eventsManager = eventsManager;
@@ -79,7 +86,6 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
         this.router = new FastAStarEuclideanFactory().createPathCalculator(modalNetwork, new TimeAsTravelDisutility(travelTime),
                 travelTime);
 
-        this.idleVehicles = new ArrayList<>();
         this.blockingRequests = new PriorityQueue<>(Comparator.comparing(DrtBlockingRequest::getSubmissionTime));
         this.blockedVehicles = new HashMap<>();
     }
@@ -99,23 +105,22 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
     public void nextTask(DvrpVehicle vehicle) {
 
         optimizer.nextTask(vehicle);
+        //if we do not check for the start time, it might be that the vehicle is idle before the start of the blocking tasks (for instance at iteration start)
+        if(this.blockedVehicles.containsKey(vehicle) && this.timer.getTimeOfDay() > this.blockedVehicles.get(vehicle).getStartTime()){
+            updateBlocking(vehicle);
+        }
 
-        considerUnblocking(vehicle);
     }
 
-    private void considerUnblocking(DvrpVehicle vehicle) {
-        if(scheduleInquiry.isIdle(vehicle)){
-            this.idleVehicles.add(vehicle);
 
+
+    private void updateBlocking(DvrpVehicle vehicle) {
+        if(scheduleInquiry.isIdle(vehicle)){
             //if the blocking request has started and the vehicle is idle then we can unblock the vehicle..
-            //if we do not check for the submission time, it might be that the vehicle is idle before the start of the blocking tasks (for instance at iteration start)
-            if(this.blockedVehicles.containsKey(vehicle) && this.timer.getTimeOfDay() > this.blockedVehicles.get(vehicle).getSubmissionTime()){
-                //unblock the vehicle
-                this.blockedVehicles.remove(vehicle);
-                this.blockingManager.unblockVehicleAfterTime(vehicle, timer.getTimeOfDay());
-            }
+            this.blockedVehicles.remove(vehicle);
+            this.blockingManager.unblockVehicleAfterTime(vehicle, timer.getTimeOfDay());
         } else {
-            this.idleVehicles.remove(vehicle);
+            updateBlockingEndTime(vehicle);
         }
     }
 
@@ -125,23 +130,28 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
         optimizer.notifyMobsimBeforeSimStep(e);
 
         Iterator<DrtBlockingRequest> blockingRequestsIterator = this.blockingRequests.iterator();
+
+        List<? extends DvrpVehicle> idleVehicles = fleet.getVehicles()
+                .values()
+                .stream()
+                .filter(scheduleInquiry::isIdle)
+                .collect(Collectors.toList());
+
         while(blockingRequestsIterator.hasNext()){
             DrtBlockingRequest drtBlockingRequest = blockingRequestsIterator.next();
 
             if(drtBlockingRequest.getStartTime() < timer.getTimeOfDay() /* + 1 TODO ???*/){
-                log.warn("drt blocking request " + drtBlockingRequest + " could not be assigned in time. It is denied.");
+                log.warn("drt blocking request " + drtBlockingRequest + " could not be assigned in time. It is rejected.");
 //                eventsManager.processEvent(new BlockingRequestDeniedEvent()); //TODO implement BlockingRequestDeniedEvent
                 blockingRequestsIterator.remove();
                 //TODO: what to do with the unassigned blocking tasks (=freight tour) ? ReSubmit? RePlan?
             } else{
-                if(!this.idleVehicles.isEmpty()){
-
+                if(!idleVehicles.isEmpty()){
                     DvrpVehicle vehicle;
-
                     {//TODO dispatch a suitable vehicle instead of any random one..
-                        int maxTries = this.idleVehicles.size();
+                        int maxTries = idleVehicles.size();
                         do {
-                            vehicle = this.idleVehicles.get(rnd.nextInt(this.idleVehicles.size()));
+                            vehicle = idleVehicles.get(rnd.nextInt(idleVehicles.size()));
                             maxTries --;
                         }
                         while(this.blockedVehicles.containsKey(vehicle) && maxTries > 0);   //if the idle vehicle is blocked in the future, do not assign it
@@ -149,10 +159,10 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
                     }
 
 
-                    if(blockingManager.blockVehicleIfPossible(vehicle, drtBlockingRequest.getStartTime(), drtBlockingRequest.getEndTime())){
+                    if(blockingManager.blockVehicle(vehicle, drtBlockingRequest)){
                         log.info("blocking vehicle " + vehicle.getId() + " for time period start=" +drtBlockingRequest.getStartTime()
                          + " end=" + drtBlockingRequest.getEndTime());
-                        this.idleVehicles.remove(vehicle);
+                        idleVehicles.remove(vehicle);
                         scheduleTasksForBlockedVehicle(drtBlockingRequest, vehicle);
                         this.blockedVehicles.put(vehicle, drtBlockingRequest);
                         blockingRequestsIterator.remove();
@@ -188,5 +198,34 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
             }
 
             schedule.addTask(new DrtStayTask(previousTask.getEndTime(), vehicle.getServiceEndTime(), Tasks.getEndLink(previousTask)));
+    }
+
+    private void updateBlockingEndTime(DvrpVehicle vehicle){
+        Schedule schedule = vehicle.getSchedule();
+
+        OptionalTime updatedBlockingEndTime = retrieveEndTimeOfBlocking(schedule);
+        if(updatedBlockingEndTime.isUndefined()){
+            throw new IllegalArgumentException("cannot update the blocking end time for vehicle " + vehicle);
+        }
+        if(updatedBlockingEndTime.seconds() > this.blockedVehicles.get(vehicle).getEndTime()){
+            if(! (blockingManager).extendBlocking(vehicle, updatedBlockingEndTime.seconds())){
+                throw new RuntimeException("the blocking for vehicle is supposed to be extended until " + updatedBlockingEndTime.seconds() + "." +
+                        " But that is not possible (probably because the maximum amount of blockings would be exceeded." +
+                        "Currently, an exception is thrown as freight tours are shall not be interrupted.");
+            }
+            this.blockedVehicles.get(vehicle).setEndTime(updatedBlockingEndTime.seconds());
+        }
+
+    }
+
+    private OptionalTime retrieveEndTimeOfBlocking(Schedule schedule) {
+        OptionalTime updatedBlockingEndTime = OptionalTime.undefined();
+        for(int i = schedule.getTaskCount() - 1; i >= schedule.getCurrentTask().getTaskIdx(); i--){
+            if(schedule.getTasks().get(i) instanceof FreightRetoolTask){
+                //end times just got updated by ScheduleTimingUpdater which is called from the delegate optimizer
+                return OptionalTime.defined(schedule.getTasks().get(i).getEndTime());
+            }
+        }
+        return updatedBlockingEndTime;
     }
 }

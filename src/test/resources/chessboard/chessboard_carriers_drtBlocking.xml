@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<carriers>
+    <carrier id="carrier1">
+        <attributes>
+            <attribute name="carrierMode" class="java.lang.String">drt</attribute>
+            <attribute name="jspritIterations" class="java.lang.Integer">3</attribute>
+        </attributes>
+        <capabilities fleetSize="INFINITE">
+            <vehicles>
+                <vehicle id="drtFreight_v" depotLinkId="10" typeId="drtFreight" earliestStart="06:00:00" latestEnd="20:00:00"/>
+            </vehicles>
+
+        </capabilities>
+
+        <services>
+            <service id="1" to="15" capacityDemand="1" earliestStart="06:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:05:0"/>
+            <service id="2" to="15" capacityDemand="1" earliestStart="08:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:05:00"/>
+            <service id="3" to="15" capacityDemand="1" earliestStart="10:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:05:00"/>
+            <service id="4" to="15" capacityDemand="1" earliestStart="12:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:05:00"/>
+        </services>
+    </carrier>
+</carriers>

@@ -53,7 +53,7 @@ class RunChessboardScenarioForTest {
 
 	RunChessboardScenarioForTest(Class testClass, int nrOfIters, CarrierCapabilities.FleetSize carrierFleetSize) {
 		setInputAndOutput(testClass);
-		configFile = input + "chessboard_config.xml";
+		configFile = input + "chessboard_pfav_config.xml";
 		networkFile = "network_speed10.xml";
 		carriersFile = "chessboard_carriers_" + carrierFleetSize + ".xml";
 		vehtypesFile = "chessboard_vehicleTypes.xml";

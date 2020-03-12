@@ -26,14 +26,28 @@ interface DrtBlockingManager {
 
     boolean isVehicleBlocked(DvrpVehicle vehicle, double time);
 
-    boolean blockVehicleIfPossible(DvrpVehicle vehicle, double startTime, double endTime);
+    /**
+     * vehicle is blocked for conventional requests starting for the time window specified in the {@code request}.
+     *
+     * TODO
+     * Currently, it is not supported that the blocking can take place in the future.
+     * Implementations should set the blocking start to min(request.submissionTime, request.startTime).
+     *
+     * if the blocking can not be executed, the return value is false; otherwise it is true.
+     * @param vehicle
+     * @param request
+     * @return
+     */
+    boolean blockVehicle(DvrpVehicle vehicle, DrtBlockingRequest request);
 
     /**
-     * Unblocks the vehicle for every slot that starts after the specified {@code time}.
+     * Unblocks the vehicle after the specified {@code time}.
      * That means the vehicle is available for conventional requests again.
      * @param vehicle
      * @param time the time after which the vehicle should be available for conventional requests again
      */
     void unblockVehicleAfterTime(DvrpVehicle vehicle, double time);
+
+    boolean extendBlocking(DvrpVehicle vehicle, double updatedBlockingEnd);
 
 }

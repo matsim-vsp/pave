@@ -18,8 +18,9 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.run;
+package org.matsim.drt;
 
+import org.junit.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -37,53 +38,39 @@ import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
 import org.matsim.contrib.freight.FreightConfigGroup;
-import org.matsim.contrib.freight.carrier.Carrier;
-import org.matsim.contrib.freight.carrier.CarrierPlanWriter;
 import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
-import org.matsim.contrib.freight.carrier.CarrierUtils;
 import org.matsim.contrib.freight.utils.FreightUtils;
-import org.matsim.contrib.otfvis.OTFVisLiveModule;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlansConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
-import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.misc.Time;
-import org.matsim.drt.DrtBlockingQSimModule;
-import org.matsim.examples.ExamplesUtils;
 
 import javax.management.InvalidAttributeValueException;
 
-public class RunDrtBlockingEquilScenario {
+public class BlockingDRTChessboardTest {
 
-    public static void main(String[] args) {
 
-        Config config = ConfigUtils.loadConfig("scenarios/equil/config.xml");
-        config.controler().setOutputDirectory("./output/equil/drtBlocking/");
+    @Test
+    public final void testDefaultBlockingOptimizer() throws InvalidAttributeValueException {
+
+        String input = "chessboard/";
+        Config config = ConfigUtils.loadConfig(input + "chessboard_drtBlocking_config.xml");
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
-        config.controler().setLastIteration(0);
-
-        config.qsim().setEndTime(30*3600);
-
 
         DrtConfigGroup drtCfg = prepareDrtConfig(config);
 
         FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
-        freightCfg.setCarriersFile("equil_carriers_empty.xml");
-        freightCfg.setCarriersVehicleTypesFile("equil_carrierVehicleTypes.xml");
+        freightCfg.setCarriersFile("chessboard_carriers_drtBlocking.xml");
+        freightCfg.setCarriersVehicleTypesFile("chessboard_vehicleTypes.xml");
 
         Scenario scenario = ScenarioUtils.loadScenario(config);
+
         FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
-
-        try {
-            FreightUtils.runJsprit(scenario, freightCfg);
-            new CarrierPlanXmlWriterV2(FreightUtils.getCarriers(scenario)).write(config.controler().getOutputDirectory() + "carriers_planned.xml");
-        } catch (InvalidAttributeValueException e) {
-            e.printStackTrace();
-        }
+        FreightUtils.runJsprit(scenario, freightCfg);
+        new CarrierPlanXmlWriterV2(FreightUtils.getCarriers(scenario)).write(config.controler().getOutputDirectory() + "carriers_planned.xml");
 
         setupPopulation(scenario);
 
@@ -92,6 +79,57 @@ public class RunDrtBlockingEquilScenario {
 
 
         controler.run();
+
+    }
+
+    private void configureControler(DrtConfigGroup drtCfg, Controler controler) {
+        controler.addOverridingModule( new DvrpModule() ) ;
+        controler.addOverridingModule( new DrtModeModule(drtCfg) ) ;
+        controler.addOverridingQSimModule( new DrtBlockingQSimModule(drtCfg));
+
+        controler.configureQSimComponents( DvrpQSimComponents.activateModes( TransportMode.drt ) ) ;
+    }
+
+    private void setupPopulation(Scenario scenario) {
+        scenario.getPopulation()
+                .getFactory()
+                .getRouteFactories()
+                .setRouteFactory(DrtRoute.class, new DrtRouteFactory());
+
+        //delete the old population
+        scenario.getPopulation().getPersons().clear();
+
+        Id<Link> leftLink = Id.createLinkId(1);
+        Id<Link> rightLink = Id.createLinkId(5);
+
+        PopulationFactory popFactory = scenario.getPopulation().getFactory();
+
+        for (int i = 1; i <= 200; i++) {
+            Person person = popFactory.createPerson(Id.createPersonId("person_" + i));
+            Plan plan = popFactory.createPlan();
+            Activity act1;
+            Activity act2;
+            if(i % 2 == 0){
+                 act1 = popFactory.createActivityFromLinkId("home", leftLink);
+            } else {
+                act1 = popFactory.createActivityFromLinkId("home", rightLink);
+            }
+            act1.setEndTime(i * 5*60);
+            plan.addActivity(act1);
+
+            plan.addLeg(popFactory.createLeg("drt"));
+
+            if(i % 2 == 0){
+                act2 = popFactory.createActivityFromLinkId("work", rightLink);
+            } else {
+                act2 = popFactory.createActivityFromLinkId("work", leftLink);
+            }
+
+            plan.addActivity(act2);
+
+            person.addPlan(plan);
+            scenario.getPopulation().addPerson(person);
+        }
     }
 
     private static DrtConfigGroup prepareDrtConfig(Config config) {
@@ -101,62 +139,18 @@ public class RunDrtBlockingEquilScenario {
 
         DrtConfigGroup drtCfg = new DrtConfigGroup();//DrtConfigGroup.getSingleModeDrtConfig(config);
         drtCfg.setMode(TransportMode.drt);
-        drtCfg.setMaxWaitTime(2 * 3600);
+        drtCfg.setMaxWaitTime(15 * 60);
         drtCfg.setMaxTravelTimeAlpha(1);
         drtCfg.setMaxTravelTimeBeta(15 * 60);
         drtCfg.setStopDuration(60);
-        drtCfg.setEstimatedDrtSpeed(27.78);
-        drtCfg.setVehiclesFile("drtVehicles.xml");
-
-        drtCfg.setRejectRequestIfMaxWaitOrTravelTimeViolated(false);
+        drtCfg.setEstimatedDrtSpeed(10);
+        drtCfg.setVehiclesFile("drtBlockingVehicles.xml");
 
         config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
 
         multiModeDrtConfigGroup.addParameterSet(drtCfg);
 
         return drtCfg;
-    }
-
-    private static void configureControler(DrtConfigGroup drtCfg, Controler controler) {
-        controler.addOverridingModule( new DvrpModule() ) ;
-        controler.addOverridingModule( new DrtModeModule(drtCfg) ) ;
-        controler.addOverridingQSimModule( new DrtBlockingQSimModule(drtCfg));
-
-        controler.configureQSimComponents( DvrpQSimComponents.activateModes( TransportMode.drt ) ) ;
-    }
-
-
-    private static void setupPopulation(Scenario scenario){
-        scenario.getPopulation()
-                .getFactory()
-                .getRouteFactories()
-                .setRouteFactory(DrtRoute.class, new DrtRouteFactory());
-        
-        //delete the old population
-        scenario.getPopulation().getPersons().clear();
-
-        Id<Link> homeLink = Id.createLinkId(1);
-        Id<Link> workLink = Id.createLinkId(22);
-
-        PopulationFactory popFactory = scenario.getPopulation().getFactory();
-
-        for (int i = 1; i <= 48; i++) {
-            Person person = popFactory.createPerson(Id.createPersonId("person_" + i));
-            Plan plan = popFactory.createPlan();
-
-            Activity home = popFactory.createActivityFromLinkId("h", homeLink);
-            home.setEndTime(i * 1800);
-            plan.addActivity(home);
-
-            plan.addLeg(popFactory.createLeg("drt"));
-
-            Activity work = popFactory.createActivityFromLinkId("w", workLink);
-            plan.addActivity(work);
-
-            person.addPlan(plan);
-            scenario.getPopulation().addPerson(person);
-        }
-
     }
 
 }

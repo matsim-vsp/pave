@@ -76,6 +76,7 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
 
         addModalComponent(DrtOptimizer.class, modalProvider(
                 getter -> new DefaultBlockingOptimizer(getter.getModal(DefaultDrtOptimizer.class),
+                        getter.getModal(Fleet.class),
                         getter.getModal(DrtScheduleInquiry.class),
                         getter.getModal(DrtBlockingManager.class),
                         getter.get(EventsManager.class),
@@ -90,14 +91,18 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getModal(EmptyVehicleRelocator.class), getter.getModal(UnplannedRequestInserter.class))))
                 .in(Singleton.class);
 
-        bindModal(DrtBlockingManager.class).toInstance( new SlotBasedDrtBlockingManager(getConfig(), defaultMaxAmountOfBlockings));
+        bindModal(DrtBlockingManager.class).toProvider(modalProvider(
+                getter -> new SlotBasedDrtBlockingManager(getConfig(),
+                        defaultMaxAmountOfBlockings,
+                        getter.get(MobsimTimer.class))))
+                .in(Singleton.class);
 
         bindModal(VehicleData.EntryFactory.class).toProvider(modalProvider(
                 getter -> new BlockingVehicleDataEntryFactory(drtCfg, getter.getModal(DrtBlockingManager.class))))
                 .in(Singleton.class);
 
 
-        addModalComponent(BlockingRequestEngine.class, new ModalProviders.AbstractProvider<BlockingRequestEngine>(drtCfg.getMode()) {
+        addModalComponent(BlockingRequestEngine.class, new ModalProviders.AbstractProvider<>(drtCfg.getMode()) {
             @Inject
             Scenario scenario;
 
@@ -156,7 +161,7 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
         bindModal(DrtTaskFactory.class).toInstance(new DrtTaskFactoryImpl());
 
         bindModal(EmptyVehicleRelocator.class).toProvider(
-                new ModalProviders.AbstractProvider<EmptyVehicleRelocator>(drtCfg.getMode()) {
+                new ModalProviders.AbstractProvider<>(drtCfg.getMode()) {
 
                     @Inject
                     @Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
@@ -185,7 +190,7 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                 .asEagerSingleton();
 
         addModalComponent(ParallelPathDataProvider.class,
-                new ModalProviders.AbstractProvider<ParallelPathDataProvider>(getMode()) {
+                new ModalProviders.AbstractProvider<>(getMode()) {
                     @Inject
                     @Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
                     private TravelTime travelTime;

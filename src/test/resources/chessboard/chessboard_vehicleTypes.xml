@@ -6,5 +6,11 @@
         <capacity>3</capacity>
         <costInformation fix="130.0" perMeter="1.0E-4" perSecond="0.001"/>
     </vehicleType>
+    <vehicleType id="drtFreight">
+        <description>null</description>
+        <engineInformation fuelType="diesel" gasConsumption="0.015"/>
+        <capacity>1</capacity>
+        <costInformation fix="130.0" perMeter="1.0E-4" perSecond="0.001"/>
+    </vehicleType>
 </vehicleTypes>
 
