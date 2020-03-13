@@ -15,7 +15,7 @@ public class CreateTravelTimeMatrix {
 		String pathChangeEvents = "input/10pc/scenario-A.15.networkChangeEvents.xml.gz";
 		String pathOutput = "OutputKMT/OVGU/10pc/Matrix/";
 
-		FreightOnlyMatsim sim = new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/Iteration/", null, null, 0, 0, 0, null);
+		FreightOnlyMatsim sim = new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/Iteration/", null, null, null, 0, "");
 
 		printMatrix("test", pathOutput, sim, Input.tour);
 	}
