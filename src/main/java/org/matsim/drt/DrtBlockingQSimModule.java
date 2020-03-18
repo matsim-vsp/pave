@@ -33,13 +33,11 @@ import org.matsim.contrib.drt.optimizer.insertion.*;
 import org.matsim.contrib.drt.optimizer.rebalancing.RebalancingStrategy;
 import org.matsim.contrib.drt.passenger.DrtRequestCreator;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
-import org.matsim.contrib.drt.schedule.DrtStayTaskEndTimeCalculator;
 import org.matsim.contrib.drt.schedule.DrtTaskFactory;
 import org.matsim.contrib.drt.schedule.DrtTaskFactoryImpl;
 import org.matsim.contrib.drt.scheduler.DrtScheduleInquiry;
 import org.matsim.contrib.drt.scheduler.EmptyVehicleRelocator;
 import org.matsim.contrib.drt.scheduler.RequestInsertionScheduler;
-import org.matsim.contrib.drt.vrpagent.DrtActionCreator;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.passenger.*;
@@ -64,7 +62,7 @@ public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
     //TODO configurable
     private static int defaultMaxAmountOfBlockings = 1;
 
-    public DrtBlockingQSimModule(DrtConfigGroup drtConfigGroup){
+    DrtBlockingQSimModule(DrtConfigGroup drtConfigGroup){
         super(drtConfigGroup.getMode());
         this.drtCfg = drtConfigGroup;
     }
