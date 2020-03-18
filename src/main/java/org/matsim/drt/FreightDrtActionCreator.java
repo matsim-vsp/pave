@@ -37,7 +37,7 @@ import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.drt.tasks.FreightDeliveryTask;
 import org.matsim.drt.tasks.FreightTaskType;
 
-public class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
+class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
 
     private final VrpLegFactory legFactory;
     private final PassengerEngine passengerEngine;
