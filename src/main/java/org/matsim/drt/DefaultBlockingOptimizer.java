@@ -45,10 +45,11 @@ import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.matsim.core.utils.misc.OptionalTime;
+import org.matsim.drt.events.DrtBlockingRequestRejectedEvent;
+import org.matsim.drt.events.DrtBlockingRequestScheduledEvent;
 import org.matsim.drt.tasks.FreightRetoolTask;
 
 class DefaultBlockingOptimizer implements BlockingOptimizer {
@@ -142,7 +143,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 
             if(drtBlockingRequest.getStartTime() < timer.getTimeOfDay() /* + 1 TODO ???*/){
                 log.warn("drt blocking request " + drtBlockingRequest + " could not be assigned in time. It is rejected.");
-//                eventsManager.processEvent(new BlockingRequestDeniedEvent()); //TODO implement BlockingRequestDeniedEvent
+                eventsManager.processEvent(new DrtBlockingRequestRejectedEvent(timer.getTimeOfDay(), drtBlockingRequest));
                 blockingRequestsIterator.remove();
                 //TODO: what to do with the unassigned blocking tasks (=freight tour) ? ReSubmit? RePlan?
             } else{
@@ -166,7 +167,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
                         scheduleTasksForBlockedVehicle(drtBlockingRequest, vehicle);
                         this.blockedVehicles.put(vehicle, drtBlockingRequest);
                         blockingRequestsIterator.remove();
-//                        eventsManager.processEvent(new BlockingRequestAcceptedEvent()); //TODO BlockingRequestAcceptedEvent
+                        eventsManager.processEvent(new DrtBlockingRequestScheduledEvent(timer.getTimeOfDay(), drtBlockingRequest.getId(), vehicle.getId()));
                     }
                 } else{
                     break;

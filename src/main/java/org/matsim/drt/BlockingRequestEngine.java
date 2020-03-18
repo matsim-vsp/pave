@@ -40,7 +40,6 @@ class BlockingRequestEngine implements MobsimInitializedListener, MobsimAfterSim
 
     BlockingRequestEngine(Scenario scenario, BlockingOptimizer optimizer, BlockingRequestCreator blockingRequestCreator) {
         this.scenario = scenario;
-
         this.optimizer = optimizer;
         this.blockingRequestCreator = blockingRequestCreator;
     }
