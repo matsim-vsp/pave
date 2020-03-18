@@ -38,14 +38,10 @@ class BlockingRequestEngine implements MobsimInitializedListener, MobsimAfterSim
     private BlockingOptimizer optimizer;
     private BlockingRequestCreator blockingRequestCreator;
 
-    BlockingRequestEngine(Scenario scenario, DrtOptimizer optimizer, BlockingRequestCreator blockingRequestCreator) {
+    BlockingRequestEngine(Scenario scenario, BlockingOptimizer optimizer, BlockingRequestCreator blockingRequestCreator) {
         this.scenario = scenario;
 
-        //TODO fix this!!
-        if(! (optimizer instanceof BlockingOptimizer) ){
-            throw new IllegalArgumentException();
-        }
-        this.optimizer = (BlockingOptimizer) optimizer;
+        this.optimizer = optimizer;
         this.blockingRequestCreator = blockingRequestCreator;
     }
 

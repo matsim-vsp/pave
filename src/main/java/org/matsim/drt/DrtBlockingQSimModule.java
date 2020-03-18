@@ -106,7 +106,7 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
 
             @Override
             public BlockingRequestEngine get() {
-                return new BlockingRequestEngine(scenario, getModalInstance(DrtOptimizer.class), getModalInstance(BlockingRequestCreator.class));
+                return new BlockingRequestEngine(scenario, (BlockingOptimizer) getModalInstance(DrtOptimizer.class), getModalInstance(BlockingRequestCreator.class));
             }
         });
 
