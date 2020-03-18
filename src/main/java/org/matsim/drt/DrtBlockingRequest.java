@@ -6,7 +6,7 @@ import org.matsim.contrib.dvrp.schedule.Task;
 
 import java.util.List;
 
-class DrtBlockingRequest implements Request {
+public class DrtBlockingRequest implements Request {
 
     private final Id<Request> id;
     private double endTime;
