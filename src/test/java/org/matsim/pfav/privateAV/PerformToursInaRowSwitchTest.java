@@ -87,7 +87,7 @@ public class PerformToursInaRowSwitchTest {
 	}
 
 	/**
-	 * event handler for FreightTourDispatchTest.class
+	 * event handler for PerformToursInARowSwitch.class
 	 */
 	class PFAVRequestHandler implements FreightTourRequestEventHandler, ActivityStartEventHandler {
         Map<String, List<EventFreightTourScheduled>> scheduledEvents = new HashMap<>();
