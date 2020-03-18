@@ -1,4 +1,4 @@
-package org.matsim.ovgu.berlin;
+package org.matsim.ovgu.berlin.archive;
 
 import static org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType.FastAStarLandmarks;
 
@@ -9,21 +9,13 @@ import java.util.Arrays;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.PlansConfigGroup.HandlingOfPlansWithoutRoutingMode;
-import org.matsim.core.config.groups.QSimConfigGroup.TrafficDynamics;
 import org.matsim.core.config.groups.PlansConfigGroup;
-import org.matsim.core.config.groups.VspExperimentalConfigGroup;
-import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.controler.OutputDirectoryHierarchy;
-import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.controler.OutputDirectoryLogging;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
@@ -33,8 +25,7 @@ import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
-
-import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorModule;
+import org.matsim.ovgu.berlin.input.Input;
 
 public class RunTourEvaluation {
 
@@ -45,19 +36,6 @@ public class RunTourEvaluation {
 //	private static final String changeEventsFile = "scenario-A.15.networkChangeEvents.xml.gz";
 	private static final String networkFile = "scenario-A.output_network.xml.gz";
 	private static final String outputDirectory = "tourEvaluation";
-
-	private static long[] sTour;
-	private static double[] sExpectedAvgTT;
-	private static double[] sExpectedMinTT;
-	private static double[] sExpectedMaxTT;
-
-	private static long[] lTour;
-	private static double[] lExpectedAvgTT;
-	private static double[] lExpectedMinTT;
-	private static double[] lExpectedMaxTT;
-
-	private static double economy;
-	private static double premium;
 
 	private static Network network;
 	private static LeastCostPathCalculator calc;
@@ -73,7 +51,7 @@ public class RunTourEvaluation {
 		}
 
 		Config config = prepareConfig(args);
-		
+
 		// use changeEvents -->
 //		config.network().setTimeVariantNetwork(true);
 //		config.network().setChangeEventsInputFile(changeEventsFile);
@@ -108,122 +86,23 @@ public class RunTourEvaluation {
 
 	private static void runEvaluation(Controler controler) {
 
-		setupInputValues();
+		runCalculations(Input.tourNodes, true, Input.avgTT, Input.standardTW, "avgStandard");
+		runCalculations(Input.tourNodes, true, Input.avgTT, Input.premiumTW, "avgPremium");
 
-		runCalculations(sTour, true, sExpectedAvgTT, economy, "avgEconomy");
-		runCalculations(sTour, true, sExpectedAvgTT, premium, "avgPremium");
+		runCalculations(Input.tourNodes, true, Input.minTT, Input.standardTW, "minStandard");
+		runCalculations(Input.tourNodes, true, Input.minTT, Input.premiumTW, "minPremium");
 
-		runCalculations(sTour, true, sExpectedMinTT, economy, "minEconomy");
-		runCalculations(sTour, true, sExpectedMinTT, premium, "minPremium");
+		runCalculations(Input.tourNodes, true, Input.maxTT, Input.standardTW, "maxStandard");
+		runCalculations(Input.tourNodes, true, Input.maxTT, Input.premiumTW, "maxPremium");
 
-		runCalculations(sTour, true, sExpectedMaxTT, economy, "maxEconomy");
-		runCalculations(sTour, true, sExpectedMaxTT, premium, "maxPremium");
+		runCalculations(Input.lTourNodes, true, Input.lAvgTT, Input.standardTW, "avgStandardXL");
+		runCalculations(Input.lTourNodes, true, Input.lAvgTT, Input.premiumTW, "avgPremiumXL");
 
-		runCalculations(lTour, true, lExpectedAvgTT, economy, "avgEconomyXL");
-		runCalculations(lTour, true, lExpectedAvgTT, premium, "avgPremiumXL");
+		runCalculations(Input.lTourNodes, true, Input.lMinTT, Input.standardTW, "minStandardXL");
+		runCalculations(Input.lTourNodes, true, Input.lMinTT, Input.premiumTW, "minPremiumXL");
 
-		runCalculations(lTour, true, lExpectedMinTT, economy, "minEconomyXL");
-		runCalculations(lTour, true, lExpectedMinTT, premium, "minPremiumXL");
-
-		runCalculations(lTour, true, lExpectedMaxTT, economy, "maxEconomyXL");
-		runCalculations(lTour, true, lExpectedMaxTT, premium, "maxPremiumXL");
-
-	}
-
-	private static void setupInputValues() {
-
-		economy = 5 * 2 * 60;
-		premium = 1 * 2 * 60;
-
-		sTour = new long[] { 100163057, 3712222554l, 26870674, 29218295, 29270520, 29785890, 282395034, 268224213,
-				4313424156l, 275726428, 1380016717, 677228677, 26754202, 274977654, 29686277, 26785807, 269843861,
-				26761185, 26554202, 254870237 };
-
-		sExpectedAvgTT = new double[] { 0, 1386.78514, 461.0143096, 660.7601614, 482.7117253, 531.2474148, 615.2137168,
-				636.927544, 524.2512817, 773.1225155, 800.9296293, 404.1527514, 525.0083581, 599.2197634, 593.5771799,
-				760.3694996, 389.5929394, 753.3953592, 605.2273493, 837.7488374 };
-
-		sExpectedMinTT = new double[] { 0, 1269.541339, 397.5076803, 625.1344664, 431.6207752, 490.3279327, 592.9618135,
-				589.0757879, 469.5942699, 720.6765824, 725.6061951, 379.5941993, 495.9362131, 545.9396331, 525.6032059,
-				662.4026367, 345.5011254, 656.0057098, 512.9801903, 743.2175726 };
-
-		sExpectedMaxTT = new double[] { 0, 1592.517231, 533.4664708, 738.1203464, 582.9350352, 582.2497275, 663.5987905,
-				702.907558, 653.5758981, 896.8119032, 892.120581, 445.7765853, 560.4866599, 667.6098697, 677.0537879,
-				839.0182749, 474.0636164, 887.3781677, 750.0190174, 1049.122674 };
-
-		lTour = new long[] { 100163057, 3712222554l, 26870674, 29218295, 29270520, 29785890, 282395034, 268224213,
-				4313424156l, 275726428, 1380016717, 677228677, 26754202, 274977654, 29686277, 26785807, 269843861,
-				26761185, 26554202, 254870237, 100163057, 3712222554l, 26870674, 29218295, 29270520, 29785890,
-				282395034, 268224213, 4313424156l, 275726428, 1380016717, 677228677, 26754202, 274977654, 29686277,
-				26785807, 269843861, 26761185, 26554202, 254870237, 100163057, 3712222554l, 26870674, 29218295,
-				29270520, 29785890, 282395034, 268224213, 4313424156l, 275726428, 1380016717, 677228677, 26754202,
-				274977654, 29686277, 26785807, 269843861, 26761185, 26554202, 254870237, 100163057, 3712222554l,
-				26870674, 29218295, 29270520, 29785890, 282395034, 268224213, 4313424156l, 275726428, 1380016717,
-				677228677, 26754202, 274977654, 29686277, 26785807, 269843861, 26761185, 26554202, 254870237, 100163057,
-				3712222554l, 26870674, 29218295, 29270520, 29785890, 282395034, 268224213, 4313424156l, 275726428,
-				1380016717, 677228677, 26754202, 274977654, 29686277, 26785807, 269843861, 26761185, 26554202,
-				254870237, 100163057, 3712222554l, 26870674, 29218295, 29270520, 29785890, 282395034, 268224213,
-				4313424156l, 275726428, 1380016717, 677228677, 26754202, 274977654, 29686277, 26785807, 269843861,
-				26761185, 26554202, 254870237, 100163057, 3712222554l, 26870674, 29218295, 29270520, 29785890,
-				282395034, 268224213, 4313424156l, 275726428, 1380016717, 677228677, 26754202, 274977654, 29686277,
-				26785807, 269843861, 26761185, 26554202, 254870237 };
-
-		lExpectedAvgTT = new double[] { 0, 1386.78514, 461.0143096, 660.7601614, 482.7117253, 531.2474148, 615.2137168,
-				636.927544, 524.2512817, 773.1225155, 800.9296293, 404.1527514, 525.0083581, 599.2197634, 593.5771799,
-				760.3694996, 389.5929394, 753.3953592, 605.2273493, 837.7488374, 784.4261075, 1386.78514, 461.0143096,
-				660.7601614, 482.7117253, 531.2474148, 615.2137168, 636.927544, 524.2512817, 773.1225155, 800.9296293,
-				404.1527514, 525.0083581, 599.2197634, 593.5771799, 760.3694996, 389.5929394, 753.3953592, 605.2273493,
-				837.7488374, 784.4261075, 1386.78514, 461.0143096, 660.7601614, 482.7117253, 531.2474148, 615.2137168,
-				636.927544, 524.2512817, 773.1225155, 800.9296293, 404.1527514, 525.0083581, 599.2197634, 593.5771799,
-				760.3694996, 389.5929394, 753.3953592, 605.2273493, 837.7488374, 784.4261075, 1386.78514, 461.0143096,
-				660.7601614, 482.7117253, 531.2474148, 615.2137168, 636.927544, 524.2512817, 773.1225155, 800.9296293,
-				404.1527514, 525.0083581, 599.2197634, 593.5771799, 760.3694996, 389.5929394, 753.3953592, 605.2273493,
-				837.7488374, 784.4261075, 1386.78514, 461.0143096, 660.7601614, 482.7117253, 531.2474148, 615.2137168,
-				636.927544, 524.2512817, 773.1225155, 800.9296293, 404.1527514, 525.0083581, 599.2197634, 593.5771799,
-				760.3694996, 389.5929394, 753.3953592, 605.2273493, 837.7488374, 784.4261075, 1386.78514, 461.0143096,
-				660.7601614, 482.7117253, 531.2474148, 615.2137168, 636.927544, 524.2512817, 773.1225155, 800.9296293,
-				404.1527514, 525.0083581, 599.2197634, 593.5771799, 760.3694996, 389.5929394, 753.3953592, 605.2273493,
-				837.7488374, 784.4261075, 1386.78514, 461.0143096, 660.7601614, 482.7117253, 531.2474148, 615.2137168,
-				636.927544, 524.2512817, 773.1225155, 800.9296293, 404.1527514, 525.0083581, 599.2197634, 593.5771799,
-				760.3694996, 389.5929394, 753.3953592, 605.2273493, 837.7488374 };
-
-		lExpectedMinTT = new double[] { 0, 1269.541339, 397.5076803, 625.1344664, 431.6207752, 490.3279327, 592.9618135,
-				589.0757879, 469.5942699, 720.6765824, 725.6061951, 379.5941993, 495.9362131, 545.9396331, 525.6032059,
-				662.4026367, 345.5011254, 656.0057098, 512.9801903, 743.2175726, 687.2322049, 1269.541339, 397.5076803,
-				625.1344664, 431.6207752, 490.3279327, 592.9618135, 589.0757879, 469.5942699, 720.6765824, 725.6061951,
-				379.5941993, 495.9362131, 545.9396331, 525.6032059, 662.4026367, 345.5011254, 656.0057098, 512.9801903,
-				743.2175726, 687.2322049, 1269.541339, 397.5076803, 625.1344664, 431.6207752, 490.3279327, 592.9618135,
-				589.0757879, 469.5942699, 720.6765824, 725.6061951, 379.5941993, 495.9362131, 545.9396331, 525.6032059,
-				662.4026367, 345.5011254, 656.0057098, 512.9801903, 743.2175726, 687.2322049, 1269.541339, 397.5076803,
-				625.1344664, 431.6207752, 490.3279327, 592.9618135, 589.0757879, 469.5942699, 720.6765824, 725.6061951,
-				379.5941993, 495.9362131, 545.9396331, 525.6032059, 662.4026367, 345.5011254, 656.0057098, 512.9801903,
-				743.2175726, 687.2322049, 1269.541339, 397.5076803, 625.1344664, 431.6207752, 490.3279327, 592.9618135,
-				589.0757879, 469.5942699, 720.6765824, 725.6061951, 379.5941993, 495.9362131, 545.9396331, 525.6032059,
-				662.4026367, 345.5011254, 656.0057098, 512.9801903, 743.2175726, 687.2322049, 1269.541339, 397.5076803,
-				625.1344664, 431.6207752, 490.3279327, 592.9618135, 589.0757879, 469.5942699, 720.6765824, 725.6061951,
-				379.5941993, 495.9362131, 545.9396331, 525.6032059, 662.4026367, 345.5011254, 656.0057098, 512.9801903,
-				743.2175726, 687.2322049, 1269.541339, 397.5076803, 625.1344664, 431.6207752, 490.3279327, 592.9618135,
-				589.0757879, 469.5942699, 720.6765824, 725.6061951, 379.5941993, 495.9362131, 545.9396331, 525.6032059,
-				662.4026367, 345.5011254, 656.0057098, 512.9801903, 743.2175726 };
-
-		lExpectedMaxTT = new double[] { 0, 1592.517231, 533.4664708, 738.1203464, 582.9350352, 582.2497275, 663.5987905,
-				702.907558, 653.5758981, 896.8119032, 892.120581, 445.7765853, 560.4866599, 667.6098697, 677.0537879,
-				839.0182749, 474.0636164, 887.3781677, 750.0190174, 1049.122674, 896.4662972, 1592.517231, 533.4664708,
-				738.1203464, 582.9350352, 582.2497275, 663.5987905, 702.907558, 653.5758981, 896.8119032, 892.120581,
-				445.7765853, 560.4866599, 667.6098697, 677.0537879, 839.0182749, 474.0636164, 887.3781677, 750.0190174,
-				1049.122674, 896.4662972, 1592.517231, 533.4664708, 738.1203464, 582.9350352, 582.2497275, 663.5987905,
-				702.907558, 653.5758981, 896.8119032, 892.120581, 445.7765853, 560.4866599, 667.6098697, 677.0537879,
-				839.0182749, 474.0636164, 887.3781677, 750.0190174, 1049.122674, 896.4662972, 1592.517231, 533.4664708,
-				738.1203464, 582.9350352, 582.2497275, 663.5987905, 702.907558, 653.5758981, 896.8119032, 892.120581,
-				445.7765853, 560.4866599, 667.6098697, 677.0537879, 839.0182749, 474.0636164, 887.3781677, 750.0190174,
-				1049.122674, 896.4662972, 1592.517231, 533.4664708, 738.1203464, 582.9350352, 582.2497275, 663.5987905,
-				702.907558, 653.5758981, 896.8119032, 892.120581, 445.7765853, 560.4866599, 667.6098697, 677.0537879,
-				839.0182749, 474.0636164, 887.3781677, 750.0190174, 1049.122674, 896.4662972, 1592.517231, 533.4664708,
-				738.1203464, 582.9350352, 582.2497275, 663.5987905, 702.907558, 653.5758981, 896.8119032, 892.120581,
-				445.7765853, 560.4866599, 667.6098697, 677.0537879, 839.0182749, 474.0636164, 887.3781677, 750.0190174,
-				1049.122674, 896.4662972, 1592.517231, 533.4664708, 738.1203464, 582.9350352, 582.2497275, 663.5987905,
-				702.907558, 653.5758981, 896.8119032, 892.120581, 445.7765853, 560.4866599, 667.6098697, 677.0537879,
-				839.0182749, 474.0636164, 887.3781677, 750.0190174, 1049.122674 };
+		runCalculations(Input.lTourNodes, true, Input.lMaxTT, Input.standardTW, "maxStandardXL");
+		runCalculations(Input.lTourNodes, true, Input.lMaxTT, Input.premiumTW, "maxPremiumXL");
 
 	}
 
@@ -396,7 +275,7 @@ public class RunTourEvaluation {
 		Gbl.assertNotNull(scenario);
 
 		final Controler controler = new Controler(scenario);
-		
+
 // KMT: Wozu brauchtest du das Folgende?		
 
 //		if (controler.getConfig().transit().isUsingTransitInMobsim()) {
@@ -449,9 +328,11 @@ public class RunTourEvaluation {
 		final Config config = ConfigUtils.loadConfig(args[0]); // I need this to set the context
 
 		config.controler().setRoutingAlgorithmType(FastAStarLandmarks);
-		
-		// KMT: Wozu brauchtest du das Folgende?	
-		//Damit veränderst du die Config Werte auch für die bisherigen Pläne mit der Folge, dass des bei potenziellem Replanning nun auf einmal andere Verhaltensweisen gibt...
+
+		// KMT: Wozu brauchtest du das Folgende?
+		// Damit veränderst du die Config Werte auch für die bisherigen Pläne mit der
+		// Folge, dass des bei potenziellem Replanning nun auf einmal andere
+		// Verhaltensweisen gibt...
 
 //		config.subtourModeChoice().setProbaForRandomSingleTripMode(0.5);
 //

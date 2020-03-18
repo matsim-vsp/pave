@@ -181,7 +181,7 @@ class RunFreight {
 				core.initConfig("./scenarios/ovgu/defaultConfig.xml");
 				core.initInput(input);
 				core.initNetwork();
-				core.run();
+				core.handleTourEvents();
 
 				log.info("handle alg solution");
 				Solution solution = core.getSolution();
@@ -211,7 +211,7 @@ class RunFreight {
 			}
 		});
 
-		controler.run();
+		controler.handleTourEvents();
 
 		log.info("#### Finished ####");
 

@@ -17,16 +17,18 @@
   *                                                                         *
   * *********************************************************************** *
  */
-package org.matsim.ovgu.berlin;
+package org.matsim.ovgu.berlin.simulation;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.freight.Freight;
 import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.*;
+import org.matsim.contrib.freight.carrier.Tour;
 import org.matsim.contrib.freight.carrier.Tour.Leg;
 import org.matsim.contrib.freight.controler.CarrierModule;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
@@ -34,11 +36,19 @@ import org.matsim.contrib.freight.jsprit.NetworkRouter;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.config.groups.PlansConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
+import org.matsim.core.router.util.LeastCostPathCalculator;
+import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
+import org.matsim.core.router.util.TravelDisutility;
+import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.router.util.LeastCostPathCalculator.Path;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.ovgu.berlin.input.Input;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 
@@ -60,8 +70,9 @@ public class FreightOnlyMatsim {
 	private static final Logger log = Logger.getLogger(FreightOnlyMatsim.class);
 	private String[] linkIDsTour;
 	private double[] expectedTravelTime;
+	private double[] timewindows;
 	private double serviceTime;
-	private double timewindow;
+	private String depot;
 
 	public static void main(String[] args) throws IOException, InvalidAttributeValueException {
 
@@ -77,12 +88,25 @@ public class FreightOnlyMatsim {
 	}
 
 	public FreightOnlyMatsim(String pathChangeEvents, String pathOutput, String[] linkIDsTour,
-			double[] expectedTravelTime, double serviceTime, double timewindow) {
+			double[] expectedTravelTime, double[] timewindows) {
 
 		this.linkIDsTour = linkIDsTour;
 		this.expectedTravelTime = expectedTravelTime;
+		this.timewindows = timewindows;
+		this.serviceTime = Input.serviceTime;
+		this.depot = Input.depot;
+
+		run(pathChangeEvents, pathOutput);
+	}
+
+	public FreightOnlyMatsim(String pathChangeEvents, String pathOutput, String[] linkIDsTour,
+			double[] expectedTravelTime, double[] timewindows, double serviceTime, String depot) {
+
+		this.linkIDsTour = linkIDsTour;
+		this.expectedTravelTime = expectedTravelTime;
+		this.timewindows = timewindows;
 		this.serviceTime = serviceTime;
-		this.timewindow = timewindow;
+		this.depot = depot;
 
 		run(pathChangeEvents, pathOutput);
 	}
@@ -93,24 +117,68 @@ public class FreightOnlyMatsim {
 	}
 
 	private void run(String pathChangeEvents, String pathOutput) {
+
+		if (linkIDsTour == null) {
+			linkIDsTour = new String[] {};
+			expectedTravelTime = new double[] {};
+		}
+
 		Config config = prepareConfig(pathChangeEvents, pathOutput);
 		Scenario scenario = prepareScenario(config);
 		Controler controler = prepareControler(scenario);
 
 		controler.run();
+		preparePathCalculator(controler);
+	}
+
+	private Network network;
+	private LeastCostPathCalculator calc;
+
+	private void preparePathCalculator(Controler controler) {
+		((PlansCalcRouteConfigGroup) controler.getConfig().getModules().get("planscalcroute")).setRoutingRandomness(0);
+
+		controler.getTripRouterProvider();
+		LeastCostPathCalculatorFactory calcFac = controler.getLeastCostPathCalculatorFactory();
+		TravelDisutilityFactory disuFac = controler.getTravelDisutilityFactory();
+		TravelTime travelTimes = controler.getLinkTravelTimes();
+		TravelTime timeCalculator = controler.getLinkTravelTimes();
+
+		TravelDisutility travelCosts = disuFac.createTravelDisutility(timeCalculator);
+
+		network = controler.getScenario().getNetwork();
+		calc = calcFac.createPathCalculator(network, travelCosts, travelTimes);
+	}
+
+	public Path getTravelPath(Node from, Node to, double departure) {
+		double day = 24 * 60 * 60;
+		departure = departure % day;
+
+		return calc.calcLeastCostPath(from, to, departure, null, null);
+	}
+
+	public Path getTravelPathWithFromNodes(String from, String to, double departure) {
+		return getTravelPathWithFromNodes(Id.createLinkId(from), Id.createLinkId(to), departure);
+	}
+
+	public Path getTravelPathWithFromNodes(Id<Link> from, Id<Link> to, double departure) {
+		return getTravelPath(network.getLinks().get(from).getFromNode(), network.getLinks().get(to).getFromNode(),
+				departure);
+	}
+
+	public Path getTravelPath(long from, long to, double departure) {
+		return getTravelPath(Id.createNodeId(from), Id.createNodeId(to), departure);
+	}
+
+	public Path getTravelPath(Id<Node> from, Id<Node> to, double departure) {
+		return getTravelPath(network.getNodes().get(from), network.getNodes().get(to), departure);
 	}
 
 	private void setDefaultInput() {
-
-		linkIDsTour = new String[] { "9826", "10837", "37615", "122985", "34319", "97538", "82306", "113960", "76890",
-				"64709", "18863", "14787", "116212", "63691", "30311", "76811", "20545", "142877", "118271", "29572" };
-
-		expectedTravelTime = new double[] { 0, 1386.78514, 461.0143096, 660.7601614, 482.7117253, 531.2474148,
-				615.2137168, 636.927544, 524.2512817, 773.1225155, 800.9296293, 404.1527514, 525.0083581, 599.2197634,
-				593.5771799, 760.3694996, 389.5929394, 753.3953592, 605.2273493, 837.7488374 };
-
-		serviceTime = 2 * 60;
-		timewindow = 10 * 60;
+		linkIDsTour = Input.tour;
+		expectedTravelTime = Input.avgTT;
+		timewindows = Input.standardTWs;
+		serviceTime = Input.serviceTime;
+		depot = Input.depot;
 	}
 
 	private Config prepareConfig(String networkChangeEventsFileLocation, String outputLocation) {
@@ -137,19 +205,14 @@ public class FreightOnlyMatsim {
 		FreightConfigGroup freightConfigGroup = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
 		freightConfigGroup.setTravelTimeSliceWidth(900);
 		freightConfigGroup.setTimeWindowHandling(FreightConfigGroup.TimeWindowHandling.enforceBeginnings);
-
 		return config;
 	}
 
 	private Scenario prepareScenario(Config config) {
 		Scenario scenario = ScenarioUtils.loadScenario(config);
-
 		Carriers carriers = FreightUtils.getOrCreateCarriers(scenario);
-
 		createAndaddCarriers(scenario.getNetwork(), carriers);
-
 		createAndLoadVehicleType(scenario);
-
 		routePlans(scenario);
 
 		return scenario;
@@ -171,45 +234,42 @@ public class FreightOnlyMatsim {
 	private void createAndaddCarriers(Network network, Carriers carriers) {
 
 		// create one carrier for each our
-		for (int i = 0; i < 24; i++) {
-			Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
-			createAndAddCarrierSerivces(carrier, i, linkIDsTour, expectedTravelTime, serviceTime, timewindow);
+		if (linkIDsTour.length > 0)
+			for (int i = 0; i < 24; i++) {
+				Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
+				createAndAddCarrierSerivces(carrier, i);
 
-			CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", "9826", i);
-			CarrierUtils.addCarrierVehicle(carrier, carrierVehicle);
+				CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", depot, i);
+				CarrierUtils.addCarrierVehicle(carrier, carrierVehicle);
 
-			CarrierPlan carrierPlan = createPlan(network, carrier, i);
-			carrier.setSelectedPlan(carrierPlan);
+				CarrierPlan carrierPlan = createPlan(network, carrier, i);
+				carrier.setSelectedPlan(carrierPlan);
 
-			carriers.addCarrier(carrier);
-		}
+				carriers.addCarrier(carrier);
+			}
 
 	}
 
-	private void createAndAddCarrierSerivces(Carrier carrier, int hour, String[] linkIDs, double[] expectedTT,
-			double serviceTime, double timewindow) {
-//		
-		double tourStartInSec = hour * 3600.;
-//
+	private void createAndAddCarrierSerivces(Carrier carrier, int hour) {
+
 		// calculate expected arrival times from expected travel times
-		double[] expectedArrival = new double[expectedTT.length];
-		expectedArrival[0] = tourStartInSec + expectedTT[0];
-		for (int x = 1; x < expectedArrival.length; x++)
-			expectedArrival[x] = expectedArrival[x - 1] + serviceTime + expectedTT[x];
+		double[] expectedArrivalTimes = Input.getExpectedArrivalTimes(hour, expectedTravelTime);
 
 		// create customer services at origin and destination
-		for (int customer = 0; customer < linkIDs.length / 2; customer++) {
+		for (int customer = 0; customer < linkIDsTour.length / 2; customer++) {
 			int x = customer * 2;
 
-			double earliestStart = expectedArrival[x] - timewindow / 2;
+			double earliestStart = expectedArrivalTimes[x] - timewindows[x] / 2;
 
 			Id<CarrierService> customerOriginID = Id.create("c" + (customer + 1) + "-origin", CarrierService.class);
-			CarrierUtils.addService(carrier, createService(customerOriginID, linkIDs[x], earliestStart, serviceTime));
+			CarrierUtils.addService(carrier,
+					createService(customerOriginID, linkIDsTour[x], earliestStart, serviceTime));
 
 			Id<CarrierService> customerDestID = Id.create("c" + (customer + 1) + "-dest", CarrierService.class);
 			// set possibility to start service (drop-off) at destination earlier than
 			// expected:
-			CarrierUtils.addService(carrier, createService(customerDestID, linkIDs[x + 1], earliestStart, serviceTime));
+			CarrierUtils.addService(carrier,
+					createService(customerDestID, linkIDsTour[x + 1], earliestStart, serviceTime));
 		}
 	}
 
@@ -256,7 +316,7 @@ public class FreightOnlyMatsim {
 
 		tourBuilder.scheduleStart(depotLocation, TimeWindow.newInstance(depTime, Double.MAX_VALUE));
 
-		for (int customer = 1; customer <= 10; customer++) {
+		for (int customer = 1; customer <= linkIDsTour.length / 2; customer++) {
 			tourBuilder.addLeg(new Leg());
 			tourBuilder.scheduleService(
 					CarrierUtils.getService(carrier, Id.create("c" + customer + "-origin", CarrierService.class)));
