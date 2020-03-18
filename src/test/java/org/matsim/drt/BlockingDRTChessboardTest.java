@@ -59,11 +59,11 @@ public class BlockingDRTChessboardTest {
         Config config = ConfigUtils.loadConfig(input + "chessboard_drtBlocking_config.xml");
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
 
-        DrtConfigGroup drtCfg = prepareDrtConfig(config);
-
         FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
         freightCfg.setCarriersFile("chessboard_carriers_drtBlocking.xml");
         freightCfg.setCarriersVehicleTypesFile("chessboard_vehicleTypes.xml");
+
+        DrtConfigGroup drtCfg = prepareDrtConfig(config);
 
         Scenario scenario = ScenarioUtils.loadScenario(config);
 
@@ -77,9 +77,7 @@ public class BlockingDRTChessboardTest {
         Controler controler = new Controler(scenario);
         configureControler(drtCfg, controler);
 
-
         controler.run();
-
     }
 
     private void configureControler(DrtConfigGroup drtCfg, Controler controler) {
