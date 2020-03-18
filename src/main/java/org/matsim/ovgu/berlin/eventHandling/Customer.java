@@ -50,10 +50,8 @@ public class Customer {
 	public double dLateTW;
 	public double dEarly;
 	public double dLate;
-	public double timewindow;
 
 	public void analysis(double oExpectedArrival, double dExpectedArrival, double timewindow) {
-		this.timewindow = timewindow;
 		this.oExpectedArrival = oExpectedArrival;
 		oTwStart = oExpectedArrival - timewindow / 2;
 		oTwEnd = oExpectedArrival + timewindow / 2;
