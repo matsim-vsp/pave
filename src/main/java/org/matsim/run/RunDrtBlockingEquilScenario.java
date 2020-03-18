@@ -51,6 +51,7 @@ import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.misc.Time;
+import org.matsim.drt.DrtBlockingModule;
 import org.matsim.drt.DrtBlockingQSimModule;
 import org.matsim.examples.ExamplesUtils;
 
@@ -120,8 +121,7 @@ public class RunDrtBlockingEquilScenario {
     private static void configureControler(DrtConfigGroup drtCfg, Controler controler) {
         controler.addOverridingModule( new DvrpModule() ) ;
         controler.addOverridingModule( new DrtModeModule(drtCfg) ) ;
-        controler.addOverridingQSimModule( new DrtBlockingQSimModule(drtCfg));
-
+        controler.addOverridingModule( new DrtBlockingModule(drtCfg));
         controler.configureQSimComponents( DvrpQSimComponents.activateModes( TransportMode.drt ) ) ;
     }
 

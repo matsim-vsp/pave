@@ -15,6 +15,7 @@ import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
+import org.matsim.drt.DrtBlockingModule;
 import org.matsim.drt.DrtBlockingQSimModule;
 import org.matsim.examples.ExamplesUtils;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
@@ -65,8 +66,7 @@ public class RunBlockingDrtMielecScenario {
 
         controler.addOverridingModule( new DvrpModule() ) ;
         controler.addOverridingModule( new DrtModeModule(drtCfg) ) ;
-        controler.addOverridingQSimModule( new DrtBlockingQSimModule(drtCfg));
-//        controler.addOverridingQSimModule( new DrtModeQSimModule(drtCfg));
+        controler.addOverridingModule( new DrtBlockingModule(drtCfg));
 
         if(otfvis){
             controler.addOverridingModule(new OTFVisLiveModule());
