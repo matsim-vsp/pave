@@ -55,7 +55,7 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.drt.tasks.FreightTaskEndTimeCalculator;
 
-public class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
+class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
 
     private final DrtConfigGroup drtCfg;
 
