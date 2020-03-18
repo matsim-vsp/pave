@@ -85,7 +85,7 @@ public class BlockingDRTChessboardTest {
     private void configureControler(DrtConfigGroup drtCfg, Controler controler) {
         controler.addOverridingModule( new DvrpModule() ) ;
         controler.addOverridingModule( new DrtModeModule(drtCfg) ) ;
-        controler.addOverridingQSimModule( new DrtBlockingQSimModule(drtCfg));
+        controler.addOverridingModule( new DrtBlockingModule(drtCfg));
 
         controler.configureQSimComponents( DvrpQSimComponents.activateModes( TransportMode.drt ) ) ;
     }

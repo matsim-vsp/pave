@@ -22,7 +22,6 @@ package org.matsim.drt;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
@@ -31,11 +30,8 @@ import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelDataImpl;
 import org.matsim.contrib.dvrp.path.VrpPaths;
 import org.matsim.contrib.dvrp.schedule.Task;
-import org.matsim.contrib.freight.carrier.CarrierUtils;
-import org.matsim.contrib.freight.carrier.ScheduledTour;
-import org.matsim.contrib.freight.carrier.Tour;
+import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.utils.FreightUtils;
-import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
 import org.matsim.core.config.Config;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.util.TravelTime;
@@ -43,7 +39,6 @@ import org.matsim.drt.tasks.FreightDeliveryTask;
 import org.matsim.drt.tasks.FreightDriveTask;
 import org.matsim.drt.tasks.FreightPickupTask;
 import org.matsim.drt.tasks.FreightRetoolTask;
-import org.matsim.pfav.privateAV.*;
 
 import java.util.*;
 
@@ -73,15 +68,32 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
         FreightUtils.getCarriers(scenario).getCarriers().values().forEach(carrier -> {
             if(CarrierUtils.getCarrierMode(carrier).equals(mode)){
-                carrier.getSelectedPlan().getScheduledTours().forEach(tour -> requests.add(createRequest(tour)));
+                requests.addAll(createBlockingRequestsForCarrier(carrier));
             }
         });
         return requests;
     }
 
-    private DrtBlockingRequest createRequest(ScheduledTour scheduledTour) {
-        //TODO Id
-        Id<Request> id = Id.create("blockingRequest_customer_" + scheduledTour.getVehicle().getId().toString(), Request.class);
+    private Set<DrtBlockingRequest> createBlockingRequestsForCarrier(Carrier carrier){
+        Set<DrtBlockingRequest> requests = new HashSet<>();
+
+        Map<Id<CarrierVehicle>, Integer> vehicleCount = new HashMap<>();
+
+        for (ScheduledTour tour : carrier.getSelectedPlan().getScheduledTours()){
+            int vehCount;
+            if(vehicleCount.get(tour.getVehicle().getId()) == null){
+                vehCount = 1;
+            } else{
+                vehCount = vehicleCount.get(tour.getVehicle().getId());
+            }
+            String tourID = carrier.getId() + "_" + tour.getVehicle().getId() + "_" + vehCount;
+            requests.add(createRequest(tour, tourID));
+        }
+        return requests;
+    }
+
+    private DrtBlockingRequest createRequest(ScheduledTour scheduledTour, String tourID) {
+        Id<Request> id = Id.create(tourID, Request.class);
         double blockingStart = determineStartOfBlocking(scheduledTour);
         List<Task> tourTasks = convertScheduledTour2DvrpTasks(scheduledTour, blockingStart);
         double blockingEnd = tourTasks.get(tourTasks.size() - 1).getEndTime();
