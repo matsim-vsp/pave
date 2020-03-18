@@ -153,7 +153,7 @@ public class TourEventsHandler implements LinkEnterEventHandler, LinkLeaveEventH
 							+ ";" + oLateTW + ";" + oEarly + ";" + oLate + ";;" + dExpectedArrival + ";" + dTwStart
 							+ ";" + dTwEnd + ";" + dBeforeTW + ";" + dInTW + ";" + dAfterTW + ";" + dEarlyTW + ";"
 							+ dLateTW + ";" + dEarly + ";" + dLate + ";;" + timewindow + ";\n";
-					csvWriter.append(str.replace(".", ","));
+					csvWriter.append(str);
 				}
 			}
 			// finish
