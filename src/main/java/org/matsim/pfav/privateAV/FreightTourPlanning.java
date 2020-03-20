@@ -44,7 +44,6 @@ import org.matsim.core.router.util.TravelTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
 
 /**
  * @author tschlenther
@@ -137,7 +136,7 @@ public final class FreightTourPlanning {
         return new VrpPathWithTravelDataImpl(departureTime, totalTT, links, linkTTs);
     }
 
-    public static void runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime, int timeSlice, int iterations){
+    public static void runTourPlanningForCarriers(Carriers carriers, CarrierVehicleTypes vehicleTypes, Network network, TravelTime travelTime, int timeSlice, int iterations) {
 
         NetworkBasedTransportCosts.Builder netBuilder = NetworkBasedTransportCosts.Builder.newInstance(network, vehicleTypes.getVehicleTypes().values());
         netBuilder.setTimeSliceWidth(timeSlice); // !!!! otherwise it will not do anything.
@@ -146,7 +145,7 @@ public final class FreightTourPlanning {
         }
         final NetworkBasedTransportCosts netBasedCosts = netBuilder.build();
 
-        carriers.getCarriers().values().stream().forEach(carrier -> {
+        carriers.getCarriers().values().parallelStream().forEach(carrier -> {
             //Build VRP
             VehicleRoutingProblem.Builder vrpBuilder = MatsimJspritFactory.createRoutingProblemBuilder(carrier, network);
             vrpBuilder.setRoutingCost(netBasedCosts);
