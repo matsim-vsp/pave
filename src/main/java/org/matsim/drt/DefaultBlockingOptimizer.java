@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.matsim.core.utils.misc.OptionalTime;
+import org.matsim.drt.events.DrtBlockingEndedEvent;
 import org.matsim.drt.events.DrtBlockingRequestRejectedEvent;
 import org.matsim.drt.events.DrtBlockingRequestScheduledEvent;
 import org.matsim.drt.tasks.FreightRetoolTask;
@@ -120,6 +121,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
             //if the blocking request has started and the vehicle is idle then we can unblock the vehicle..
             this.blockedVehicles.remove(vehicle);
             this.blockingManager.unblockVehicleAfterTime(vehicle, timer.getTimeOfDay());
+            this.eventsManager.processEvent(new DrtBlockingEndedEvent(timer.getTimeOfDay(), vehicle));
         } else {
             updateBlockingEndTime(vehicle);
         }
@@ -159,16 +161,18 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
                         if(this.blockedVehicles.containsKey(vehicle)) break;                //stop dispatching blocking requests if no suitable idle vehicle can be found
                     }
 
-
-                    if(blockingManager.blockVehicle(vehicle, drtBlockingRequest)){
-                        log.info("blocking vehicle " + vehicle.getId() + " for time period start=" +drtBlockingRequest.getStartTime()
-                         + " end=" + drtBlockingRequest.getEndTime());
-                        idleVehicles.remove(vehicle);
-                        scheduleTasksForBlockedVehicle(drtBlockingRequest, vehicle);
-                        this.blockedVehicles.put(vehicle, drtBlockingRequest);
-                        blockingRequestsIterator.remove();
-                        eventsManager.processEvent(new DrtBlockingRequestScheduledEvent(timer.getTimeOfDay(), drtBlockingRequest.getId(), vehicle.getId()));
+                    if(drtBlockingRequest.getEndTime() > vehicle.getServiceEndTime()){
+                        if(blockingManager.blockVehicle(vehicle, drtBlockingRequest)){
+                            log.info("blocking vehicle " + vehicle.getId() + " for time period start=" +drtBlockingRequest.getStartTime()
+                                    + " end=" + drtBlockingRequest.getEndTime());
+                            idleVehicles.remove(vehicle);
+                            scheduleTasksForBlockedVehicle(drtBlockingRequest, vehicle);
+                            this.blockedVehicles.put(vehicle, drtBlockingRequest);
+                            blockingRequestsIterator.remove();
+                            eventsManager.processEvent(new DrtBlockingRequestScheduledEvent(timer.getTimeOfDay(), drtBlockingRequest.getId(), vehicle.getId()));
+                        }
                     }
+
                 } else{
                     break;
                 }

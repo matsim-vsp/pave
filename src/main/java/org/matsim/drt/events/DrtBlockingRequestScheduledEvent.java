@@ -32,6 +32,7 @@ public class DrtBlockingRequestScheduledEvent extends Event {
     public static final String ATTRIBUTE_VEHICLE = "vehicle";
     public static final String ATTRIBUTE_REQUEST = "request";
     private final Id<Request> requestId;
+
     private final Id<DvrpVehicle> vehicleId;
 
     public DrtBlockingRequestScheduledEvent(double timeOfDay, Id<Request> requestId, Id<DvrpVehicle> vehicleId) {
@@ -51,6 +52,14 @@ public class DrtBlockingRequestScheduledEvent extends Event {
         attr.put(ATTRIBUTE_REQUEST, requestId + "");
         attr.put(ATTRIBUTE_VEHICLE, vehicleId + "");
         return attr;
+    }
+
+    public Id<Request> getRequestId() {
+        return requestId;
+    }
+
+    public Id<DvrpVehicle> getVehicleId() {
+        return vehicleId;
     }
 
 }

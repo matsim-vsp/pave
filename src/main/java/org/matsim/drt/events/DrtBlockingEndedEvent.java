@@ -1,5 +1,6 @@
 /* *********************************************************************** *
  * project: org.matsim.*
+ * Controler.java
  *                                                                         *
  * *********************************************************************** *
  *                                                                         *
@@ -21,24 +22,19 @@ package org.matsim.drt.events;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
-import org.matsim.contrib.dvrp.optimizer.Request;
-import org.matsim.drt.DrtBlockingRequest;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 
 import java.util.Map;
 
-public class DrtBlockingRequestRejectedEvent extends Event {
+public class DrtBlockingEndedEvent extends Event {
 
-    public static final String EVENT_TYPE = "DrtBlockingRequest rejected";
+    public static final String EVENT_TYPE = "DrtBlocking ended";
+    public static final String ATTRIBUTE_VEHICLE = "vehicle";
+    private final Id<DvrpVehicle> vehicleId;
 
-    public static final String ATTRIBUTE_REQUEST = "request";
-    public static final String ATTRIBUTE_SUBMISSION_TIME = "submissionTime";
-    private final Id<Request> requestId;
-    private final double submissionTime;
-
-    public DrtBlockingRequestRejectedEvent(double time, DrtBlockingRequest request) {
-        super(time);
-        this.requestId = request.getId();
-        this.submissionTime = request.getSubmissionTime();
+    public DrtBlockingEndedEvent(double timeOfDay, DvrpVehicle vehicle) {
+        super(timeOfDay);
+        this.vehicleId = vehicle.getId();
     }
 
     @Override
@@ -49,8 +45,11 @@ public class DrtBlockingRequestRejectedEvent extends Event {
     @Override
     public Map<String, String> getAttributes() {
         Map<String, String> attr = super.getAttributes();
-        attr.put(ATTRIBUTE_REQUEST, requestId + "");
-        attr.put(ATTRIBUTE_SUBMISSION_TIME, submissionTime + "");
+        attr.put(ATTRIBUTE_VEHICLE, vehicleId + "");
         return attr;
+    }
+
+    public Id<DvrpVehicle> getVehicleId() {
+        return vehicleId;
     }
 }
