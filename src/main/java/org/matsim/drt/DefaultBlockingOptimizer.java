@@ -161,7 +161,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
                         if(this.blockedVehicles.containsKey(vehicle)) break;                //stop dispatching blocking requests if no suitable idle vehicle can be found
                     }
 
-                    if(drtBlockingRequest.getEndTime() > vehicle.getServiceEndTime()){
+                    if(drtBlockingRequest.getEndTime() < vehicle.getServiceEndTime()){
                         if(blockingManager.blockVehicle(vehicle, drtBlockingRequest)){
                             log.info("blocking vehicle " + vehicle.getId() + " for time period start=" +drtBlockingRequest.getStartTime()
                                     + " end=" + drtBlockingRequest.getEndTime());
