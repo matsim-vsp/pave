@@ -20,6 +20,7 @@
 
 package org.matsim.drt;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -34,6 +35,11 @@ import org.matsim.contrib.drt.routing.DrtRouteFactory;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtModeModule;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import org.matsim.contrib.dvrp.passenger.PassengerRequestRejectedEvent;
+import org.matsim.contrib.dvrp.passenger.PassengerRequestRejectedEventHandler;
+import org.matsim.contrib.dvrp.passenger.PassengerRequestScheduledEvent;
+import org.matsim.contrib.dvrp.passenger.PassengerRequestScheduledEventHandler;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
@@ -43,14 +49,23 @@ import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.QSimConfigGroup;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.events.handler.EventHandler;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.drt.events.*;
 
 import javax.management.InvalidAttributeValueException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 
-public class BlockingDRTChessboardTest {
+public class DrtBlockingChessboardTest {
 
+    static Logger logger = Logger.getLogger(DrtBlockingChessboardTest.class.getName());
 
     @Test
     public final void testDefaultBlockingOptimizer() throws InvalidAttributeValueException {
@@ -75,16 +90,28 @@ public class BlockingDRTChessboardTest {
         setupPopulation(scenario);
 
         Controler controler = new Controler(scenario);
-        configureControler(drtCfg, controler);
 
+        DrtBlockingDispatchEventHandler handler = new DrtBlockingDispatchEventHandler();
+        configureControler(drtCfg, controler, handler);
         controler.run();
+
+        for(String s: handler.errors){
+            logger.severe(s);
+        }
+        Assert.assertTrue("something went wrong while DrtBlocking dispatch. See messages above.", handler.errors.isEmpty());
+
     }
 
-    private void configureControler(DrtConfigGroup drtCfg, Controler controler) {
+    private void configureControler(DrtConfigGroup drtCfg, Controler controler, EventHandler handler) {
         controler.addOverridingModule( new DvrpModule() ) ;
         controler.addOverridingModule( new DrtModeModule(drtCfg) ) ;
         controler.addOverridingModule( new DrtBlockingModule(drtCfg));
-
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                addEventHandlerBinding().toInstance(handler);
+            }
+        });
         controler.configureQSimComponents( DvrpQSimComponents.activateModes( TransportMode.drt ) ) ;
     }
 
@@ -102,7 +129,7 @@ public class BlockingDRTChessboardTest {
 
         PopulationFactory popFactory = scenario.getPopulation().getFactory();
 
-        for (int i = 1; i <= 200; i++) {
+        for (int i = 1; i <= 64; i++) {
             Person person = popFactory.createPerson(Id.createPersonId("person_" + i));
             Plan plan = popFactory.createPlan();
             Activity act1;
@@ -112,7 +139,7 @@ public class BlockingDRTChessboardTest {
             } else {
                 act1 = popFactory.createActivityFromLinkId("home", rightLink);
             }
-            act1.setEndTime(i * 5*60);
+            act1.setEndTime(4*3600 + i*15*60);
             plan.addActivity(act1);
 
             plan.addLeg(popFactory.createLeg("drt"));
@@ -137,7 +164,7 @@ public class BlockingDRTChessboardTest {
 
         DrtConfigGroup drtCfg = new DrtConfigGroup();//DrtConfigGroup.getSingleModeDrtConfig(config);
         drtCfg.setMode(TransportMode.drt);
-        drtCfg.setMaxWaitTime(15 * 60);
+        drtCfg.setMaxWaitTime(60 * 60);
         drtCfg.setMaxTravelTimeAlpha(1);
         drtCfg.setMaxTravelTimeBeta(15 * 60);
         drtCfg.setStopDuration(60);
@@ -151,4 +178,43 @@ public class BlockingDRTChessboardTest {
         return drtCfg;
     }
 
+
+    class DrtBlockingDispatchEventHandler implements DrtBlockingRequestRejectedEventHandler, DrtBlockingRequestScheduledEventHandler, DrtBlockingEndedEventHandler,
+            PassengerRequestRejectedEventHandler, PassengerRequestScheduledEventHandler {
+
+
+        private Set<Id<DvrpVehicle>> startedBlockings = new HashSet<>();
+        private List<String> errors = new ArrayList<>();
+
+
+        @Override
+        public void handleEvent(DrtBlockingEndedEvent event) {
+            if(! (this.startedBlockings.remove(event.getVehicleId()))){
+                this.errors.add("the DrtBlocking of vehicle " + event.getVehicleId() + " just ended - but has never begun.");
+            }
+        }
+
+        @Override
+        public void handleEvent(DrtBlockingRequestRejectedEvent event) {
+            this.errors.add("there should be no rejection of drt blockings in this test. \n Event: " + event);
+        }
+
+        @Override
+        public void handleEvent(DrtBlockingRequestScheduledEvent event) {
+            this.startedBlockings.add(event.getVehicleId());
+        }
+
+        @Override
+        public void handleEvent(PassengerRequestRejectedEvent event) {
+            this.errors.add("there should be no rejection of passenger requests in this test. \n Event: " + event);
+        }
+
+        @Override
+        public void handleEvent(PassengerRequestScheduledEvent event) {
+            if(this.startedBlockings.contains(event.getVehicleId())){
+                this.errors.add("vehicle " + event.getVehicleId() + " just got assigned to a passenger but it's DrtBlocking has not ended yet.");
+            }
+        }
+
+    }
 }
