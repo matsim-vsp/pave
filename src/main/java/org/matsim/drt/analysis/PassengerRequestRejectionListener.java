@@ -65,6 +65,10 @@ public class PassengerRequestRejectionListener implements PassengerRequestReject
     @Override
     public void notifyIterationEnds(IterationEndsEvent event) {
         String fileName = event.getServices().getControlerIO().getIterationFilename(event.getIteration(), "passengerRejections.csv");
+        writeOutput(fileName);
+    }
+
+    public void writeOutput(String fileName){
         try (CompactCSVWriter writer = new CompactCSVWriter(IOUtils.getBufferedWriter(fileName), ';')) {
             writeHeader(writer);
             while(! this.event2Output.isEmpty()){
