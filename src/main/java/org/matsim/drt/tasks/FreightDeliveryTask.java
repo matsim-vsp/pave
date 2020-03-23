@@ -27,24 +27,23 @@ import org.matsim.contrib.freight.carrier.Tour;
 
 public class FreightDeliveryTask extends StayTask {
 
-    private final TimeWindow timeWindow;
-    private final int capacity;
+    private final Tour.TourActivity tourActivity;
 
-    public FreightDeliveryTask(Tour.ServiceActivity serviceActivity, double start, double end, Link location) {
-        super(FreightTaskType.DELIVERY, start,  end, location);
-        if(location.getId() != serviceActivity.getLocation()) throw new IllegalArgumentException();
-        this.timeWindow = serviceActivity.getTimeWindow();
-        this.capacity = serviceActivity.getService().getCapacityDemand();
-    }
-
-    public FreightDeliveryTask(Tour.Delivery deliveryActivity, double start, double end, Link location){
+    public FreightDeliveryTask(Tour.TourActivity deliveryActivity, double start, double end, Link location){
         super(FreightTaskType.DELIVERY, start, end, location);
         if(location.getId() != deliveryActivity.getLocation()) throw new IllegalArgumentException();
-        this.timeWindow = deliveryActivity.getTimeWindow();
-        this.capacity = deliveryActivity.getShipment().getSize();
+
+        if(! (deliveryActivity instanceof Tour.ShipmentBasedActivity || deliveryActivity instanceof Tour.ServiceActivity) ){
+            throw new IllegalArgumentException();
+        }
+        this.tourActivity = deliveryActivity;
     }
 
     public TimeWindow getTimeWindow() {
-        return timeWindow;
+        return this.tourActivity.getTimeWindow();
+    }
+
+    public double getDeliveryDuration(){
+        return this.tourActivity.getDuration();
     }
 }

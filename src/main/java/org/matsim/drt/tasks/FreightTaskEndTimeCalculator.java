@@ -24,17 +24,34 @@ import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.schedule.DrtStayTaskEndTimeCalculator;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.StayTask;
+import org.matsim.contrib.freight.FreightConfigGroup;
+import org.matsim.contrib.freight.carrier.TimeWindow;
 
 public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
 
-    public FreightTaskEndTimeCalculator(DrtConfigGroup drtConfigGroup) {
+    private final FreightConfigGroup.TimeWindowHandling timeWindowHandling;
+
+    public FreightTaskEndTimeCalculator(DrtConfigGroup drtConfigGroup, FreightConfigGroup freightConfigGroup) {
         super(drtConfigGroup);
+        this.timeWindowHandling = freightConfigGroup.getTimeWindowHandling();
     }
 
     @Override
     public double calcNewEndTime(DvrpVehicle vehicle, StayTask task, double newBeginTime) {
         if(task.getTaskType() instanceof FreightTaskType){
             double duration = task.getEndTime() - task.getBeginTime();
+
+            if(task instanceof FreightDeliveryTask && timeWindowHandling.equals(FreightConfigGroup.TimeWindowHandling.enforceBeginnings)){
+                TimeWindow timeWindow = ((FreightDeliveryTask) task).getTimeWindow();
+                duration = ((FreightDeliveryTask) task).getDeliveryDuration();
+                if(newBeginTime <= timeWindow.getStart()){
+                    return timeWindow.getStart() + duration;
+                } else if(newBeginTime > timeWindow.getEnd()){
+                    //TODO do something less restrictive
+                    throw new RuntimeException("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() + " but it will come too late far that");
+                }
+            }
+
             return newBeginTime + duration;
         } else {
             return super.calcNewEndTime(vehicle, task, newBeginTime);

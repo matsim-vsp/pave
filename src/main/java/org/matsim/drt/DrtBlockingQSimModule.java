@@ -49,6 +49,7 @@ import org.matsim.contrib.dvrp.schedule.ScheduleTimingUpdater;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentLogic;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentSourceQSimModule;
+import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
@@ -126,7 +127,7 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
         bindModal(DrtBlockingRequestDispatcher.class).to(StraightLineKnnBlockingDispatcher.class).in(Singleton.class);
 
         bindModal(ScheduleTimingUpdater.class).toProvider(modalProvider(
-                getter -> new ScheduleTimingUpdater(getter.get(MobsimTimer.class), new FreightTaskEndTimeCalculator(drtCfg))))
+                getter -> new ScheduleTimingUpdater(getter.get(MobsimTimer.class), new FreightTaskEndTimeCalculator(drtCfg, getter.get(FreightConfigGroup.class)))))
                 .asEagerSingleton();
 
         bindModal(VrpAgentLogic.DynActionCreator.class).
