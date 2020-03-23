@@ -125,11 +125,11 @@ public class DrtBlockingChessboardTest {
         scenario.getPopulation().getPersons().clear();
 
         Id<Link> leftLink = Id.createLinkId(1);
-        Id<Link> rightLink = Id.createLinkId(5);
+        Id<Link> rightLink = Id.createLinkId(9);
 
         PopulationFactory popFactory = scenario.getPopulation().getFactory();
 
-        for (int i = 1; i <= 64; i++) {
+        for (int i = 1; i <= 192; i++) {
             Person person = popFactory.createPerson(Id.createPersonId("person_" + i));
             Plan plan = popFactory.createPlan();
             Activity act1;
@@ -139,7 +139,7 @@ public class DrtBlockingChessboardTest {
             } else {
                 act1 = popFactory.createActivityFromLinkId("home", rightLink);
             }
-            act1.setEndTime(4*3600 + i*15*60);
+            act1.setEndTime(4*3600 + i*5*60);
             plan.addActivity(act1);
 
             plan.addLeg(popFactory.createLeg("drt"));
@@ -164,7 +164,7 @@ public class DrtBlockingChessboardTest {
 
         DrtConfigGroup drtCfg = new DrtConfigGroup();//DrtConfigGroup.getSingleModeDrtConfig(config);
         drtCfg.setMode(TransportMode.drt);
-        drtCfg.setMaxWaitTime(60 * 60);
+        drtCfg.setMaxWaitTime(30 * 60);
         drtCfg.setMaxTravelTimeAlpha(1);
         drtCfg.setMaxTravelTimeBeta(15 * 60);
         drtCfg.setStopDuration(60);

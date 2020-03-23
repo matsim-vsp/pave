@@ -15,11 +15,11 @@
         <services>
             <service id="1" to="15" capacityDemand="1" earliestStart="06:00:00" latestEnd="24:00:00"
                      serviceDuration="00:05:0"/>
-            <service id="2" to="15" capacityDemand="1" earliestStart="08:00:00" latestEnd="24:00:00"
+            <service id="2" to="15" capacityDemand="1" earliestStart="09:00:00" latestEnd="24:00:00"
                      serviceDuration="00:05:00"/>
-            <service id="3" to="15" capacityDemand="1" earliestStart="10:00:00" latestEnd="24:00:00"
+            <service id="3" to="15" capacityDemand="1" earliestStart="12:00:00" latestEnd="24:00:00"
                      serviceDuration="00:05:00"/>
-            <service id="4" to="15" capacityDemand="1" earliestStart="12:00:00" latestEnd="24:00:00"
+            <service id="4" to="15" capacityDemand="1" earliestStart="15:00:00" latestEnd="24:00:00"
                      serviceDuration="00:05:00"/>
         </services>
     </carrier>
