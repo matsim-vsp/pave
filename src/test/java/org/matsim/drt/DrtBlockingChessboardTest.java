@@ -45,6 +45,7 @@ import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
 import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
+import org.matsim.contrib.freight.carrier.TimeWindow;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -85,7 +86,7 @@ public class DrtBlockingChessboardTest {
         FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
         FreightUtils.runJsprit(scenario, freightCfg);
-//        new CarrierPlanXmlWriterV2(FreightUtils.getCarriers(scenario)).write(config.controler().getOutputDirectory() + "carriers_planned.xml");
+        new CarrierPlanXmlWriterV2(FreightUtils.getCarriers(scenario)).write(config.controler().getOutputDirectory() + "carriers_planned.xml");
 
         setupPopulation(scenario);
 
@@ -129,32 +130,48 @@ public class DrtBlockingChessboardTest {
 
         PopulationFactory popFactory = scenario.getPopulation().getFactory();
 
-        for (int i = 1; i <= 192; i++) {
-            Person person = popFactory.createPerson(Id.createPersonId("person_" + i));
-            Plan plan = popFactory.createPlan();
-            Activity act1;
-            Activity act2;
-            if(i % 2 == 0){
-                 act1 = popFactory.createActivityFromLinkId("home", leftLink);
-            } else {
-                act1 = popFactory.createActivityFromLinkId("home", rightLink);
-            }
-            act1.setEndTime(4*3600 + i*5*60);
-            plan.addActivity(act1);
-
-            plan.addLeg(popFactory.createLeg("drt"));
-
-            if(i % 2 == 0){
-                act2 = popFactory.createActivityFromLinkId("work", rightLink);
-            } else {
-                act2 = popFactory.createActivityFromLinkId("work", leftLink);
-            }
-
-            plan.addActivity(act2);
-
-            person.addPlan(plan);
+        for (int i = 1; i <= 86; i++) {
+            Person person = createPersons(leftLink, rightLink, popFactory, "horizontalTraveller_", i);
             scenario.getPopulation().addPerson(person);
         }
+
+
+        //verticalTravellers will only travel from leftLink to rightLink
+        leftLink = Id.createLinkId(12);
+        rightLink = Id.createLinkId(9);
+
+        for (int i = 18; i <= 72; i+=18) { //18,36,54,72  => 7.00h ; 10.00h, 13.00h, 16.00h
+            Person person = createPersons(leftLink, rightLink, popFactory, "verticalTraveller_", i);
+            scenario.getPopulation().addPerson(person);
+        }
+
+    }
+
+    private Person createPersons(Id<Link> leftLink, Id<Link> rightLink, PopulationFactory popFactory, String idString, int i) {
+        Person person = popFactory.createPerson(Id.createPersonId(idString + i));
+        Plan plan = popFactory.createPlan();
+        Activity act1;
+        Activity act2;
+        if (i % 2 == 0) {
+            act1 = popFactory.createActivityFromLinkId("home", leftLink);
+        } else {
+            act1 = popFactory.createActivityFromLinkId("home", rightLink);
+        }
+        act1.setEndTime(4 * 3600 + i * 10 * 60);
+        plan.addActivity(act1);
+
+        plan.addLeg(popFactory.createLeg("drt"));
+
+        if (i % 2 == 0) {
+            act2 = popFactory.createActivityFromLinkId("work", rightLink);
+        } else {
+            act2 = popFactory.createActivityFromLinkId("work", leftLink);
+        }
+
+        plan.addActivity(act2);
+
+        person.addPlan(plan);
+        return person;
     }
 
     private static DrtConfigGroup prepareDrtConfig(Config config) {

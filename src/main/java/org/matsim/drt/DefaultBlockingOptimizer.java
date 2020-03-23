@@ -119,7 +119,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 
 
     private void updateBlocking(DvrpVehicle vehicle) {
-        if(scheduleInquiry.isIdle(vehicle)){
+        if(scheduleInquiry.isIdle(vehicle)){ //TODO actually we could unblock the vehicle already when the last retooling has begun. What happens if we call eventsManager.processEvent(futureTime) ?
             //if the blocking request has started and the vehicle is idle then we can unblock the vehicle..
             this.blockedVehicles.remove(vehicle);
             this.blockingManager.unblockVehicleAfterTime(vehicle, timer.getTimeOfDay());
