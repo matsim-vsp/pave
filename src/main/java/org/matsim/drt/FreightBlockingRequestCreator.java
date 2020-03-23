@@ -114,9 +114,17 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         double ttDepot2FirstDelivery = ((Tour.Leg) scheduledTour.getTour().getTourElements().get(0)).getExpectedTransportTime();
         double firstDeliveryEarliestStart =((Tour.TourActivity) scheduledTour.getTour().getTourElements().get(1)).getTimeWindow().getStart();
 
-        double calculatedStart = firstDeliveryEarliestStart - ttDepot2FirstDelivery * 1.5 - RETOOL_DURATION;
-//        double bufferFactor = config.plansCalcRoute().getTeleportedModeFreespeedFactors().get(TransportMode.ride);
+        double tourStart = scheduledTour.getDeparture();
+        double calculatedStart;
+//        double bufferFactor = config.plansCalcRoute().getTeleportedModeFreespeedFactors().get(TransportMode.ride); //TODO
+        double bufferFactor = 1.5;
 
+        //if jsprit scheduled the tour start way too early, just account for the ttDepot2FirstDelivery * 1.5 and ignore the original start time
+        if(tourStart + ttDepot2FirstDelivery * bufferFactor <= firstDeliveryEarliestStart){
+            calculatedStart = firstDeliveryEarliestStart - ttDepot2FirstDelivery * bufferFactor - RETOOL_DURATION;
+        } else {
+            calculatedStart = tourStart - RETOOL_DURATION;
+        }
         return Math.max(qSimStartTime, Math.max(vehicleEarliestStart, calculatedStart));
     }
 
