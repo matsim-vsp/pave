@@ -61,7 +61,7 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
     private Map<Id<DvrpVehicle>, Double> waitTimesAtDepot = new HashMap<>();
 
     private Map<Tuple<Id<DvrpVehicle>,Double>,Double> freeTimesOfPFAVWhenRequestDenied = new HashMap<>();
-    private HashMap<PFAVServiceTask,Double> currentServiceTaskStartTimes = new HashMap<>();
+    private Map<PFAVServiceTask,Double> currentServiceTaskStartTimes = new HashMap<>();
 
     private Fleet fleet;
 
@@ -124,7 +124,13 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
 
             FreightTourDataDispatched tour = this.begunFreightTours.get(vehicleId);
             PFAVServiceTask serviceTask = this.begunFreightTours.get(vehicleId).getLastStartedServiceTask();
+
+            if(serviceTask == null){
+                throw new RuntimeException("lastStartedServiceTask is null. Should not happen");
+            }
+
             double start = this.currentServiceTaskStartTimes.remove(serviceTask);
+
             double totalDuration = event.getTime() - start;
             tour.addToTotalServiceTime(totalDuration);
             double waitTime = totalDuration - serviceTask.getCarrierService().getServiceDuration();
