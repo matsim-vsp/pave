@@ -120,7 +120,7 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
 
             @Override
             public BlockingRequestCreator get() {
-                return new FreightBlockingRequestCreator(getModalInstance(Network.class), travelTime, getConfig());
+                return new FreightBlockingRequestCreator(getConfig(), getModalInstance(Network.class), travelTime);
             }
         });
 

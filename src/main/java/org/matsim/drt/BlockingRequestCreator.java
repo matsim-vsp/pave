@@ -20,12 +20,12 @@
 
 package org.matsim.drt;
 
-import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.freight.carrier.Carriers;
 
 import java.util.Set;
 
 interface BlockingRequestCreator {
 
-    Set<DrtBlockingRequest> createRequestsForIteration(Scenario scenario);
+    Set<DrtBlockingRequest> createBlockingRequests(Carriers carriers);
 
 }

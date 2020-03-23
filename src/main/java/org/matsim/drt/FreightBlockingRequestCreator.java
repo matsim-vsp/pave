@@ -48,25 +48,23 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
     private static double RETOOL_DURATION = 5*60;
     private static final double SUBMISSION_LOOK_AHEAD = 15*60;
 
-    private final String mode;
     private final Network network;
+    private final String mode;
     private final TravelTime travelTime;
     private final double qSimStartTime;
-    private final Config config;
 
-    public FreightBlockingRequestCreator(Network network, TravelTime travelTime, Config config) {
+    public FreightBlockingRequestCreator(Config config, Network network, TravelTime travelTime) {
         this.network = network;
         this.travelTime = travelTime;
         this.mode = DrtConfigGroup.getSingleModeDrtConfig(config).getMode();
         this.qSimStartTime = Math.max(0, config.qsim().getStartTime());
-        this.config = config;
     }
-    
+
     @Override
-    public Set<DrtBlockingRequest> createRequestsForIteration(Scenario scenario) {
+    public Set<DrtBlockingRequest> createBlockingRequests(Carriers carriers) {
         Set<DrtBlockingRequest> requests = new HashSet<>();
 
-        FreightUtils.getCarriers(scenario).getCarriers().values().forEach(carrier -> {
+        carriers.getCarriers().values().forEach(carrier -> {
             if(CarrierUtils.getCarrierMode(carrier).equals(mode)){
                 requests.addAll(createBlockingRequestsForCarrier(carrier));
             }
