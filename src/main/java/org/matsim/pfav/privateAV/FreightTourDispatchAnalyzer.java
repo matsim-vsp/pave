@@ -123,13 +123,20 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
                         "\n see the event=" + event);
 
             FreightTourDataDispatched tour = this.begunFreightTours.get(vehicleId);
-            PFAVServiceTask serviceTask = this.begunFreightTours.get(vehicleId).getLastStartedServiceTask();
+            PFAVServiceTask serviceTask = tour.getLastStartedServiceTask();
+
 
             if(serviceTask == null){
                 throw new RuntimeException("lastStartedServiceTask is null. Should not happen");
             }
 
             double start = this.currentServiceTaskStartTimes.remove(serviceTask);
+            double start2 = tour.getServiceTaskStartTime(serviceTask);
+            double start3 = serviceTask.getBeginTime();
+
+            if(! (start == start2 && start == start3)){
+                throw new RuntimeException();
+            }
 
             double totalDuration = event.getTime() - start;
             tour.addToTotalServiceTime(totalDuration);
