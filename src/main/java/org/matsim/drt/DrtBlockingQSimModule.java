@@ -24,6 +24,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.sun.xml.bind.v2.runtime.unmarshaller.XsiNilLoader;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.optimizer.*;
@@ -77,6 +78,7 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getModal(Fleet.class),
                         getter.getModal(DrtScheduleInquiry.class),
                         getter.getModal(DrtBlockingManager.class),
+                        getter.getModal(DrtBlockingRequestDispatcher.class),
                         getter.get(EventsManager.class),
                         getter.getModal(Network.class),
                         getter.get(MobsimTimer.class)) {
@@ -120,6 +122,8 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                 return new FreightBlockingRequestCreator(getModalInstance(Network.class), travelTime, getConfig());
             }
         });
+
+        bindModal(DrtBlockingRequestDispatcher.class).to(StraightLineKnnBlockingDispatcher.class).in(Singleton.class);
 
         bindModal(ScheduleTimingUpdater.class).toProvider(modalProvider(
                 getter -> new ScheduleTimingUpdater(getter.get(MobsimTimer.class), new FreightTaskEndTimeCalculator(drtCfg))))

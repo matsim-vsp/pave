@@ -1,8 +1,10 @@
 package org.matsim.drt;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.schedule.Task;
+import org.matsim.contrib.dvrp.schedule.Tasks;
 
 import java.util.List;
 
@@ -60,5 +62,9 @@ public class DrtBlockingRequest implements Request {
 
     void setEndTime(double endTime) {
         this.endTime = endTime;
+    }
+
+    public Link getStartLink() {
+        return Tasks.getEndLink(this.tasks.get(0));
     }
 }

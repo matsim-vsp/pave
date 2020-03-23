@@ -63,6 +63,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 
     private final DrtScheduleInquiry scheduleInquiry;
     private final DrtBlockingManager blockingManager;
+    private DrtBlockingRequestDispatcher dispatcher;
     private final EventsManager eventsManager;
 
     private final LeastCostPathCalculator router;
@@ -75,11 +76,12 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
     private PriorityQueue<DrtBlockingRequest> blockingRequests;
 
     DefaultBlockingOptimizer(DefaultDrtOptimizer optimizer, Fleet fleet, DrtScheduleInquiry scheduleInquiry, DrtBlockingManager blockingManager,
-                             EventsManager eventsManager, Network modalNetwork, MobsimTimer timer) {
+                             DrtBlockingRequestDispatcher dispatcher, EventsManager eventsManager, Network modalNetwork, MobsimTimer timer) {
         this.optimizer = optimizer;
         this.fleet = fleet;
         this.scheduleInquiry = scheduleInquiry;
         this.blockingManager = blockingManager;
+        this.dispatcher = dispatcher;
         this.eventsManager = eventsManager;
 
         this.timer = timer;
@@ -151,30 +153,27 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
             } else{
                 if(!idleVehicles.isEmpty()){
                     DvrpVehicle vehicle;
-                    {//TODO dispatch a suitable vehicle instead of any random one..
-                        int maxTries = idleVehicles.size();
-                        do {
-                            vehicle = idleVehicles.get(rnd.nextInt(idleVehicles.size()));
-                            maxTries --;
-                        }
-                        while(this.blockedVehicles.containsKey(vehicle) && maxTries > 0);   //if the idle vehicle is blocked in the future, do not assign it
-                        if(this.blockedVehicles.containsKey(vehicle)) break;                //stop dispatching blocking requests if no suitable idle vehicle can be found
-                    }
 
-                    if(drtBlockingRequest.getEndTime() < vehicle.getServiceEndTime()){
-                        if(blockingManager.blockVehicle(vehicle, drtBlockingRequest)){
-                            log.info("blocking vehicle " + vehicle.getId() + " for time period start=" +drtBlockingRequest.getStartTime()
-                                    + " end=" + drtBlockingRequest.getEndTime());
-                            idleVehicles.remove(vehicle);
-                            scheduleTasksForBlockedVehicle(drtBlockingRequest, vehicle);
-                            this.blockedVehicles.put(vehicle, drtBlockingRequest);
-                            blockingRequestsIterator.remove();
-                            eventsManager.processEvent(new DrtBlockingRequestScheduledEvent(timer.getTimeOfDay(), drtBlockingRequest.getId(), vehicle.getId()));
-                        }
-                    }
+                    List<DvrpVehicle> availableVehicles = idleVehicles.stream()
+                            .filter(v -> v.getServiceEndTime() > drtBlockingRequest.getEndTime()) //blocking should be expected to fit into vehicle service time
+                            .filter(v -> ! blockedVehicles.containsKey(v) )  //if the idle vehicle is blocked in the future, do not assign it
+                            .collect(Collectors.toList());
+                    vehicle = this.dispatcher.findDispatchForBlockingRequest(Collections.unmodifiableList(availableVehicles), drtBlockingRequest);
 
+                    if(vehicle == null){
+                        continue;
+                    }
+                    if(blockingManager.blockVehicle(vehicle, drtBlockingRequest)){ //blockingManager checks whether the maximum threshold of blocked vehicles will be exceeded
+                        log.info("blocking vehicle " + vehicle.getId() + " for time period start=" +drtBlockingRequest.getStartTime()
+                                + " end=" + drtBlockingRequest.getEndTime());
+                        idleVehicles.remove(vehicle);
+                        scheduleTasksForBlockedVehicle(drtBlockingRequest, vehicle);
+                        this.blockedVehicles.put(vehicle, drtBlockingRequest);
+                        blockingRequestsIterator.remove();
+                        eventsManager.processEvent(new DrtBlockingRequestScheduledEvent(timer.getTimeOfDay(), drtBlockingRequest.getId(), vehicle.getId()));
+                    }
                 } else{
-                    break;
+                    return;
                 }
             }
         }
