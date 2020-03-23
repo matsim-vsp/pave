@@ -125,37 +125,39 @@ public class DrtBlockingChessboardTest {
         //delete the old population
         scenario.getPopulation().getPersons().clear();
 
-        Id<Link> leftLink = Id.createLinkId(1);
-        Id<Link> rightLink = Id.createLinkId(9);
-
         PopulationFactory popFactory = scenario.getPopulation().getFactory();
-
-        for (int i = 1; i <= 86; i++) {
-            Person person = createPersons(leftLink, rightLink, popFactory, "horizontalTraveller_", i);
-            scenario.getPopulation().addPerson(person);
+        
+        
+        
+        {
+            Id<Link> leftLink = Id.createLinkId(1);
+            Id<Link> rightLink = Id.createLinkId(9);
+            for (int i = 1; i <= 86; i++) {
+                Person person = createPersons(leftLink, rightLink, popFactory, "horizontalTraveller_", i);
+                scenario.getPopulation().addPerson(person);
+            }
         }
 
-
-        //verticalTravellers will only travel from leftLink to rightLink
-        leftLink = Id.createLinkId(12);
-        rightLink = Id.createLinkId(9);
-
-        for (int i = 18; i <= 72; i+=18) { //18,36,54,72  => 7.00h ; 10.00h, 13.00h, 16.00h
-            Person person = createPersons(leftLink, rightLink, popFactory, "verticalTraveller_", i);
-            scenario.getPopulation().addPerson(person);
+        { //there will be only verticalTravellers that travel from firstLink to secondLink, not vice-versa
+            Id<Link> firstLink = Id.createLinkId(12);
+            Id<Link> secondLink = Id.createLinkId(9);
+            for (int i = 18; i <= 72; i+=18) { //18,36,54,72  => 7.00h ; 10.00h, 13.00h, 16.00h
+                Person person = createPersons(firstLink, secondLink, popFactory, "verticalTraveller_", i);
+                scenario.getPopulation().addPerson(person);
+            }
         }
 
     }
 
-    private Person createPersons(Id<Link> leftLink, Id<Link> rightLink, PopulationFactory popFactory, String idString, int i) {
+    private Person createPersons(Id<Link> firstLink, Id<Link> secondLink, PopulationFactory popFactory, String idString, int i) {
         Person person = popFactory.createPerson(Id.createPersonId(idString + i));
         Plan plan = popFactory.createPlan();
         Activity act1;
         Activity act2;
         if (i % 2 == 0) {
-            act1 = popFactory.createActivityFromLinkId("home", leftLink);
+            act1 = popFactory.createActivityFromLinkId("home", firstLink);
         } else {
-            act1 = popFactory.createActivityFromLinkId("home", rightLink);
+            act1 = popFactory.createActivityFromLinkId("home", secondLink);
         }
         act1.setEndTime(4 * 3600 + i * 10 * 60);
         plan.addActivity(act1);
@@ -163,9 +165,9 @@ public class DrtBlockingChessboardTest {
         plan.addLeg(popFactory.createLeg("drt"));
 
         if (i % 2 == 0) {
-            act2 = popFactory.createActivityFromLinkId("work", rightLink);
+            act2 = popFactory.createActivityFromLinkId("work", secondLink);
         } else {
-            act2 = popFactory.createActivityFromLinkId("work", leftLink);
+            act2 = popFactory.createActivityFromLinkId("work", firstLink);
         }
 
         plan.addActivity(act2);
@@ -218,6 +220,9 @@ public class DrtBlockingChessboardTest {
 
         @Override
         public void handleEvent(DrtBlockingRequestScheduledEvent event) {
+            if(event.getVehicleId().toString().equals("drt_veh_1")){
+                this.errors.add("drt_veh_1 is not supposed to perform a freight tour. Event: " + event);
+            }
             this.startedBlockings.add(event.getVehicleId());
         }
 
