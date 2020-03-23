@@ -61,7 +61,6 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
     private Map<Id<DvrpVehicle>, Double> waitTimesAtDepot = new HashMap<>();
 
     private Map<Tuple<Id<DvrpVehicle>,Double>,Double> freeTimesOfPFAVWhenRequestDenied = new HashMap<>();
-    private HashMap<PFAVServiceTask,Double> currentServiceTaskStartTimes = new HashMap<>();
 
     private Fleet fleet;
 
@@ -123,8 +122,9 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
                         "\n see the event=" + event);
 
             FreightTourDataDispatched tour = this.begunFreightTours.get(vehicleId);
-            PFAVServiceTask serviceTask = this.begunFreightTours.get(vehicleId).getLastStartedServiceTask();
-            double start = this.currentServiceTaskStartTimes.remove(serviceTask);
+            PFAVServiceTask serviceTask = tour.getLastStartedServiceTask();
+
+            double start = serviceTask.getBeginTime();
             double totalDuration = event.getTime() - start;
             tour.addToTotalServiceTime(totalDuration);
             double waitTime = totalDuration - serviceTask.getCarrierService().getServiceDuration();
@@ -146,8 +146,6 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
                 throw new IllegalStateException("vehicle " + vehicleId + " has just started a service activity but no tour start is registered!" +
                         "\n see the event=" + event);
             PFAVServiceTask serviceTask = tour.getLastStartedServiceTask();
-
-            this.currentServiceTaskStartTimes.put(serviceTask, event.getTime());
             tour.notifyNextServiceTaskStarted(serviceTask, event.getTime());
         }
     }

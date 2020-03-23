@@ -119,6 +119,7 @@ public class FreightOnlyMatsim {
 		Controler controler = prepareControler(scenario);
 
 		controler.run();
+
 		preparePathCalculator(controler);
 	}
 
@@ -126,7 +127,6 @@ public class FreightOnlyMatsim {
 	private LeastCostPathCalculator calc;
 
 	private void preparePathCalculator(Controler controler) {
-		((PlansCalcRouteConfigGroup) controler.getConfig().getModules().get("planscalcroute")).setRoutingRandomness(0);
 
 		controler.getTripRouterProvider();
 		LeastCostPathCalculatorFactory calcFac = controler.getLeastCostPathCalculatorFactory();
@@ -181,6 +181,7 @@ public class FreightOnlyMatsim {
 		config.global().setRandomSeed(4177);
 		config.controler().setLastIteration(0);
 		config.controler().setOutputDirectory(outputLocation);
+		config.plansCalcRoute().setRoutingRandomness(0);
 
 		config.network().setInputFile(
 				"https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.4-10pct/input/berlin-v5-network.xml.gz");
