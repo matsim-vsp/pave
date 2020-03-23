@@ -54,7 +54,6 @@ public final class FreightTourDataDispatched {
     private double waitTimeAtDepot = 0;
     private double totalServiceTime = 0;
     private double totalServiceWaitTime = 0;
-    private HashMap<PFAVServiceTask, Double> serviceTaskStartTimes = new HashMap<>();
 
     private FreightTourDataDispatched(FreightTourDataDispatched.Builder builder) {
         this.vehicleId = Objects.requireNonNull(builder.vehicleId);
@@ -107,13 +106,6 @@ public final class FreightTourDataDispatched {
         this.addToActualServedCapacityDemand(serviceTask.getCarrierService().getCapacityDemand());
         this.computeAndNoteDelay(serviceTask.getCarrierService().getServiceStartTimeWindow(), startTime);
         this.amountOfServicesHandled++;
-
-        if(this.serviceTaskStartTimes.get(serviceTask) != null) throw new IllegalStateException();
-        this.serviceTaskStartTimes.put(serviceTask, startTime);
-    }
-
-    double getServiceTaskStartTime(PFAVServiceTask task){
-        return this.serviceTaskStartTimes.get(task);
     }
 
     void addToTotalServiceTime(double time){
