@@ -64,6 +64,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * TODO test more functionality. For instance: which vehicle is assigned?
+ */
 public class DrtBlockingChessboardTest {
 
     static Logger logger = Logger.getLogger(DrtBlockingChessboardTest.class.getName());
