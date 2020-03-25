@@ -220,9 +220,6 @@ public class DrtBlockingChessboardTest {
 
         @Override
         public void handleEvent(DrtBlockingRequestScheduledEvent event) {
-            if(event.getVehicleId().toString().equals("drt_veh_1")){
-                this.errors.add("drt_veh_1 is not supposed to perform a freight tour. Event: " + event);
-            }
             this.startedBlockings.add(event.getVehicleId());
         }
 
