@@ -86,7 +86,7 @@ public class DrtBlockingChessboardTest {
         FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
         FreightUtils.runJsprit(scenario, freightCfg);
-        new CarrierPlanXmlWriterV2(FreightUtils.getCarriers(scenario)).write(config.controler().getOutputDirectory() + "carriers_planned.xml");
+//        new CarrierPlanXmlWriterV2(FreightUtils.getCarriers(scenario)).write(config.controler().getOutputDirectory() + "carriers_planned.xml");
 
         setupPopulation(scenario);
 
