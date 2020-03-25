@@ -28,7 +28,7 @@ import org.matsim.contrib.util.StraightLineKnnFinder;
 
 import java.util.Collection;
 
-public class StraightLineKnnBlockingDispatcher implements DrtBlockingRequestDispatcher {
+class StraightLineKnnBlockingDispatcher implements DrtBlockingRequestDispatcher {
 
     @Override
     public DvrpVehicle findDispatchForBlockingRequest(Collection<DvrpVehicle> availableVehicles, DrtBlockingRequest blockingRequest) {

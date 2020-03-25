@@ -24,7 +24,7 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 
 import java.util.Collection;
 
-public interface DrtBlockingRequestDispatcher {
+interface DrtBlockingRequestDispatcher {
 
     /**
      * finds a solution for the dispatch blockingRequest -> DvrpVehicle
