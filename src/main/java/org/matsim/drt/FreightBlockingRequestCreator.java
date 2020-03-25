@@ -45,8 +45,8 @@ import java.util.*;
 class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
     //TODO make this configurable
-    private static double RETOOL_DURATION = 5*60;
-    private static final double SUBMISSION_LOOK_AHEAD = 15*60;
+    static final double RETOOL_DURATION = 5*60;
+    static final double SUBMISSION_LOOK_AHEAD = 15*60;
 
     private final Network network;
     private final String mode;
