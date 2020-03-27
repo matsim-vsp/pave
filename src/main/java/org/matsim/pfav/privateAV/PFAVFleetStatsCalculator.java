@@ -105,7 +105,7 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
                     //activity could be something like leisure in open berlin scenario which does not have an end time set
                     Activity act = (Activity) pe;
                     if (act.getEndTime().isUndefined()) {
-                        if (lastLeg.getDepartureTime() == Double.NEGATIVE_INFINITY) {
+                        if (lastLeg.getDepartureTime() == Double.NEGATIVE_INFINITY) {//!~!!!!!
                             if (act.getMaximumDuration().isUndefined()) {
                                 throw new RuntimeException("cannot compute must return time for PFAVehicle of person " + plan.getPerson().getId() + " for activity " + act.toString());
                             }
