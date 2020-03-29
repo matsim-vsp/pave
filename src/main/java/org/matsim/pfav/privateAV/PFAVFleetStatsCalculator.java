@@ -111,9 +111,11 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
                             }
                             //does the leg *before* the activity have a departure time and a travel time?
                             Leg legBeforeAct = (Leg) plan.getPlanElements().get(i - 1);
-							if (legBeforeAct.getDepartureTime().seconds() != Double.NEGATIVE_INFINITY && legBeforeAct.getRoute().getTravelTime() != Double.NEGATIVE_INFINITY) {
+							if (legBeforeAct.getDepartureTime().seconds() != Double.NEGATIVE_INFINITY && legBeforeAct.getRoute()
+									.getTravelTime()
+									.seconds() != Double.NEGATIVE_INFINITY) {
 								return legBeforeAct.getDepartureTime().seconds()
-										+ legBeforeAct.getRoute().getTravelTime() + act.getMaximumDuration().seconds();
+										+ legBeforeAct.getRoute().getTravelTime().seconds() + act.getMaximumDuration().seconds();
                             }
                             //no it does not, so we need to calculate the must return time by computing end time of the activity element by element
                             return computeMustReturnTimeConsecutivelyFromTheStart(plan, i);
@@ -149,9 +151,11 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
                             }
                             //does the leg *before* the activity have a departure time and a travel time?
                             Leg legBeforeAct = (Leg) plan.getPlanElements().get(i - 1);
-							if (legBeforeAct.getDepartureTime().seconds() != Double.NEGATIVE_INFINITY && legBeforeAct.getRoute().getTravelTime() != Double.NEGATIVE_INFINITY) {
+							if (legBeforeAct.getDepartureTime().seconds() != Double.NEGATIVE_INFINITY && legBeforeAct.getRoute()
+									.getTravelTime()
+									.seconds() != Double.NEGATIVE_INFINITY) {
 								returnTime = legBeforeAct.getDepartureTime().seconds()
-										+ legBeforeAct.getRoute().getTravelTime() + act.getMaximumDuration().seconds();
+										+ legBeforeAct.getRoute().getTravelTime().seconds() + act.getMaximumDuration().seconds();
                             } else {
                                 //no it does not, so we need to calculate the must return time by computing end time of the activity element by element
                                 returnTime = computeMustReturnTimeConsecutivelyFromTheStart(plan, i);
@@ -185,7 +189,7 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
 				if (((Leg)current).getDepartureTime().seconds() != Double.NEGATIVE_INFINITY) {
 					time = ((Leg)current).getDepartureTime().seconds();
                 } else {
-                    time += ((Leg) current).getRoute().getTravelTime();
+					time += ((Leg)current).getRoute().getTravelTime().seconds();
                 }
             }
         }
