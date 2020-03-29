@@ -1,23 +1,21 @@
-package org.matsim.ovgu.berlin;
+package org.matsim.ovgu.berlin.createTravelTimeMatrix;
 
 import java.io.FileWriter;
 import java.io.IOException;
 
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.router.util.LeastCostPathCalculator.Path;
-import org.matsim.ovgu.berlin.input.Input;
+import org.matsim.ovgu.berlin.Input;
 import org.matsim.ovgu.berlin.simulation.FreightOnlyMatsim;
 
-public class CreateTravelTimeMatrix {
+public class Version2_RunSimReadSim {
 
-	public static void main(String[] args) {
-
-		String pathChangeEvents = "input/10pc/scenario-A.15.networkChangeEvents.xml.gz";
-		String pathOutput = "OutputKMT/OVGU/10pc/Matrix/";
-
-		FreightOnlyMatsim sim = new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/Iteration/", null, null, 0, 0, 0, null);
-
-		printMatrix("test", pathOutput, sim, Input.tour);
+	public static void run() {
+		// Run Simulation empty
+		FreightOnlyMatsim sim = new FreightOnlyMatsim(Input.pathChangeEvents, Input.directory + "/Iteration/", null, null, null, 0, "");
+		
+		// Read Simulation
+		printMatrix("test", Input.directory, sim, Input.tour);
 	}
 
 	private static void printMatrix(String name, String pathOutput, FreightOnlyMatsim sim, String[] links) {

@@ -18,7 +18,7 @@
  * *********************************************************************** *
  */
 
-package org.matsim.ovgu.berlin;
+package org.matsim.ovgu.berlin.createNetworkChangeEvents;
 
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -48,13 +48,7 @@ public class CreateNetworkChangeEventsFile {
     private static final String CHANGE_EVENTS_FILE = "../networkChangeEvents.xml.gz"; //TODO: Define Output file for ChangeEvents.-
     private static final double MINIMUMFREESPEED = 1.39; //5 km/h
 
-
-    public static void main(String[] args) {
-        CreateNetworkChangeEventsFile ncg = new CreateNetworkChangeEventsFile();
-        ncg.run();
-    }
-
-    private void run() {
+    public static void run() {
         Network network = NetworkUtils.createNetwork() ;
         new MatsimNetworkReader(network).readFile(NETWORKFILE);
         TravelTimeCalculator tcc = readEventsIntoTravelTimeCalculator( network );

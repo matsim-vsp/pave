@@ -16,8 +16,9 @@ import org.matsim.api.core.v01.events.handler.PersonArrivalEventHandler;
 import org.matsim.api.core.v01.events.handler.PersonDepartureEventHandler;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.ovgu.berlin.Input;
 
-public class EventsHandler implements LinkEnterEventHandler, LinkLeaveEventHandler, PersonArrivalEventHandler,
+public class TourEventsHandler implements LinkEnterEventHandler, LinkLeaveEventHandler, PersonArrivalEventHandler,
 		PersonDepartureEventHandler {
 
 	private List<CarrierTour> plans = new ArrayList<CarrierTour>();
@@ -81,16 +82,16 @@ public class EventsHandler implements LinkEnterEventHandler, LinkLeaveEventHandl
 			return Integer.parseInt("" + number1);
 	}
 
-	public void compareExpectedArrivals(double[] expectedTravelTime, double serviceTime, double timewindow) {
+	public void compareExpectedArrivals(double[] expectedTravelTime, double[] timewindows) {
 		for (CarrierTour tour : plans) {
 			int hour = tour.carrierID; // hour == carrierID
-			double departureBefore = hour * 3600;
+			double[] expectedArrivalTimes = Input.getExpectedArrivalTimes(hour, expectedTravelTime);
 			int x = 0;
 			for (Customer customer : tour.customers) {
-				double oExpectedArrival = departureBefore + expectedTravelTime[x++];
-				double dExpectedArrival = oExpectedArrival + serviceTime + expectedTravelTime[x++];
-				departureBefore = dExpectedArrival + serviceTime;
-				customer.analysis(oExpectedArrival, dExpectedArrival, timewindow);
+				double customerTW = timewindows[x];
+				double oExpectedArrival = expectedArrivalTimes[x++];
+				double dExpectedArrival = expectedArrivalTimes[x++];
+				customer.analysis(oExpectedArrival, dExpectedArrival, customerTW);
 			}
 		}
 	}
@@ -105,7 +106,7 @@ public class EventsHandler implements LinkEnterEventHandler, LinkLeaveEventHandl
 			csvWriter.append(
 					"hour/ID; customer; from; to; driveToCustomerTime; oArrival; oServiceTime; oDeparture; odTravelTime; dArrival; dServiceTime; dDeparture;;"
 							+ "oExpectedArrival; oTwStart; oTwEnd; oBeforeTW; oInTW; oAfterTW; oEarlyTW; oLateTW; oEarly; oLate;;"
-							+ "dExpectedArrival; dTwStart; dTwEnd; dBeforeTW; dInTW; dAfterTW; dEarlyTW; oLateTW; dEarly; dLate;\n");
+							+ "dExpectedArrival; dTwStart; dTwEnd; dBeforeTW; dInTW; dAfterTW; dEarlyTW; oLateTW; dEarly; dLate;;timewindow\n");
 
 			// do it
 			for (CarrierTour tour : plans) {
@@ -143,6 +144,7 @@ public class EventsHandler implements LinkEnterEventHandler, LinkLeaveEventHandl
 					double dLateTW = customer.dLateTW;
 					double dEarly = customer.dEarly;
 					double dLate = customer.dLate;
+					double timewindow = customer.timewindow;
 
 					String str = hour + ";" + customerID + ";" + originID + ";" + destID + ";" + driveToCustomerTime
 							+ ";" + oArrival + ";" + oServiceTime + ";" + oDeparture + ";" + odTravelTime + ";"
@@ -150,8 +152,8 @@ public class EventsHandler implements LinkEnterEventHandler, LinkLeaveEventHandl
 							+ oTwStart + ";" + oTwEnd + ";" + oBeforeTW + ";" + oInTW + ";" + oAfterTW + ";" + oEarlyTW
 							+ ";" + oLateTW + ";" + oEarly + ";" + oLate + ";;" + dExpectedArrival + ";" + dTwStart
 							+ ";" + dTwEnd + ";" + dBeforeTW + ";" + dInTW + ";" + dAfterTW + ";" + dEarlyTW + ";"
-							+ dLateTW + ";" + dEarly + ";" + dLate + ";\n";
-					csvWriter.append(str);
+							+ dLateTW + ";" + dEarly + ";" + dLate + ";;" + timewindow + ";\n";
+					csvWriter.append(str.replace(".", ","));
 				}
 			}
 			// finish
