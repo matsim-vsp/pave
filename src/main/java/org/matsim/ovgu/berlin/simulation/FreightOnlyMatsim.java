@@ -47,12 +47,10 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.router.util.LeastCostPathCalculator.Path;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.ovgu.berlin.Input;
+import org.matsim.ovgu.berlin.Settings;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 
-import javax.management.InvalidAttributeValueException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -67,62 +65,16 @@ import java.util.Collection;
 public class FreightOnlyMatsim {
 
 	private static final Logger log = Logger.getLogger(FreightOnlyMatsim.class);
-	private String[] linkIDsTour;
-	private double[] expectedTravelTime;
-	private double[] timewindows;
-	private double serviceTime;
-	private String depot;
+	private Settings settings;
 
-	public static void main(String[] args) throws IOException, InvalidAttributeValueException {
+	public FreightOnlyMatsim(Settings settings) {
+		this.settings = settings;
 
-		for (String arg : args) {
-			log.info(arg);
+		if (settings.tour == null) {
+			settings.tour = new String[] {};
 		}
 
-		if (args.length == 0) {
-			String inputPath = "input/1pc/";
-			args = new String[] { inputPath + "scenario-A.15.networkChangeEvents.xml.gz", "OutputKMT/OVGU/DemoRun" };
-		}
-		new FreightOnlyMatsim(args[0], args[1]);
-	}
-
-	public FreightOnlyMatsim(String pathChangeEvents, String pathOutput, String[] linkIDsTour,
-			double[] expectedTravelTime, double[] timewindows) {
-
-		this.linkIDsTour = linkIDsTour;
-		this.expectedTravelTime = expectedTravelTime;
-		this.timewindows = timewindows;
-		this.serviceTime = Input.serviceTime;
-		this.depot = Input.depot;
-
-		run(pathChangeEvents, pathOutput);
-	}
-
-	public FreightOnlyMatsim(String pathChangeEvents, String pathOutput, String[] linkIDsTour,
-			double[] expectedTravelTime, double[] timewindows, double serviceTime, String depot) {
-
-		this.linkIDsTour = linkIDsTour;
-		this.expectedTravelTime = expectedTravelTime;
-		this.timewindows = timewindows;
-		this.serviceTime = serviceTime;
-		this.depot = depot;
-
-		run(pathChangeEvents, pathOutput);
-	}
-
-	public FreightOnlyMatsim(String pathChangeEvents, String pathOutput) {
-		setDefaultInput();
-		run(pathChangeEvents, pathOutput);
-	}
-
-	private void run(String pathChangeEvents, String pathOutput) {
-
-		if (linkIDsTour == null) {
-			linkIDsTour = new String[] {};
-			expectedTravelTime = new double[] {};
-		}
-
-		Config config = prepareConfig(pathChangeEvents, pathOutput);
+		Config config = prepareConfig(settings.pathChangeEvents, settings.directory);
 		Scenario scenario = prepareScenario(config);
 		Controler controler = prepareControler(scenario);
 
@@ -168,14 +120,6 @@ public class FreightOnlyMatsim {
 
 	public Path getTravelPath(Id<Node> from, Id<Node> to, double departure) {
 		return getTravelPath(network.getNodes().get(from), network.getNodes().get(to), departure);
-	}
-
-	private void setDefaultInput() {
-		linkIDsTour = Input.tour;
-		expectedTravelTime = Input.avgTT;
-		timewindows = Input.standardTWs;
-		serviceTime = Input.serviceTime;
-		depot = Input.depot;
 	}
 
 	private Config prepareConfig(String networkChangeEventsFileLocation, String outputLocation) {
@@ -232,12 +176,12 @@ public class FreightOnlyMatsim {
 	private void createAndaddCarriers(Network network, Carriers carriers) {
 
 		// create one carrier for each our
-		if (linkIDsTour.length > 0)
+		if (settings.tour.length > 0)
 			for (int i = 0; i < 24; i++) {
 				Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
 				createAndAddCarrierSerivces(carrier, i);
 
-				CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", depot, i);
+				CarrierVehicle carrierVehicle = createCarrierVehicle("vehicle", settings.depot, i);
 				CarrierUtils.addCarrierVehicle(carrier, carrierVehicle);
 
 				CarrierPlan carrierPlan = createPlan(network, carrier, i);
@@ -251,23 +195,25 @@ public class FreightOnlyMatsim {
 	private void createAndAddCarrierSerivces(Carrier carrier, int hour) {
 
 		// calculate expected arrival times from expected travel times
-		double[] expectedArrivalTimes = Input.getExpectedArrivalTimes(hour, expectedTravelTime);
+		double[] expectedArrivalTimes = settings.getExpectedArrivalTimes(hour);
 
 		// create customer services at origin and destination
-		for (int customer = 0; customer < linkIDsTour.length / 2; customer++) {
+		for (int customer = 0; customer < settings.tour.length / 2; customer++) {
 			int x = customer * 2;
 
-			double earliestStart = expectedArrivalTimes[x] - timewindows[x] / 2;
+			double earliestStart = 0;
+			if (expectedArrivalTimes != null)
+				earliestStart = expectedArrivalTimes[x] - settings.timeWindow[x] / 2;
 
 			Id<CarrierService> customerOriginID = Id.create("c" + (customer + 1) + "-origin", CarrierService.class);
 			CarrierUtils.addService(carrier,
-					createService(customerOriginID, linkIDsTour[x], earliestStart, serviceTime));
+					createService(customerOriginID, settings.tour[x], earliestStart, settings.serviceTime));
 
 			Id<CarrierService> customerDestID = Id.create("c" + (customer + 1) + "-dest", CarrierService.class);
 			// set possibility to start service (drop-off) at destination earlier than
 			// expected:
 			CarrierUtils.addService(carrier,
-					createService(customerDestID, linkIDsTour[x + 1], earliestStart, serviceTime));
+					createService(customerDestID, settings.tour[x + 1], earliestStart, settings.serviceTime));
 		}
 	}
 
@@ -314,7 +260,7 @@ public class FreightOnlyMatsim {
 
 		tourBuilder.scheduleStart(depotLocation, TimeWindow.newInstance(depTime, Double.MAX_VALUE));
 
-		for (int customer = 1; customer <= linkIDsTour.length / 2; customer++) {
+		for (int customer = 1; customer <= settings.tour.length / 2; customer++) {
 			tourBuilder.addLeg(new Leg());
 			tourBuilder.scheduleService(
 					CarrierUtils.getService(carrier, Id.create("c" + customer + "-origin", CarrierService.class)));

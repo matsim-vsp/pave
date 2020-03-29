@@ -16,7 +16,7 @@ import org.matsim.api.core.v01.events.handler.PersonArrivalEventHandler;
 import org.matsim.api.core.v01.events.handler.PersonDepartureEventHandler;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.ovgu.berlin.Input;
+import org.matsim.ovgu.berlin.Settings;
 
 public class TourEventsHandler implements LinkEnterEventHandler, LinkLeaveEventHandler, PersonArrivalEventHandler,
 		PersonDepartureEventHandler {
@@ -82,13 +82,13 @@ public class TourEventsHandler implements LinkEnterEventHandler, LinkLeaveEventH
 			return Integer.parseInt("" + number1);
 	}
 
-	public void compareExpectedArrivals(double[] expectedTravelTime, double[] timewindows) {
+	public void compareExpectedArrivals(Settings settings) {
 		for (CarrierTour tour : plans) {
 			int hour = tour.carrierID; // hour == carrierID
-			double[] expectedArrivalTimes = Input.getExpectedArrivalTimes(hour, expectedTravelTime);
+			double[] expectedArrivalTimes = settings.getExpectedArrivalTimes(hour);
 			int x = 0;
 			for (Customer customer : tour.customers) {
-				double customerTW = timewindows[x];
+				double customerTW = settings.timeWindow[x];
 				double oExpectedArrival = expectedArrivalTimes[x++];
 				double dExpectedArrival = expectedArrivalTimes[x++];
 				customer.analysis(oExpectedArrival, dExpectedArrival, customerTW);
