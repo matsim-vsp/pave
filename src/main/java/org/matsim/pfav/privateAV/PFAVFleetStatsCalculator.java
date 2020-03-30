@@ -105,15 +105,14 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
                     //activity could be something like leisure in open berlin scenario which does not have an end time set
                     Activity act = (Activity) pe;
                     if (act.getEndTime().isUndefined()) {
-						if (lastLeg.getDepartureTime().seconds() == Double.NEGATIVE_INFINITY) {//!~!!!!!
+						if (lastLeg.getDepartureTime().isUndefined()) {
                             if (act.getMaximumDuration().isUndefined()) {
                                 throw new RuntimeException("cannot compute must return time for PFAVehicle of person " + plan.getPerson().getId() + " for activity " + act.toString());
                             }
                             //does the leg *before* the activity have a departure time and a travel time?
                             Leg legBeforeAct = (Leg) plan.getPlanElements().get(i - 1);
-							if (legBeforeAct.getDepartureTime().seconds() != Double.NEGATIVE_INFINITY && legBeforeAct.getRoute()
-									.getTravelTime()
-									.seconds() != Double.NEGATIVE_INFINITY) {
+							if (legBeforeAct.getDepartureTime().isDefined() && legBeforeAct.getRoute()
+									.getTravelTime().isDefined()) {
 								return legBeforeAct.getDepartureTime().seconds()
 										+ legBeforeAct.getRoute().getTravelTime().seconds() + act.getMaximumDuration().seconds();
                             }
@@ -145,15 +144,14 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
                     Activity act = (Activity) pe;
                     Double returnTime = null;
                     if (act.getEndTime().isUndefined()) {
-						if (lastLeg.getDepartureTime().seconds() == Double.NEGATIVE_INFINITY) {
+						if (lastLeg.getDepartureTime().isUndefined()) {
                             if (act.getMaximumDuration().isUndefined()) {
                                 throw new RuntimeException("cannot compute must return time for PFAVehicle of person " + plan.getPerson().getId() + " for activity " + act.toString());
                             }
                             //does the leg *before* the activity have a departure time and a travel time?
                             Leg legBeforeAct = (Leg) plan.getPlanElements().get(i - 1);
-							if (legBeforeAct.getDepartureTime().seconds() != Double.NEGATIVE_INFINITY && legBeforeAct.getRoute()
-									.getTravelTime()
-									.seconds() != Double.NEGATIVE_INFINITY) {
+							if (legBeforeAct.getDepartureTime().isDefined() && legBeforeAct.getRoute()
+									.getTravelTime().isDefined()) {
 								returnTime = legBeforeAct.getDepartureTime().seconds()
 										+ legBeforeAct.getRoute().getTravelTime().seconds() + act.getMaximumDuration().seconds();
                             } else {
@@ -174,9 +172,8 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
     }
 
     private double computeMustReturnTimeConsecutivelyFromTheStart(Plan plan, int i) {
-        double time = ((Activity) plan.getPlanElements().get(0)).getEndTime().seconds();
-        if (Double.isInfinite(time)) throw new IllegalStateException("end time of first activity of agent " + plan.getPerson().getId()
-                + " is not set.");
+        double time = ((Activity) plan.getPlanElements().get(0)).getEndTime().orElseThrow(
+        ()-> new IllegalStateException("end time of first activity of agent " + plan.getPerson().getId() + " is not set."));
         for (int z = 1; z <= i; z++) {
             PlanElement current = plan.getPlanElements().get(z);
             if (current instanceof Activity) {
@@ -186,7 +183,7 @@ final class PFAVFleetStatsCalculator implements QSimScopeObjectListener<Fleet>, 
                     time += ((Activity) current).getMaximumDuration().seconds();
                 }
             } else if (current instanceof Leg) {
-				if (((Leg)current).getDepartureTime().seconds() != Double.NEGATIVE_INFINITY) {
+				if (((Leg)current).getDepartureTime().isDefined()) {
 					time = ((Leg)current).getDepartureTime().seconds();
                 } else {
 					time += ((Leg)current).getRoute().getTravelTime().seconds();
