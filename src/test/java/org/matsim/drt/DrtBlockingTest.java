@@ -40,7 +40,16 @@ import java.util.*;
 import java.util.logging.Logger;
 
 /**
- * TODO test more functionality. For instance: which vehicle is assigned?
+ * this class contains 2 tests.
+ *
+ * (1) testBlockingDispatchLogic
+ * tests whether the logic/chronology of dispatch events is maintained. For instance, only no blocking can end that has not begun before...
+ *
+ * (2) testDrtBlockingTime
+ * tests whether the times and/or the chronology of actions performed while blockings are correct.
+ * For instance, blockings should end in the same second, the second retool activity of the tour has ended.
+ * Delivery time window enforcement is tested...
+ *
  */
 public class DrtBlockingTest {
 
@@ -152,6 +161,8 @@ public class DrtBlockingTest {
             if(event.getActType().equals("FreightDrtRetooling")){
                 this.retoolEndTimes.put(event.getPersonId().toString(), event.getTime());
             } else if( event.getActType().equals("FreightDrtDelivery")){
+                //test TimeWindow enforcement
+
                 TimeWindow timeWindow = this.deliveryTimeWindows.poll();
                 if (event.getTime() < timeWindow.getStart() + serviceDuration){
                     this.errors.add("delivery had started before it's TimeWindow has started..  TimeWindow=" + timeWindow);
