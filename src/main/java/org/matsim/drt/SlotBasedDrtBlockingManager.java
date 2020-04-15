@@ -37,14 +37,16 @@ class SlotBasedDrtBlockingManager implements DrtBlockingManager {
     private int endTime;
 
     SlotBasedDrtBlockingManager(Config config, int[] maximumNumberOfBlockings, MobsimTimer timer) {
-        if(maximumNumberOfBlockings.length > config.qsim().getEndTime() / (60*5) ){
+        //TODO write some consistency checker and check qsim start and end time ...
+        if(config.qsim().getEndTime().isUndefined()) throw new IllegalArgumentException("you must specify the end time of the qsim if you want to use drt blockings..");
+
+        if(maximumNumberOfBlockings.length > config.qsim().getEndTime().seconds() / (60*5) ){
             //TODO be a bit more expressive here...
             throw new RuntimeException("Please do not define slots for DrtBlocking management that are shorter than 5 minutes.. ");
         }
         this.config = config;
         this.timer = timer;
         this.maximumNumberOfBlockings = maximumNumberOfBlockings;
-        initializeEndTime(config);
         initializeVehicleList();
     }
 
@@ -53,20 +55,14 @@ class SlotBasedDrtBlockingManager implements DrtBlockingManager {
         this.timer = timer;
         log.info("no slot width defined. will work with 15 minutes time slots. the maximum amount of drt blockings\n" +
                 "for each time slot is set to " + maximumNumberOfBlockedVehiclesAtATime);
-        initializeEndTime(config);
+        //TODO write some consistency checker and check qsim start and end time ...
+        if(config.qsim().getEndTime().isUndefined()) throw new IllegalArgumentException("you must specify the end time of the qsim if you want to use drt blockings..");
+        this.endTime = (int) config.qsim().getEndTime().seconds();
         this.maximumNumberOfBlockings = new int[endTime / (15*60)];
         Arrays.fill(this.maximumNumberOfBlockings, maximumNumberOfBlockedVehiclesAtATime);
         initializeVehicleList();
     }
 
-    private void initializeEndTime(Config config) {
-        this.endTime = (int) config.qsim().getEndTime();
-        if (this.endTime <= 0){
-            log.warn("no end time for qsim is defined. We will split 30 hours into time slots." +
-                    "This might lead to breakdown later if qsim runs longer than 30 hours");
-            this.endTime = 30*3600;
-        }
-    }
 
     private void initializeVehicleList() {
         this.blockedVehicles = new ArrayList<>();

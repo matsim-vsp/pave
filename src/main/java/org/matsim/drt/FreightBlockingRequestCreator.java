@@ -57,7 +57,11 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         this.network = network;
         this.travelTime = travelTime;
         this.mode = DrtConfigGroup.getSingleModeDrtConfig(config).getMode();
-        this.qSimStartTime = Math.max(0, config.qsim().getStartTime());
+        if(config.qsim().getStartTime().isUndefined()){
+            this.qSimStartTime = config.qsim().getStartTime().seconds();
+        } else {
+            this.qSimStartTime = 0;
+        }
     }
 
     @Override
