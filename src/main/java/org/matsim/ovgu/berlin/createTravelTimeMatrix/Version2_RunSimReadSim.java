@@ -1,35 +1,38 @@
-package org.matsim.ovgu.berlin;
+package org.matsim.ovgu.berlin.createTravelTimeMatrix;
 
 import java.io.FileWriter;
 import java.io.IOException;
 
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.router.util.LeastCostPathCalculator.Path;
-import org.matsim.ovgu.berlin.input.Input;
+import org.matsim.ovgu.berlin.Settings;
 import org.matsim.ovgu.berlin.simulation.FreightOnlyMatsim;
 
-public class CreateTravelTimeMatrix {
+public class Version2_RunSimReadSim {
 
-	public static void main(String[] args) {
-
-		String pathChangeEvents = "input/10pc/scenario-A.15.networkChangeEvents.xml.gz";
-		String pathOutput = "OutputKMT/OVGU/10pc/Matrix/";
-
-		FreightOnlyMatsim sim = new FreightOnlyMatsim(pathChangeEvents, pathOutput + "/Iteration/", null, null, 0, 0, 0, null);
-
-		printMatrix("test", pathOutput, sim, Input.tour);
+	public static void run(String[] tour) {
+		Settings settings = new Settings();
+		settings.directory += "/Version2_RunSimReadSim/";
+		
+		// Run Simulation empty
+		FreightOnlyMatsim sim = new FreightOnlyMatsim(settings);
+		
+		// Read Simulation
+		settings.tour = tour;
+		settings.depot = tour[0];
+		printMatrix(sim, settings);
 	}
 
-	private static void printMatrix(String name, String pathOutput, FreightOnlyMatsim sim, String[] links) {
+	private static void printMatrix(FreightOnlyMatsim sim, Settings settings) {
 		try {
-
-			FileWriter csvWriter = new FileWriter(pathOutput + name + ".csv");
+			System.out.println("Version2_RunSimReadSim.printMatrix() start matrix calculation");
+			FileWriter csvWriter = new FileWriter(settings.directory + "matrix.csv");
 			csvWriter.append("from; to; hour; time; distance; path\n");
 			// do it
-			for (int x = 0; x < links.length; x++) {
-				for (int y = 0; y < links.length; y++) {
-					String idFrom = links[x];
-					String idTo = links[y];
+			for (int x = 0; x < settings.tour.length; x++) {
+				for (int y = 0; y < settings.tour.length; y++) {
+					String idFrom = settings.tour[x];
+					String idTo = settings.tour[y];
 					print(sim, idFrom, idTo, csvWriter);
 				}
 			}
@@ -37,6 +40,7 @@ public class CreateTravelTimeMatrix {
 			// finish
 			csvWriter.flush();
 			csvWriter.close();
+			System.out.println("Version2_RunSimReadSim.printMatrix() finished matrix calculation");
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -82,7 +86,7 @@ public class CreateTravelTimeMatrix {
 			str = str + node.getId() + ",";
 		}
 		str = str.substring(0, str.length() - 1) + "\n";
-		csvWriter.append(str);
+		csvWriter.append(str.replace(".", ","));
 	}
 
 }
