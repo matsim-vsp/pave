@@ -15,7 +15,7 @@ import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
-import org.matsim.drt.DrtBlockingModule;
+import org.matsim.drtBlockings.DrtBlockingModule;
 import org.matsim.examples.ExamplesUtils;
 import org.matsim.vis.otfvis.OTFVisConfigGroup;
 
