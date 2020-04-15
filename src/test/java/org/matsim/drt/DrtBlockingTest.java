@@ -21,7 +21,6 @@
 package org.matsim.drt;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.matsim.api.core.v01.Id;
@@ -32,6 +31,7 @@ import org.matsim.contrib.dvrp.passenger.PassengerRequestRejectedEvent;
 import org.matsim.contrib.dvrp.passenger.PassengerRequestRejectedEventHandler;
 import org.matsim.contrib.dvrp.passenger.PassengerRequestScheduledEvent;
 import org.matsim.contrib.dvrp.passenger.PassengerRequestScheduledEventHandler;
+import org.matsim.contrib.freight.carrier.TimeWindow;
 import org.matsim.core.controler.Controler;
 import org.matsim.drt.events.*;
 
@@ -42,9 +42,9 @@ import java.util.logging.Logger;
 /**
  * TODO test more functionality. For instance: which vehicle is assigned?
  */
-public class DrtBlockingLogicalTest {
+public class DrtBlockingTest {
 
-    static Logger logger = Logger.getLogger(DrtBlockingLogicalTest.class.getName());
+    static Logger logger = Logger.getLogger(DrtBlockingTest.class.getName());
 
     private static DrtBlockingDispatchLogicHandler dispatchLogicHandler;
     private static DrtBlockingTimeLogicHandler timeLogicHandler;
@@ -121,6 +121,19 @@ public class DrtBlockingLogicalTest {
         private List<String> errors = new ArrayList<>();
         private Map<String, Double> retoolEndTimes = new HashMap();
 
+        //time windows from the services in the carriers file
+        private Queue<TimeWindow> deliveryTimeWindows = new LinkedList<>();
+
+        //this value refers to serviceDurations in the carriers file
+        private double serviceDuration = 5*60;
+
+        DrtBlockingTimeLogicHandler(){
+            this.deliveryTimeWindows.add(TimeWindow.newInstance(6*3600,24*3600));
+            this.deliveryTimeWindows.add(TimeWindow.newInstance(9*3600,24*3600));
+            this.deliveryTimeWindows.add(TimeWindow.newInstance(12*3600,24*3600));
+            this.deliveryTimeWindows.add(TimeWindow.newInstance(15*3600,24*3600));
+        }
+
         @Override
         public void handleEvent(DrtBlockingEndedEvent event) {
             if(! this.retoolEndTimes.containsKey(event.getVehicleId().toString())){
@@ -138,6 +151,13 @@ public class DrtBlockingLogicalTest {
         public void handleEvent(ActivityEndEvent event) {
             if(event.getActType().equals("FreightDrtRetooling")){
                 this.retoolEndTimes.put(event.getPersonId().toString(), event.getTime());
+            } else if( event.getActType().equals("FreightDrtDelivery")){
+                TimeWindow timeWindow = this.deliveryTimeWindows.poll();
+                if (event.getTime() < timeWindow.getStart() + serviceDuration){
+                    this.errors.add("delivery had started before it's TimeWindow has started..  TimeWindow=" + timeWindow);
+                } else if(event.getTime() > timeWindow.getEnd() + serviceDuration){
+                    this.errors.add("delivery had started too late (after time window had ended)..  TimeWindow=" + timeWindow);
+                }
             }
         }
     }
