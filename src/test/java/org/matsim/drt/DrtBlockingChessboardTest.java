@@ -78,6 +78,8 @@ public class DrtBlockingChessboardTest {
         Config config = ConfigUtils.loadConfig(input + "chessboard_drtBlocking_config.xml");
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
 
+        config.qsim().setEndTime(30*3600);
+
         FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
         freightCfg.setCarriersFile("chessboard_carriers_drtBlocking.xml");
         freightCfg.setCarriersVehicleTypesFile("chessboard_vehicleTypes.xml");
