@@ -28,7 +28,7 @@ interface DrtBlockingRequestDispatcher {
 
     /**
      * finds a solution for the dispatch blockingRequest -> DvrpVehicle
-     * returns null if now solution could be found
+     * returns null if no solution could be found
      *
      * @param availableVehicles
      * @param blockingRequest

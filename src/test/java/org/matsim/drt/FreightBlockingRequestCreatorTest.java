@@ -99,13 +99,6 @@ public class FreightBlockingRequestCreatorTest {
                 .collect(Collectors.toMap(request -> request.getId(), request -> request));
 
         Assert.assertEquals("the number of requests should be 2. The carrier not using drt should not initiate a blocking request" ,  2 , requests.size());
-        /* TODO
-        test the id
-        test the submission time
-        test the blocking start
-        test the blocking end
-        ...
-         */
 
         {
             DrtBlockingRequest request = requests.get(Id.create("testCarrierUno_earlyVehicle_1", Request.class)); //this will be the request with a service time window starting at 6 a.m.
