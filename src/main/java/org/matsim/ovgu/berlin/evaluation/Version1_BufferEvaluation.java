@@ -8,6 +8,7 @@ import org.matsim.ovgu.berlin.input.InputBuffer;
 import org.matsim.ovgu.berlin.eventHandling.TourEventsHandler;
 import org.matsim.ovgu.berlin.input.InputExpectedTravelTime;
 import org.matsim.ovgu.berlin.input.InputTimeWindows;
+import org.matsim.ovgu.berlin.input.InputTour;
 import org.matsim.ovgu.berlin.simulation.FreightOnlyMatsim;
 
 public class Version1_BufferEvaluation {
@@ -41,6 +42,8 @@ public class Version1_BufferEvaluation {
 	private static void run(String bufferName, double[] usedBuffer) {
 
 		Settings settings = new Settings();
+		settings.tour = InputTour.tour;
+		settings.depot = InputTour.depot;
 		settings.directory += "/evaluation/" + bufferName + "/";
 		settings.buffer = usedBuffer;
 
@@ -89,7 +92,7 @@ public class Version1_BufferEvaluation {
 		handler.compareExpectedArrivals(settings);
 		System.out.println("post calculations finished!");
 
-		handler.printCSV(settings.directory + "/output_events.xml.gz" + "result.csv");
+		handler.printCSV(settings.directory + "result.csv");
 		System.out.println("CSV finished!");
 
 	}
