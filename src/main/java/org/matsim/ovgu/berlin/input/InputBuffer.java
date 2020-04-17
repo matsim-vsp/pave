@@ -1,7 +1,7 @@
 package org.matsim.ovgu.berlin.input;
 
 public class InputBuffer {
-	
+
 	public static final double[] bufferNone = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 			0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 	public static final double[] buffer05M = new double[] { 0.0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
@@ -56,5 +56,32 @@ public class InputBuffer {
 	public static final double[] bufferSDcumStep_3P = new double[] { 0.0, 145.4554823, 23.28880048, 12.52280319,
 			11.39544513, 1.996085461, 5.312177116, 11.26019358, 12.15626501, 15.58161139, 14.77805768, 1.59322066,
 			1.967118788, 8.05022535, 13.87765623, 12.01876894, 9.342880749, 18.30983137, 23.59995205, 43.42342457 };
+
+	public static final double[] bufferNew6P = new double[] { 0, 86.79029167, 29.3715, 42.12304167, 35.418125,
+			27.80583333, 40.86491667, 39.69829167, 33.55, 50.256375, 48.685625, 27.10179167, 34.40908333, 35.38508333,
+			39.17979167, 47.480875, 24.79395833, 49.09991667, 36.99141667, 51.171375 };
+	public static final double[] bufferNewSD = new double[] { 0, 80.0036349, 40.62121777, 36.41425907, 31.64492126,
+			15.29342633, 24.76374478, 37.42657163, 39.97916124, 36.06511761, 43.9851419, 15.66439478, 17.46643607,
+			35.88165347, 47.81603564, 45.17633276, 40.90026402, 58.22078428, 63.34226911, 72.00770358 };
+	public static final double[] bufferNewSITWA_1W = new double[] { 0, 0, 0, 0, 83, 47, 36, 85, 223, 0, 63, 206, 0, 36,
+			0, 0, 0, 0, 0, 0 };
+	public static final double[] bufferNewSITWA_2W = new double[] { 0, 0, 0, 0, 0, 119, 143, 21, 0, 159, 16, 250, 0, 71,
+			0, 0, 0, 0, 0, 0 };
+	public static final double[] bufferNewSITWA_3W = new double[] { 0, 0, 0, 0, 37, 127, 119, 0, 0, 0, 229, 143, 0, 85,
+			39, 0, 0, 0, 0, 0 };
+	public static final double[] bufferNewSITWA_4W = new double[] { 0, 0, 0, 0, 49, 62, 149, 0, 0, 8, 277, 0, 0, 184,
+			50, 0, 0, 0, 0, 0 };
+	public static final double[] bufferNewSITWA_5W = new double[] { 0, 0, 0, 0, 115, 67, 39, 32, 0, 43, 261, 0, 0, 124,
+			98, 0, 0, 0, 0, 0 };
+	public static final double[] bufferNewSITWA_6W = new double[] { 0, 0, 0, 20, 174, 0, 35, 69, 0, 15, 187, 72, 2, 8,
+			197, 0, 0, 0, 0, 0 };
+	public static final double[] bufferNewSITWA_7W = new double[] { 0, 0, 0, 116, 146, 0, 33, 54, 0, 39, 238, 11, 1, 0,
+			130, 11, 0, 0, 0, 0 };
+	public static final double[] bufferNewSITWA_8W = new double[] { 0, 45, 0, 112, 105, 0, 7, 126, 0, 52, 239, 0, 0, 0,
+			60, 33, 0, 0, 0, 0 };
+	public static final double[] bufferNewSITWA_9W = new double[] { 0, 254, 0, 34, 33, 0, 50, 80, 0, 12, 226, 0, 0, 0,
+			0, 90, 0, 0, 0, 0 };
+	public static final double[] bufferNewSITWA_10W = new double[] { 0, 458, 0, 50, 12, 0, 11, 0, 0, 37, 200, 0, 0, 0,
+			7, 4, 0, 0, 0, 0 };
 
 }
