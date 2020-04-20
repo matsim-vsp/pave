@@ -48,6 +48,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.drtBlockings.DrtBlockingModule;
 
 import javax.management.InvalidAttributeValueException;
+import java.io.File;
 
 public class RunDrtBlockingEquilScenario {
 
@@ -73,6 +74,7 @@ public class RunDrtBlockingEquilScenario {
 
         try {
             FreightUtils.runJsprit(scenario, freightCfg);
+            new File(config.controler().getOutputDirectory()).mkdirs();
             new CarrierPlanXmlWriterV2(FreightUtils.getCarriers(scenario)).write(config.controler().getOutputDirectory() + "carriers_planned.xml");
         } catch (InvalidAttributeValueException e) {
             e.printStackTrace();
