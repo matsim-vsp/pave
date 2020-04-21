@@ -20,13 +20,6 @@
 
 
 	<repositories>
-<!--	TODO:GeoTools moved, remove old repository from here....-->
-<!--		<repository>-->
-<!--			&lt;!&ndash; Geotools is not on Maven central &ndash;&gt;-->
-<!--			<id>osgeo</id>-->
-<!--			<name>Geotools repository</name>-->
-<!--			<url>http://download.osgeo.org/webdav/geotools</url>-->
-<!--	</repository>-->
 
 	<repository>
 		<id>osgeo</id>
