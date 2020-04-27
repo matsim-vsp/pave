@@ -16,26 +16,26 @@ public class Version1_BufferEvaluation {
 	public static void run() {
 
 
-		run("05M", InputBuffer.buffer05M);
-		run("5P", InputBuffer.buffer5P);
-		run("SD", InputBuffer.bufferSD);
-		run("SDcum", InputBuffer.bufferSDcum);
-		run("SDcumStep", InputBuffer.bufferSDcumStep);
-
-		run("1P", InputBuffer.buffer1P);
-		run("2P", InputBuffer.buffer2P);
-		run("3P", InputBuffer.buffer3P);
-		run("4P", InputBuffer.buffer4P);
-
-		run("Min_3P", InputBuffer.bufferMin_3P);
-		run("SD_3P", InputBuffer.bufferSD_3P);
-		run("SDcum_3P", InputBuffer.bufferSDcum_3P);
-		run("SDcumStep_3P", InputBuffer.bufferSDcumStep_3P);
-
-		run("5P_05M", InputBuffer.buffer5P_05M);
-		run("SD_05M", InputBuffer.bufferSD_05M);
-		run("SDcum_05M", InputBuffer.bufferSDcum_05M);
-		run("SDcumStep_05M", InputBuffer.bufferSDcumStep_05M);
+//		run("05M", InputBuffer.buffer05M);
+//		run("5P", InputBuffer.buffer5P);
+//		run("SD", InputBuffer.bufferSD);
+//		run("SDcum", InputBuffer.bufferSDcum);
+//		run("SDcumStep", InputBuffer.bufferSDcumStep);
+//
+//		run("1P", InputBuffer.buffer1P);
+//		run("2P", InputBuffer.buffer2P);
+//		run("3P", InputBuffer.buffer3P);
+//		run("4P", InputBuffer.buffer4P);
+//
+//		run("Min_3P", InputBuffer.bufferMin_3P);
+//		run("SD_3P", InputBuffer.bufferSD_3P);
+//		run("SDcum_3P", InputBuffer.bufferSDcum_3P);
+//		run("SDcumStep_3P", InputBuffer.bufferSDcumStep_3P);
+//
+//		run("5P_05M", InputBuffer.buffer5P_05M);
+//		run("SD_05M", InputBuffer.bufferSD_05M);
+//		run("SDcum_05M", InputBuffer.bufferSDcum_05M);
+//		run("SDcumStep_05M", InputBuffer.bufferSDcumStep_05M);
 
 	}
 
