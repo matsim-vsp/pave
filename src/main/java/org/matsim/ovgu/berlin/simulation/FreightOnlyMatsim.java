@@ -133,8 +133,8 @@ public class FreightOnlyMatsim {
 		config.plansCalcRoute().setRoutingRandomness(0);
 
 		config.network().setInputFile(
-				"https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.4-10pct/input/berlin-v5-network.xml.gz");
-
+				"C:\\Users\\koetscha\\Desktop\\develop\\matsim.pave\\factory\\input\\berlin-v5-network.xml.gz");
+		// "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.4-10pct/input/berlin-v5-network.xml.gz")
 		if (networkChangeEventsFileLocation != "") {
 			log.info("Setting networkChangeEventsInput file: " + networkChangeEventsFileLocation);
 			config.network().setTimeVariantNetwork(true);
@@ -203,7 +203,18 @@ public class FreightOnlyMatsim {
 
 			double earliestStart = 0;
 			if (expectedArrivalTimes != null)
-				earliestStart = expectedArrivalTimes[x] - settings.timeWindow[x] / 2;
+				if ("PlusMinusArrival".equals(settings.timeWindowMethod))
+					earliestStart = expectedArrivalTimes[x] - settings.timeWindow[x] / 2;
+				else if ("AfterArrival".equals(settings.timeWindowMethod))
+					earliestStart = expectedArrivalTimes[x];
+				else {
+					System.out.println("FreightOnlyMatsim.createAndAddCarrierSerivces(): time window method not found ("
+							+ settings.timeWindowMethod + ")");
+					log.info("FreightOnlyMatsim createAndAddCarrierSerivces(): time window method not found ("
+							+ settings.timeWindowMethod + ")");
+					log.error("FreightOnlyMatsim createAndAddCarrierSerivces(): time window method not found ("
+							+ settings.timeWindowMethod + ")");
+				}
 
 			Id<CarrierService> customerOriginID = Id.create("c" + (customer + 1) + "-origin", CarrierService.class);
 			CarrierUtils.addService(carrier,

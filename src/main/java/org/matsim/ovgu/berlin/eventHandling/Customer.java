@@ -52,11 +52,19 @@ public class Customer {
 	public double dLate;
 	public double timewindow;
 
-	public void analysis(double oExpectedArrival, double dExpectedArrival, double timewindow) {
+	public void analysis(double oExpectedArrival, double dExpectedArrival, double timewindow, String timeWindowMethod) {
 		this.timewindow = timewindow;
 		this.oExpectedArrival = oExpectedArrival;
-		oTwStart = oExpectedArrival - timewindow / 2;
-		oTwEnd = oExpectedArrival + timewindow / 2;
+
+		if ("PlusMinusArrival".equals(timeWindowMethod)) {
+			oTwStart = oExpectedArrival - timewindow / 2;
+			oTwEnd = oExpectedArrival + timewindow / 2;
+		} else if ("AfterArrival".equals(timeWindowMethod)) {
+			oTwStart = oExpectedArrival;
+			oTwEnd = oExpectedArrival + timewindow;
+		} else
+			System.out.println("FreightOnlyMatsim.createAndAddCarrierSerivces(): time window method not found ("
+					+ timeWindowMethod + ")");
 
 		if (originArrival < oTwStart) {
 			oBeforeTW = true;

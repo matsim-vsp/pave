@@ -91,7 +91,7 @@ public class TourEventsHandler implements LinkEnterEventHandler, LinkLeaveEventH
 				double customerTW = settings.timeWindow[x];
 				double oExpectedArrival = expectedArrivalTimes[x++];
 				double dExpectedArrival = expectedArrivalTimes[x++];
-				customer.analysis(oExpectedArrival, dExpectedArrival, customerTW);
+				customer.analysis(oExpectedArrival, dExpectedArrival, customerTW, settings.timeWindowMethod);
 			}
 		}
 	}

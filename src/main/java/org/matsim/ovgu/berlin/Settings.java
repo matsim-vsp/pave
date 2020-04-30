@@ -18,16 +18,18 @@ public class Settings {
 	// serviceTime for every location
 	public double serviceTime = 2 * 60;
 
-	// used buffer data set
+	// use buffer data set
 	public double[] buffer;
 
-	// used buffer data set
+	// use buffer data set
 	public double[] timeWindow;
+	public String timeWindowMethod = "PlusMinus";
+	// time window methods -> PlusMinusArrival or AfterArrival
 
-	// used buffer data set
+	// use buffer data set
 	public double[] expectedTravelTime;
 
-	// used buffer data set
+	// use buffer data set
 	public boolean subtractBuffer = false;
 
 	// buffer calculation
