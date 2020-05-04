@@ -6,6 +6,7 @@ import org.matsim.contrib.drt.run.*;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
+import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.contrib.otfvis.OTFVisLiveModule;
@@ -48,10 +49,11 @@ public class RunBlockingDrtMielecScenario {
         drtCfg.setNumberOfThreads(threads);
         config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
 
+        FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
         Scenario scenario = DrtControlerCreator.createScenarioWithDrtRouteFactory(config);
         ScenarioUtils.loadScenario(scenario);
 
-
+        //we load carriers onto scenario by hand because using FreightUtils the path lookup is relative to the config, which in this case lies in a totally different place..
         Carriers carriers = FreightUtils.getOrCreateCarriers(scenario);
         new CarrierPlanXmlReader(carriers).readFile("scenarios/mielec/mielec-carriers.xml");
         carriers.getCarriers().values().forEach(
@@ -59,6 +61,7 @@ public class RunBlockingDrtMielecScenario {
         CarrierVehicleTypes vTypes = FreightUtils.getCarrierVehicleTypes(scenario);
         new CarrierVehicleTypeReader(vTypes).readFile("scenarios/mielec/PFAVvehicleTypes.xml");
         new CarrierVehicleTypeLoader(carriers).loadVehicleTypes(vTypes);
+
 
 
         Controler controler = new Controler(scenario);
