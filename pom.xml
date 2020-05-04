@@ -12,9 +12,16 @@
 	<name>PAVE java code</name>
 	<description>PAVE java code</description>
 
+
 	<properties>
-	  	<matsim.version>12.0-SNAPSHOT</matsim.version>
+
+		<!--SNAPSHOT:-->
+<!--	  	<matsim.version>12.0-SNAPSHOT</matsim.version>-->
 <!--		<matsim.version>12.0-2019w34-SNAPSHOT</matsim.version>-->
+
+		<!--weekly "release":-->
+		<matsim.version>12.0-2020w02-SNAPSHOT</matsim.version>
+
 	</properties>
 
 
@@ -28,6 +35,14 @@
 		<snapshots><enabled>false</enabled></snapshots>
 		<releases><enabled>true</enabled></releases>
 	</repository>
+
+<!--		<repository>-->
+<!--			&lt;!&ndash; Geotools is not on Maven central &ndash;&gt;-->
+<!--			<id>osgeo</id>-->
+<!--			<name>Geotools repository</name>-->
+<!--			<url>https://repo.osgeo.org/repository/release</url>-->
+<!--		</repository>-->
+
 
 		<repository>
 			<!-- Repository for MATSim releases (MATSim is not on Maven central) -->
@@ -103,12 +118,19 @@
 
 
 		<!-- berlin scenario-->
+<!--		<dependency>-->
+<!--			<groupId>com.github.matsim-vsp</groupId>-->
+<!--			<artifactId>matsim-berlin</artifactId>-->
+<!--			&lt;!&ndash;            <version>5.3</version>&ndash;&gt;-->
+<!--			<version>5.4/version>-->
+<!--		</dependency>-->
+
 		<dependency>
-			<groupId>com.github.matsim-vsp</groupId>
+			<groupId>com.github.matsim-scenarios</groupId>
 			<artifactId>matsim-berlin</artifactId>
-			<!--            <version>5.3</version>-->
-			<version>5.4</version>
+			<version>5.5.x-5b3c4d3de8-1</version>
 		</dependency>
+
 
 		<dependency>
 			<!-- Include the JUnit testing library. Not transitive. -->
