@@ -76,7 +76,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
     private PriorityQueue<DrtBlockingRequest> blockingRequests;
 
     DefaultBlockingOptimizer(DefaultDrtOptimizer optimizer, Fleet fleet, DrtScheduleInquiry scheduleInquiry, DrtBlockingManager blockingManager,
-                             DrtBlockingRequestDispatcher dispatcher, EventsManager eventsManager, Network modalNetwork, MobsimTimer timer) {
+                             DrtBlockingRequestDispatcher dispatcher, TravelTime travelTime, EventsManager eventsManager, Network modalNetwork, MobsimTimer timer) {
         this.optimizer = optimizer;
         this.fleet = fleet;
         this.scheduleInquiry = scheduleInquiry;
@@ -85,7 +85,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
         this.eventsManager = eventsManager;
 
         this.timer = timer;
-        this.travelTime = new FreeSpeedTravelTime(); //TODO USE UPDATED TRAVEL TIMES..
+        this.travelTime = travelTime;
         this.rnd = MatsimRandom.getLocalInstance();
         this.router = new FastAStarEuclideanFactory().createPathCalculator(modalNetwork, new TimeAsTravelDisutility(travelTime),
                 travelTime);
@@ -115,8 +115,6 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
         }
 
     }
-
-
 
     private void updateBlocking(DvrpVehicle vehicle) {
         if(scheduleInquiry.isIdle(vehicle)){ //TODO actually we could unblock the vehicle already when the last retooling has begun. What happens if we call eventsManager.processEvent(futureTime) ?

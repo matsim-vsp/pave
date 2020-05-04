@@ -86,7 +86,6 @@ class SlotBasedDrtBlockingManager implements DrtBlockingManager {
 
     private boolean blockVehicleIfPossible(DvrpVehicle vehicle, double startTime, double endTime) {
         int startSlot = (int) Math.floor(startTime / (this.endTime/ maximumNumberOfBlockings.length));
-        //TODO: this probably breaks if endTime == config.qsim().getEndTime() ....
         int endSlot = (int) Math.floor(endTime / (this.endTime/ maximumNumberOfBlockings.length));
         if (! isBlockIsPossible(startSlot, endSlot, vehicle)) return false;
 

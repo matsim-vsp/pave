@@ -79,6 +79,7 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getModal(DrtScheduleInquiry.class),
                         getter.getModal(DrtBlockingManager.class),
                         getter.getModal(DrtBlockingRequestDispatcher.class),
+                        getter.getNamed(TravelTime.class, DvrpTravelTimeModule.DVRP_ESTIMATED),
                         getter.get(EventsManager.class),
                         getter.getModal(Network.class),
                         getter.get(MobsimTimer.class)) {

@@ -48,7 +48,7 @@ public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
                     return timeWindow.getStart() + duration;
                 } else if(newBeginTime > timeWindow.getEnd()){
                     //TODO do something less restrictive
-                    throw new RuntimeException("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() + " but it will come too late far that");
+                    throw new RuntimeException("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() + " but it will come too late for that");
                 }
             }
 
