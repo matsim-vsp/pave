@@ -429,7 +429,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	}
 
 	/**
-	 * currently not implemented. is here for use in future (other usecases than ts's master thesis)
+	 * currently not implemented. is here for use in future
 	 */
 	void cancelFreightTour(DvrpVehicle veh) {
 		// TODO: cancel the freight tour and make vehicle return to depot. insert STAY task at the depot
