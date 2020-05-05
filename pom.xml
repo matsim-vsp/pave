@@ -8,41 +8,36 @@
 	<groupId>org.matsim</groupId>
 	<artifactId>pave</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-
 	<name>PAVE java code</name>
 	<description>PAVE java code</description>
-
 
 	<properties>
 
 		<!--SNAPSHOT:-->
-<!--	  	<matsim.version>12.0-SNAPSHOT</matsim.version>-->
-<!--		<matsim.version>12.0-2019w34-SNAPSHOT</matsim.version>-->
+<!--		<matsim.version>12.0-SNAPSHOT</matsim.version>-->
+		<!--		<matsim.version>12.0-2019w34-SNAPSHOT</matsim.version>-->
 
 		<!--weekly "release":-->
-		<matsim.version>12.0-2020w02-SNAPSHOT</matsim.version>
+				<matsim.version>12.0-2020w18-SNAPSHOT</matsim.version>
 
 	</properties>
 
-
-
 	<repositories>
 
-	<repository>
-		<id>osgeo</id>
-		<name>OSGeo Release Repository</name>
-		<url>https://repo.osgeo.org/repository/release/</url>
-		<snapshots><enabled>false</enabled></snapshots>
-		<releases><enabled>true</enabled></releases>
-	</repository>
+		<!--	<repository>-->
+		<!--		<id>osgeo</id>-->
+		<!--		<name>OSGeo Release Repository</name>-->
+		<!--		<url>https://repo.osgeo.org/repository/release/</url>-->
+		<!--		<snapshots><enabled>false</enabled></snapshots>-->
+		<!--		<releases><enabled>true</enabled></releases>-->
+		<!--	</repository>-->
 
-<!--		<repository>-->
-<!--			&lt;!&ndash; Geotools is not on Maven central &ndash;&gt;-->
-<!--			<id>osgeo</id>-->
-<!--			<name>Geotools repository</name>-->
-<!--			<url>https://repo.osgeo.org/repository/release</url>-->
-<!--		</repository>-->
-
+		<repository>
+			<!-- Geotools is not on Maven central -->
+			<id>osgeo</id>
+			<name>Geotools repository</name>
+			<url>https://repo.osgeo.org/repository/release</url>
+		</repository>
 
 		<repository>
 			<!-- Repository for MATSim releases (MATSim is not on Maven central) -->
@@ -59,7 +54,20 @@
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
 		</repository>
+
+		<!--		the following repos are needed for matsim-scenarios-berlin v5.5-->
+		<repository>
+			<id>com.slimjars.trove4j</id>
+			<url>https://mvn.slimjars.com</url>
+		</repository>
+
+		<repository>
+			<id>de.topobyte</id>
+			<url>https://mvn.topobyte.de</url>
+		</repository>
+
 	</repositories>
+
 
 	<dependencies>
 		<!-- This is the matsim "core": -->
@@ -116,7 +124,6 @@
 			<type>pom</type>
 		</dependency>
 
-
 		<!-- berlin scenario-->
 <!--		<dependency>-->
 <!--			<groupId>com.github.matsim-vsp</groupId>-->
@@ -128,9 +135,10 @@
 		<dependency>
 			<groupId>com.github.matsim-scenarios</groupId>
 			<artifactId>matsim-berlin</artifactId>
-			<version>5.5.x-5b3c4d3de8-1</version>
-		</dependency>
 
+<!--			<version>5.5.x-5b3c4d3de8-1</version> &lt;!&ndash; january 2020 &ndash;&gt;-->
+			<version>5.5.x-a498c2c8db-1</version> <!-- january 2020 -->
+		</dependency>
 
 		<dependency>
 			<!-- Include the JUnit testing library. Not transitive. -->
