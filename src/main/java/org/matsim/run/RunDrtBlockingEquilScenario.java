@@ -73,7 +73,7 @@ public class RunDrtBlockingEquilScenario {
 
 
         try {
-//            FreightUtils.runJsprit(scenario, freightCfg);
+            FreightUtils.runJsprit(scenario, freightCfg);
             new File(config.controler().getOutputDirectory()).mkdirs();
             new CarrierPlanXmlWriterV2(FreightUtils.getCarriers(scenario)).write(config.controler().getOutputDirectory() + "carriers_planned.xml");
         } catch (/*InvalidAttributeValueException*/ Exception e) {
