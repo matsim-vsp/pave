@@ -3,212 +3,24 @@
     <carrier id="carrier1">
         <capabilities fleetSize="INFINITE">
             <vehicles>
-                <vehicle id="carrier1Veh" depotLinkId="168" typeId="carrierVehType" earliestStart="06:00:00" latestEnd="10:00:00"/>
+                <vehicle id="carrier1Veh" depotLinkId="91428" typeId="carrierVehType" earliestStart="06:00:00" latestEnd="10:00:00"/>
             </vehicles>
 
         </capabilities>
 
         <services>
-            <service id="0" to="177" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="1" to="102" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="2" to="194" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="3" to="561" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="4" to="113" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="5" to="120" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="6" to="177" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="7" to="530" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="8" to="294" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="9" to="278" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="10" to="278" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="11" to="28" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="12" to="482" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="13" to="505" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="14" to="217" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="15" to="85" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="16" to="230" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="17" to="401" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="18" to="533" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="19" to="403" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="20" to="537" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="21" to="452" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="22" to="570" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="23" to="390" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="24" to="272" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="25" to="203" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="26" to="495" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="27" to="551" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="28" to="389" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="29" to="41" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="30" to="25" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="31" to="331" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="32" to="251" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="33" to="142" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="34" to="500" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="35" to="443" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="36" to="410" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="37" to="3" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="38" to="442" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="39" to="54" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="40" to="443" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="41" to="53" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="42" to="189" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="43" to="493" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="44" to="592" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="45" to="444" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="46" to="542" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="47" to="488" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="48" to="457" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="49" to="125" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="50" to="218" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="51" to="449" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="52" to="125" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="53" to="419" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="54" to="276" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="55" to="106" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="56" to="169" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="57" to="531" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="58" to="146" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="59" to="420" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="60" to="454" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="61" to="536" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="62" to="575" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="63" to="468" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="64" to="241" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="65" to="432" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="66" to="271" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="67" to="118" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="68" to="532" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="69" to="572" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="70" to="562" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="71" to="482" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="72" to="483" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="73" to="307" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="74" to="86" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="75" to="410" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="76" to="26" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="77" to="61" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="78" to="498" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="79" to="382" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="80" to="585" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="81" to="97" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="82" to="220" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="83" to="509" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="84" to="139" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="85" to="248" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="86" to="34" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="87" to="558" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="88" to="608" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="89" to="469" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="90" to="216" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="91" to="108" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="92" to="379" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="93" to="418" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="94" to="363" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="95" to="51" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="96" to="538" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="97" to="609" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="98" to="535" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="99" to="55" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
+            <service id="0_10min" to="53063" capacityDemand="10" earliestStart="12:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:10:00"/>
+            <service id="1_10min" to="86126" capacityDemand="10" earliestStart="12:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:10:00"/>
+            <service id="2_10min" to="86897" capacityDemand="10" earliestStart="09:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:10:00"/>
+            <service id="3_5min" to="143203" capacityDemand="5" earliestStart="13:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:05:00"/>
+            <service id="4_5min" to="143203" capacityDemand="5" earliestStart="08:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:05:00"/>
+            <service id="5_10min" to="143203" capacityDemand="10" earliestStart="08:12:00" latestEnd="24:00:00"
+                     serviceDuration="00:10:00"/>
         </services>
 
     </carrier>
@@ -216,213 +28,25 @@
     <carrier id="carrier2">
         <capabilities fleetSize="INFINITE">
             <vehicles>
-                <vehicle id="carrier2Veh" depotLinkId="185" typeId="carrierVehType" earliestStart="10:00:00" latestEnd="10:00:00"/>
-                <vehicle id="carrier2Veh" depotLinkId="124" typeId="carrierVehType" earliestStart="10:00:00" latestEnd="10:00:00"/>
+                <vehicle id="carrier2Veh" depotLinkId="7726" typeId="carrierVehType" earliestStart="10:00:00" latestEnd="10:00:00"/>
+                <vehicle id="carrier2Veh" depotLinkId="13120" typeId="carrierVehType" earliestStart="10:00:00" latestEnd="10:00:00"/>
             </vehicles>
 
         </capabilities>
 
         <services>
-            <service id="0" to="148" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="1" to="246" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="2" to="229" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="3" to="373" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="4" to="609" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="5" to="118" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="6" to="341" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="7" to="267" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="8" to="153" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="9" to="292" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="10" to="99" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="11" to="192" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="12" to="178" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="13" to="135" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="14" to="335" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="15" to="214" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="16" to="118" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="17" to="439" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="18" to="312" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="19" to="523" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="20" to="314" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="21" to="411" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="22" to="531" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="23" to="607" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="24" to="225" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="25" to="122" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="26" to="132" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="27" to="155" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="28" to="492" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="29" to="363" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="30" to="41" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="31" to="550" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="32" to="6" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="33" to="115" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="34" to="355" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="35" to="245" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="36" to="31" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="37" to="13" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="38" to="541" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="39" to="40" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="40" to="542" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="41" to="316" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="42" to="111" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="43" to="546" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="44" to="487" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="45" to="299" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="46" to="37" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="47" to="394" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="48" to="425" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="49" to="15" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="50" to="543" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="51" to="376" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="52" to="394" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="53" to="528" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="54" to="423" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="55" to="363" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="56" to="234" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="57" to="513" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="58" to="410" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="59" to="411" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="60" to="550" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="61" to="509" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="62" to="259" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="63" to="215" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="64" to="562" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="65" to="302" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="66" to="580" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="67" to="289" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="68" to="387" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="69" to="412" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="70" to="444" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="71" to="33" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="72" to="131" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="73" to="47" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="74" to="313" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="75" to="598" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="76" to="259" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="77" to="118" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="78" to="7" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="79" to="562" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="80" to="56" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="81" to="584" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="82" to="166" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="83" to="288" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="84" to="241" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="85" to="548" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="86" to="253" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="87" to="471" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="88" to="362" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="89" to="475" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="90" to="233" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="91" to="203" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="92" to="231" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="93" to="503" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="94" to="264" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="95" to="486" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="96" to="11" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="97" to="450" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="98" to="294" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
-            <service id="99" to="423" capacityDemand="1" earliestStart="00:00:00" latestEnd="24:00:00"
-                     serviceDuration="00:00:31"/>
+            <service id="0_10min" to="53063" capacityDemand="10" earliestStart="12:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:10:00"/>
+            <service id="1_10min" to="86126" capacityDemand="10" earliestStart="12:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:10:00"/>
+            <service id="2_10min" to="86897" capacityDemand="10" earliestStart="09:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:10:00"/>
+            <service id="3_5min" to="143203" capacityDemand="5" earliestStart="13:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:05:00"/>
+            <service id="4_5min" to="143203" capacityDemand="5" earliestStart="08:00:00" latestEnd="24:00:00"
+                     serviceDuration="00:05:00"/>
+            <service id="5_10min" to="143203" capacityDemand="10" earliestStart="08:12:00" latestEnd="24:00:00"
+                     serviceDuration="00:10:00"/>
         </services>
 
     </carrier>
