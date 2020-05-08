@@ -1,6 +1,79 @@
 package org.matsim.ovgu.berlin.input;
 
 public class InputBuffer {
+	
+	public static final double[] SITWA_x_vB_W00_se1585246474 = new double[] { 0, 41, 39, 42, 33, 13, 39, 48, 49, 24, 45, 24, 23, 43, 46, 42, 48, 66, 76, 41 };
+	public static final double[] SITWA_x_vB_W10_se1585246474 = new double[] { 0, 110, 37, 26, 36, 0, 32, 48, 35, 17, 12, 22, 43, 12, 38, 38, 41, 62, 81, 92 };
+	public static final double[] SITWA_x_vB_W20_se1585246474 = new double[] { 0, 122, 12, 21, 52, 4, 30, 0, 95, 11, 0, 7, 8, 20, 41, 24, 36, 43, 148, 108 };
+	public static final double[] SITWA_x_vB_W30_se1585246474 = new double[] { 0, 37, 37, 21, 52, 75, 19, 0, 95, 11, 0, 0, 11, 0, 5, 48, 47, 0, 216, 108 };
+	public static final double[] SITWA_x_vB_W40_se1585246474 = new double[] { 0, 0, 14, 21, 52, 135, 0, 0, 5, 17, 40, 0, 14, 0, 0, 53, 47, 0, 276, 108 };
+	public static final double[] SITWA_x_vB_W50_se1585246474 = new double[] { 0, 0, 0, 0, 140, 11, 44, 29, 0, 0, 0, 0, 114, 0, 0, 0, 0, 0, 32, 395 };
+
+
+
+	public static final double[] SITWA_x_vC_W00_se1585246474 = new double[] { 0, 41, 35, 37, 41, 14, 39, 49, 47, 24, 47, 24, 20, 43, 37, 43, 48, 66, 82, 45 };
+	public static final double[] SITWA_x_vC_W10_se1585246474 = new double[] { 0, 112, 37, 26, 36, 0, 36, 44, 35, 16, 13, 22, 38, 16, 30, 43, 41, 62, 83, 92 };
+	public static final double[] SITWA_x_vC_W20_se1585246474 = new double[] { 0, 97, 37, 44, 29, 6, 42, 1, 88, 3, 0, 7, 8, 28, 29, 25, 37, 118, 16, 167 };
+	public static final double[] SITWA_x_vC_W30_se1585246474 = new double[] { 0, 137, 0, 14, 0, 0, 105, 0, 48, 0, 43, 7, 4, 0, 0, 78, 0, 0, 113, 233 };
+	public static final double[] SITWA_x_vC_W40_se1585246474 = new double[] { 0, 0, 91, 0, 0, 0, 165, 0, 91, 0, 0, 0, 0, 0, 0, 24, 0, 0, 303, 108 };
+	public static final double[] SITWA_x_vC_W50_se1585246474 = new double[] { 0, 140, 0, 0, 0, 0, 116, 0, 0, 8, 0, 0, 0, 0, 0, 0, 47, 0, 121, 350 };
+	
+	public static final double[] SITWA_vB_W00_se1585246474 = new double[] { 0, 98, 39, 42, 41, 11, 16, 31, 48, 30, 45, 13, 17, 30, 43, 43, 34, 66, 60, 75 };
+	public static final double[] SITWA_vB_W10_se1585246474 = new double[] { 0, 157, 48, 26, 0, 0, 0, 49, 40, 28, 0, 0, 0, 12, 59, 0, 41, 72, 61, 108 };
+	public static final double[] SITWA_vB_W20_se1585246474 = new double[] { 0, 97, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 1, 120 };
+	public static final double[] SITWA_vB_W30_se1585246474 = new double[] { 0, 37, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 180 };
+	public static final double[] SITWA_vB_W40_se1585246474 = new double[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 85, 0, 0, 0, 0, 0, 0, 132 };
+	public static final double[] SITWA_vB_W50_se1585246474 = new double[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 85, 0, 0, 0, 0, 0, 0, 132 };
+
+
+
+	public static final double[] SITWA_vC_W00_se1585246474 = new double[] { 0, 98, 39, 42, 41, 11, 16, 31, 48, 30, 45, 13, 17, 30, 48, 43, 34, 61, 60, 75 };
+	public static final double[] SITWA_vC_W10_se1585246474 = new double[] { 0, 157, 48, 26, 0, 0, 0, 49, 40, 28, 0, 0, 0, 12, 59, 0, 41, 72, 61, 108 };
+	public static final double[] SITWA_vC_W20_se1585246474 = new double[] { 0, 97, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 1, 120 };
+	public static final double[] SITWA_vC_W30_se1585246474 = new double[] { 0, 37, 0, 0, 0, 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 132 };
+	public static final double[] SITWA_vC_W40_se1585246474 = new double[] { 0, 0, 0, 0, 85, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 132 };
+	public static final double[] SITWA_vC_W50_se1585246474 = new double[] { 0, 0, 0, 0, 0, 85, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 108 };
+
+
+
+	public static final double[] SITWA_x_vA_W00_se1585246474 = new double[] { 0, 144, 98, 85, 89, 44, 80, 114, 107, 90,
+			126, 56, 50, 95, 122, 133, 106, 157, 205, 170 };
+	public static final double[] SITWA_x_vA_W10_se1585246474 = new double[] { 0, 218, 99, 74, 85, 28, 73, 112, 97, 80,
+			92, 54, 70, 66, 117, 130, 102, 150, 207, 217 };
+	public static final double[] SITWA_x_vA_W20_se1585246474 = new double[] { 0, 243, 67, 60, 99, 37, 83, 65, 147, 69,
+			80, 39, 38, 79, 114, 115, 95, 132, 216, 293 };
+	public static final double[] SITWA_x_vA_W30_se1585246474 = new double[] { 0, 142, 99, 69, 99, 34, 141, 70, 90, 98,
+			108, 28, 49, 64, 41, 143, 105, 89, 369, 233 };
+	public static final double[] SITWA_x_vA_W40_se1585246474 = new double[] { 0, 82, 99, 69, 99, 34, 209, 56, 160, 69,
+			0, 106, 38, 0, 151, 150, 0, 89, 244, 410 };
+	public static final double[] SITWA_x_vA_W50_se1585246474 = new double[] { 0, 22, 283, 18, 0, 0, 57, 244, 0, 251, 75,
+			0, 77, 64, 87, 0, 82, 89, 489, 233 };
+	public static final double[] SITWA_vA_W00_se1585246474 = new double[] { 0, 209, 99, 83, 78, 41, 80, 93, 103, 90,
+			123, 42, 47, 83, 128, 132, 100, 148, 188, 204 };
+	public static final double[] SITWA_vA_W10_se1585246474 = new double[] { 0, 262, 110, 74, 43, 0, 25, 113, 100, 94,
+			77, 2, 13, 64, 144, 90, 99, 163, 184, 233 };
+	public static final double[] SITWA_vA_W20_se1585246474 = new double[] { 0, 202, 50, 14, 0, 0, 0, 53, 40, 34, 17, 0,
+			0, 4, 84, 30, 39, 103, 124, 233 };
+	public static final double[] SITWA_vA_W30_se1585246474 = new double[] { 0, 142, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			24, 0, 0, 43, 64, 233 };
+	public static final double[] SITWA_vA_W40_se1585246474 = new double[] { 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 4, 240 };
+	public static final double[] SITWA_vA_W50_se1585246474 = new double[] { 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 56, 0, 0, 0, 244 };
+	
+	
+	
+	
+
+	public static final double[] SITWA_vB1_W00_se1585246474 = new double[] { 0, 0, 98, 39, 42, 41, 11, 16, 31, 48, 30,
+			45, 13, 17, 30, 43, 43, 34, 62, 60, 79 };
+	public static final double[] SITWA_vB2_W00_se1585246474 = new double[] { 0, 98, 39, 42, 41, 11, 16, 31, 48, 30, 45,
+			13, 17, 30, 43, 43, 34, 62, 60, 79, 0 };
+	public static final double[] SITWA_x_vB1_W00_se1585246474 = new double[] { 0, 0, 36, 39, 42, 33, 12, 39, 48, 49, 24,
+			45, 21, 23, 43, 43, 42, 48, 61, 75, 59 };
+	public static final double[] SITWA_x_vB2_W00_se1585246474 = new double[] { 0, 36, 39, 42, 33, 12, 39, 48, 49, 24,
+			45, 21, 23, 43, 43, 42, 48, 61, 75, 59, 0 };
+
 	public static final double[] bufferNone = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 			0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 	public static final double[] bufferNewSD = new double[] { 0, 80.0036349, 40.62121777, 36.41425907, 31.64492126,
