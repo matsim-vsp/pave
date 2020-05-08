@@ -23,7 +23,7 @@ public class Settings {
 
 	// use buffer data set
 	public double[] timeWindow;
-	public String timeWindowMethod = "PlusMinus";
+	public String timeWindowMethod = "PlusMinusArrival";
 	// time window methods -> PlusMinusArrival or AfterArrival
 
 	// use buffer data set
