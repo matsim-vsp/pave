@@ -11,8 +11,8 @@
 	<description>PAVE java code</description>
 
 	<properties>
-	  	<matsim.version>12.0-SNAPSHOT</matsim.version>
-<!--		<matsim.version>12.0-2019w34-SNAPSHOT</matsim.version>-->
+		<matsim.version>12.0-SNAPSHOT</matsim.version>
+		<!-- <matsim.version>12.0-2019w34-SNAPSHOT</matsim.version> -->
 	</properties>
 
 	<repositories>
@@ -52,7 +52,7 @@
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim-examples</artifactId>
 			<version>12.0-SNAPSHOT</version>
-			<!--(not in weekly release!)-->
+			<!--(not in weekly release!) -->
 		</dependency>
 
 
@@ -95,11 +95,11 @@
 		</dependency>
 
 
-		<!-- berlin scenario-->
+		<!-- berlin scenario -->
 		<dependency>
 			<groupId>com.github.matsim-vsp</groupId>
 			<artifactId>matsim-berlin</artifactId>
-			<!--            <version>5.3</version>-->
+			<!-- <version>5.3</version> -->
 			<version>5.4</version>
 		</dependency>
 
@@ -129,6 +129,27 @@
 			<groupId>com.github.ovgu-mansci</groupId>
 			<artifactId>pave</artifactId>
 			<version>-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.solver.scp</groupId>
+			<artifactId>scp</artifactId>
+			<version>-2020</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/java/org/matsim/ovgu/berlin/LinearProgram/SCPSolver.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>com.solver.glpk</groupId>
+			<artifactId>glpk</artifactId>
+			<version>-2020</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/java/org/matsim/ovgu/berlin/LinearProgram/GLPKSolverPack.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>com.solver.lpsolve</groupId>
+			<artifactId>lpsolve</artifactId>
+			<version>-2020</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/java/org/matsim/ovgu/berlin/LinearProgram/LPSOLVESolverPack.jar</systemPath>
 		</dependency>
 
 	</dependencies>
