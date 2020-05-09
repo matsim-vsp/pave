@@ -61,6 +61,21 @@ public class MatrixEventsHandler implements LinkEnterEventHandler, LinkLeaveEven
 		return str;
 	}
 
+	public double[] getTravelTimeArray() {
+		Id<Link> from = departureLinks.get(0);
+
+		// 24 hours
+		double[] travelTime = new double[24];
+		int counter = 0;
+
+		for (int i = 0; i < arrivals.size(); i++) {
+			if (!departureLinks.get(i).equals(arrivalLinks.get(i)) && departureLinks.get(i).equals(from)) {
+				travelTime[counter++] = arrivals.get(i) - departures.get(i);
+			}
+		}
+		return travelTime;
+	}
+
 	public void printCSV(String filePath) {
 		try {
 			FileWriter csvWriter = new FileWriter(filePath);

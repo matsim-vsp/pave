@@ -22,8 +22,8 @@ public class Version2_SITWA_Evaluation {
 	private static String baseDirectory = settings.directory + "/evaluation/SITWA-06052020/";
 	private static FileWriter csvWriter;
 
-	private static final boolean runMATSim = false;
-	private static final boolean generateResults = true;
+	private static boolean runMATSim = false;
+	private static boolean generateResults = true;
 
 	public static void run() {
 		settings.tour = InputTour.tour;

@@ -6,6 +6,7 @@ import org.matsim.ovgu.berlin.createTravelTimeMatrix.Version2_RunSimReadSim;
 import org.matsim.ovgu.berlin.createTravelTimeMatrix.Version3_RunSimReadEvents;
 import org.matsim.ovgu.berlin.evaluation.Version1_BufferEvaluation;
 import org.matsim.ovgu.berlin.evaluation.Version2_SITWA_Evaluation;
+import org.matsim.ovgu.berlin.evaluation.Version3_EvalutionFromLinks;
 import org.matsim.ovgu.berlin.input.InputTour;
 
 public class Run {
@@ -25,6 +26,8 @@ public class Run {
 // run evaluation
 		// setup values in class "Input"
 //      Version1_BufferEvaluation.run();
-        Version2_SITWA_Evaluation.run();
+//        Version2_SITWA_Evaluation.run();
+        Version3_EvalutionFromLinks v3 = new Version3_EvalutionFromLinks();
+        v3.run(null);
 	}
 }
