@@ -31,8 +31,9 @@ public class EvInputVersion {
 		return expDuration;
 	}
 
-	public void setupTimeWindowBuffers(double se, double t, boolean myMethod) {
-		double[] windows = new double[] { 1, 2, 3, 4, 5, /*6, 7, 8, 9, 10 */};
+	private void setupTimeWindowBuffers(double se, double t, boolean myMethod) {
+//		double[] windows = new double[] { 1, 2, 3, 4, 5, /* 6, 7, 8, 9, 10 */ };
+		double[] windows = new double[] { 1, 2, 3, /* 4, */ 5, /* 6, 7, 8, 9, */ 10 };
 		double factor = 60;
 		double b = 1;
 		double ss = 0;
@@ -57,16 +58,6 @@ public class EvInputVersion {
 //		}
 //	}
 
-	public void calculateSD_ForAllBuffers(double[] avgTT, double[][] traveltimeMatrix) {
-		for (EvBufferVersion buffer : buffers)
-			buffer.calculateStandardDeviationBuffer(avgTT, traveltimeMatrix);
-	}
-
-	public void runLp_ForAllBuffers() {
-		for (EvBufferVersion buffer : buffers)
-			buffer.runLP();
-	}
-
 	public void calcDelayScenarios(double[][] traveltimeMatrix) {
 		int linksCount = traveltimeMatrix.length;
 		int szenariosCount = traveltimeMatrix[0].length;
@@ -75,6 +66,8 @@ public class EvInputVersion {
 		for (int s = 0; s < szenariosCount; s++)
 			for (int l = 0; l < linksCount; l++)
 				delayScenarios[s][l] = traveltimeMatrix[l][s] - expTT[l];
+
+		writeScenariosCSV();
 	}
 
 	public void removeNegativScenarioValues() {
@@ -115,31 +108,46 @@ public class EvInputVersion {
 		}
 	}
 
-	public void readRunSettings_ForAllBuffers() {
-		for (EvBufferVersion buffer : buffers) {
-			buffer.readRunSettings();
-		}
+	public void setupBASEBuffers(boolean runModel) {
+		setupTimeWindowBuffers(0, 0, false);
+		writeOrLoad(runModel);
 	}
 
-	public void writeCSVs() {
-		for (EvBufferVersion buffer : buffers) {
-			buffer.writeParameters();
-			buffer.generateRunSettings();
-		}
-		writeScenariosCSV();
-
+	public void setupSDBuffers(double[] avgTT, double[][] traveltimeMatrix, boolean runModel) {
+		setupTimeWindowBuffers(0, 0, false);
+		if (runModel)
+			for (EvBufferVersion buffer : buffers)
+				buffer.calculateStandardDeviationBuffer(avgTT, traveltimeMatrix);
+		writeOrLoad(runModel);
 	}
 
-	public void setupBuffers(boolean runModel) {
+	public void setupSITWABuffers(boolean runModel) {
 		double se = getBestCaseDuration(2 * 60);
 		double t = 500;
 		// TODO: SETUP PARAMETERS FOR BUFFERS TO BE CHECKED
 		setupTimeWindowBuffers(se, t, true);
 		setupTimeWindowBuffers(se, t, false);
+
 		if (runModel)
-			runLp_ForAllBuffers();
-		else
-			readRunSettings_ForAllBuffers();
+			for (EvBufferVersion buffer : buffers)
+				buffer.runLP();
+		writeOrLoad(runModel);
+	}
+
+	public void writeOrLoad(boolean write) {
+		if (write) {
+			for (EvBufferVersion buffer : buffers) {
+				buffer.writeParameters();
+				buffer.generateRunSettings();
+			}
+			writeScenariosCSV();
+		} else
+			loadRunSettings();
+	}
+
+	public void loadRunSettings() {
+		for (EvBufferVersion buffer : buffers)
+			buffer.readRunSettings();
 	}
 
 }

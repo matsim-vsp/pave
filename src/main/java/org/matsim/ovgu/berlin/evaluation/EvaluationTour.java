@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.matsim.core.api.experimental.events.EventsManager;
@@ -74,41 +75,35 @@ public class EvaluationTour {
 		initVersionA(runModel);
 		initVersionB(runModel);
 //		initVersionC(runModel);
-		initVersionBASEmin();
-		initVersionBASEavg();
-		initVersionSD();
+		initVersionBASEavg(runModel);
+		initVersionBASEmin(runModel);
+		initVersionSD(runModel);
 	}
 
-	private void initVersionBASEmin() {
+	private void initVersionBASEmin(boolean runModel) {
 		EvInputVersion eiv = new EvInputVersion(tourDirectory, tourIdent + "_versionBASEmin", minTravelTime, linkIDs);
-		eiv.setupTimeWindowBuffers(0, 0, false);
-		eiv.writeCSVs();
+		eiv.setupBASEBuffers(runModel);
 		evInputVersions.add(eiv);
 
 	}
 
-	private void initVersionBASEavg() {
+	private void initVersionBASEavg(boolean runModel) {
 		EvInputVersion eiv = new EvInputVersion(tourDirectory, tourIdent + "_versionBASEavg", avgTravelTime, linkIDs);
-		eiv.setupTimeWindowBuffers(0, 0, false);
-		eiv.writeCSVs();
+		eiv.setupBASEBuffers(runModel);
 		evInputVersions.add(eiv);
 
 	}
 
-	private void initVersionSD() {
+	private void initVersionSD(boolean runModel) {
 		EvInputVersion eiv = new EvInputVersion(tourDirectory, tourIdent + "_versionSD", avgTravelTime, linkIDs);
-//		eiv.setupTimeWindowBuffers_SD();
-		eiv.setupTimeWindowBuffers(0, 0, false);
-		eiv.calculateSD_ForAllBuffers(avgTravelTime, traveltimeMatrix);
-		eiv.writeCSVs();
+		eiv.setupSDBuffers(avgTravelTime, traveltimeMatrix, runModel);
 		evInputVersions.add(eiv);
 	}
 
 	private void initVersionA(boolean runModel) {
 		EvInputVersion eiv = new EvInputVersion(tourDirectory, tourIdent + "_versionA", minTravelTime, linkIDs);
 		eiv.calcDelayScenarios(traveltimeMatrix);
-		eiv.setupBuffers(runModel);
-		eiv.writeCSVs();
+		eiv.setupSITWABuffers(runModel);
 		evInputVersions.add(eiv);
 	}
 
@@ -116,16 +111,14 @@ public class EvaluationTour {
 		EvInputVersion eiv = new EvInputVersion(tourDirectory, tourIdent + "_versionB", avgTravelTime, linkIDs);
 		eiv.calcDelayScenarios(traveltimeMatrix);
 		eiv.removeNegativScenarioValues();
-		eiv.setupBuffers(runModel);
-		eiv.writeCSVs();
+		eiv.setupSITWABuffers(runModel);
 		evInputVersions.add(eiv);
 	}
 
 	private void initVersionC(boolean runModel) {
 		EvInputVersion eiv = new EvInputVersion(tourDirectory, tourIdent + "_versionC", avgTravelTime, linkIDs);
 		eiv.calcDelayScenarios(traveltimeMatrix);
-		eiv.setupBuffers(runModel);
-		eiv.writeCSVs();
+		eiv.setupSITWABuffers(runModel);
 		evInputVersions.add(eiv);
 	}
 
@@ -196,7 +189,7 @@ public class EvaluationTour {
 			File csvFile = new File(summaryFilePath);
 			csvFile.getParentFile().mkdirs();
 			FileWriter csvWriter = new FileWriter(csvFile);
-			csvWriter.append(getSummaryHeadline(usedBuffer.length).replace("bufferIdent;", ""));
+			csvWriter.append(getSummaryHeadline().replace("evaluation;tour;version;window;myMethod", "") + "\n");
 
 			String str = summary.percent_oBeforeTW + ";" + summary.percent_oInTW + ";" + summary.percent_oAfterTW + ";"
 					+ summary.avg_oEarlyTW / 60 + ";" + summary.max_oEarlyTW / 60 + ";" + summary.avg_oLateTW / 60 + ";"
@@ -204,9 +197,6 @@ public class EvaluationTour {
 					+ summary.percent_dAfterTW + ";" + summary.avg_dEarlyTW / 60 + ";" + summary.max_dEarlyTW / 60 + ";"
 					+ summary.avg_dLateTW / 60 + ";" + summary.max_dLateTW / 60 + ";"
 					+ summary.avg_tourDuration / 60 / 1440 + ";";
-
-			for (double value : usedBuffer)
-				str += value + ";";
 
 			str = str.replace(".", ",");
 
@@ -220,40 +210,46 @@ public class EvaluationTour {
 		}
 	}
 
-	protected String getSummaryHeadline(int bufferCount) {
-		String str = "bufferIdent;oBeforeTW;oInTW;oAfterTW;oEarlyTW;oMaxEarlyTW;oLateTW;oMaxLateTW;dBeforeTW;dInTW;dAfterTW;dEarlyTW;dMaxEarlyTW;dLateTW;dMaxTW;tourDuration;";
+	protected String getSummaryHeadline() {
+		String str = "evaluation;tour;version;window;myMethod;" + "oBeforeTW;oInTW;oAfterTW;"
+				+ "oEarlyTW;oMaxEarlyTW;oLateTW;oMaxLateTW;" + "dBeforeTW;dInTW;dAfterTW;"
+				+ "dEarlyTW;dMaxEarlyTW;dLateTW;dMaxTW;tourDuration";
 
-		for (int i = 0; i < bufferCount; i++)
-			str += "buf" + i + ";";
-
-		return str + "\n";
+		return str;
 	}
 
 	private void generateTourAndVersionSummaries(String timeWindowMethod) {
+
+		List<String> summaryStrings = new ArrayList<String>();
 
 		try {
 
 			File csvFileTour = new File(tourDirectory + "/" + tourIdent + "_" + timeWindowMethod + "_summary.csv");
 			csvFileTour.getParentFile().mkdirs();
 			FileWriter csvWriterTour = new FileWriter(csvFileTour);
-			csvWriterTour.append(getSummaryHeadline(linkIDs.length));
+			csvWriterTour.append(getSummaryHeadline() + ";difTourDurationToBASEmin;difTourDurationToBASEavg\n");
 			for (EvInputVersion evi : evInputVersions) {
 				File csvFileVersion = new File(
 						evi.versionDirectory + "/" + evi.versionIdent + "_" + timeWindowMethod + "_summary.csv");
 				csvFileVersion.getParentFile().mkdirs();
 				FileWriter csvWriterVersion = new FileWriter(csvFileVersion);
-				csvWriterVersion.append(getSummaryHeadline(linkIDs.length));
+				csvWriterVersion.append(getSummaryHeadline() + "\n");
 				for (EvBufferVersion buffer : evi.buffers) {
 					String bufferSummary = readBufferSummaryString(buffer.bufferDirectory + "/" + buffer.bufferIdent
 							+ "_" + timeWindowMethod + "_result_summary.csv");
 
-					csvWriterTour.append(buffer.bufferIdent + ";" + bufferSummary + "\n");
-					csvWriterVersion.append(buffer.bufferIdent + ";" + bufferSummary + "\n");
+					summaryStrings.add(buffer.bufferIdent.replace("_", ";") + ";" + bufferSummary + "\n");
+					csvWriterVersion.append(buffer.bufferIdent.replace("_", ";") + ";" + bufferSummary + "\n");
 				}
 
 				csvWriterVersion.flush();
 				csvWriterVersion.close();
 			}
+
+			List<String> extendedSummaryStrings = extendRelativeTourDurations(summaryStrings);
+
+			for (String str : extendedSummaryStrings)
+				csvWriterTour.append(str);
 
 			csvWriterTour.flush();
 			csvWriterTour.close();
@@ -262,6 +258,47 @@ public class EvaluationTour {
 			e.printStackTrace();
 		}
 
+	}
+
+	private List<String> extendRelativeTourDurations(List<String> summaryStrings) {
+		List<String> extendedSummaryStrings = new ArrayList<String>();
+
+		// filter windows
+		List<List<String>> listEachWindow = new ArrayList<List<String>>();
+		HashMap<String, Integer> myMap = new HashMap<String, Integer>();
+
+		for (int i = 0; i < summaryStrings.size(); i++) {
+			String window = summaryStrings.get(i).split(";")[3];
+			if (!myMap.containsKey(window)) {
+				myMap.put(window, listEachWindow.size());
+				listEachWindow.add(new ArrayList<String>());
+			}
+			listEachWindow.get(myMap.get(window)).add(summaryStrings.get(i));
+		}
+
+		for (int tw = 0; tw < listEachWindow.size(); tw++) {
+			double minBASEduration = findTourDuration("BASEmin", listEachWindow.get(tw));
+			double avgBASEduration = findTourDuration("BASEavg", listEachWindow.get(tw));
+
+			for (int b = 0; b < listEachWindow.get(tw).size(); b++) {
+				String str = listEachWindow.get(tw).get(b);
+				String[] split = str.split(";");
+				double tourDuration = Double.parseDouble(split[split.length - 2].replace(",", "."));
+				str += ((tourDuration / minBASEduration) - 1);
+				str += ";" + ((tourDuration / avgBASEduration) - 1);
+				extendedSummaryStrings.add(str.replace("\n", "") + "\n");
+			}
+		}
+		return extendedSummaryStrings;
+	}
+
+	private double findTourDuration(String contains, List<String> buffers) {
+		for (String str : buffers)
+			if (str.contains(contains)) {
+				String[] split = str.split(";");
+				return Double.parseDouble(split[split.length - 2].replace(",", "."));
+			}
+		return -1;
 	}
 
 	private String readBufferSummaryString(String file) throws IOException {
@@ -275,4 +312,10 @@ public class EvaluationTour {
 		return secondRow;
 	}
 
+	public double getNoDelayDuration(double serviceTime) {
+		double sum = 0;
+		for (int i = 0; i < minTravelTime.length; i++)
+			sum += minTravelTime[i] + serviceTime;
+		return sum;
+	}
 }
