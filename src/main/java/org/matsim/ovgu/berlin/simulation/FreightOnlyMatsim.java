@@ -132,8 +132,7 @@ public class FreightOnlyMatsim {
 		config.controler().setOutputDirectory(outputLocation);
 		config.plansCalcRoute().setRoutingRandomness(0);
 
-		config.network().setInputFile(
-				"C:\\Users\\koetscha\\Desktop\\develop\\matsim.pave\\factory\\input\\berlin-v5-network.xml.gz");
+		config.network().setInputFile(System.getProperty("user.dir") + "/input/berlin-v5-network.xml.gz");
 		// "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.4-10pct/input/berlin-v5-network.xml.gz")
 		if (networkChangeEventsFileLocation != "") {
 			log.info("Setting networkChangeEventsInput file: " + networkChangeEventsFileLocation);
