@@ -3,19 +3,24 @@ package org.matsim.ovgu.berlin.eventHandling;
 import java.util.List;
 
 public class Summary {
-	
+
 	public double percent_oBeforeTW = 0;
 	public double percent_oInTW = 0;
 	public double percent_oAfterTW = 0;
 	public double percent_dBeforeTW = 0;
 	public double percent_dInTW = 0;
 	public double percent_dAfterTW = 0;
-	
+
 	public double avg_oEarlyTW = 0;
 	public double avg_oLateTW = 0;
 	public double avg_dEarlyTW = 0;
 	public double avg_dLateTW = 0;
-	
+
+	public double max_oEarlyTW = 0;
+	public double max_oLateTW = 0;
+	public double max_dEarlyTW = 0;
+	public double max_dLateTW = 0;
+
 	public double avg_tourDuration = 0;
 
 	public Summary(List<CarrierTour> plans) {
@@ -31,6 +36,10 @@ public class Summary {
 		double sum_oLateTW = 0;
 		double sum_dEarlyTW = 0;
 		double sum_dLateTW = 0;
+		max_oEarlyTW = 0;
+		max_oLateTW = 0;
+		max_dEarlyTW = 0;
+		max_dLateTW = 0;
 
 		int count_tours = 0;
 		double sum_tourDuration = 0;
@@ -48,6 +57,15 @@ public class Summary {
 				sum_oLateTW += customer.oLateTW;
 				sum_dEarlyTW += customer.dEarlyTW;
 				sum_dLateTW += customer.dLateTW;
+
+				if (max_oEarlyTW < customer.oEarlyTW)
+					max_oEarlyTW = customer.oEarlyTW;
+				if (max_oLateTW < customer.oLateTW)
+					max_oLateTW = customer.oLateTW;
+				if (max_dEarlyTW < customer.dEarlyTW)
+					max_dEarlyTW = customer.dEarlyTW;
+				if (max_dLateTW < customer.dLateTW)
+					max_dLateTW = customer.dLateTW;
 
 				if (customer.oBeforeTW)
 					count_oBeforeTW++;
@@ -71,12 +89,12 @@ public class Summary {
 		percent_dBeforeTW = count_dBeforeTW / count_customers;
 		percent_dInTW = count_dInTW / count_customers;
 		percent_dAfterTW = count_dAfterTW / count_customers;
-		
+
 		avg_oEarlyTW = sum_oEarlyTW / count_oBeforeTW;
 		avg_oLateTW = sum_oLateTW / count_oAfterTW;
 		avg_dEarlyTW = sum_dEarlyTW / count_dBeforeTW;
 		avg_dLateTW = sum_dLateTW / count_dAfterTW;
-		
+
 		avg_tourDuration = sum_tourDuration / count_tours;
 	}
 

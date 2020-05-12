@@ -100,7 +100,7 @@ public class TourEventsHandler implements LinkEnterEventHandler, LinkLeaveEventH
 		return plans;
 	}
 
-	public void printCSV(String filePath) {
+	public void writeCSV(String filePath) {
 		try {
 			FileWriter csvWriter = new FileWriter(filePath);
 			csvWriter.append(

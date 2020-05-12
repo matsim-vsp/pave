@@ -3,7 +3,8 @@ package org.matsim.ovgu.berlin;
 public class Settings {
 
 	// network change events file
-	public String pathChangeEvents = "input/scenario-A.15.networkChangeEvents.xml.gz";
+//	public String pathChangeEvents = "input/scenario-A.15.networkChangeEvents.xml.gz";
+	public String pathChangeEvents = "input/networkChangeEventsFromKai.xml.gz";
 
 	// output directory
 	private String dir = System.getProperty("user.dir");

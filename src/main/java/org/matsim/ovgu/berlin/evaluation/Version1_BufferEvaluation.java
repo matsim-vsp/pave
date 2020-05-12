@@ -92,7 +92,7 @@ public class Version1_BufferEvaluation {
 		handler.compareExpectedArrivals(settings);
 		System.out.println("post calculations finished!");
 
-		handler.printCSV(settings.directory + "result.csv");
+		handler.writeCSV(settings.directory + "result.csv");
 		System.out.println("CSV finished!");
 
 	}

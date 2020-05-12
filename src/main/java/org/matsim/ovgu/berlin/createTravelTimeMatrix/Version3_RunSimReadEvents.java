@@ -12,10 +12,23 @@ import org.matsim.ovgu.berlin.simulation.FreightOnlyMatsim;
 
 public class Version3_RunSimReadEvents {
 
-	public static double[][] run(String[] tour, String prefix, boolean runSimulation, boolean writeCSV,
+	public static void run(String[] tour, boolean runSimulation, boolean writeCSV) {
+		Settings settings = new Settings();
+		settings.directory += "/Version3_RunSimReadEvents/";
+
+		// Run Simulation for each trip
+		if (runSimulation)
+			runMatrixTour(settings, tour);
+
+		// Read Events from trips
+		if (writeCSV)
+			generateCSVMatrix(settings, tour);
+	}
+
+	public static double[][] run(String[] tour, String workingDirectory, boolean runSimulation, boolean writeCSV,
 			boolean returnDoubleMatrix) {
 		Settings settings = new Settings();
-		settings.directory += "/Version3_RunSimReadEvents" + prefix + "/";
+		settings.directory = workingDirectory + "/";
 
 		// Run Simulation for each trip
 		if (runSimulation)

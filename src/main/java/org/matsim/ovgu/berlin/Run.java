@@ -28,6 +28,6 @@ public class Run {
 //      Version1_BufferEvaluation.run();
 //        Version2_SITWA_Evaluation.run();
         Version3_EvalutionFromLinks v3 = new Version3_EvalutionFromLinks();
-        v3.run(null);
+        v3.run();
 	}
 }

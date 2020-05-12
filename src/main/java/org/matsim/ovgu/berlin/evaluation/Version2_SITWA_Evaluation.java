@@ -59,7 +59,7 @@ public class Version2_SITWA_Evaluation {
 		handler.compareExpectedArrivals(settings);
 		System.out.println("post calculations finished!");
 
-		handler.printCSV(baseDirectory + name + "_result.csv");
+		handler.writeCSV(baseDirectory + name + "_result.csv");
 		System.out.println("CSV finished!");
 
 		appendSummary(handler.getSummary(), name, settings.buffer);
