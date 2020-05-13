@@ -28,6 +28,15 @@ public class Run {
 //      Version1_BufferEvaluation.run();
 //        Version2_SITWA_Evaluation.run();
         Version3_EvalutionFromLinks v3 = new Version3_EvalutionFromLinks();
-        v3.run();
+        int from = Integer.parseInt(args[0]);
+        int to = Integer.parseInt(args[1]);
+        boolean runBuffers = Boolean.parseBoolean(args[2]);
+        String windowMethod = args[3];
+        boolean runEvaluation = Boolean.parseBoolean(args[4]);
+		boolean runSummary = Boolean.parseBoolean(args[5]);
+		boolean ttWithSim = Boolean.parseBoolean(args[6]);
+		boolean bufWithModel = Boolean.parseBoolean(args[7]);
+		boolean evaluationWithSim = Boolean.parseBoolean(args[8]);
+        v3.run(from, to, runBuffers, windowMethod, runEvaluation, runSummary, ttWithSim, bufWithModel, evaluationWithSim);
 	}
 }

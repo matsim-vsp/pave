@@ -19,7 +19,8 @@ public class Version3_EvalutionFromLinks {
 	private String evaluationDirectory;
 
 	// 200 linkIDs expected
-	public void run() {
+	public void run(int from, int to, boolean runBuffers, String windowMethod, boolean runEvaluation,
+			boolean runSummary, boolean ttWithSim, boolean bufWithModel, boolean evaluationWithSim) {
 		setEvaluationDirectory();
 
 //		String[] linkIDs = getMySample200Links();
@@ -30,14 +31,20 @@ public class Version3_EvalutionFromLinks {
 
 //		writeToursCSV();
 
-		int from = 1;
-		int to = 10;
+		for (int i = from - 1; i < to; i++)
+			tours.get(i).setup24hTravelTimes(ttWithSim); // Simulation needed ?
 
-		for (int i = from - 1; i < to; i++)
-			tours.get(i).setup24hTravelTimes(false); // Simulation needed ?
-//
-		for (int i = from - 1; i < to; i++)
-			tours.get(i).setupInputVersionsWithBuffers(true);// LP Model needed ?
+		if (runBuffers)
+			for (int i = from - 1; i < to; i++)
+				tours.get(i).setupInputVersionsWithBuffers(bufWithModel);// LP Model needed ?
+
+		if (runEvaluation)
+			for (int i = from - 1; i < to; i++)
+				tours.get(i).evaluate(windowMethod, evaluationWithSim);// Simulation needed ?
+
+		if (runSummary)
+			generateOverallSummary(windowMethod);
+
 //
 //		for (int i = from - 1; i < to; i++)
 //			tours.get(i).evaluate("PlusMinusArrival", false);// Simulation needed ?
