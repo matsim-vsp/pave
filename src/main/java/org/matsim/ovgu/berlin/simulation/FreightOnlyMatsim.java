@@ -129,6 +129,7 @@ public class FreightOnlyMatsim {
 				.setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
 		config.global().setRandomSeed(4177);
 		config.controler().setLastIteration(0);
+		config.controler().setCreateGraphs(false);
 		config.controler().setOutputDirectory(outputLocation);
 		config.plansCalcRoute().setRoutingRandomness(0);
 

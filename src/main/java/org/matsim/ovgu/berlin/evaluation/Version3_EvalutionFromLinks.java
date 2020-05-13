@@ -2,7 +2,6 @@ package org.matsim.ovgu.berlin.evaluation;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,15 +15,15 @@ import org.matsim.ovgu.berlin.input.InputTour;
 public class Version3_EvalutionFromLinks {
 
 	private List<EvaluationTour> tours = new ArrayList<EvaluationTour>();
-	private final String evaluationIdent = "myEvaluation200x2";
+	private final String evaluationIdent = "myEvaluation2000";
 	private String evaluationDirectory;
 
 	// 200 linkIDs expected
 	public void run() {
 		setEvaluationDirectory();
 
-		String[] linkIDs = getMySample200Links();
-//		String[] linkIDs = getMySample2000Links();
+//		String[] linkIDs = getMySample200Links();
+		String[] linkIDs = getMySample2000Links();
 //		writeLinksCSV(linkIDs);
 		generateRandomTours(linkIDs, 20);
 //		setupMyTour();
@@ -36,18 +35,18 @@ public class Version3_EvalutionFromLinks {
 
 		for (int i = from - 1; i < to; i++)
 			tours.get(i).setup24hTravelTimes(false); // Simulation needed ?
-
+//
 		for (int i = from - 1; i < to; i++)
-			tours.get(i).setupInputVersionsWithBuffers(false);// LP Model needed ?
-
-		for (int i = from - 1; i < to; i++)
-			tours.get(i).evaluate("PlusMinusArrival", false);// Simulation needed ?
-
-//		for (int i = from -1; i < to; i++)
-//			tours.get(i).evaluate("AfterArrival", false);// Simulation needed ?
-
-		generateOverallSummary("PlusMinusArrival");
-//		generateOverallSummary("AfterArrival");
+			tours.get(i).setupInputVersionsWithBuffers(true);// LP Model needed ?
+//
+//		for (int i = from - 1; i < to; i++)
+//			tours.get(i).evaluate("PlusMinusArrival", false);// Simulation needed ?
+//
+////		for (int i = from -1; i < to; i++)
+////			tours.get(i).evaluate("AfterArrival", false);// Simulation needed ?
+//
+//		generateOverallSummary("PlusMinusArrival");
+////		generateOverallSummary("AfterArrival");
 
 		System.out.println("Version3_EvalutionFromLinks.run() Finished !");
 	}
