@@ -172,7 +172,7 @@ final class PAVEBerlinModifier {
         }
     }
 
-    static void randomlyAssignMobilityTypes (Population population, Map<String, Double> mobilityType2Weight){
+    final static void randomlyAssignMobilityTypes (Population population, Map<String, Double> mobilityType2Weight){
 
         //calc the sum of all weights
         double weightSum = mobilityType2Weight.values().stream().mapToDouble(weight -> weight).sum();
@@ -226,10 +226,10 @@ final class PAVEBerlinModifier {
         printAssignmentResults(population);
     }
 
-    private static void printAssignmentResults(Population population) {
+    private static final void printAssignmentResults(Population population) {
         Map<String, Integer> subPopulationMap = new HashMap<>();
         population.getPersons().values().stream()
-        .filter(person -> PopulationUtils.getSubpopulation(person).contains("persons"))
+        .filter(person -> PopulationUtils.getSubpopulation(person).contains("person"))
         .forEach(person -> {
             String subPop = PopulationUtils.getSubpopulation(person);
                 subPopulationMap.compute(subPop, (k,v) ->  (v == null)? 1 : v+1);
@@ -239,7 +239,7 @@ final class PAVEBerlinModifier {
             sum += value;
         }
         for (Map.Entry<String, Integer> entry : subPopulationMap.entrySet()) {
-            log.info("nrOf people in subPopulation " + entry.getKey() + " = " + entry.getValue() + "\t (" + String.format("%d %", entry.getValue()/sum));
+            log.info("nrOf people in subPopulation " + entry.getKey() + " = " + entry.getValue() + "\t = " + String.format("%d", entry.getValue()*100/sum) + "%");
         }
     }
 }

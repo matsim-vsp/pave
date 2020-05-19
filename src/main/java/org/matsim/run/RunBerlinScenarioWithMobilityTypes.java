@@ -40,7 +40,7 @@ public class RunBerlinScenarioWithMobilityTypes {
         config.planCalcScore().setFractionOfIterationsToStartScoreMSA(0.8);
 
         PAVEBerlinModifier.configureMobilityTypeSubPopulations(config);
-        config.controler().setOutputDirectory("output/berlin5.4_1pct_pave");
+        config.controler().setOutputDirectory("output/berlin5.5_1pct_pave");
         config.controler().setLastIteration(0);
 
         Scenario scenario = RunBerlinScenario.prepareScenario(config);
