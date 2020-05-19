@@ -44,9 +44,7 @@ public class RunBerlinScenarioWithMobilityTypes {
         config.controler().setLastIteration(0);
 
         Scenario scenario = RunBerlinScenario.prepareScenario(config);
-        Map<String,Double> mobilityType2Weight = new HashMap<>();
-        PAVEBerlinModifier.getMobilityTypes().forEach(type -> mobilityType2Weight.put(type, 1.));
-        PAVEBerlinModifier.randomlyAssignMobilityTypes(scenario.getPopulation(), mobilityType2Weight);
+        PAVEBerlinModifier.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEBerlinModifier.getMobilityTypesWithDefaulWeights());
 
         Controler controler = RunBerlinScenario.prepareControler(scenario);
         controler.run();

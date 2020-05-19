@@ -39,16 +39,35 @@ import java.util.stream.Collectors;
 class PAVEBerlinModifier {
 
     private static String SUBPOP_FLEXIBLE = "flexible";
-    private static String SUBPOP_PRICE_SENSITIVE = "priceSensitive";
-    private static String SUBPOP_SENSATIONSEEKER = "sensationSeeker";
+    //pre-Corona = 0.28, post-corona (april '20) = 0.11
+    private static double SUBPOP_FLEXIBLE_DEFAULT_WEIGHT = 0.28;
 
-    /* TODO the subpopulation fix will probably have to get split up further, by mode (share)..
+    private static String SUBPOP_PRICE_SENSITIVE = "priceSensitive";
+    //pre-Corona = 0.18, post-corona (april '20) = 0.32
+    private static double SUBPOP_PRICE_SENSITIVE_DEFAULT_WEIGHT = 0.18;
+
+    private static String SUBPOP_SENSATIONSEEKER = "sensationSeeker";
+    //pre-Corona = 0.23, post-corona (april '20) = 0.12
+    private static double SUBPOP_SENSATIONSEEKER_DEFAULT_WEIGHT = 0.23;
+
+    /* TODO the subpopulation fixed will probably have to get split up further, by mode (share)..
      * that means: we have people being 'fixed' on car, people being 'fixed' on pt etc.
     */
-    private static String SUBPOP_FIX = "fix";
+    private static String SUBPOP_FIXED = "fixed";
+    //pre-Corona = 0.18, post-corona (april '20) = 0.27
+    private static double SUBPOP_FIXED_DEFAULT_WEIGHT = 0.18;
 
     static Set<String> getMobilityTypes(){
-        return new HashSet<>(Arrays.asList(SUBPOP_FLEXIBLE,SUBPOP_PRICE_SENSITIVE,SUBPOP_FIX,SUBPOP_SENSATIONSEEKER));
+        return new HashSet<>(Arrays.asList(SUBPOP_FLEXIBLE,SUBPOP_PRICE_SENSITIVE,SUBPOP_FIXED,SUBPOP_SENSATIONSEEKER));
+    }
+
+    static Map<String, Double> getMobilityTypesWithDefaulWeights(){
+        Map<String,Double> mobilityType2Weight = new HashMap<>();
+        mobilityType2Weight.put(SUBPOP_FLEXIBLE, SUBPOP_FLEXIBLE_DEFAULT_WEIGHT);
+        mobilityType2Weight.put(SUBPOP_FIXED, SUBPOP_FIXED_DEFAULT_WEIGHT);
+        mobilityType2Weight.put(SUBPOP_PRICE_SENSITIVE, SUBPOP_PRICE_SENSITIVE_DEFAULT_WEIGHT);
+        mobilityType2Weight.put(SUBPOP_SENSATIONSEEKER, SUBPOP_SENSATIONSEEKER_DEFAULT_WEIGHT);
+        return mobilityType2Weight;
     }
 
     static void configureMobilityTypeSubPopulations(Config config){
@@ -78,7 +97,7 @@ class PAVEBerlinModifier {
             /* TODO: the subpopulation fix will probably have to get split up further, by mode (share)..
              * that means: we have people being 'fixed' on car, people being 'fixed' on pt etc.
              */
-            PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_FIX);
+            PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_FIXED);
             copyAllScoringParameters(defaultScoringParams, params);
 
             //TODO: increase ASC of the corresponding mode (when subpopulation 'fix' is further split up)
@@ -134,7 +153,6 @@ class PAVEBerlinModifier {
         Random r = MatsimRandom.getLocalInstance();
 
         population.getPersons().values().stream()
-
                 .filter(p -> PopulationUtils.getSubpopulation(p).equals("person"))
                 .forEach(person -> {
                     double drawnRnd = r.nextDouble() * weightSum;
