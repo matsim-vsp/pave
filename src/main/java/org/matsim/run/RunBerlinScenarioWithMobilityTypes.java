@@ -30,11 +30,11 @@ import java.util.Map;
 public class RunBerlinScenarioWithMobilityTypes {
 
 
-    private static final String BERLIN_V5_4_CONFIG = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.4-1pct/input/berlin-v5.4-1pct.config.xml";
+    private static final String BERLIN_V5_5_CONFIG = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-1pct/input/berlin-v5.5-1pct.config.xml\n";
 
     public static void main(String[] args) {
 
-        Config config = RunBerlinScenario.prepareConfig(new String[]{BERLIN_V5_4_CONFIG});
+        Config config = RunBerlinScenario.prepareConfig(new String[]{BERLIN_V5_5_CONFIG});
 
         //this is not set by RunBerlinScenario
         config.planCalcScore().setFractionOfIterationsToStartScoreMSA(0.8);
