@@ -20,11 +20,14 @@
 
 package org.matsim.run;
 
+import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.StrategyConfigGroup;
+import org.matsim.core.config.groups.SubtourModeChoiceConfigGroup;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.population.PopulationUtils;
 
@@ -36,29 +39,45 @@ import java.util.stream.Collectors;
  * defined in the PAVE project. It is specifically designed for this particular use case! You should not copy or use this
  * anywhere else.
  */
-class PAVEBerlinModifier {
+final class PAVEBerlinModifier {
 
-    private static String SUBPOP_FLEXIBLE = "flexible";
+    private static final String SUBPOP_FLEXIBLE = "flexible";
     //pre-Corona = 0.28, post-corona (april '20) = 0.11
-    private static double SUBPOP_FLEXIBLE_DEFAULT_WEIGHT = 0.28;
+    private static final double SUBPOP_FLEXIBLE_DEFAULT_WEIGHT = 0.28;
 
-    private static String SUBPOP_PRICE_SENSITIVE = "priceSensitive";
+    private static final String SUBPOP_PRICE_SENSITIVE = "priceSensitive";
     //pre-Corona = 0.18, post-corona (april '20) = 0.32
-    private static double SUBPOP_PRICE_SENSITIVE_DEFAULT_WEIGHT = 0.18;
+    private static final double SUBPOP_PRICE_SENSITIVE_DEFAULT_WEIGHT = 0.18;
 
     private static String SUBPOP_SENSATIONSEEKER = "sensationSeeker";
     //pre-Corona = 0.23, post-corona (april '20) = 0.12
-    private static double SUBPOP_SENSATIONSEEKER_DEFAULT_WEIGHT = 0.23;
+    private static final double SUBPOP_SENSATIONSEEKER_DEFAULT_WEIGHT = 0.23;
 
-    /* TODO the subpopulation fixed will probably have to get split up further, by mode (share)..
-     * that means: we have people being 'fixed' on car, people being 'fixed' on pt etc.
+    /* The subpopulation SUBPOP_FIXED will get split up further, i.e. into one subsubpopulation per mode entry in subtourModeChoice config group.
+     * During the agent assignment, the split sizes correspond to the initial share of these modes (HARDCODED!).
+     * That means: we have people being 'fixed' on car, people being 'fixed' on pt etc.
     */
-    private static String SUBPOP_FIXED = "fixed";
+    private static final String SUBPOP_FIXED = "fixed";
     //pre-Corona = 0.18, post-corona (april '20) = 0.27
-    private static double SUBPOP_FIXED_DEFAULT_WEIGHT = 0.18;
+    private static final double SUBPOP_FIXED_DEFAULT_WEIGHT = 0.18;
 
-    static Set<String> getMobilityTypes(){
-        return new HashSet<>(Arrays.asList(SUBPOP_FLEXIBLE,SUBPOP_PRICE_SENSITIVE,SUBPOP_FIXED,SUBPOP_SENSATIONSEEKER));
+    /**
+     * This is the sensitivity factor for the mobility-type-specific parameters. Each specific parameter is multiplied with this global factor.
+     * That means, for the price sensitivity, we use the same factor as for the inflexibility concerning modes...
+     */
+    private static final double GLOBAL_SENSIVITY_FACTOR = 2.0;
+    private static Logger log = Logger.getLogger(PAVEBerlinModifier.class);
+
+    static Set<String> getMobilityTypeSubPopulationNames(SubtourModeChoiceConfigGroup smcCfg){
+        HashSet<String> set = new HashSet<>(
+                Arrays.asList("person_" + SUBPOP_FLEXIBLE,
+                "person_" + SUBPOP_PRICE_SENSITIVE,
+                "person_" + SUBPOP_SENSATIONSEEKER));
+        //subpopulation 'fixed' is further split into subsubpopulations, one for each mode..
+        for (String mode : smcCfg.getModes()) {
+            set.add("person_"+ SUBPOP_FIXED + "_" + mode);
+        }
+        return set;
     }
 
     static Map<String, Double> getMobilityTypesWithDefaulWeights(){
@@ -90,30 +109,38 @@ class PAVEBerlinModifier {
         {   //Flexible
             PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_FLEXIBLE);
             copyAllScoringParameters(defaultScoringParams, params);
-
-            //TODO: keep the default params?
+            //change nothing....
         }
-        {   //Fix
-            /* TODO: the subpopulation fix will probably have to get split up further, by mode (share)..
-             * that means: we have people being 'fixed' on car, people being 'fixed' on pt etc.
-             */
-            PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_FIXED);
-            copyAllScoringParameters(defaultScoringParams, params);
+        {   //Fixed
+            List<String> modes = Arrays.asList(config.subtourModeChoice().getModes());
+            modes.remove("drt"); //do not create a fixed population for drt! (basically, this is what the sensation seekers represent..)
 
-            //TODO: increase ASC of the corresponding mode (when subpopulation 'fix' is further split up)
+            //consistency check
+            if(modes.size() != 4){
+                throw new IllegalArgumentException("unexpected number of modes in subtourModeChoice. number of modes = " + modes.size());
+            }
+
+            //for each mode that can be altered via subtourModeChoice, create one 'fixed' subpopulation (except drt)
+            //split the SUBPOP_FIXED_DEFAULT_WEIGHT according to initial mode share into these subpopulations...
+            for (String mode : modes) {
+                PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_FIXED + "_" + mode);
+                copyAllScoringParameters(defaultScoringParams, params);
+
+                PlanCalcScoreConfigGroup.ModeParams modeParams = params.getOrCreateModeParams(mode);
+                modeParams.setConstant(modeParams.getConstant() * GLOBAL_SENSIVITY_FACTOR); //TODO: problem when ASC = 0 (which is almost everywhere the case..)
+            }
         }
         {   //price sensitive
             PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_PRICE_SENSITIVE);
             copyAllScoringParameters(defaultScoringParams, params);
-
-            //TODO: increase utility of money
-//            params.setMarginalUtilityOfMoney();
+            params.setMarginalUtilityOfMoney(params.getMarginalUtilityOfMoney() * GLOBAL_SENSIVITY_FACTOR);
         }
         {   //sensation seeker
             PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_SENSATIONSEEKER);
             copyAllScoringParameters(defaultScoringParams, params);
-
-            //TODO: increase ASC of innovative modes (drt, taxi)
+            //TODO: if no drt scoring params existed before, this is not a problem, right?
+            PlanCalcScoreConfigGroup.ModeParams drtParams = params.getOrCreateModeParams("drt");
+            drtParams.setConstant(drtParams.getConstant() * GLOBAL_SENSIVITY_FACTOR);
         }
     }
 
@@ -124,14 +151,14 @@ class PAVEBerlinModifier {
                 .filter(s -> s.getSubpopulation().equals("person"))
                 .collect(Collectors.toSet());
         personStratSettings.forEach(strategySettings -> {
-                    for (String mobilityTypeName : getMobilityTypes()) {
+                    for (String subPopulation : getMobilityTypeSubPopulationNames(config.subtourModeChoice())) {
                         StrategyConfigGroup.StrategySettings settingsCopy = new StrategyConfigGroup.StrategySettings();
                         settingsCopy.setStrategyName(strategySettings.getStrategyName());
                         settingsCopy.setWeight(strategySettings.getWeight());
                         settingsCopy.setDisableAfter(strategySettings.getDisableAfter());
-                        settingsCopy.setSubpopulation("person" + "_" + mobilityTypeName);
+                        settingsCopy.setSubpopulation(subPopulation);
                         config.strategy().addStrategySettings(settingsCopy);
-
+                        //remove old settings
                         config.strategy().removeParameterSet(strategySettings);
                     }
                 });
@@ -155,15 +182,64 @@ class PAVEBerlinModifier {
         population.getPersons().values().stream()
                 .filter(p -> PopulationUtils.getSubpopulation(p).equals("person"))
                 .forEach(person -> {
-                    double drawnRnd = r.nextDouble() * weightSum;
+                    double mobilityTypeRnd = r.nextDouble() * weightSum;
                     double sum = 0.0;
                     for (String mobilityType : mobilityType2Weight.keySet()) {
                         sum += mobilityType2Weight.get(mobilityType);
-                        if(drawnRnd <= sum){
-                            PopulationUtils.putSubpopulation(person, "person_" + mobilityType);
-                            break;
+                        if(mobilityTypeRnd <= sum){
+                            //the fixed subpopulation is split up further according to the mode shares
+                            if(mobilityType.endsWith(SUBPOP_FIXED)){
+
+                                //these values are taken from the results of the (uncontinued!) base case (berlinv5.4 !! 10pct) TODO: take modeStats from berlinv5.5 10 pct
+                                double carModeShare = 0.348313824315758;
+                                double ptModeShare = 0.20184540611436;
+                                double bicycleModeShare = 0.172047821767194;
+                                double walkModeShare = 0.182968046444402;
+
+                                //TODO: we do not allow subtourModeChoice for ride! does that mean, we shoul calculate 'riders' as fixed people? atm, we do not!
+                                // that also means, we will keep the mode share of 'ride' when introducing drt (which is not totally obvious to me), tschlenther may '20
+
+                                double fixedModesShareSum = carModeShare + ptModeShare + bicycleModeShare + walkModeShare;
+                                double fixedModeRnd = r.nextDouble() * fixedModesShareSum;
+
+                                if(fixedModeRnd <= carModeShare){
+                                    PopulationUtils.putSubpopulation(person, "person_" + mobilityType + "_car");
+                                    break;
+                                } else if (fixedModeRnd <= carModeShare + ptModeShare){
+                                    PopulationUtils.putSubpopulation(person, "person_" + mobilityType + "_pt");
+                                    break;
+                                } else if (fixedModeRnd <= carModeShare + ptModeShare + bicycleModeShare) {
+                                    PopulationUtils.putSubpopulation(person, "person_" + mobilityType + "_bicycle");
+                                    break;
+                                } else {
+                                    PopulationUtils.putSubpopulation(person, "person_" + mobilityType + "_walk");
+                                    break;
+                                }
+
+                            } else {
+                                PopulationUtils.putSubpopulation(person, "person_" + mobilityType);
+                                break;
+                            }
                         }
                     }
                 });
+        printAssignmentResults(population);
+    }
+
+    private static void printAssignmentResults(Population population) {
+        Map<String, Integer> subPopulationMap = new HashMap<>();
+        population.getPersons().values().stream()
+        .filter(person -> PopulationUtils.getSubpopulation(person).contains("persons"))
+        .forEach(person -> {
+            String subPop = PopulationUtils.getSubpopulation(person);
+                subPopulationMap.compute(subPop, (k,v) ->  (v == null)? 1 : v+1);
+        });
+        int sum = 0;
+        for (Integer value : subPopulationMap.values()) {
+            sum += value;
+        }
+        for (Map.Entry<String, Integer> entry : subPopulationMap.entrySet()) {
+            log.info("nrOf people in subPopulation " + entry.getKey() + " = " + entry.getValue() + "\t (" + String.format("%d %", entry.getValue()/sum));
+        }
     }
 }
