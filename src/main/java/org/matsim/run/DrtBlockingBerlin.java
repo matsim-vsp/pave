@@ -24,6 +24,9 @@ import ch.sbb.matsim.config.SwissRailRaptorConfigGroup;
 import ch.sbb.matsim.routing.pt.raptor.RaptorIntermodalAccessEgress;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.Population;
 import org.matsim.contrib.av.robotaxi.fares.drt.DrtFareModule;
 import org.matsim.contrib.drt.analysis.DrtModeAnalysisModule;
 import org.matsim.contrib.drt.routing.MultiModeDrtMainModeIdentifier;
@@ -40,8 +43,10 @@ import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.AnalysisMainModeIdentifier;
 import org.matsim.core.router.MainModeIdentifier;
+import org.matsim.core.router.TripStructureUtils;
 import org.matsim.drtBlockings.DrtBlockingModule;
 import org.matsim.run.drt.OpenBerlinIntermodalPtDrtRouterAnalysisModeIdentifier;
 import org.matsim.run.drt.OpenBerlinIntermodalPtDrtRouterModeIdentifier;
@@ -51,12 +56,15 @@ import org.matsim.run.drt.ptRoutingModes.PtIntermodalRoutingModesModule;
 
 import javax.management.InvalidAttributeValueException;
 import java.io.File;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 public class DrtBlockingBerlin {
 
-	private static final String BERLIN_V5_5_1PCT_DRT_CONFIG = "scenarios/berlin/input/v5.5/berlin-drt-v5.5-1pct.config.xml";
+	private static final String BERLIN_V5_5_1PCT_DRT_CONFIG = "../../svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin-drt-v5.5-1pct.config.xml";
 
-	private static boolean runTourPlanning = false;
+	private static boolean runTourPlanning = true;
 
 	public static void main(String[] args) {
 
@@ -93,7 +101,7 @@ public class DrtBlockingBerlin {
 		if (runTourPlanning){
 			freightCfg.setCarriersFile("berlin-carriers.xml");
 		} else {
-			freightCfg.setCarriersFile("D:/git/pave/output/berlin5.5_1pct_pave_drtBlockingcarriers_planned.xml");
+			freightCfg.setCarriersFile("berlin5.5_1pct_pave_drtBlockingcarriers_planned.xml");
 		}
 		freightCfg.setCarriersVehicleTypesFile("berlin-vehicleTypes.xml");
 
@@ -117,10 +125,36 @@ public class DrtBlockingBerlin {
 			}
 		}
 
+		makePeopleUseDRTForRandomLegs(scenario.getPopulation());
+
 		Controler controler = prepareControler(scenario);
 
 		controler.run();
 
+	}
+
+	private static void makePeopleUseDRTForRandomLegs(Population population){
+		List<? extends Person> persons = population.getPersons().values().stream()
+				.filter(person -> person.getAttributes().getAttribute("subpopulation").equals("person"))
+				.collect(Collectors.toList());
+
+		Random random = MatsimRandom.getLocalInstance();
+		for (int i = 0; i <= 200; i++){
+			Person person = persons.get(random.nextInt(persons.size()));
+			persons.remove(person);
+			TripStructureUtils.getTrips(person.getSelectedPlan()).forEach(trip -> {
+				if(trip.getTripElements().size() == 1){
+					Leg leg = trip.getLegsOnly().get(0);
+					leg.setMode("drt");
+					leg.setRoute(null);
+					TripStructureUtils.setRoutingMode(leg, "drt");
+				}
+			});
+//			TripStructureUtils.getLegs(person.getSelectedPlan()).forEach(leg -> {
+//				leg.setMode("drt");
+//				leg.getAttributes().putAttribute("routingMode", "drt");
+//			});
+		}
 	}
 
 
@@ -158,7 +192,7 @@ public class DrtBlockingBerlin {
 			public void install() {
 				install(new DvrpModule());
 				install(new DrtModeModule(drtCfg));
-				install(new DrtModeAnalysisModule(drtCfg));
+//				install(new DrtModeAnalysisModule(drtCfg)); TODO: we have to write a custom OccupanceProfileCalculator that can handle FreightTasks...
 				install(new DrtBlockingModule(drtCfg));
 				bind(MainModeIdentifier.class).toInstance(new MultiModeDrtMainModeIdentifier(multiModeDrtCfg));
 			}
