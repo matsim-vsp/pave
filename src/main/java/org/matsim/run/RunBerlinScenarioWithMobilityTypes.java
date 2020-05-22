@@ -20,6 +20,7 @@
 
 package org.matsim.run;
 
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.Controler;
@@ -30,19 +31,26 @@ import java.util.Map;
 public class RunBerlinScenarioWithMobilityTypes {
 
 
-    private static final String BERLIN_V5_5_CONFIG = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-1pct/input/berlin-v5.5-1pct.config.xml\n";
+    private static final Logger log = Logger.getLogger(RunBerlinScenarioWithMobilityTypes.class );
+
+    private static final String BERLIN_V5_5_CONFIG = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-1pct/input/berlin-v5.5-1pct.config.xml";
 
     public static void main(String[] args) {
 
-        Config config = RunBerlinScenario.prepareConfig(new String[]{BERLIN_V5_5_CONFIG});
+        for (String arg : args) {
+            log.info( arg );
+        }
+
+        if ( args.length==0 ) {
+            args = new String[]{BERLIN_V5_5_CONFIG, "--config:controler.outputDirectory", "output/berlin5.5_1pct_pave_TEST"};
+        }
+
+        Config config = RunBerlinScenario.prepareConfig(args);
 
         //this is not set by RunBerlinScenario
         config.planCalcScore().setFractionOfIterationsToStartScoreMSA(0.8);
 
         PAVEBerlinModifier.configureMobilityTypeSubPopulations(config);
-        config.controler().setOutputDirectory("output/berlin5.5_1pct_pave");
-        config.controler().setLastIteration(0);
-
         Scenario scenario = RunBerlinScenario.prepareScenario(config);
         PAVEBerlinModifier.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEBerlinModifier.getMobilityTypesWithDefaulWeights());
 
