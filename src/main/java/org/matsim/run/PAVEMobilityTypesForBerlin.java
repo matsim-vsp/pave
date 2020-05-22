@@ -99,6 +99,8 @@ final class PAVEMobilityTypesForBerlin {
     }
 
     private static void configureScoring(Config config, double sensitivityFactor) {
+        log.info("Configuring scoring parameters for mobility types with sensitivityFactor=" + sensitivityFactor);
+
         //for some reason, the key in the scoringParametersPerSubpopulation map is null if no subPopulation is provided (which is the case in the default berlin config)
         PlanCalcScoreConfigGroup.ScoringParameterSet defaultScoringParams = config.planCalcScore().getScoringParametersPerSubpopulation().get(null);
 
