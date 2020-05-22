@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * defined in the PAVE project. It is specifically designed for this particular use case! You should not copy or use this
  * anywhere else.
  */
-final class PAVEBerlinModifier {
+final class PAVEMobilityTypesForBerlin {
 
     private static final String SUBPOP_FLEXIBLE = "flexible";
     //pre-Corona = 0.28, post-corona (april '20) = 0.11
@@ -68,7 +68,7 @@ final class PAVEBerlinModifier {
      * currently, we assume that the
      */
     private static final double GLOBAL_SENSIVITY_FACTOR = 0.1;
-    private static Logger log = Logger.getLogger(PAVEBerlinModifier.class);
+    private static Logger log = Logger.getLogger(PAVEMobilityTypesForBerlin.class);
 
     static Set<String> getMobilityTypeSubPopulationNames(SubtourModeChoiceConfigGroup smcCfg){
         HashSet<String> set = new HashSet<>(

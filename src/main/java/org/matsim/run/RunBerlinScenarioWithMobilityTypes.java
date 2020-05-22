@@ -25,9 +25,6 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.Controler;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class RunBerlinScenarioWithMobilityTypes {
 
 
@@ -50,9 +47,9 @@ public class RunBerlinScenarioWithMobilityTypes {
         //this is not set by RunBerlinScenario
         config.planCalcScore().setFractionOfIterationsToStartScoreMSA(0.8);
 
-        PAVEBerlinModifier.configureMobilityTypeSubPopulations(config);
+        PAVEMobilityTypesForBerlin.configureMobilityTypeSubPopulations(config);
         Scenario scenario = RunBerlinScenario.prepareScenario(config);
-        PAVEBerlinModifier.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEBerlinModifier.getMobilityTypesWithDefaulWeights());
+        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 
         Controler controler = RunBerlinScenario.prepareControler(scenario);
         controler.run();
