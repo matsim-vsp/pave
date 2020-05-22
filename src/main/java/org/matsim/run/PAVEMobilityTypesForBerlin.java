@@ -134,8 +134,9 @@ final class PAVEMobilityTypesForBerlin {
              * Geld sparen ist ihm etwas wichtiger als Zeit sparen.
              * 20% Geld sparen und dafür 10% mehr Zeit investieren scheint ihm vorteilhaft - 10% mehr Geld investieren um dafür allerdings 20% Zeit zu sparen findet er nicht so interessant.
              *
-             * TS: wo ist die (technische) Abrenzung zu den Preissensiblen?
+             * Der Konservative ist pünktlich. Wenn er neue Dinge ausprobiert, nimmt er sich vorsichtshalber mehr Zeit dafür als vorgesehen. Pünktlichkeit bei Nachfolgeaktivität ist ihm wichtig.
              *
+             * => nur Anpassung der ASC, keinen Bonus per Zeit-Einheit.
              */
 
                 List<String> modes = Arrays.asList(config.subtourModeChoice().getModes());
@@ -166,7 +167,7 @@ final class PAVEMobilityTypesForBerlin {
              * Bezogen auf die Simulations-Situation: Sensation Seeker springen auf alle ungewöhnlichen Angebote an, die vom Gewöhnlichen abweichen.
              * Dabei sind sie dann überhaupt nicht preissensibel oder zeitorientiert. Das zu erwartende Abenteuer lässt sie Zeit und Kosten vergessen.
              *
-             * TS: das klingt, als sollten wir hier die Anpassungen sowohl pro Einstieg als auch pro Zeiteinheit machen
+             * => Bonus pro Fahrt und pro Zeit
              */
 
 
@@ -176,8 +177,8 @@ final class PAVEMobilityTypesForBerlin {
             PlanCalcScoreConfigGroup.ModeParams drtParams = params.getOrCreateModeParams("drt");
             drtParams.setConstant(drtParams.getConstant() + 0.5 * params.getPerforming_utils_hr() * sensitivityFactor); //per ride. give a bonus equivalent to an half an hour ride
 
-//            drtParams.setMarginalUtilityOfTraveling(params.getPerforming_utils_hr() * GLOBAL_SENSIVITY_FACTOR); //per time unit
-            //this assumes that the original marginalUtilityOfTravelling is 0
+            drtParams.setMarginalUtilityOfTraveling(params.getPerforming_utils_hr() * sensitivityFactor); //per time unit
+//            this assumes that the original marginalUtilityOfTravelling is 0
         }
 
     }
