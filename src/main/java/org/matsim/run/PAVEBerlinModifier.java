@@ -21,7 +21,6 @@
 package org.matsim.run;
 
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigGroup;
@@ -64,8 +63,11 @@ final class PAVEBerlinModifier {
     /**
      * This is the sensitivity factor for the mobility-type-specific parameters. Each specific parameter is multiplied with this global factor.
      * That means, for the price sensitivity, we use the same factor as for the inflexibility concerning modes...
+     *
+     *
+     * currently, we assume that the
      */
-    private static final double GLOBAL_SENSIVITY_FACTOR = 2.0;
+    private static final double GLOBAL_SENSIVITY_FACTOR = 0.1;
     private static Logger log = Logger.getLogger(PAVEBerlinModifier.class);
 
     static Set<String> getMobilityTypeSubPopulationNames(SubtourModeChoiceConfigGroup smcCfg){
@@ -106,11 +108,19 @@ final class PAVEBerlinModifier {
         copyAllScoringParameters(defaultScoringParams, freightParams);
 
         //set the scoring parameters for each mobilityType
+
         {   //Flexible
             PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_FLEXIBLE);
             copyAllScoringParameters(defaultScoringParams, params);
             //change nothing....
         }
+
+        {   //price sensitive
+            PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_PRICE_SENSITIVE);
+            copyAllScoringParameters(defaultScoringParams, params);
+            params.setMarginalUtilityOfMoney(params.getMarginalUtilityOfMoney() * (1. + GLOBAL_SENSIVITY_FACTOR) );
+        }
+
         {   //Fixed
             List<String> modes = Arrays.asList(config.subtourModeChoice().getModes());
             modes.remove("drt"); //do not create a fixed population for drt! (basically, this is what the sensation seekers represent..)
@@ -119,29 +129,31 @@ final class PAVEBerlinModifier {
             if(modes.size() != 4){
                 throw new IllegalArgumentException("unexpected number of modes in subtourModeChoice. number of modes = " + modes.size());
             }
-
             //for each mode that can be altered via subtourModeChoice, create one 'fixed' subpopulation (except drt)
-            //split the SUBPOP_FIXED_DEFAULT_WEIGHT according to initial mode share into these subpopulations...
+            //split the SUBPOP_FIXED_DEFAULT_WEIGHT according to initial mode share into these subpopulations (see randomlyAssignMobilityTypes())
             for (String mode : modes) {
                 PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_FIXED + "_" + mode);
                 copyAllScoringParameters(defaultScoringParams, params);
 
                 PlanCalcScoreConfigGroup.ModeParams modeParams = params.getOrCreateModeParams(mode);
-                modeParams.setConstant(modeParams.getConstant() * GLOBAL_SENSIVITY_FACTOR); //TODO: problem when ASC = 0 (which is almost everywhere the case..)
+                modeParams.setConstant(modeParams.getConstant() + 0.5 * params.getPerforming_utils_hr() * GLOBAL_SENSIVITY_FACTOR); //per ride
+
+//                modeParams.setMarginalUtilityOfTraveling(params.getPerforming_utils_hr() * GLOBAL_SENSIVITY_FACTOR); //per time unit
+                //this assumes that the original marginalUtilityOfTravelling is 0
             }
         }
-        {   //price sensitive
-            PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_PRICE_SENSITIVE);
-            copyAllScoringParameters(defaultScoringParams, params);
-            params.setMarginalUtilityOfMoney(params.getMarginalUtilityOfMoney() * GLOBAL_SENSIVITY_FACTOR);
-        }
+
         {   //sensation seeker
             PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_SENSATIONSEEKER);
             copyAllScoringParameters(defaultScoringParams, params);
             //TODO: if no drt scoring params existed before, this is not a problem, right?
             PlanCalcScoreConfigGroup.ModeParams drtParams = params.getOrCreateModeParams("drt");
-            drtParams.setConstant(drtParams.getConstant() * GLOBAL_SENSIVITY_FACTOR);
+            drtParams.setConstant(drtParams.getConstant() + 0.5 * params.getPerforming_utils_hr() * GLOBAL_SENSIVITY_FACTOR); //per ride. give a bonus equivalent to an half an hour ride
+
+//            drtParams.setMarginalUtilityOfTraveling(params.getPerforming_utils_hr() * GLOBAL_SENSIVITY_FACTOR); //per time unit
+            //this assumes that the original marginalUtilityOfTravelling is 0
         }
+
     }
 
     private static void configureStrategies(Config config) {
