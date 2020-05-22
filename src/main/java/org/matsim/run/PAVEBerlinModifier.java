@@ -202,11 +202,12 @@ final class PAVEBerlinModifier {
                             //the fixed subpopulation is split up further according to the mode shares
                             if(mobilityType.endsWith(SUBPOP_FIXED)){
 
-                                //these values are taken from the results of the (uncontinued!) base case (berlinv5.4 !! 10pct) TODO: take modeStats from berlinv5.5 10 pct
-                                double carModeShare = 0.348313824315758;
-                                double ptModeShare = 0.20184540611436;
-                                double bicycleModeShare = 0.172047821767194;
-                                double walkModeShare = 0.182968046444402;
+                                //these values are taken from the results of the (uncontinued!) base case berlinv5.5 10pct
+                                //they do not sum up to 1.0 as modes such as freight and ride are not considered here
+                                double carModeShare = 0.3266367725790285;
+                                double ptModeShare = 0.19146965739138444;
+                                double bicycleModeShare = 0.17247879669169172;
+                                double walkModeShare = 0.2145898719796115;
 
                                 //TODO: we do not allow subtourModeChoice for ride! does that mean, we shoul calculate 'riders' as fixed people? atm, we do not!
                                 // that also means, we will keep the mode share of 'ride' when introducing drt (which is not totally obvious to me), tschlenther may '20
