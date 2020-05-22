@@ -32,22 +32,33 @@ public class RunBerlinScenarioWithMobilityTypes {
 
     private static final String BERLIN_V5_5_CONFIG = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-10pct.config.xml";
 
+    /**
+     * @param args array containing program arguments in the following order: global sensitivity factor for mobility types (as numeric argument), path to config, custom modules to load
+     */
     public static void main(String[] args) {
 
         for (String arg : args) {
             log.info( arg );
         }
 
+        double sensitivityFactor = 0.1;
+        String[] configArgs;
         if ( args.length==0 ) {
-            args = new String[]{BERLIN_V5_5_CONFIG, "--config:controler.outputDirectory", "output/berlin5.5_10pct_pave_TEST"};
+            configArgs = new String[]{BERLIN_V5_5_CONFIG, "--config:controler.outputDirectory", "output/berlin5.5_10pct_pave_TEST"};
+        } else {
+            sensitivityFactor = Double.parseDouble(args[0]);
+            configArgs = new String[args.length-1];
+            for(int i = 1; i < args.length; i++){
+                configArgs[i-1] = args[i];
+            }
         }
 
-        Config config = RunBerlinScenario.prepareConfig(args);
+        Config config = RunBerlinScenario.prepareConfig(configArgs);
 
-        //this is not set by RunBerlinScenario
-        config.planCalcScore().setFractionOfIterationsToStartScoreMSA(0.8);
+//        this is not set by RunBerlinScenario
+//        config.planCalcScore().setFractionOfIterationsToStartScoreMSA(0.8);
 
-        PAVEMobilityTypesForBerlin.configureMobilityTypeSubPopulations(config);
+        PAVEMobilityTypesForBerlin.configureMobilityTypeSubPopulations(config, sensitivityFactor);
         Scenario scenario = RunBerlinScenario.prepareScenario(config);
         PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 
@@ -55,8 +66,6 @@ public class RunBerlinScenarioWithMobilityTypes {
         controler.run();
 
     }
-
-
 
 
 }

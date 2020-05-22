@@ -60,14 +60,9 @@ final class PAVEMobilityTypesForBerlin {
     //pre-Corona = 0.18, post-corona (april '20) = 0.27
     private static final double SUBPOP_FIXED_DEFAULT_WEIGHT = 0.18;
 
-    /**
-     * This is the sensitivity factor for the mobility-type-specific parameters. Each specific parameter is multiplied with this global factor.
-     * That means, for the price sensitivity, we use the same factor as for the inflexibility concerning modes...
-     *
-     *
-     * currently, we assume that the
-     */
-    private static final double GLOBAL_SENSIVITY_FACTOR = 0.1;
+
+
+
     private static Logger log = Logger.getLogger(PAVEMobilityTypesForBerlin.class);
 
     static Set<String> getMobilityTypeSubPopulationNames(SubtourModeChoiceConfigGroup smcCfg){
@@ -91,12 +86,19 @@ final class PAVEMobilityTypesForBerlin {
         return mobilityType2Weight;
     }
 
-    static void configureMobilityTypeSubPopulations(Config config){
+    /**
+     *
+     * @param config
+     * @param sensitivityFactor This is the sensitivity factor for the mobility-type-specific parameters. Each specific parameter is multiplied with this global factor.
+     * That means, for the price sensitivity, we use the same factor as for the inflexibility concerning modes...
+     *
+     */
+    static void configureMobilityTypeSubPopulations(Config config, double sensitivityFactor){
         configureStrategies(config);
-        configureScoring(config);
+        configureScoring(config, sensitivityFactor);
     }
 
-    private static void configureScoring(Config config) {
+    private static void configureScoring(Config config, double sensitivityFactor) {
         //for some reason, the key in the scoringParametersPerSubpopulation map is null if no subPopulation is provided (which is the case in the default berlin config)
         PlanCalcScoreConfigGroup.ScoringParameterSet defaultScoringParams = config.planCalcScore().getScoringParametersPerSubpopulation().get(null);
 
@@ -118,7 +120,7 @@ final class PAVEMobilityTypesForBerlin {
         {   //price sensitive
             PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_PRICE_SENSITIVE);
             copyAllScoringParameters(defaultScoringParams, params);
-            params.setMarginalUtilityOfMoney(params.getMarginalUtilityOfMoney() * (1. + GLOBAL_SENSIVITY_FACTOR) );
+            params.setMarginalUtilityOfMoney(params.getMarginalUtilityOfMoney() * (1. + sensitivityFactor) );
         }
 
         {   //Fixed
@@ -136,7 +138,7 @@ final class PAVEMobilityTypesForBerlin {
                 copyAllScoringParameters(defaultScoringParams, params);
 
                 PlanCalcScoreConfigGroup.ModeParams modeParams = params.getOrCreateModeParams(mode);
-                modeParams.setConstant(modeParams.getConstant() + 0.5 * params.getPerforming_utils_hr() * GLOBAL_SENSIVITY_FACTOR); //per ride
+                modeParams.setConstant(modeParams.getConstant() + 0.5 * params.getPerforming_utils_hr() * sensitivityFactor); //per ride. give a bonus equivalent to an half an hour ride
 
 //                modeParams.setMarginalUtilityOfTraveling(params.getPerforming_utils_hr() * GLOBAL_SENSIVITY_FACTOR); //per time unit
                 //this assumes that the original marginalUtilityOfTravelling is 0
@@ -148,7 +150,7 @@ final class PAVEMobilityTypesForBerlin {
             copyAllScoringParameters(defaultScoringParams, params);
             //TODO: if no drt scoring params existed before, this is not a problem, right?
             PlanCalcScoreConfigGroup.ModeParams drtParams = params.getOrCreateModeParams("drt");
-            drtParams.setConstant(drtParams.getConstant() + 0.5 * params.getPerforming_utils_hr() * GLOBAL_SENSIVITY_FACTOR); //per ride. give a bonus equivalent to an half an hour ride
+            drtParams.setConstant(drtParams.getConstant() + 0.5 * params.getPerforming_utils_hr() * sensitivityFactor); //per ride. give a bonus equivalent to an half an hour ride
 
 //            drtParams.setMarginalUtilityOfTraveling(params.getPerforming_utils_hr() * GLOBAL_SENSIVITY_FACTOR); //per time unit
             //this assumes that the original marginalUtilityOfTravelling is 0
