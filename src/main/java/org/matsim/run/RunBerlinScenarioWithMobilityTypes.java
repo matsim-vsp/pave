@@ -33,7 +33,7 @@ public class RunBerlinScenarioWithMobilityTypes {
 
     private static final Logger log = Logger.getLogger(RunBerlinScenarioWithMobilityTypes.class );
 
-    private static final String BERLIN_V5_5_CONFIG = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-1pct/input/berlin-v5.5-1pct.config.xml";
+    private static final String BERLIN_V5_5_CONFIG = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-10pct.config.xml";
 
     public static void main(String[] args) {
 
@@ -42,7 +42,7 @@ public class RunBerlinScenarioWithMobilityTypes {
         }
 
         if ( args.length==0 ) {
-            args = new String[]{BERLIN_V5_5_CONFIG, "--config:controler.outputDirectory", "output/berlin5.5_1pct_pave_TEST"};
+            args = new String[]{BERLIN_V5_5_CONFIG, "--config:controler.outputDirectory", "output/berlin5.5_10pct_pave_TEST"};
         }
 
         Config config = RunBerlinScenario.prepareConfig(args);
