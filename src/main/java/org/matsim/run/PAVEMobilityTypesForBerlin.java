@@ -126,7 +126,19 @@ final class PAVEMobilityTypesForBerlin {
         }
 
         {   //Fixed
-            List<String> modes = Arrays.asList(config.subtourModeChoice().getModes());
+
+            /*
+             * Schönebeck:
+             * Bezogen auf die Simulations-Situation: Der Konservative will vorher wissen, ob er Zeit spart - aber wenigstens nicht mehr Zeit investieren muss.
+             * Es darf auch nicht teurer sein. Wichtig ist ihm, dass alles gut organisiert ist und er einfach nur mitmachen soll, ohne eigene Verantwortung zu übernehmen.
+             * Geld sparen ist ihm etwas wichtiger als Zeit sparen.
+             * 20% Geld sparen und dafür 10% mehr Zeit investieren scheint ihm vorteilhaft - 10% mehr Geld investieren um dafür allerdings 20% Zeit zu sparen findet er nicht so interessant.
+             *
+             * TS: wo ist die (technische) Abrenzung zu den Preissensiblen?
+             *
+             */
+
+                List<String> modes = Arrays.asList(config.subtourModeChoice().getModes());
             modes.remove("drt"); //do not create a fixed population for drt! (basically, this is what the sensation seekers represent..)
 
             //consistency check
@@ -148,6 +160,16 @@ final class PAVEMobilityTypesForBerlin {
         }
 
         {   //sensation seeker
+
+            /*
+             * Schönebeck:
+             * Bezogen auf die Simulations-Situation: Sensation Seeker springen auf alle ungewöhnlichen Angebote an, die vom Gewöhnlichen abweichen.
+             * Dabei sind sie dann überhaupt nicht preissensibel oder zeitorientiert. Das zu erwartende Abenteuer lässt sie Zeit und Kosten vergessen.
+             *
+             * TS: das klingt, als sollten wir hier die Anpassungen sowohl pro Einstieg als auch pro Zeiteinheit machen
+             */
+
+
             PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_SENSATIONSEEKER);
             copyAllScoringParameters(defaultScoringParams, params);
             //TODO: if no drt scoring params existed before, this is not a problem, right?
