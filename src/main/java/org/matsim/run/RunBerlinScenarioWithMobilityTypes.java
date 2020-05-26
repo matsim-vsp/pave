@@ -60,7 +60,7 @@ public class RunBerlinScenarioWithMobilityTypes {
 
         PAVEMobilityTypesForBerlin.configureMobilityTypeSubPopulations(config, sensitivityFactor);
         Scenario scenario = RunBerlinScenario.prepareScenario(config);
-        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
+//        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 
         Controler controler = RunBerlinScenario.prepareControler(scenario);
         controler.run();
