@@ -206,9 +206,48 @@ final class PAVEMobilityTypesForBerlin {
     private static void copyAllScoringParameters(PlanCalcScoreConfigGroup.ScoringParameterSet fromScoringParameterSet, PlanCalcScoreConfigGroup.ScoringParameterSet toScoringParameterSet) {
         for (Collection<? extends ConfigGroup> parameterSets : fromScoringParameterSet.getParameterSets().values()) {
             for (ConfigGroup parameterSet : parameterSets) {
-                toScoringParameterSet.addParameterSet(parameterSet);
+                if(parameterSet instanceof PlanCalcScoreConfigGroup.ActivityParams) {
+                    PlanCalcScoreConfigGroup.ActivityParams original = ((PlanCalcScoreConfigGroup.ActivityParams) parameterSet);
+                    PlanCalcScoreConfigGroup.ActivityParams pp = new PlanCalcScoreConfigGroup.ActivityParams();
+
+                    if(original.getClosingTime().isDefined())                   pp.setClosingTime(original.getClosingTime().seconds());
+                    if(original.getOpeningTime().isDefined())                   pp.setOpeningTime(original.getOpeningTime().seconds());
+                    if(original.getEarliestEndTime().isDefined())               pp.setEarliestEndTime(original.getEarliestEndTime().seconds());
+                    if(original.getLatestStartTime().isDefined())               pp.setLatestStartTime(original.getLatestStartTime().seconds());
+                    if(original.getMinimalDuration().isDefined())                pp.setMinimalDuration(original.getMinimalDuration().seconds());
+                    if(original.getTypicalDuration().isDefined())                pp.setPriority(original.getPriority());
+
+                    pp.setActivityType(original.getActivityType());
+                    pp.setScoringThisActivityAtAll(original.isScoringThisActivityAtAll());
+                    pp.setTypicalDuration(original.getTypicalDuration().seconds());
+                    pp.setTypicalDurationScoreComputation(original.getTypicalDurationScoreComputation());
+
+                    toScoringParameterSet.addActivityParams(pp);
+                } else if (parameterSet instanceof PlanCalcScoreConfigGroup.ModeParams){
+                    PlanCalcScoreConfigGroup.ModeParams original = ((PlanCalcScoreConfigGroup.ModeParams) parameterSet);
+                    PlanCalcScoreConfigGroup.ModeParams pp = new PlanCalcScoreConfigGroup.ModeParams(original.getMode());
+
+                    pp.setConstant(original.getConstant());
+                    pp.setMarginalUtilityOfTraveling(original.getMarginalUtilityOfTraveling());
+                    pp.setMarginalUtilityOfDistance(original.getMarginalUtilityOfDistance());
+
+                    pp.setDailyMonetaryConstant(original.getDailyMonetaryConstant());
+                    pp.setDailyUtilityConstant(original.getDailyUtilityConstant());
+                    pp.setMonetaryDistanceRate(original.getMonetaryDistanceRate());
+
+                    toScoringParameterSet.addModeParams(pp);
+                } else {
+                    throw new RuntimeException("couldn handle (copy) parameterset " + parameterSet);
+                }
             }
         }
+        toScoringParameterSet.setPerforming_utils_hr(fromScoringParameterSet.getPerforming_utils_hr());
+        toScoringParameterSet.setMarginalUtilityOfMoney(fromScoringParameterSet.getMarginalUtilityOfMoney());
+        toScoringParameterSet.setEarlyDeparture_utils_hr(fromScoringParameterSet.getEarlyDeparture_utils_hr());
+        toScoringParameterSet.setLateArrival_utils_hr(fromScoringParameterSet.getLateArrival_utils_hr());
+        toScoringParameterSet.setMarginalUtlOfWaiting_utils_hr(fromScoringParameterSet.getMarginalUtlOfWaiting_utils_hr());
+        toScoringParameterSet.setMarginalUtlOfWaitingPt_utils_hr(fromScoringParameterSet.getMarginalUtlOfWaitingPt_utils_hr());
+        toScoringParameterSet.setUtilityOfLineSwitch(fromScoringParameterSet.getUtilityOfLineSwitch());
     }
 
     final static void randomlyAssignMobilityTypes (Population population, Map<String, Double> mobilityType2Weight){
