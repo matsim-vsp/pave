@@ -24,11 +24,12 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.Controler;
+import org.matsim.drtSpeedUp.DrtSpeedUpModule;
 
-public class RunBerlinScenarioWithMobilityTypes {
+public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
 
 
-    private static final Logger log = Logger.getLogger(RunBerlinScenarioWithMobilityTypes.class );
+    private static final Logger log = Logger.getLogger(RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp.class );
 
     private static final String BERLIN_V5_5_CONFIG = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-10pct.config.xml";
 
@@ -55,18 +56,21 @@ public class RunBerlinScenarioWithMobilityTypes {
 
         Config config = RunBerlinScenario.prepareConfig(configArgs);
 
+        PAVEMobilityTypesForBerlin.configureMobilityTypeSubPopulations(config, sensitivityFactor);
+        DrtSpeedUpModule.addTeleportedDrtMode(config);
+
 //        this is not set by RunBerlinScenario
 //        config.planCalcScore().setFractionOfIterationsToStartScoreMSA(0.8);
 
-        PAVEMobilityTypesForBerlin.configureMobilityTypeSubPopulations(config, sensitivityFactor);
         Scenario scenario = RunBerlinScenario.prepareScenario(config);
 //        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 
         Controler controler = RunBerlinScenario.prepareControler(scenario);
+        controler.addOverridingModule(new DrtSpeedUpModule());
+
         controler.run();
 
         RunBerlinScenario.runAnalysis(controler);
-
     }
 
 
