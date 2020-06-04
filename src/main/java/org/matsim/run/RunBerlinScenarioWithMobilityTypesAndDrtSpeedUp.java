@@ -69,6 +69,11 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
         }
 
         Scenario scenario = RunDrtOpenBerlinScenario.prepareScenario(config);
+
+        /**
+         * the default input population contains persons that are already assigned to mobility types.
+         * if you want to run another scenario, uncomment the following line
+         */
 //        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 
         Controler controler = RunDrtOpenBerlinScenario.prepareControler(scenario);

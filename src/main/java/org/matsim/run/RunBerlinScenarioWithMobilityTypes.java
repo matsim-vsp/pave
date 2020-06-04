@@ -57,11 +57,13 @@ public class RunBerlinScenarioWithMobilityTypes {
 
         Config config = RunBerlinScenario.prepareConfig(configArgs);
 
-//        this is not set by RunBerlinScenario
-//        config.planCalcScore().setFractionOfIterationsToStartScoreMSA(0.8);
-
         PAVEMobilityTypesForBerlin.configureMobilityTypeSubPopulations(config, sensitivityFactor);
         Scenario scenario = RunBerlinScenario.prepareScenario(config);
+
+        /**
+         * the default input population contains persons that are already assigned to mobility types.
+         * if you want to run another scenario, uncomment the following line
+         */
 //        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 
         Controler controler = RunBerlinScenario.prepareControler(scenario);
