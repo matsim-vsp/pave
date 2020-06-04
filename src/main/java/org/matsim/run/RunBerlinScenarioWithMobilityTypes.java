@@ -30,7 +30,9 @@ public class RunBerlinScenarioWithMobilityTypes {
 
     private static final Logger log = Logger.getLogger(RunBerlinScenarioWithMobilityTypes.class );
 
-    private static final String BERLIN_V5_5_CONFIG = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-10pct.config.xml";
+//    private static final String BERLIN_V5_5_CONFIG = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-10pct.config.xml";
+    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-10pct/input/pave-berlin-v5.5-10pct.config.xml";
+
 
     /**
      * @param args array containing program arguments in the following order: global sensitivity factor for mobility types (as numeric argument), path to config, custom modules to load

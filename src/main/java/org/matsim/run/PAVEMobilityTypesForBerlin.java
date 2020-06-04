@@ -139,7 +139,8 @@ final class PAVEMobilityTypesForBerlin {
              * => nur Anpassung der ASC, keinen Bonus per Zeit-Einheit.
              */
 
-                List<String> modes = Arrays.asList(config.subtourModeChoice().getModes());
+            List<String> modes = new ArrayList<>();
+            modes.addAll(Arrays.asList(config.subtourModeChoice().getModes()));
             modes.remove("drt"); //do not create a fixed population for drt! (basically, this is what the sensation seekers represent..)
 
             //consistency check
@@ -173,7 +174,6 @@ final class PAVEMobilityTypesForBerlin {
 
             PlanCalcScoreConfigGroup.ScoringParameterSet params = config.planCalcScore().getOrCreateScoringParameters("person_" + SUBPOP_SENSATIONSEEKER);
             copyAllScoringParameters(defaultScoringParams, params);
-            //TODO: if no drt scoring params existed before, this is not a problem, right?
             PlanCalcScoreConfigGroup.ModeParams drtParams = params.getOrCreateModeParams("drt");
             drtParams.setConstant(drtParams.getConstant() + 0.5 * params.getPerforming_utils_hr() * sensitivityFactor); //per ride. give a bonus equivalent to an half an hour ride
 
@@ -210,12 +210,12 @@ final class PAVEMobilityTypesForBerlin {
                     PlanCalcScoreConfigGroup.ActivityParams original = ((PlanCalcScoreConfigGroup.ActivityParams) parameterSet);
                     PlanCalcScoreConfigGroup.ActivityParams pp = new PlanCalcScoreConfigGroup.ActivityParams();
 
-                    if(original.getClosingTime().isDefined())                   pp.setClosingTime(original.getClosingTime().seconds());
-                    if(original.getOpeningTime().isDefined())                   pp.setOpeningTime(original.getOpeningTime().seconds());
-                    if(original.getEarliestEndTime().isDefined())               pp.setEarliestEndTime(original.getEarliestEndTime().seconds());
-                    if(original.getLatestStartTime().isDefined())               pp.setLatestStartTime(original.getLatestStartTime().seconds());
-                    if(original.getMinimalDuration().isDefined())                pp.setMinimalDuration(original.getMinimalDuration().seconds());
-                    if(original.getTypicalDuration().isDefined())                pp.setPriority(original.getPriority());
+                    if(original.getClosingTime().isDefined())       pp.setClosingTime(original.getClosingTime().seconds());
+                    if(original.getOpeningTime().isDefined())       pp.setOpeningTime(original.getOpeningTime().seconds());
+                    if(original.getEarliestEndTime().isDefined())   pp.setEarliestEndTime(original.getEarliestEndTime().seconds());
+                    if(original.getLatestStartTime().isDefined())   pp.setLatestStartTime(original.getLatestStartTime().seconds());
+                    if(original.getMinimalDuration().isDefined())   pp.setMinimalDuration(original.getMinimalDuration().seconds());
+                    if(original.getTypicalDuration().isDefined())   pp.setPriority(original.getPriority());
 
                     pp.setActivityType(original.getActivityType());
                     pp.setScoringThisActivityAtAll(original.isScoringThisActivityAtAll());

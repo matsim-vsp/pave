@@ -25,13 +25,14 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.Controler;
 import org.matsim.drtSpeedUp.DrtSpeedUpModule;
+import org.matsim.run.drt.RunDrtOpenBerlinScenario;
 
 public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
 
 
     private static final Logger log = Logger.getLogger(RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp.class );
 
-    private static final String BERLIN_V5_5_CONFIG = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-10pct.config.xml";
+    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-10pct/input/pave-berlin-drt-v5.5-10pct.config.xml";
 
     /**
      * @param args array containing program arguments in the following order: global sensitivity factor for mobility types (as numeric argument), path to config, custom modules to load
@@ -54,18 +55,23 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
             }
         }
 
-        Config config = RunBerlinScenario.prepareConfig(configArgs);
-
-        PAVEMobilityTypesForBerlin.configureMobilityTypeSubPopulations(config, sensitivityFactor);
+        Config config = RunDrtOpenBerlinScenario.prepareConfig(configArgs);
         DrtSpeedUpModule.addTeleportedDrtMode(config);
 
-//        this is not set by RunBerlinScenario
-//        config.planCalcScore().setFractionOfIterationsToStartScoreMSA(0.8);
+        PAVEMobilityTypesForBerlin.configureMobilityTypeSubPopulations(config, sensitivityFactor);
 
-        Scenario scenario = RunBerlinScenario.prepareScenario(config);
+
+        {   //baseCase: set drt constant to very bad value
+            config.planCalcScore().getScoringParametersPerSubpopulation().values().forEach(scoringParameterSet -> {
+                scoringParameterSet.getOrCreateModeParams("drt").setConstant(-100);
+                scoringParameterSet.getOrCreateModeParams("drt_teleportation").setConstant(-100);
+            });
+        }
+
+        Scenario scenario = RunDrtOpenBerlinScenario.prepareScenario(config);
 //        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 
-        Controler controler = RunBerlinScenario.prepareControler(scenario);
+        Controler controler = RunDrtOpenBerlinScenario.prepareControler(scenario);
         controler.addOverridingModule(new DrtSpeedUpModule());
 
         controler.run();
