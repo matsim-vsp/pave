@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.run;
+package org.matsim.run.drtBlocking;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;

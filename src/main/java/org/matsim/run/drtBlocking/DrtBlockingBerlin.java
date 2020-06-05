@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.run;
+package org.matsim.run.drtBlocking;
 
 import ch.sbb.matsim.config.SwissRailRaptorConfigGroup;
 import ch.sbb.matsim.routing.pt.raptor.RaptorIntermodalAccessEgress;
@@ -48,6 +48,7 @@ import org.matsim.core.router.AnalysisMainModeIdentifier;
 import org.matsim.core.router.MainModeIdentifier;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.drtBlockings.DrtBlockingModule;
+import org.matsim.run.RunBerlinScenario;
 import org.matsim.run.drt.OpenBerlinIntermodalPtDrtRouterAnalysisModeIdentifier;
 import org.matsim.run.drt.OpenBerlinIntermodalPtDrtRouterModeIdentifier;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
@@ -77,7 +78,6 @@ public class DrtBlockingBerlin {
 		config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
 
 		SwissRailRaptorConfigGroup srrConfig = ConfigUtils.addOrGetModule(config, SwissRailRaptorConfigGroup.class);
-
 		//no intermodal access egress for the time being here!
 		srrConfig.setUseIntermodalAccessEgress(false);
 
@@ -192,7 +192,7 @@ public class DrtBlockingBerlin {
 			public void install() {
 				install(new DvrpModule());
 				install(new DrtModeModule(drtCfg));
-//				install(new DrtModeAnalysisModule(drtCfg)); TODO: we have to write a custom OccupanceProfileCalculator that can handle FreightTasks...
+//				install(new DrtModeAnalysisModule(drtCfg)); TODO: we have to write a custom OccupancyProfileCalculator that can handle FreightTasks...
 				install(new DrtBlockingModule(drtCfg));
 				bind(MainModeIdentifier.class).toInstance(new MultiModeDrtMainModeIdentifier(multiModeDrtCfg));
 			}
