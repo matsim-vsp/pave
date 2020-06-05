@@ -61,57 +61,59 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class DrtBlockingBerlin {
+public class RunDrtBlocking {
 
-	private static final String BERLIN_V5_5_1PCT_DRT_CONFIG = "../../svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin-drt-v5.5-1pct.config.xml";
-
-	private static boolean runTourPlanning = true;
-
+	/**
+	 *
+	 *
+	 * @param args should contain the following arguments in the specified order:
+	 *             1) path to config
+	 *             2) path to carrier plans
+	 *             3) path to carrier vehicle types
+	 *             4) boolean value that determines whether tour planning should be performed before the mobsim. True = tour planning gets performed
+	 */
 	public static void main(String[] args) {
 
-		Config config = RunDrtOpenBerlinScenario.prepareConfig(new String[]{BERLIN_V5_5_1PCT_DRT_CONFIG});
+		if(args.length <= 4){
+			throw new IllegalArgumentException("wrong number of program arguments. expected 4, but was " + args.length);
+		}
+
+		String configPath = args[0];
+		String carrierPlans = args[1];
+		String carrierVehTypes = args[2];
+		boolean performTourplanning = Boolean.valueOf(args[3]);
+
+		Scenario scenario = prepareScenario(configPath, carrierPlans, carrierVehTypes, performTourplanning);
+
+		Controler controler = prepareControler(scenario);
+
+		controler.run();
+	}
+
+	static Scenario prepareScenario(String configPath, String carrierPlans, String carrierVehTypes, boolean performTourplanning) {
+		Config config = RunDrtOpenBerlinScenario.prepareConfig(new String[]{configPath});
 //		config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
 		config.controler().setLastIteration(0);
+
 //		this is not set by RunBerlinScenario, but vsp consistency checker needs it...
 //		config.planCalcScore().setFractionOfIterationsToStartScoreMSA(0.8);
-		config.controler().setOutputDirectory("output/berlin5.5_1pct_pave_drtBlocking");
-		config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
+
+//		config.controler().setOutputDirectory("output/" + config.controler().getRunId() + "/");
 
 		SwissRailRaptorConfigGroup srrConfig = ConfigUtils.addOrGetModule(config, SwissRailRaptorConfigGroup.class);
 		//no intermodal access egress for the time being here!
 		srrConfig.setUseIntermodalAccessEgress(false);
 
-
-//		DrtConfigGroup freightDRTCfg = new DrtConfigGroup();
-//		freightDRTCfg.setMode("freightDRT");
-//		freightDRTCfg.setMaxWaitTime(2 * 3600);
-//		freightDRTCfg.setMaxTravelTimeAlpha(1);
-//		freightDRTCfg.setMaxTravelTimeBeta(15 * 60);
-//		freightDRTCfg.setStopDuration(60);
-//		freightDRTCfg.setEstimatedDrtSpeed(27.78);
-//		freightDRTCfg.setVehiclesFile(standardDRTCfg.getVehiclesFile());
-//
-//		freightDRTCfg.setRejectRequestIfMaxWaitOrTravelTimeViolated(false);
-//		multiModeDrtConfigGroup.addParameterSet(freightDRTCfg);
-
-
-//		drtCfg.setVehiclesFile("D:/git/pave/scenarios/berlin/input/vehicles-10-cap-4.xml");
-
 		FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
-		if (runTourPlanning){
-			freightCfg.setCarriersFile("berlin-carriers.xml");
-		} else {
-			freightCfg.setCarriersFile("berlin5.5_1pct_pave_drtBlockingcarriers_planned.xml");
-		}
-		freightCfg.setCarriersVehicleTypesFile("berlin-vehicleTypes.xml");
+		freightCfg.setCarriersFile(carrierPlans);
+		freightCfg.setCarriersVehicleTypesFile(carrierVehTypes);
 
 		DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(config);
 
 		Scenario scenario = RunDrtOpenBerlinScenario.prepareScenario(config);
-
 		FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
-		if(runTourPlanning){
+		if(performTourplanning){
 			try {
 				FreightUtils.getCarriers(scenario).getCarriers().values().forEach(carrier -> {
 					CarrierUtils.setCarrierMode(carrier, drtCfg.getMode());
@@ -124,39 +126,8 @@ public class DrtBlockingBerlin {
 				e.printStackTrace();
 			}
 		}
-
-		makePeopleUseDRTForRandomLegs(scenario.getPopulation());
-
-		Controler controler = prepareControler(scenario);
-
-		controler.run();
-
+		return scenario;
 	}
-
-	private static void makePeopleUseDRTForRandomLegs(Population population){
-		List<? extends Person> persons = population.getPersons().values().stream()
-				.filter(person -> person.getAttributes().getAttribute("subpopulation").equals("person"))
-				.collect(Collectors.toList());
-
-		Random random = MatsimRandom.getLocalInstance();
-		for (int i = 0; i <= 200; i++){
-			Person person = persons.get(random.nextInt(persons.size()));
-			persons.remove(person);
-			TripStructureUtils.getTrips(person.getSelectedPlan()).forEach(trip -> {
-				if(trip.getTripElements().size() == 1){
-					Leg leg = trip.getLegsOnly().get(0);
-					leg.setMode("drt");
-					leg.setRoute(null);
-					TripStructureUtils.setRoutingMode(leg, "drt");
-				}
-			});
-//			TripStructureUtils.getLegs(person.getSelectedPlan()).forEach(leg -> {
-//				leg.setMode("drt");
-//				leg.getAttributes().putAttribute("routingMode", "drt");
-//			});
-		}
-	}
-
 
 	static Controler prepareControler(Scenario scenario){
 		Controler controler = RunBerlinScenario.prepareControler( scenario ) ;
