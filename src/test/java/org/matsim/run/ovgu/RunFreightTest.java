@@ -16,7 +16,7 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package org.matsim.run;
+package org.matsim.run.ovgu;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
