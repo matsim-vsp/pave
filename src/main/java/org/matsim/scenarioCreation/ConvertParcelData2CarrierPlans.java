@@ -34,7 +34,7 @@ import org.matsim.vehicles.VehicleType;
 
 public class ConvertParcelData2CarrierPlans {
 
-	private static final String INPUT_RAW_DATA_FILE = "D:/svn/shared-svn/studies/countries/de/berlin_hermes/HERMES_RawData_Geocoded.csv";
+	private static final String INPUT_RAW_DATA_FILE = "D:/svn/shared-svn/studies/countries/de/berlin_hermes/Hermes_Data_processed_And_cleaned.csv";
 
 	//output will be written to scenarios/berlin/input/[OUTPUT_CARRIERS_FILE_NAME]
 	//however everything inside scenarios/berlin/input is currently ignored by git (see .gitignore)
@@ -80,7 +80,7 @@ public class ConvertParcelData2CarrierPlans {
 
 			int n = 0;
 			while ((line = br.readLine()) != null) {
-				String[] column = line.split(",");
+				String[] column = line.split(";");
 				String compareCarrier = column[carrierColumn];
 				tourNumber = Integer.valueOf(column[tourNumberColumn]);
 
@@ -243,11 +243,11 @@ public class ConvertParcelData2CarrierPlans {
 			String name = columnNames[i];
 			switch (name) {
 
-			case "latitude":
+			case "Lat":
 				latitudeColumn = i;
 				break;
 
-			case "longitude":
+			case "Long":
 				longitideColumn = i;
 				break;
 
