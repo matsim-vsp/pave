@@ -29,6 +29,14 @@ import java.util.Collection;
 
 class StraightLineKnnBlockingDispatcher implements DrtBlockingRequestDispatcher {
 
+    /**
+     *
+     * returns the vehicle within {@code availableVehicles} that is located nearest to the start link of the {@code blockingRequest}
+     *
+     * @param availableVehicles
+     * @param blockingRequest
+     * @return
+     */
     @Override
     public DvrpVehicle findDispatchForBlockingRequest(Collection<DvrpVehicle> availableVehicles, DrtBlockingRequest blockingRequest) {
         if(availableVehicles.isEmpty()) return null;

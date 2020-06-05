@@ -103,7 +103,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
     /**
      * a problem is that JSprit calculates the departure for a ScheduledTour in a way that vehicles start as early as possible and
-     * then wait at the location of the first delivery. We account for this by setting the earliest departure to 1.5*travelTime between depot
+     * then wait at the location of the first delivery (if it's time window has not started yet). We account for this by setting the earliest departure to 1.5*travelTime between depot
      * and first delivery.
      *
      * @param scheduledTour
