@@ -60,13 +60,13 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
 
         PAVEMobilityTypesForBerlin.configureMobilityTypeSubPopulations(config, sensitivityFactor);
 
-
-        {   //baseCase: set drt constant to very bad value
-            config.planCalcScore().getScoringParametersPerSubpopulation().values().forEach(scoringParameterSet -> {
-                scoringParameterSet.getOrCreateModeParams("drt").setConstant(-100);
-                scoringParameterSet.getOrCreateModeParams("drt_teleportation").setConstant(-100);
-            });
-        }
+        //baseCase: set drt constant to very bad value
+//        {
+//            config.planCalcScore().getScoringParametersPerSubpopulation().values().forEach(scoringParameterSet -> {
+//                scoringParameterSet.getOrCreateModeParams("drt").setConstant(-100);
+//                scoringParameterSet.getOrCreateModeParams("drt_teleportation").setConstant(-100);
+//            });
+//        }
 
         Scenario scenario = RunDrtOpenBerlinScenario.prepareScenario(config);
 
