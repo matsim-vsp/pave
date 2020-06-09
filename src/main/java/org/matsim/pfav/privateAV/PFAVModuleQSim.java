@@ -22,6 +22,8 @@ import org.matsim.contrib.taxi.util.stats.TaxiStatusTimeProfileCollectorProvider
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.MatsimServices;
 import org.matsim.core.mobsim.framework.MobsimTimer;
+import org.matsim.core.router.FastAStarLandmarksFactory;
+import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 
@@ -82,7 +84,9 @@ final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
 //                        TravelDisutility travelDisutility = getModalInstance(
 //                                TravelDisutilityFactory.class).createTravelDisutility(travelTime);
                         TravelDisutility travelDisutility = getModalInstance(TravelDisutility.class);
-                        return new PFAVScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility, events, tourManager, pfavConfigGroup);
+                        LeastCostPathCalculator router = new FastAStarLandmarksFactory(
+                                getConfig().global()).createPathCalculator(network, travelDisutility, travelTime);
+                        return new PFAVScheduler(taxiCfg, fleet, network, timer, travelTime, router, events, tourManager, pfavConfigGroup);
                     }
                 }).asEagerSingleton();
 

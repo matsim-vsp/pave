@@ -64,18 +64,17 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	/**
 	 */
 	PFAVScheduler(TaxiConfigGroup taxiCfg, Fleet fleet, Network network, MobsimTimer timer,
-				  @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, TravelDisutility travelDisutility,
+				  @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, LeastCostPathCalculator router,
 				  EventsManager eventsManager, FreightTourManagerListBased tourManager, FreightAVConfigGroup pfavConfigGroup) {
 		this.freightManager = tourManager;
 		this.eventsManager = eventsManager;
 		this.taxiCfg = taxiCfg;
-		this.router = new FastAStarEuclideanFactory(taxiCfg.getAStarEuclideanOverdoFactor()).createPathCalculator(
-				network, travelDisutility, travelTime);
+		this.router = router;
 		this.travelTime = travelTime;
 		this.timer = timer;
 		this.network = network;
 		this.pfavConfigGroup = pfavConfigGroup;
-		delegate = new TaxiScheduler(taxiCfg, fleet, network, timer, travelTime, travelDisutility);
+		delegate = new TaxiScheduler(taxiCfg, fleet, timer, travelTime, router);
 
 	}
 

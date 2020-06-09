@@ -23,6 +23,7 @@ package org.matsim.drtBlockings;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
@@ -33,6 +34,7 @@ import org.matsim.contrib.drt.optimizer.insertion.*;
 import org.matsim.contrib.drt.optimizer.rebalancing.RebalancingStrategy;
 import org.matsim.contrib.drt.passenger.DrtRequestCreator;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
+import org.matsim.contrib.drt.run.DrtModeQSimModule;
 import org.matsim.contrib.drt.schedule.DrtTaskFactory;
 import org.matsim.contrib.drt.schedule.DrtTaskFactoryImpl;
 import org.matsim.contrib.drt.scheduler.DrtScheduleInquiry;
@@ -41,6 +43,7 @@ import org.matsim.contrib.drt.scheduler.RequestInsertionScheduler;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.passenger.*;
+import org.matsim.contrib.dvrp.path.OneToManyPathSearch;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.ModalProviders;
@@ -152,9 +155,11 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                         getter.get(MobsimTimer.class), getter.get(EventsManager.class),
                         getter.getModal(RequestInsertionScheduler.class),
                         getter.getModal(VehicleData.EntryFactory.class),
-                        getter.getModal(PrecalculablePathDataProvider.class),
-                        getter.getModal(InsertionCostCalculator.PenaltyCalculator.class),
-                        getter.getModal(QSimScopeForkJoinPoolHolder.class)))).asEagerSingleton();
+                        getter.getModal(new TypeLiteral<DrtInsertionSearch<OneToManyPathSearch.PathData>>() {
+                        }), getter.getModal(QSimScopeForkJoinPoolHolder.class).getPool()))).asEagerSingleton();
+
+        install(DrtModeQSimModule.getInsertionSearchQSimModule(drtCfg));
+
 
         bindModal(InsertionCostCalculator.PenaltyCalculator.class).to(
                 drtCfg.isRejectRequestIfMaxWaitOrTravelTimeViolated() ?
@@ -191,22 +196,6 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getNamed(TravelTime.class, DvrpTravelTimeModule.DVRP_ESTIMATED),
                         getter.getModal(ScheduleTimingUpdater.class), getter.getModal(DrtTaskFactory.class))))
                 .asEagerSingleton();
-
-        addModalComponent(ParallelPathDataProvider.class,
-                new ModalProviders.AbstractProvider<>(getMode()) {
-                    @Inject
-                    @Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
-                    private TravelTime travelTime;
-
-                    @Override
-                    public ParallelPathDataProvider get() {
-                        Network network = getModalInstance(Network.class);
-                        TravelDisutility travelDisutility = getModalInstance(
-                                TravelDisutilityFactory.class).createTravelDisutility(travelTime);
-                        return new ParallelPathDataProvider(network, travelTime, travelDisutility, drtCfg);
-                    }
-                });
-        bindModal(PrecalculablePathDataProvider.class).to(modalKey(ParallelPathDataProvider.class));
 
         bindModal(PassengerRequestCreator.class).toProvider(new Provider<DrtRequestCreator>() {
             @Inject
