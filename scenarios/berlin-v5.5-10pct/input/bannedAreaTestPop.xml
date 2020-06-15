@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE population SYSTEM "http://www.matsim.org/files/dtd/population_v6.dtd">
+
+<population>
+
+
+
+<!-- ====================================================================== -->
+
+	<person id="testperson">
+		<attributes>
+			<attribute name="subpopulation" class="java.lang.String">person_fixed_car</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="home_48000" link="5293" >
+			</activity>
+<!--			<leg mode="car">-->
+<!--			</leg>-->
+<!--			<activity type="home_48000" link="102270" max_dur="00:05:00" >-->
+<!--			</activity>-->
+<!--			<leg mode="car">-->
+<!--			</leg>-->
+<!--			<activity type="home_48000" link="5293" >-->
+<!--			</activity>-->
+		</plan>
+
+	</person>
+
+<!-- ====================================================================== -->
+
+</population>
