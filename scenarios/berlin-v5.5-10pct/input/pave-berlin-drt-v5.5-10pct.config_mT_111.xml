@@ -31,7 +31,8 @@
 		<param name="inputNetworkFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-network.xml.gz" />
 	</module>
 	<module name="plans" >
-		<param name="inputPlansFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-10pct.plans.xml.gz" />
+		<param name="inputPlansFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/berlin-drt-v5.5-10pct/input/berlin-v5.5-10pct.plans.mobilityTypes.xml.gz" />
+<!--		<param name="inputPlansFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-10pct.plans.xml.gz" />-->
 		<param name="removingUnnecessaryPlanAttributes" value="false" />
 	</module>
 	<module name="vehicles" >
@@ -170,10 +171,11 @@
 
 	<module name="multiModeDrt">
 		<parameterset type="drt">
+			<parameterset type="ExtensiveInsertionSearch"/>
 			<!-- If true, the startLink is changed to last link in the current schedule, so the taxi starts the next day at the link where it stopped operating the day before. False by default. -->
 			<param name="changeStartLinkToLastLinkInSchedule" value="true" />
 			<!-- allows to configure a service area per drt mode.Used with serviceArea Operational Scheme -->
-			<param name="drtServiceAreaShapeFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-shp/berlin.shp" />
+				<param name="drtServiceAreaShapeFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-shp/berlin.shp" />
 			<!-- Beeline distance factor for DRT. Used in analyis and in plans file. The default value is 1.3. -->
 			<param name="estimatedBeelineDistanceFactor" value="1.3" />
 			<!-- Beeline-speed estimate for DRT. Used in analysis, optimisation constraints and in plans file, [m/s]. The default value is 25 km/h -->
@@ -213,6 +215,9 @@
 				<param name="cellSize" value="2000"/>
 				<param name="interval" value="1800"/>
 				<param name="zonalDemandAggregatorType" value="ActivityLocationBasedZonalDemandAggregator"/>
+				<param name="zonalDemandAggregatorType" value="EqualVehicleDensityZonalDemandAggregator"/>
+				<param name="rebalancingZonesGeneration" value="ShapeFile"/>
+				<param name="rebalancingZonesShapeFile" value="../../shared-svn/studies/countries/de/open_berlin_scenario/input/shapefiles/2016/gemeinden_Planungsraum_GK4.shp"/>
 			</parameterset>
 		</parameterset>
 	</module>
