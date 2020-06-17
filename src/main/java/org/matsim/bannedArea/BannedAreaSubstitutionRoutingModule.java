@@ -18,7 +18,6 @@
  * *********************************************************************** */
 package org.matsim.bannedArea;
 
-import com.google.inject.Inject;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -36,6 +35,7 @@ import org.matsim.core.router.TripStructureUtils;
 import org.matsim.facilities.FacilitiesUtils;
 import org.matsim.facilities.Facility;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,27 +54,26 @@ final class BannedAreaSubstitutionRoutingModule implements RoutingModule {
 
 	private final static Logger log = Logger.getLogger(BannedAreaSubstitutionRoutingModule.class);
 
-	@Inject
 	Config config;
-
-	@Inject
-	private BannedAreaLinkProvider bannedAreaLinkProvider;
 
 	private final String bannedMode;
 
-
 	private RoutingModule bannedModeRoutingModule;
 	private final Network bannedModeNetwork;
+	private BannedAreaLinkProvider bannedAreaLinkProvider;
 
 	private RoutingModule substitutionModeRoutingModule;
 	private final Network substitutionNetwork;
 
 	BannedAreaSubstitutionRoutingModule(
+			Config config,
 			RoutingModule bannedModeRoutingModule,
 			RoutingModule substitutionModeRoutingModule,
 			final String bannedMode,
 			final Network bannedModeNetwork,
+			final BannedAreaLinkProvider bannedAreaLinkProvider,
 			final Network substitutionNetwork) {
+		this.config = config;
 		this.bannedModeRoutingModule = bannedModeRoutingModule;
 		this.substitutionModeRoutingModule = substitutionModeRoutingModule;
 		this.bannedMode = bannedMode;
@@ -82,6 +81,8 @@ final class BannedAreaSubstitutionRoutingModule implements RoutingModule {
 		this.bannedModeNetwork = bannedModeNetwork;
 		Gbl.assertNotNull(substitutionNetwork);
 		this.substitutionNetwork = substitutionNetwork;
+		Gbl.assertNotNull(bannedAreaLinkProvider);
+		this.bannedAreaLinkProvider = bannedAreaLinkProvider;
 	}
 
 	@Override

@@ -68,6 +68,7 @@ class BannedAreaDRTSubstitutionNetworkRoutingProvider implements Provider<Routin
 	@Inject
 	@Named(TransportMode.walk)
 	private RoutingModule walkRouter;
+	@Inject BannedAreaLinkProvider bannedAreaLinkProvider;
 
 
 
@@ -112,8 +113,8 @@ class BannedAreaDRTSubstitutionNetworkRoutingProvider implements Provider<Routin
 		Network substitutionModeNetwork = getFilteredNetwork(drtMode);
 //		RoutingModule substitutionModeROutingModule = getRoutingModule(substitutionMode, substitutionRoutingMode, substitutionModeNetwork);
 
-		return new BannedAreaSubstitutionRoutingModule(bannedModeRoutingModule, drtRoutingModuleProvider.get(),
-				bannedMode, bannedModeNetwork, substitutionModeNetwork);
+		return new BannedAreaSubstitutionRoutingModule(scenario.getConfig(), bannedModeRoutingModule, drtRoutingModuleProvider.get(),
+				bannedMode, bannedModeNetwork, bannedAreaLinkProvider, substitutionModeNetwork);
 	}
 
 	private RoutingModule getRoutingModule(String mode, String routingMode, Network modefilteredNetwork ){

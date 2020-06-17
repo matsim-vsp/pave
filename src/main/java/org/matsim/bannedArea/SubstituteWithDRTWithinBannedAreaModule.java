@@ -20,14 +20,18 @@
 
 package org.matsim.bannedArea;
 
+import com.google.inject.Inject;
 import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.name.Names;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.router.DvrpRoutingModule;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.contrib.dvrp.run.ModalProviders;
+import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.router.RoutingModule;
+import org.matsim.core.router.SingleModeNetworksCache;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -61,11 +65,23 @@ public class SubstituteWithDRTWithinBannedAreaModule extends AbstractDvrpModeMod
 //		});
 
 		bind(BannedAreaLinkProvider.class).toProvider(new Provider<BannedAreaLinkProvider>() {
+
+			@Inject
+			SingleModeNetworksCache singleModeNetworksCache;
+
+			@Inject
+			Network network;
+
 			@Override
 			public BannedAreaLinkProvider get() {
 				Set<String> bannedModes = new HashSet<>();
 				bannedModes.add(bannedMode);
-				return new ShapeFileBasedBannedAreaLinkProvider(areaShape,bannedModes, 0d, 36*3600d );
+				return new ShapeFileBasedBannedAreaLinkProvider(ConfigGroup.getInputFileURL(getConfig().getContext(), areaShape),
+						bannedModes,
+						0d,
+						36*3600d,
+						network,
+						singleModeNetworksCache);
 			}
 		});
 

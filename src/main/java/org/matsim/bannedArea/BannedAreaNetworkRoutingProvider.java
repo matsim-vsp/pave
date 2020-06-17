@@ -69,6 +69,9 @@ public class BannedAreaNetworkRoutingProvider implements Provider<RoutingModule>
 	@Named(TransportMode.walk)
 	private RoutingModule walkRouter;
 
+	@Inject BannedAreaLinkProvider bannedAreaLinkProvider;
+
+
 	/**
 	 * This refers to the older (and still more standard) constructor.
 	 *  For each of the parameters, a routingModule is created where mode and routingMode is the same
@@ -108,8 +111,8 @@ public class BannedAreaNetworkRoutingProvider implements Provider<RoutingModule>
 		Network substitutionModeNetwork = getFilteredNetwork(substitutionMode);
 		RoutingModule substitutionModeROutingModule = getRoutingModule(substitutionMode, substitutionRoutingMode, substitutionModeNetwork);
 
-		return new BannedAreaSubstitutionRoutingModule(bannedModeROutingModule, substitutionModeROutingModule,
-				bannedMode, bannedModeNetwork, substitutionModeNetwork);
+		return new BannedAreaSubstitutionRoutingModule(scenario.getConfig(), bannedModeROutingModule, substitutionModeROutingModule,
+				bannedMode, bannedModeNetwork, bannedAreaLinkProvider, substitutionModeNetwork);
 	}
 
 	private RoutingModule getRoutingModule(String mode, String routingMode, Network modefilteredNetwork ){

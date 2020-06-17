@@ -21,6 +21,11 @@
 package org.matsim.bannedArea;
 
 import com.google.inject.Inject;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinates;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.IdSet;
 import org.matsim.api.core.v01.network.Link;
@@ -31,8 +36,10 @@ import org.matsim.core.router.SingleModeNetworksCache;
 import org.matsim.core.utils.geometry.GeometryUtils;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.gis.ShapeFileReader;
+import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import org.opengis.feature.simple.SimpleFeature;
 
+import java.net.URL;
 import java.util.*;
 
 public class ShapeFileBasedBannedAreaLinkProvider implements BannedAreaLinkProvider{
@@ -41,37 +48,31 @@ public class ShapeFileBasedBannedAreaLinkProvider implements BannedAreaLinkProvi
 	private final double start;
 	private final Set<String> modes;
 
-	@Inject
 	SingleModeNetworksCache singleModeNetworksCache;
 
-	@Inject
 	Network network;
 
 	private IdSet<Link> bannedLinks = new IdSet<>(Link.class);
 
-	ShapeFileBasedBannedAreaLinkProvider(String pathToShapeFile, Set<String> bannedModes, double start, double end){
+	ShapeFileBasedBannedAreaLinkProvider(URL shapeFileURL, Set<String> bannedModes, double start, double end, Network network, SingleModeNetworksCache singleModeNetworksCache){
 		this.start = start;
 		this.end = end;
 		this.modes = bannedModes;
-		initialize(pathToShapeFile, bannedModes);
+		this.network = network;
+		this.singleModeNetworksCache = singleModeNetworksCache;
+		initialize(shapeFileURL, bannedModes);
 	}
 
-	private void initialize(String pathToShapeFile, Set<String> bannedModes) {
+	private void initialize(URL shapeFileURL, Set<String> bannedModes) {
 		Network modeFilteredNetwork = null;
 		TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
 		modeFilteredNetwork = NetworkUtils.createNetwork();
 		filter.filter(modeFilteredNetwork, bannedModes);
 
-
-		List geoms = new ArrayList();
-		new ShapeFileReader().readFileAndInitialize(pathToShapeFile).parallelStream().forEach(feature -> {
-			geoms.add(feature.getDefaultGeometry());
-		});
+		List<PreparedGeometry> preparedGeometries = ShpGeometryUtils.loadPreparedGeometries(shapeFileURL);
 
 		modeFilteredNetwork.getLinks().values().parallelStream().forEach(link -> {
-			if ( playground.vsp.corineLandcover.GeometryUtils.isPointInsideGeometries(geoms, MGC.coord2Point(link.getCoord())) ){
-				bannedLinks.add(link.getId());
-			}
+			if(ShpGeometryUtils.isCoordInPreparedGeometries(link.getCoord(), preparedGeometries)) bannedLinks.add(link.getId());
 		});
 	}
 
