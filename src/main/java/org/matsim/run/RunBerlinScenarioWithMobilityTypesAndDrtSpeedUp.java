@@ -23,8 +23,11 @@ package org.matsim.run;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.drtSpeedUp.DrtSpeedUpModule;
+import org.matsim.optDRT.MultiModeOptDrtConfigGroup;
+import org.matsim.optDRT.OptDrt;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
 
 public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
@@ -32,7 +35,7 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
 
     private static final Logger log = Logger.getLogger(RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp.class );
 
-    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-10pct/input/pave-berlin-drt-v5.5-10pct.config.xml";
+    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/pave-berlin-drt-v5.5-1pct.config-transsims.xml";
 
     /**
      * @param args array containing program arguments in the following order: global sensitivity factor for mobility types (as numeric argument), path to config, custom modules to load
@@ -46,7 +49,7 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
         double sensitivityFactor = 0.1;
         String[] configArgs;
         if ( args.length==0 ) {
-            configArgs = new String[]{BERLIN_V5_5_CONFIG, "--config:controler.outputDirectory", "output/berlin5.5_10pct_pave_TEST"};
+            configArgs = new String[]{BERLIN_V5_5_CONFIG, "--config:controler.outputDirectory", "output/berlin5.5_10pct_pave_TEST_snapshots"};
         } else {
             sensitivityFactor = Double.parseDouble(args[0]);
             configArgs = new String[args.length-1];
@@ -78,6 +81,8 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
 
         Controler controler = RunDrtOpenBerlinScenario.prepareControler(scenario);
         controler.addOverridingModule(new DrtSpeedUpModule());
+        OptDrt.addAsOverridingModule(controler, ConfigUtils.addOrGetModule(scenario.getConfig(), MultiModeOptDrtConfigGroup.class));
+
 
         controler.run();
 
