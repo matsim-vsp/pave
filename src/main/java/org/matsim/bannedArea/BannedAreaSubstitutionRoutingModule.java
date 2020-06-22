@@ -27,6 +27,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.*;
 import org.matsim.core.config.Config;
 import org.matsim.core.gbl.Gbl;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.RoutingModule;

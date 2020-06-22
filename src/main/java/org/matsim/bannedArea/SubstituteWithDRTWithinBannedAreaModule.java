@@ -64,28 +64,31 @@ public class SubstituteWithDRTWithinBannedAreaModule extends AbstractDvrpModeMod
 //			}
 //		});
 
-		bind(BannedAreaLinkProvider.class).toProvider(new Provider<BannedAreaLinkProvider>() {
+//		bind(BannedAreaLinkProvider.class).toProvider(new Provider<BannedAreaLinkProvider>() {
+//
+//			@Inject
+//			SingleModeNetworksCache singleModeNetworksCache;
+//
+//			@Inject
+//			Network network;
+//
+//			@Override
+//			public BannedAreaLinkProvider get() {
+//				Set<String> bannedModes = new HashSet<>();
+//				bannedModes.add(bannedMode);
+//				return new ShapeFileBasedBannedAreaLinkProvider(ConfigGroup.getInputFileURL(getConfig().getContext(), areaShape),
+//						bannedModes,
+//						0d,
+//						36*3600d,
+//						network,
+//						singleModeNetworksCache);
+//			}
+//		});
 
-			@Inject
-			SingleModeNetworksCache singleModeNetworksCache;
-
-			@Inject
-			Network network;
-
-			@Override
-			public BannedAreaLinkProvider get() {
-				Set<String> bannedModes = new HashSet<>();
-				bannedModes.add(bannedMode);
-				return new ShapeFileBasedBannedAreaLinkProvider(ConfigGroup.getInputFileURL(getConfig().getContext(), areaShape),
-						bannedModes,
-						0d,
-						36*3600d,
-						network,
-						singleModeNetworksCache);
-			}
-		});
+//		addRoutingModuleBinding(bannedMode).toProvider(new BannedAreaDRTSubstitutionNetworkRoutingProvider(bannedMode,drtCfg.getMode(), drtRoutingModuleProvider));
 
 		addRoutingModuleBinding(bannedMode).toProvider(new BannedAreaDRTSubstitutionNetworkRoutingProvider(bannedMode,drtCfg.getMode(), drtRoutingModuleProvider));
+
 
 
 	}

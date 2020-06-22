@@ -42,7 +42,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import java.net.URL;
 import java.util.*;
 
-public class ShapeFileBasedBannedAreaLinkProvider implements BannedAreaLinkProvider{
+class ShapeFileBasedBannedAreaLinkProvider implements BannedAreaLinkProvider{
 
 	private final double end;
 	private final double start;

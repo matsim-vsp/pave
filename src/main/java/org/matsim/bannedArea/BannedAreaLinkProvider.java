@@ -22,7 +22,7 @@ package org.matsim.bannedArea;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 
-public interface BannedAreaLinkProvider {
+interface BannedAreaLinkProvider {
 
 	boolean isLinkBanned(Id<Link> linkId, double time, String mode);
 
