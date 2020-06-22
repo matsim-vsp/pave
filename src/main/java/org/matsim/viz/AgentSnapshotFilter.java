@@ -21,7 +21,7 @@ package org.matsim.viz;
 
 import org.matsim.vis.snapshotwriters.AgentSnapshotInfo;
 
-public interface AgentSnapshotFilter {
+interface AgentSnapshotFilter {
 
 	/**
 	 * filters {@code AgentSnapshotInfo}s for {@code CSVSnapshotWriter}
