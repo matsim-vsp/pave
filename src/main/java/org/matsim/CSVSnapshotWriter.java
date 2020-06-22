@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.viz;
+package org.matsim;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -30,16 +30,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public final class CSVSnapshotWriter implements SnapshotWriter {
+final class CSVSnapshotWriter implements SnapshotWriter {
 
 	private CSVPrinter printer;
-	Collection<AgentSnapshotFilter> filters = new ArrayList<>();
+	private Collection<AgentSnapshotFilter> filters = new ArrayList<>();
 	private Collection<AgentSnapshotInfo> infos = new ArrayList<>();
 	private double time;
+	private double startTime = Double.NEGATIVE_INFINITY;
+	private double endTime = Double.POSITIVE_INFINITY;
+
 
 	public CSVSnapshotWriter(String fileName) {
 		try {
-			printer = new CSVPrinter(new FileWriter(fileName), CSVFormat.newFormat(';').withFirstRecordAsHeader());
+			printer = new CSVPrinter(new FileWriter(fileName), CSVFormat.newFormat(';').withFirstRecordAsHeader().withRecordSeparator("\n"));
 			printer.printRecord("time", "id", "northing", "easting", "agentState");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -67,6 +70,7 @@ public final class CSVSnapshotWriter implements SnapshotWriter {
 
 	@Override
 	public void addAgent(AgentSnapshotInfo info) {
+		if(this.time < startTime || this.time > endTime) return;
 		for (AgentSnapshotFilter filter : filters) {
 			if (! filter.include(info)) return;
 		}
@@ -76,7 +80,7 @@ public final class CSVSnapshotWriter implements SnapshotWriter {
 	@Override
 	public void finish() {
 		try {
-			printer.close(true);
+			printer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new RuntimeException("could not close output stream. See StackTrace above");
@@ -85,5 +89,17 @@ public final class CSVSnapshotWriter implements SnapshotWriter {
 
 	public void addFilter(AgentSnapshotFilter agentSnapshotFilter){
 		this.filters.add(agentSnapshotFilter);
+	}
+
+	public void setStartTime(double startTime) {
+		this.startTime = startTime;
+	}
+
+	public void setEndTime(double endTime) {
+		this.endTime = endTime;
+	}
+
+	public double getStartTime() {
+		return startTime;
 	}
 }

@@ -17,11 +17,11 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.viz;
+package org.matsim;
 
 import org.matsim.vis.snapshotwriters.AgentSnapshotInfo;
 
-public interface AgentSnapshotFilter {
+interface AgentSnapshotFilter {
 
 	/**
 	 * filters {@code AgentSnapshotInfo}s for {@code CSVSnapshotWriter}
