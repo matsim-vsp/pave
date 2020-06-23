@@ -59,7 +59,7 @@ public class WalkAccessDRTEgressModuleTest  {
 		config.controler().setOutputDirectory(utils.getOutputDirectory() + "carPop");
 
 		//this is the wrong way around (create controler before manipulating scenario...
-		Controler controler = DrtControlerCreator.createControlerWithSingleModeDrt(config, false);
+		Controler controler = DrtControlerCreator.createControler(config, false);
 //		setupPopulation(controler.getScenario().getPopulation());
 
 
