@@ -30,6 +30,7 @@ import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.router.DefaultRoutingModules;
+import org.matsim.core.router.FallbackRoutingModule;
 import org.matsim.core.router.RoutingModule;
 import org.matsim.core.router.SingleModeNetworksCache;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
@@ -62,6 +63,9 @@ class WalkAccessDRTEgressRoutingModuleProvider implements Provider<RoutingModule
 	@Inject
 	@Named(TransportMode.walk)
 	private RoutingModule walkRouter;
+
+	@Inject
+	FallbackRoutingModule fallbackRoutingModule;
 
 
 //	/**
@@ -116,7 +120,7 @@ class WalkAccessDRTEgressRoutingModuleProvider implements Provider<RoutingModule
 					"Please set the aforementioned parameter to true.");
 		}
 
-		return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, routeAlgo, scenario, filteredNetwork, walkRouter, drtRoutingModuleProvider.get());
+		return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, routeAlgo, scenario, filteredNetwork, walkRouter, drtRoutingModuleProvider.get(), fallbackRoutingModule);
 	}
 
 	private Network getFilteredNetwork (String mode){
