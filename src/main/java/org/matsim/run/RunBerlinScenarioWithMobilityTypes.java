@@ -23,7 +23,9 @@ package org.matsim.run;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.viz.CSVSnapshotWriterFactory;
 
 public class RunBerlinScenarioWithMobilityTypes {
 
@@ -67,11 +69,23 @@ public class RunBerlinScenarioWithMobilityTypes {
 //        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 
         Controler controler = RunBerlinScenario.prepareControler(scenario);
+
+
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                addSnapshotWriterBinding().toProvider(CSVSnapshotWriterFactory.class);
+            }
+        });
+
+
         controler.run();
 
         RunBerlinScenario.runAnalysis(controler);
 
     }
+
+
 
 
 }

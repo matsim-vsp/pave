@@ -16,13 +16,16 @@
 	</module>
 
 	<module name="controler">
-		<param name="outputDirectory" value="./output" />
+		<param name="outputDirectory" value="./output/snapshotTest" />
 		<param name="firstIteration" value="0" />
-		<param name="lastIteration" value="10" />
-		<param name="snapshotFormat" value="transims" />
+		<param name="lastIteration" value="2" />
+<!--		<param name="snapshotFormat" value="transims" />-->
+		<param name="snapshotFormat" value="" />
+
 		<!-- iterationNumber % writeSnapshotsInterval == 0 defines in which iterations snapshots are written to a file. `0' disables snapshots writing completely -->
 		<param name="writeSnapshotsInterval" value="1" />
-			</module>
+		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
+	</module>
 
 	<module name="qsim">
 		<!-- "start/endTime" of MobSim (00:00:00 == take earliest activity time/ run as long as active vehicles exist) -->

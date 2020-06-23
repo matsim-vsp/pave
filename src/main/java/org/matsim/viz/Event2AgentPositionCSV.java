@@ -20,6 +20,7 @@
 
 package org.matsim.viz;
 
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.ConfigUtils;
@@ -27,12 +28,15 @@ import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.events.algorithms.SnapshotGenerator;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.geotools.MGC;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.vis.snapshotwriters.AgentSnapshotInfo;
 
 public class Event2AgentPositionCSV {
 
-	private static final String INPUT_CONFIG = "D:/git/pave/scenarios/equil/config.xml";
-	private static final String INPUT_EVENTS = "D:/git/pave/output/equil/drtBlocking/output_events.xml.gz";
+	private static final String INPUT_CONFIG = "scenarios/equil/config.xml";
+	private static final String INPUT_EVENTS = "output/equil/drtBlocking/output_events.xml.gz";
 
 	private static final String OUTPUT_CSV = INPUT_EVENTS.substring(0,INPUT_EVENTS.lastIndexOf('/') + 1) + "output_agentSnapshots.csv";
 
@@ -43,14 +47,15 @@ public class Event2AgentPositionCSV {
 	private static final double START = Double.NEGATIVE_INFINITY;
 	private static final double END = Double.POSITIVE_INFINITY;
 
+	private static CoordinateTransformation coordTransformer =
+			TransformationFactory.getCoordinateTransformation(TransformationFactory.DHDN_GK4, TransformationFactory.WGS84);
+
 	public static void main(String[] args) {
 		Scenario scenario = ScenarioUtils.loadScenario(ConfigUtils.loadConfig(INPUT_CONFIG));
 
 		CSVSnapshotWriter snapshotWriter = new CSVSnapshotWriter(OUTPUT_CSV);
-		snapshotWriter.addFilter(agentSnapshotInfo -> agentSnapshotInfo.getEasting() >= MINX && agentSnapshotInfo.getEasting() <= MAXX
-				&& agentSnapshotInfo.getNorthing() >= MINY && agentSnapshotInfo.getNorthing() <= MAXY);
+		snapshotWriter.addFilter(new AgentSnapshotCoordInBoundingBoxFilter(MINX,MAXX,MINY,MAXY));
 		snapshotWriter.addFilter(agentSnapshotInfo -> ! agentSnapshotInfo.getAgentState().equals(AgentSnapshotInfo.AgentState.PERSON_AT_ACTIVITY));
-
 		snapshotWriter.setStartTime(START);
 		snapshotWriter.setEndTime(END);
 
@@ -67,5 +72,7 @@ public class Event2AgentPositionCSV {
 		generator.finish();
 		writer.finish();
 	}
+
+
 
 }

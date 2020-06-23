@@ -22,6 +22,8 @@ package org.matsim.viz;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.matsim.api.core.v01.Coord;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.vis.snapshotwriters.AgentSnapshotInfo;
 import org.matsim.vis.snapshotwriters.SnapshotWriter;
 
@@ -38,12 +40,12 @@ final class CSVSnapshotWriter implements SnapshotWriter {
 	private double time;
 	private double startTime = Double.NEGATIVE_INFINITY;
 	private double endTime = Double.POSITIVE_INFINITY;
-
+	private CoordinateTransformation coordinateTransformation = null;
 
 	public CSVSnapshotWriter(String fileName) {
 		try {
 			printer = new CSVPrinter(new FileWriter(fileName), CSVFormat.newFormat(';').withFirstRecordAsHeader().withRecordSeparator("\n"));
-			printer.printRecord("time", "id", "northing", "easting", "agentState");
+			printer.printRecord("time", "id", "easting", "northing", "agentState");
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new RuntimeException("could not instantiate CSVPrinter. See StackTrace above");
@@ -60,7 +62,14 @@ final class CSVSnapshotWriter implements SnapshotWriter {
 	public void endSnapshot() {
 		try {
 			for (AgentSnapshotInfo info : this.infos) {
-				printer.printRecord(time, info.getId(), info.getNorthing(), info.getEasting(), info.getAgentState());
+				double x = info.getEasting();
+				double y = info.getNorthing();
+				if(this.coordinateTransformation != null){
+					Coord coord = coordinateTransformation.transform(new Coord(x,y));
+					x = coord.getX();
+					y = coord.getY();
+				}
+				printer.printRecord(time, info.getId(), x, y, info.getAgentState());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -101,5 +110,9 @@ final class CSVSnapshotWriter implements SnapshotWriter {
 
 	public double getStartTime() {
 		return startTime;
+	}
+
+	public void setCoordinateTransformation(CoordinateTransformation coordinateTransformation) {
+		this.coordinateTransformation = coordinateTransformation;
 	}
 }
