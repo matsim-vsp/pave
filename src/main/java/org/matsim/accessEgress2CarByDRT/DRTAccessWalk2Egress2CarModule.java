@@ -27,13 +27,13 @@ import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.core.router.RoutingModule;
 
-public class WalkAccessDRTEgressModule extends AbstractDvrpModeModule {
+public class DRTAccessWalk2Egress2CarModule extends AbstractDvrpModeModule {
 
 
 	private final DrtConfigGroup drtCfg;
 	private final String mode;
 
-	public WalkAccessDRTEgressModule(String mode, DrtConfigGroup drtCfg) {
+	public DRTAccessWalk2Egress2CarModule(String mode, DrtConfigGroup drtCfg) {
 		super(drtCfg.getMode());
 		this.drtCfg = drtCfg;
 		this.mode = mode;
@@ -43,7 +43,7 @@ public class WalkAccessDRTEgressModule extends AbstractDvrpModeModule {
 	public void install() {
 
 		Provider<RoutingModule> drtRoutingModuleProvider = binder().getProvider(Key.get(RoutingModule.class, Names.named(drtCfg.getMode())));
-		addRoutingModuleBinding(mode).toProvider(new WalkAccessDRTEgressRoutingModuleProvider(mode, mode, drtRoutingModuleProvider));
+		addRoutingModuleBinding(mode).toProvider(new DRTAccessWalkEgress2CarRoutingModuleProvider(mode, drtRoutingModuleProvider));
 
 	}
 }

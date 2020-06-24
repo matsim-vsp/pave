@@ -44,8 +44,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-class WalkAccessDRTEgressRoutingModuleProvider implements Provider<RoutingModule> {
-	private static final Logger log = Logger.getLogger( WalkAccessDRTEgressRoutingModuleProvider.class ) ;
+
+//TODO consolidate with WalkAccessDRTEgressRoutingModuleProvider (classes are almost identical ATM)
+class DRTAccessWalkEgress2CarRoutingModuleProvider implements Provider<RoutingModule> {
+	private static final Logger log = Logger.getLogger( DRTAccessWalkEgress2CarRoutingModuleProvider.class ) ;
 
 	private final String mode;
 	private final String routingMode = TransportMode.car;
@@ -84,8 +86,8 @@ class WalkAccessDRTEgressRoutingModuleProvider implements Provider<RoutingModule
 	 *
 	 * @param mode
 	 */
-	WalkAccessDRTEgressRoutingModuleProvider(String mode,
-											 com.google.inject.Provider<RoutingModule> drtRoutingModuleProvider) {
+	DRTAccessWalkEgress2CarRoutingModuleProvider(String mode,
+												 com.google.inject.Provider<RoutingModule> drtRoutingModuleProvider) {
 		this.mode = mode;
 		this.drtRoutingModuleProvider = drtRoutingModuleProvider;
 	}
@@ -93,7 +95,6 @@ class WalkAccessDRTEgressRoutingModuleProvider implements Provider<RoutingModule
 
 	@Override
 	public RoutingModule get() {
-
 
 		//we use the car network for routing here....
 		Network filteredNetwork = getFilteredNetwork(routingMode);
@@ -118,7 +119,7 @@ class WalkAccessDRTEgressRoutingModuleProvider implements Provider<RoutingModule
 					"Please set the aforementioned parameter to true.");
 		}
 
-		return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, routeAlgo, scenario, filteredNetwork, walkRouter, drtRoutingModuleProvider.get(), fallbackRoutingModule);
+		return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, routeAlgo, scenario, filteredNetwork, drtRoutingModuleProvider.get(), walkRouter, fallbackRoutingModule);
 	}
 
 	private Network getFilteredNetwork (String mode){

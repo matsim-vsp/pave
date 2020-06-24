@@ -5,13 +5,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.drt.optimizer.rebalancing.mincostflow.MinCostFlowRebalancingParams;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtControlerCreator;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.network.NetworkUtils;
@@ -24,13 +24,14 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
-public class WalkAccessDRTEgressModuleTest  {
+public class WalkAndDRTAccessEgress2CarTest {
 
 	@Rule public MatsimTestUtils utils = new MatsimTestUtils() ;
 
 
+	//TODO actually test something or classify it as an IT...
 	@Test
-	public void jjjTest() {
+	public void interModalCarDRTTest() {
 //		modifyNetwork();
 
 		URL configUrl = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("gridCarRestrictedInCenter"), "gridCarRestrictedInCenter_config.xml");
@@ -58,12 +59,16 @@ public class WalkAccessDRTEgressModuleTest  {
 		config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
 		config.controler().setOutputDirectory(utils.getOutputDirectory() + "carPop");
 
+		//add modeParams
+		config.planCalcScore().addModeParams(new PlanCalcScoreConfigGroup.ModeParams("walkCarDrt"));
+		config.planCalcScore().addModeParams(new PlanCalcScoreConfigGroup.ModeParams("drtCarWalk"));
+
 		//this is the wrong way around (create controler before manipulating scenario...
 		Controler controler = DrtControlerCreator.createControler(config, false);
 //		setupPopulation(controler.getScenario().getPopulation());
 
-
-		controler.addOverridingModule(new WalkAccessDRTEgressModule(TransportMode.car, drtCfg));
+		controler.addOverridingModule(new WalkAccessDRTEgress2CarModule("walkCarDrt", drtCfg));
+		controler.addOverridingModule(new DRTAccessWalk2Egress2CarModule("drtCarWalk", drtCfg));
 
 		controler.run();
 	}
