@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
@@ -53,6 +54,7 @@ class DRTAccessWalkEgress2CarRoutingModuleProvider implements Provider<RoutingMo
 	private final String routingMode = TransportMode.car;
 
 	private final com.google.inject.Provider<RoutingModule> drtRoutingModuleProvider;
+	private final DrtConfigGroup drtCfg;
 
 	@Inject	PlansCalcRouteConfigGroup plansCalcRouteConfigGroup;
 	@Inject Map<String, TravelTime> travelTimes;
@@ -86,9 +88,10 @@ class DRTAccessWalkEgress2CarRoutingModuleProvider implements Provider<RoutingMo
 	 *
 	 * @param mode
 	 */
-	DRTAccessWalkEgress2CarRoutingModuleProvider(String mode,
+	DRTAccessWalkEgress2CarRoutingModuleProvider(String mode, DrtConfigGroup drtConfigGroup,
 												 com.google.inject.Provider<RoutingModule> drtRoutingModuleProvider) {
 		this.mode = mode;
+		this.drtCfg = drtConfigGroup;
 		this.drtRoutingModuleProvider = drtRoutingModuleProvider;
 	}
 
@@ -114,12 +117,13 @@ class DRTAccessWalkEgress2CarRoutingModuleProvider implements Provider<RoutingMo
 						travelDisutilityFactory.createTravelDisutility(travelTime),
 						travelTime);
 
-		if ( !plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() ) {
-			throw new IllegalArgumentException("plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() is not set to true. However, this module is relying on access walks." +
-					"Please set the aforementioned parameter to true.");
+		if ( plansCalcRouteConfigGroup.getAccessEgressType().equals(PlansCalcRouteConfigGroup.AccessEgressType.none) ||
+				plansCalcRouteConfigGroup.getAccessEgressType().equals(PlansCalcRouteConfigGroup.AccessEgressType.constantTimeToLink)) {
+			throw new IllegalArgumentException("plansCalcRouteConfigGroup.getAccessEgressType() is not set to use network routing for access/egress. However, this module is relying on network routing for access/egress." +
+					"Please set the aforementioned parameter to either " + PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink + " or " + PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLinkPlusTimeConstant);
 		}
 
-		return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, routeAlgo, scenario, filteredNetwork, drtRoutingModuleProvider.get(), walkRouter, fallbackRoutingModule);
+		return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, routeAlgo, scenario, filteredNetwork, drtCfg.getMode(), drtRoutingModuleProvider.get(), TransportMode.walk, walkRouter);
 	}
 
 	private Network getFilteredNetwork (String mode){

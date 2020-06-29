@@ -43,7 +43,7 @@ public class DRTAccessWalk2Egress2CarModule extends AbstractDvrpModeModule {
 	public void install() {
 
 		Provider<RoutingModule> drtRoutingModuleProvider = binder().getProvider(Key.get(RoutingModule.class, Names.named(drtCfg.getMode())));
-		addRoutingModuleBinding(mode).toProvider(new DRTAccessWalkEgress2CarRoutingModuleProvider(mode, drtRoutingModuleProvider));
+		addRoutingModuleBinding(mode).toProvider(new DRTAccessWalkEgress2CarRoutingModuleProvider(mode, drtCfg, drtRoutingModuleProvider));
 
 	}
 }

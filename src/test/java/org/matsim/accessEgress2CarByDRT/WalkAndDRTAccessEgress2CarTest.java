@@ -13,6 +13,7 @@ import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
@@ -60,7 +61,7 @@ public class WalkAndDRTAccessEgress2CarTest {
 
 		config.plans().setInputFile("gridCarRestrictedInCenter_population_car.xml");
 
-		config.plansCalcRoute().setInsertingAccessEgressWalk(true);
+		config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink);
 		config.controler().setLastIteration(1);
 		config.qsim().setStartTime(0.);
 		config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
