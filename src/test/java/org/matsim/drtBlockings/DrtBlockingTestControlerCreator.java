@@ -28,6 +28,8 @@ import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.PopulationFactory;
+import org.matsim.contrib.drt.optimizer.insertion.DrtInsertionSearchParams;
+import org.matsim.contrib.drt.optimizer.insertion.ExtensiveInsertionSearchParams;
 import org.matsim.contrib.drt.routing.DrtRoute;
 import org.matsim.contrib.drt.routing.DrtRouteFactory;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
@@ -166,7 +168,7 @@ class DrtBlockingTestControlerCreator {
 		drtCfg.setStopDuration(60);
 		drtCfg.setEstimatedDrtSpeed(10);
 		drtCfg.setVehiclesFile("drtBlockingVehicles.xml");
-
+		drtCfg.addParameterSet(new ExtensiveInsertionSearchParams());
 		config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
 
 		multiModeDrtConfigGroup.addParameterSet(drtCfg);
