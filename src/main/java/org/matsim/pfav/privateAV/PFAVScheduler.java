@@ -32,14 +32,12 @@ import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
 import org.matsim.contrib.taxi.schedule.TaxiOccupiedDriveTask;
 import org.matsim.contrib.taxi.schedule.TaxiPickupTask;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
-import org.matsim.contrib.taxi.schedule.TaxiTaskType;
+import org.matsim.contrib.taxi.schedule.TaxiTaskBaseType;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
-import org.matsim.core.router.FastAStarEuclideanFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
-import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 
 import com.google.inject.name.Named;
@@ -89,7 +87,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		updateTimeline(vehicle);
 		Task currentTask = schedule.getCurrentTask();
 
-		switch ((TaxiTaskType)currentTask.getTaskType()) {
+		switch (TaxiTaskBaseType.getBaseType(currentTask)) {
 			case PICKUP:
 				if (!taxiCfg.isDestinationKnown()) {
 					appendResultingTasksAfterPickup(vehicle);
@@ -370,7 +368,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		Schedule schedule = vehicle.getSchedule();
 		Task lastTask = Schedules.getLastTask(schedule);
 
-		if (lastTask.getTaskType() != TaxiTaskType.STAY) {
+		if (!TaxiTaskBaseType.STAY.isBaseTypeOf(lastTask)) {
 			throw new IllegalStateException();
 		} else {
 
@@ -514,7 +512,7 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 	private final static double REMOVE_STAY_TASK = Double.NEGATIVE_INFINITY;
 
 	private double calcNewEndTime(DvrpVehicle vehicle, Task task, double newBeginTime) {
-		switch ((TaxiTaskType)task.getTaskType()) {
+		switch (TaxiTaskBaseType.getBaseType(task)) {
 			case STAY: {
 				if (Schedules.getLastTask(vehicle.getSchedule()).equals(task)) {// last task
 					// even if endTime=beginTime, do not remove this task!!! A taxi schedule should end with WAIT

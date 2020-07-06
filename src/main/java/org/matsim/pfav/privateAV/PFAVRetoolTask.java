@@ -22,7 +22,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.StayTask;
-import org.matsim.contrib.taxi.schedule.TaxiTaskType;
+import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
 
 /**
  * @author tschlenther
@@ -44,7 +44,7 @@ class PFAVRetoolTask extends StayTask {
 		 * but pickup task type is somehow used for TaxiStatsCalculator in correspondence with a request (which we do not have here, so we use dropoff type.
 		 * furthermore, if it was of type stay, the task could be removed by the taxischeduler if there is delay in the schedule
 		 */
-		super(TaxiTaskType.DROPOFF, beginTime, endTime, link);
+		super(TaxiDropoffTask.TYPE, beginTime, endTime, link);
 	}
 	
 	/**
