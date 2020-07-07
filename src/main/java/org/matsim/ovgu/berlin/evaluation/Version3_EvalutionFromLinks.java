@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.matsim.ovgu.berlin.Settings;
-import org.matsim.ovgu.berlin.input.InputTour;
 
 public class Version3_EvalutionFromLinks {
 
@@ -27,7 +26,6 @@ public class Version3_EvalutionFromLinks {
 		String[] linkIDs = getMySample2000Links();
 //		writeLinksCSV(linkIDs);
 		generateRandomTours(linkIDs, 20);
-//		setupMyTour();
 
 //		writeToursCSV();
 
@@ -245,12 +243,7 @@ public class Version3_EvalutionFromLinks {
 			e.printStackTrace();
 		}
 	}
-
-	private void setupMyTour() {
-		tours.add(new EvaluationTour(evaluationDirectory, evaluationIdent + "_tour1", InputTour.tour));
-		tours.add(new EvaluationTour(evaluationDirectory, evaluationIdent + "_tour2", InputTour.tour));
-	}
-
+	
 	private void generateRandomTours(String[] linkIDs, int linksPerTour) {
 
 		// shuffle linkIDs
