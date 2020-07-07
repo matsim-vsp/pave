@@ -23,7 +23,6 @@ import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.schedule.Tasks;
 import org.matsim.contrib.dvrp.tracker.TaskTrackers;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
-import org.matsim.contrib.dvrp.util.LinkTimePair;
 import org.matsim.contrib.taxi.passenger.TaxiRequest;
 import org.matsim.contrib.taxi.passenger.TaxiRequest.TaxiRequestStatus;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
@@ -34,7 +33,6 @@ import org.matsim.contrib.taxi.schedule.TaxiPickupTask;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
 import org.matsim.contrib.taxi.schedule.TaxiTaskBaseType;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
-import org.matsim.contrib.taxi.scheduler.TaxiScheduler;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.router.util.LeastCostPathCalculator;
@@ -42,28 +40,30 @@ import org.matsim.core.router.util.TravelTime;
 
 import com.google.inject.name.Named;
 
-final class PFAVScheduler implements TaxiScheduleInquiry {
+final class PFAVScheduler {
 
 	private static final Logger log = Logger.getLogger(PFAVScheduler.class);
 
-	private final TaxiScheduler delegate;
+	private final TaxiScheduleInquiry taxiScheduleInquiry;
 	private final LeastCostPathCalculator router;
-	private Network network;
+	private final Network network;
 	private final FreightAVConfigGroup pfavConfigGroup;
 
 	private final TaxiConfigGroup taxiCfg;
-	private TravelTime travelTime;
-	private MobsimTimer timer;
-	private EventsManager eventsManager;
-	private FreightTourManagerListBased freightManager;
-	private HashSet<DvrpVehicle> vehiclesOnFreightTour = new HashSet<>();
-	private Map<Id<DvrpVehicle>, Double> requestedVehicles = new HashMap<>();
+	private final TravelTime travelTime;
+	private final MobsimTimer timer;
+	private final EventsManager eventsManager;
+	private final FreightTourManagerListBased freightManager;
+	private final HashSet<DvrpVehicle> vehiclesOnFreightTour = new HashSet<>();
+	private final Map<Id<DvrpVehicle>, Double> requestedVehicles = new HashMap<>();
 
 	/**
+	 *
 	 */
 	PFAVScheduler(TaxiConfigGroup taxiCfg, Fleet fleet, Network network, MobsimTimer timer,
-				  @Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, LeastCostPathCalculator router,
-				  EventsManager eventsManager, FreightTourManagerListBased tourManager, FreightAVConfigGroup pfavConfigGroup) {
+			@Named(DvrpTravelTimeModule.DVRP_ESTIMATED) TravelTime travelTime, LeastCostPathCalculator router,
+			EventsManager eventsManager, FreightTourManagerListBased tourManager,
+			FreightAVConfigGroup pfavConfigGroup) {
 		this.freightManager = tourManager;
 		this.eventsManager = eventsManager;
 		this.taxiCfg = taxiCfg;
@@ -72,8 +72,13 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 		this.timer = timer;
 		this.network = network;
 		this.pfavConfigGroup = pfavConfigGroup;
-		delegate = new TaxiScheduler(taxiCfg, fleet, timer, travelTime, router);
+		taxiScheduleInquiry = new TaxiScheduleInquiry(taxiCfg, timer);
 
+		//init fleet
+		for (DvrpVehicle veh : fleet.getVehicles().values()) {
+			veh.getSchedule()
+					.addTask(new TaxiStayTask(veh.getServiceBeginTime(), veh.getServiceEndTime(), veh.getStartLink()));
+		}
 	}
 
 	void updateBeforeNextTask(DvrpVehicle vehicle) {
@@ -553,27 +558,4 @@ final class PFAVScheduler implements TaxiScheduleInquiry {
 				throw new IllegalStateException();
 		}
 	}
-
-	//-------------------------TRUE DELEGATES-----------------------------------
-
-	public boolean isIdle(DvrpVehicle vehicle) {
-		return delegate.isIdle(vehicle);
-	}
-
-	public LinkTimePair getImmediateDiversionOrEarliestIdleness(DvrpVehicle veh) {
-		return delegate.getImmediateDiversionOrEarliestIdleness(veh);
-	}
-
-	public LinkTimePair getEarliestIdleness(DvrpVehicle veh) {
-		return delegate.getEarliestIdleness(veh);
-	}
-
-	public LinkTimePair getImmediateDiversion(DvrpVehicle veh) {
-		return delegate.getImmediateDiversion(veh);
-	}
-
-	public void stopVehicle(DvrpVehicle vehicle) {
-		delegate.stopVehicle(vehicle);
-	}
-
 }
