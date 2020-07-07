@@ -192,7 +192,7 @@ public class EvBufferVersion {
 		}
 	}
 
-	private void writeRunSettingsCSV() {
+	protected void writeRunSettingsCSV() {
 		try {
 			File csvFile = new File(bufferDirectory + "/" + bufferIdent + "_runSettings.csv");
 			csvFile.getParentFile().mkdirs();

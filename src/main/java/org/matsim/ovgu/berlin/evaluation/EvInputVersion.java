@@ -146,8 +146,11 @@ public class EvInputVersion {
 	}
 
 	public void loadRunSettings() {
-		for (EvBufferVersion buffer : buffers)
+		for (EvBufferVersion buffer : buffers) {
 			buffer.readRunSettings();
+//			buffer.runSettings.directory = buffer.runSettings.directory.replace("C:\\Users\\koetscha\\Desktop\\develop\\matsim.pave\\pave", "D:\\Rico\\ExperimentsMay2020");
+//			buffer.writeRunSettingsCSV();
+		}
 	}
 
 }
