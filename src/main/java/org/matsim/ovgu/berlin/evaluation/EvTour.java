@@ -20,9 +20,9 @@ import org.matsim.ovgu.berlin.eventHandling.Summary;
 import org.matsim.ovgu.berlin.eventHandling.TourEventsHandler;
 import org.matsim.ovgu.berlin.simulation.FreightOnlyMatsim;
 
-public class EvaluationTour {
+public class EvTour {
 
-	public EvaluationTour(String evaluationDirectory, String tourIdent, String[] linkIDs) {
+	public EvTour(String evaluationDirectory, String tourIdent, String[] linkIDs) {
 		this.tourIdent = tourIdent;
 		this.linkIDs = linkIDs;
 		this.tourDirectory = evaluationDirectory + "/" + tourIdent + "/";
@@ -32,7 +32,7 @@ public class EvaluationTour {
 	protected String tourIdent;
 	protected String[] linkIDs;
 
-	private List<EvInputVersion> evInputVersions = new ArrayList<EvInputVersion>();
+	private List<EvBufferVariant> evBufferVariants = new ArrayList<EvBufferVariant>();
 
 	private double[] minTravelTime;
 	private double[] avgTravelTime;
@@ -71,56 +71,54 @@ public class EvaluationTour {
 		}
 	}
 
-	public void setupInputVersionsWithBuffers(boolean runModel) {
-		initVersionA(runModel);
-		initVersionB(runModel);
+	public void setupBuffersForVariants(boolean runModel) {
+		initLPmin(runModel);
+		initLPavg(runModel);
 //		initVersionC(runModel);
-		initVersionBASEavg(runModel);
-		initVersionBASEmin(runModel);
-		initVersionSD(runModel);
+		initBASEavg(runModel);
+		initBASEmin(runModel);
+		initSDavg(runModel);
 	}
 
-	private void initVersionBASEmin(boolean runModel) {
-		EvInputVersion eiv = new EvInputVersion(tourDirectory, tourIdent + "_versionBASEmin", minTravelTime, linkIDs);
-		eiv.setupBASEBuffers(runModel);
-		evInputVersions.add(eiv);
-
+	private void initBASEmin(boolean runModel) {
+		EvBufferVariant baseMin = new EvBufferVariant(tourDirectory, tourIdent + "_BASEmin", minTravelTime, linkIDs);
+		baseMin.setupBASEBuffers(runModel);
+		evBufferVariants.add(baseMin);
 	}
 
-	private void initVersionBASEavg(boolean runModel) {
-		EvInputVersion eiv = new EvInputVersion(tourDirectory, tourIdent + "_versionBASEavg", avgTravelTime, linkIDs);
-		eiv.setupBASEBuffers(runModel);
-		evInputVersions.add(eiv);
-
+	private void initBASEavg(boolean runModel) {
+		EvBufferVariant baseAvg = new EvBufferVariant(tourDirectory, tourIdent + "_BASEavg", avgTravelTime, linkIDs);
+		baseAvg.setupBASEBuffers(runModel);
+		evBufferVariants.add(baseAvg);
 	}
 
-	private void initVersionSD(boolean runModel) {
-		EvInputVersion eiv = new EvInputVersion(tourDirectory, tourIdent + "_versionSD", avgTravelTime, linkIDs);
-		eiv.setupSDBuffers(avgTravelTime, traveltimeMatrix, runModel);
-		evInputVersions.add(eiv);
+	private void initSDavg(boolean runModel) {
+		EvBufferVariant sdAvg = new EvBufferVariant(tourDirectory, tourIdent + "_SDavg", avgTravelTime, linkIDs);
+		sdAvg.setupSDBuffers(avgTravelTime, traveltimeMatrix, runModel);
+		evBufferVariants.add(sdAvg);
 	}
 
-	private void initVersionA(boolean runModel) {
-		EvInputVersion eiv = new EvInputVersion(tourDirectory, tourIdent + "_versionA", minTravelTime, linkIDs);
-		eiv.calcDelayScenarios(traveltimeMatrix);
-		eiv.setupSITWABuffers(runModel);
-		evInputVersions.add(eiv);
+	private void initLPmin(boolean runModel) {
+		EvBufferVariant lpMin = new EvBufferVariant(tourDirectory, tourIdent + "_LPmin", minTravelTime, linkIDs);
+		lpMin.calcDelayScenarios(traveltimeMatrix);
+		lpMin.setupLPBuffers(runModel);
+		evBufferVariants.add(lpMin);
 	}
 
-	private void initVersionB(boolean runModel) {
-		EvInputVersion eiv = new EvInputVersion(tourDirectory, tourIdent + "_versionB", avgTravelTime, linkIDs);
-		eiv.calcDelayScenarios(traveltimeMatrix);
-		eiv.removeNegativScenarioValues();
-		eiv.setupSITWABuffers(runModel);
-		evInputVersions.add(eiv);
+	private void initLPavg(boolean runModel) {
+		EvBufferVariant lpAvg = new EvBufferVariant(tourDirectory, tourIdent + "_LPavg", avgTravelTime, linkIDs);
+		lpAvg.calcDelayScenarios(traveltimeMatrix);
+		lpAvg.removeNegativScenarioValues();
+		lpAvg.setupLPBuffers(runModel);
+		evBufferVariants.add(lpAvg);
 	}
 
-	private void initVersionC(boolean runModel) {
-		EvInputVersion eiv = new EvInputVersion(tourDirectory, tourIdent + "_versionC", avgTravelTime, linkIDs);
-		eiv.calcDelayScenarios(traveltimeMatrix);
-		eiv.setupSITWABuffers(runModel);
-		evInputVersions.add(eiv);
-	}
+//	private void initVersionC(boolean runModel) {
+//		EvBufferVariant vC = new EvBufferVariant(tourDirectory, tourIdent + "_versionC", avgTravelTime, linkIDs);
+//		vC.calcDelayScenarios(traveltimeMatrix);
+//		vC.setupSITWABuffers(runModel);
+//		evBufferVariants.add(vC);
+//	}
 
 	private double[] calcAggTravelTimes() {
 		minTravelTime = new double[traveltimeMatrix.length];
@@ -148,8 +146,8 @@ public class EvaluationTour {
 
 	public void evaluate(String timeWindowMethod, boolean runSimulation) {
 
-		for (EvInputVersion evi : evInputVersions) {
-			for (EvBufferVersion buffer : evi.buffers) {
+		for (EvBufferVariant evi : evBufferVariants) {
+			for (EvBufferSetup buffer : evi.buffers) {
 				buffer.readRunSettings();
 				Settings settings = buffer.runSettings;
 				settings.directory += timeWindowMethod + "/";
@@ -228,13 +226,13 @@ public class EvaluationTour {
 			csvFileTour.getParentFile().mkdirs();
 			FileWriter csvWriterTour = new FileWriter(csvFileTour);
 			csvWriterTour.append(getSummaryHeadline() + ";difTourDurationToBASEmin;difTourDurationToBASEavg\n");
-			for (EvInputVersion evi : evInputVersions) {
+			for (EvBufferVariant evi : evBufferVariants) {
 				File csvFileVersion = new File(
 						evi.versionDirectory + "/" + evi.versionIdent + "_" + timeWindowMethod + "_summary.csv");
 				csvFileVersion.getParentFile().mkdirs();
 				FileWriter csvWriterVersion = new FileWriter(csvFileVersion);
 				csvWriterVersion.append(getSummaryHeadline() + "\n");
-				for (EvBufferVersion buffer : evi.buffers) {
+				for (EvBufferSetup buffer : evi.buffers) {
 					String bufferSummary = readBufferSummaryString(buffer.bufferDirectory + "/" + buffer.bufferIdent
 							+ "_" + timeWindowMethod + "_result_summary.csv");
 

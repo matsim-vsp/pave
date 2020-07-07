@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EvInputVersion {
-	public EvInputVersion(String tourDirectory, String versionIdent, double[] expTravelTimes, String[] linkIDs) {
+public class EvBufferVariant {
+	public EvBufferVariant(String tourDirectory, String versionIdent, double[] expTravelTimes, String[] linkIDs) {
 		this.versionIdent = versionIdent;
 		this.versionDirectory = tourDirectory + "/" + versionIdent + "/";
 		this.expTT = expTravelTimes;
@@ -21,7 +21,7 @@ public class EvInputVersion {
 
 	// scenario / link --> delay
 	private double[][] delayScenarios;
-	public List<EvBufferVersion> buffers = new ArrayList<EvBufferVersion>();
+	public List<EvBufferSetup> buffers = new ArrayList<EvBufferSetup>();
 
 	// without delay
 	public double getBestCaseDuration(double serviceTime) {
@@ -41,7 +41,7 @@ public class EvInputVersion {
 
 		for (double window : windows) {
 			double w = window * factor;
-			buffers.add(new EvBufferVersion(versionDirectory, versionIdent + "_bufferW" + w + "_myM-" + myMethod, se, t,
+			buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferW" + w + "_myM-" + myMethod, se, t,
 					b, w, ss, u, myMethod, expTT, delayScenarios, linkIDs));
 		}
 	}
@@ -116,12 +116,12 @@ public class EvInputVersion {
 	public void setupSDBuffers(double[] avgTT, double[][] traveltimeMatrix, boolean runModel) {
 		setupTimeWindowBuffers(0, 0, false);
 		if (runModel)
-			for (EvBufferVersion buffer : buffers)
+			for (EvBufferSetup buffer : buffers)
 				buffer.calculateStandardDeviationBuffer(avgTT, traveltimeMatrix);
 		writeOrLoad(runModel);
 	}
 
-	public void setupSITWABuffers(boolean runModel) {
+	public void setupLPBuffers(boolean runModel) {
 		double se = getBestCaseDuration(2 * 60);
 		double t = 500;
 		// TODO: SETUP PARAMETERS FOR BUFFERS TO BE CHECKED
@@ -129,14 +129,14 @@ public class EvInputVersion {
 		setupTimeWindowBuffers(se, t, false);
 
 		if (runModel)
-			for (EvBufferVersion buffer : buffers)
+			for (EvBufferSetup buffer : buffers)
 				buffer.runLP();
 		writeOrLoad(runModel);
 	}
 
 	public void writeOrLoad(boolean write) {
 		if (write) {
-			for (EvBufferVersion buffer : buffers) {
+			for (EvBufferSetup buffer : buffers) {
 				buffer.writeParameters();
 				buffer.generateRunSettings();
 			}
@@ -146,7 +146,7 @@ public class EvInputVersion {
 	}
 
 	public void loadRunSettings() {
-		for (EvBufferVersion buffer : buffers) {
+		for (EvBufferSetup buffer : buffers) {
 			buffer.readRunSettings();
 //			buffer.runSettings.directory = buffer.runSettings.directory.replace("C:\\Users\\koetscha\\Desktop\\develop\\matsim.pave\\pave", "D:\\Rico\\ExperimentsMay2020");
 //			buffer.writeRunSettingsCSV();

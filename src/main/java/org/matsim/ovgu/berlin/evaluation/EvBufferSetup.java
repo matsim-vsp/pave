@@ -2,7 +2,6 @@ package org.matsim.ovgu.berlin.evaluation;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,9 +10,9 @@ import org.matsim.ovgu.berlin.Settings;
 import org.matsim.ovgu.berlin.LinearProgram.GenLpSolver;
 import org.matsim.ovgu.berlin.LinearProgram.LpTrip;
 
-public class EvBufferVersion {
+public class EvBufferSetup {
 
-	EvBufferVersion(String versionDirectory, String bufferIdent, double se, double t, double b, double w, double ss,
+	EvBufferSetup(String versionDirectory, String bufferIdent, double se, double t, double b, double w, double ss,
 			double u, boolean myMethod, double[] expTT, double[][] delayScenarios, String[] linkIDs) {
 		this.bufferIdent = bufferIdent;
 		this.bufferDirectory = versionDirectory + "/" + bufferIdent + "/";
