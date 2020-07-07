@@ -27,13 +27,22 @@ import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeModule;
 import org.matsim.core.router.RoutingModule;
 
-public class DRTAccessWalk2Egress2CarModule extends AbstractDvrpModeModule {
+public class DRTAccessWalkEgress2CarModule extends AbstractDvrpModeModule {
 
 
 	private final DrtConfigGroup drtCfg;
 	private final String mode;
 
-	public DRTAccessWalk2Egress2CarModule(String mode, DrtConfigGroup drtCfg) {
+
+	/**
+	 * This module will bind a routing module that uses the given drt mode for access and walk for egress while the main trip is routed based on the car disutility, car travel time and on the car network.<br>
+	 * That means, the {@code mode} is a representation for the modeChain drtMode->car->walk where drtMode is equal to {@code drtCfg.getMode()}. Note that, in standard configuration, drt uses walk for access and egress itself, so the trip might end up
+	 * as walk->drtMode->walk->car->walk
+	 *
+	 * @param mode the mode representing drtMode->car->walk
+	 * @param drtCfg the corresponding {@code DrtConfigGroup} for the access drt trip
+	 */
+	public DRTAccessWalkEgress2CarModule(String mode, DrtConfigGroup drtCfg) {
 		super(drtCfg.getMode());
 		this.drtCfg = drtCfg;
 		this.mode = mode;

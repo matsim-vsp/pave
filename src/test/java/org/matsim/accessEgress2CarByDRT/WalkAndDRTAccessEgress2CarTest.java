@@ -14,11 +14,9 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
-import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
 import org.matsim.testcases.MatsimTestUtils;
@@ -91,7 +89,7 @@ public class WalkAndDRTAccessEgress2CarTest {
 		}
 
 		controler.addOverridingModule(new WalkAccessDRTEgress2CarModule("walkCarDrt", drtCfg));
-		controler.addOverridingModule(new DRTAccessWalk2Egress2CarModule("drtCarWalk", drtCfg));
+		controler.addOverridingModule(new DRTAccessWalkEgress2CarModule("drtCarWalk", drtCfg));
 //		controler.addOverridingModule(new CarAccessEgress2DrtModule("carDrtCar", drtCfg));
 
 		controler.run();

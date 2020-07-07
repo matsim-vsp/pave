@@ -33,6 +33,16 @@ public class WalkAccessDRTEgress2CarModule extends AbstractDvrpModeModule {
 	private final DrtConfigGroup drtCfg;
 	private final String mode;
 
+
+	/**
+	 * This module will bind a routing module that uses walk for access and the given drt mode for egress while the main trip is routed based on the car disutility, car travel time and on the car network.<br>
+	 * That means, the {@code mode} is a representation for the modeChain walk->car->drtMode where drtMode is equal to {@code drtCfg.getMode()}.<br>
+	 * Note that, in standard configuration, drt uses walk for access and egress itself, so the trip might end up
+	 * as walk->car->walk->drtMode->walk
+	 *
+	 * @param mode the mode representing drtMode->car->walk
+	 * @param drtCfg the corresponding {@code DrtConfigGroup} for the egress drt trip
+	 */
 	public WalkAccessDRTEgress2CarModule(String mode, DrtConfigGroup drtCfg) {
 		super(drtCfg.getMode());
 		this.drtCfg = drtCfg;
@@ -43,7 +53,7 @@ public class WalkAccessDRTEgress2CarModule extends AbstractDvrpModeModule {
 	public void install() {
 
 		Provider<RoutingModule> drtRoutingModuleProvider = binder().getProvider(Key.get(RoutingModule.class, Names.named(drtCfg.getMode())));
-		addRoutingModuleBinding(mode).toProvider(new WalkAccessDRTEgressRoutingModuleProvider(mode, drtCfg, drtRoutingModuleProvider));
+		addRoutingModuleBinding(mode).toProvider(new WalkAccessDRTEgressRoutingModuleProvider(mode, drtRoutingModuleProvider));
 
 	}
 }

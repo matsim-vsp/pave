@@ -54,7 +54,6 @@ class DRTAccessWalkEgress2CarRoutingModuleProvider implements Provider<RoutingMo
 	private final String routingMode = TransportMode.car;
 
 	private final com.google.inject.Provider<RoutingModule> drtRoutingModuleProvider;
-	private final DrtConfigGroup drtCfg;
 
 	@Inject	PlansCalcRouteConfigGroup plansCalcRouteConfigGroup;
 	@Inject Map<String, TravelTime> travelTimes;
@@ -68,30 +67,16 @@ class DRTAccessWalkEgress2CarRoutingModuleProvider implements Provider<RoutingMo
 	@Named(TransportMode.walk)
 	private RoutingModule walkRouter;
 
-	@Inject
-	FallbackRoutingModule fallbackRoutingModule;
-
-
-//	/**
-//	 * This refers to the older (and still more standard) constructor.
-//	 *
-//	 * @param mode
-//	 */
-//	WalkAccessDRTEgressRoutingModuleProvider(String mode,
-//											 com.google.inject.Provider<RoutingModule> drtRoutingModuleProvider) {
-//		this( mode, mode, drtRoutingModuleProvider) ;
-//	}
-
 	/**
-	 * The effect of this constructor is a router configured for "car" will be used for routing, but the route
-	 * will then have the mode "mode".
+	 * This provider will return a routing module that uses drt for access and walk for egress while the main trip is routed based on the car disutility, car travel time and on the car network.<br>
+	 * That means, the {@code mode} is a representation for the modeChain drt->car->walk. Note that, in standard configuration, drt uses walk for access and egress itself, so the trip might end up
+	 * as walk->drt->walk->car->walk
 	 *
-	 * @param mode
+	 * @param mode the mode representing drt->car->walk
 	 */
 	DRTAccessWalkEgress2CarRoutingModuleProvider(String mode, DrtConfigGroup drtConfigGroup,
 												 com.google.inject.Provider<RoutingModule> drtRoutingModuleProvider) {
 		this.mode = mode;
-		this.drtCfg = drtConfigGroup;
 		this.drtRoutingModuleProvider = drtRoutingModuleProvider;
 	}
 
@@ -118,31 +103,31 @@ class DRTAccessWalkEgress2CarRoutingModuleProvider implements Provider<RoutingMo
 						travelTime);
 
 		if ( plansCalcRouteConfigGroup.getAccessEgressType().equals(PlansCalcRouteConfigGroup.AccessEgressType.none) ||
-				plansCalcRouteConfigGroup.getAccessEgressType().equals(PlansCalcRouteConfigGroup.AccessEgressType.constantTimeToLink)) {
+				plansCalcRouteConfigGroup.getAccessEgressType().equals(PlansCalcRouteConfigGroup.AccessEgressType.walkConstantTimeToLink)) {
 			throw new IllegalArgumentException("plansCalcRouteConfigGroup.getAccessEgressType() is not set to use network routing for access/egress. However, this module is relying on network routing for access/egress." +
 					"Please set the aforementioned parameter to either " + PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink + " or " + PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLinkPlusTimeConstant);
 		}
 
-		return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, routeAlgo, scenario, filteredNetwork, drtCfg.getMode(), drtRoutingModuleProvider.get(), TransportMode.walk, walkRouter);
+		return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, routeAlgo, scenario, filteredNetwork, drtRoutingModuleProvider.get(), walkRouter);
 	}
 
 	private Network getFilteredNetwork (String mode){
 		// the network refers to the (transport)mode:
-		Network modefilteredNetwork = null;
+		Network modeFilteredNetwork = null;
 
 		// Ensure this is not performed concurrently by multiple threads!
 		synchronized (this.singleModeNetworksCache.getSingleModeNetworksCache()) {
-			modefilteredNetwork = this.singleModeNetworksCache.getSingleModeNetworksCache().get(mode);
-			if (modefilteredNetwork == null) {
+			modeFilteredNetwork = this.singleModeNetworksCache.getSingleModeNetworksCache().get(mode);
+			if (modeFilteredNetwork == null) {
 				TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
 				Set<String> modes = new HashSet<>();
 				modes.add(mode);
-				modefilteredNetwork = NetworkUtils.createNetwork();
-				filter.filter(modefilteredNetwork, modes);
-				this.singleModeNetworksCache.getSingleModeNetworksCache().put(mode, modefilteredNetwork);
+				modeFilteredNetwork = NetworkUtils.createNetwork();
+				filter.filter(modeFilteredNetwork, modes);
+				this.singleModeNetworksCache.getSingleModeNetworksCache().put(mode, modeFilteredNetwork);
 			}
 		}
-		return modefilteredNetwork;
+		return modeFilteredNetwork;
 	}
 
 }
