@@ -24,10 +24,11 @@ public class RunEvalution {
 		this.evaluationIdent = evaluationIdent;
 		setEvaluationDirectory();
 
-//		writeLinksCSV(linkIDs);
+		writeLinksCSV(linkIDs);
 		generateRandomTours(linkIDs, 20);
-//		writeToursCSV();
+		writeToursCSV();
 
+		
 		for (int i = from - 1; i < to; i++)
 			tours.get(i).setup24hTravelTimes(ttWithSim); // Simulation needed ?
 
@@ -42,17 +43,7 @@ public class RunEvalution {
 		if (runSummary)
 			generateOverallSummary(windowMethod);
 
-//
-//		for (int i = from - 1; i < to; i++)
-//			tours.get(i).evaluate("PlusMinusArrival", false);// Simulation needed ?
-//
-////		for (int i = from -1; i < to; i++)
-////			tours.get(i).evaluate("AfterArrival", false);// Simulation needed ?
-//
-//		generateOverallSummary("PlusMinusArrival");
-////		generateOverallSummary("AfterArrival");
-
-		System.out.println("Version3_EvalutionFromLinks.run() Finished !");
+		System.out.println("RunEvalution.run() Finished !");
 	}
 
 	private void generateOverallSummary(String timeWindowMethod) {

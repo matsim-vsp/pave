@@ -42,16 +42,16 @@ public class Run {
 //		boolean evaluationWithSim = Boolean.parseBoolean(args[9]);
 
 		String[] linkIDs = Run.getMySample2000Links();
-		String name = "myEvaluation2000";
+		String name = "NextGen";
 		int from = 1;
 		int to = 1; // from + 99
 		boolean runBuffers = true;
-		String windowMethod = "";
-		boolean runEvaluation = false;
+		String windowMethod = "PlusMinusArrival";
+		boolean runEvaluation = true;
 		boolean runSummary = false;
 		boolean ttWithSim = false;
 		boolean bufWithModel = false;
-		boolean evaluationWithSim = false;
+		boolean evaluationWithSim = true;
 		
 		eva.run(linkIDs, name, from, to, runBuffers, windowMethod, runEvaluation, runSummary, ttWithSim, bufWithModel,
 				evaluationWithSim);

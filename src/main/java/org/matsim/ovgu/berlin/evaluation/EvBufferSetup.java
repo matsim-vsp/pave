@@ -12,7 +12,7 @@ import org.matsim.ovgu.berlin.LinearProgram.LpTrip;
 
 public class EvBufferSetup {
 
-	EvBufferSetup(String versionDirectory, String bufferIdent, double se, double t, double b, double w, double ss,
+	EvBufferSetup(String versionDirectory, String bufferIdent, double se, double t, double b, double[] w, double ss,
 			double u, boolean myMethod, double[] expTT, double[][] delayScenarios, String[] linkIDs) {
 		this.bufferIdent = bufferIdent;
 		this.bufferDirectory = versionDirectory + "/" + bufferIdent + "/";
@@ -26,6 +26,7 @@ public class EvBufferSetup {
 		this.expTT = expTT;
 		if (delayScenarios != null)
 			this.scenarioCount = delayScenarios.length;
+
 		this.trips = createLpTrips(expTT, delayScenarios);
 		this.linkIDs = linkIDs;
 		this.bufferValues = new double[linkIDs.length - 1];
@@ -46,7 +47,7 @@ public class EvBufferSetup {
 	private double se;
 	private double t;
 	private double b;
-	public double w;
+	public double[] w;
 	private double ss;
 	public double u;
 	private boolean myMethod;
@@ -124,7 +125,8 @@ public class EvBufferSetup {
 			for (int s = 0; s < scenarioCount; s++)
 				delay[s] = delayScenarios[s][i];
 
-			trips[i + 1] = new LpTrip(expTT[i], w, u, t, delayProbability, delay);
+//TODO: Check that the right time window is taken
+			trips[i + 1] = new LpTrip(expTT[i], w[i], u, t, delayProbability, delay);
 		}
 
 		// setup end trip to Depot
@@ -149,12 +151,15 @@ public class EvBufferSetup {
 			str += "se;" + se + "\n";
 			str += "t;" + t + "\n";
 			str += "b;" + b + "\n";
-			str += "w;" + w + "\n";
+			str += "w;";
+			for (double window : w)
+				str += window + ";";
+			str += "\n";
+			
 			str += "ss;" + ss + "\n";
 			str += "u;" + u + "\n";
 			str += "myMethod;" + myMethod + "\n";
 			str += "expTT[];";
-
 			for (double tt : expTT)
 				str += tt + ";";
 			str += "\n";
@@ -231,7 +236,7 @@ public class EvBufferSetup {
 		runSettings.directory = bufferDirectory + "/matsimData/";
 		runSettings.tour = linkIDs;
 		runSettings.serviceTime = u;
-		runSettings.timeWindow = generateEqualWindows(w, expTT.length);
+		runSettings.timeWindow = w;
 		runSettings.expectedTravelTime = expTT;
 		runSettings.buffer = bufferValues;
 		addPseudoDepot(runSettings, linkIDs[0], 0, 0);
@@ -250,13 +255,6 @@ public class EvBufferSetup {
 		for (int i = 0; i < array.length; i++)
 			newArray[i + 1] = array[i];
 		return newArray;
-	}
-
-	private double[] generateEqualWindows(double window, int length) {
-		double[] windows = new double[length];
-		for (int i = 0; i < windows.length; i++)
-			windows[i] = window;
-		return windows;
 	}
 
 	public void readRunSettings() {

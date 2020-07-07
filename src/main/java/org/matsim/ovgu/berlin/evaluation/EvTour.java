@@ -73,11 +73,11 @@ public class EvTour {
 
 	public void setupBuffersForVariants(boolean runModel) {
 		initLPmin(runModel);
-		initLPavg(runModel);
-//		initVersionC(runModel);
-		initBASEavg(runModel);
-		initBASEmin(runModel);
-		initSDavg(runModel);
+//		initLPavg(runModel);
+////		initVersionC(runModel);
+//		initBASEavg(runModel);
+//		initBASEmin(runModel);
+//		initSDavg(runModel);
 	}
 
 	private void initBASEmin(boolean runModel) {
@@ -146,8 +146,8 @@ public class EvTour {
 
 	public void evaluate(String timeWindowMethod, boolean runSimulation) {
 
-		for (EvBufferVariant evi : evBufferVariants) {
-			for (EvBufferSetup buffer : evi.buffers) {
+		for (EvBufferVariant variant : evBufferVariants) {
+			for (EvBufferSetup buffer : variant.buffers) {
 				buffer.readRunSettings();
 				Settings settings = buffer.runSettings;
 				settings.directory += timeWindowMethod + "/";
@@ -158,7 +158,6 @@ public class EvTour {
 				readEvents(settings, buffer.bufferIdent + "_" + timeWindowMethod + "_result");
 			}
 		}
-
 		generateTourAndVersionSummaries(timeWindowMethod);
 	}
 
@@ -226,13 +225,13 @@ public class EvTour {
 			csvFileTour.getParentFile().mkdirs();
 			FileWriter csvWriterTour = new FileWriter(csvFileTour);
 			csvWriterTour.append(getSummaryHeadline() + ";difTourDurationToBASEmin;difTourDurationToBASEavg\n");
-			for (EvBufferVariant evi : evBufferVariants) {
+			for (EvBufferVariant variant : evBufferVariants) {
 				File csvFileVersion = new File(
-						evi.versionDirectory + "/" + evi.versionIdent + "_" + timeWindowMethod + "_summary.csv");
+						variant.versionDirectory + "/" + variant.versionIdent + "_" + timeWindowMethod + "_summary.csv");
 				csvFileVersion.getParentFile().mkdirs();
 				FileWriter csvWriterVersion = new FileWriter(csvFileVersion);
 				csvWriterVersion.append(getSummaryHeadline() + "\n");
-				for (EvBufferSetup buffer : evi.buffers) {
+				for (EvBufferSetup buffer : variant.buffers) {
 					String bufferSummary = readBufferSummaryString(buffer.bufferDirectory + "/" + buffer.bufferIdent
 							+ "_" + timeWindowMethod + "_result_summary.csv");
 
