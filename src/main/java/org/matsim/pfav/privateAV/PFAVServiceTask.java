@@ -18,29 +18,31 @@
  * *********************************************************************** */
 package org.matsim.pfav.privateAV;
 
+import static org.matsim.contrib.taxi.schedule.TaxiTaskBaseType.DROPOFF;
+
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.freight.carrier.CarrierService;
-import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
+import org.matsim.contrib.taxi.schedule.TaxiTaskType;
 
 /**
  * @author tschlenther
- *
  */
 class PFAVServiceTask extends StayTask {
+	public static final TaxiTaskType TYPE = new TaxiTaskType("SERVICE", DROPOFF);
 
 	CarrierService service;
-	
+
 	/**
 	 * @param beginTime
 	 * @param endTime
 	 * @param link
 	 */
-    PFAVServiceTask(double beginTime, double endTime, Link link, CarrierService service) {
-		super(TaxiDropoffTask.TYPE, beginTime, endTime, link);
+	PFAVServiceTask(double beginTime, double endTime, Link link, CarrierService service) {
+		super(TYPE, beginTime, endTime, link);
 		this.service = service;
 	}
-	
+
 	CarrierService getCarrierService() {
 		return this.service;
 	}
