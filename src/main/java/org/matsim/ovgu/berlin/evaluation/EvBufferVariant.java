@@ -38,7 +38,8 @@ public class EvBufferVariant {
 	}
 
 	private void setupEqualTimeWindowBuffers(double se, double t, boolean myMethod) {
-		double[] windows = new double[] { 1, 2, 3, /* 4, */ 5, /* 6, 7, 8, 9, */ 10 };
+		double[] windows = new double[] { 1 };
+//		double[] windows = new double[] { 1, 2, 3, /* 4, */ 5, /* 6, 7, 8, 9, */ 10 };
 		double factor = 60;
 		double b = 1;
 		double ss = 0;

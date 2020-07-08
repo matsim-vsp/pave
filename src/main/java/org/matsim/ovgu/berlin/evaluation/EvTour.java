@@ -9,7 +9,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsUtils;
@@ -159,6 +161,7 @@ public class EvTour {
 			}
 		}
 		generateTourAndVersionSummaries(timeWindowMethod);
+		generateTourAndVersionSummaries_Groups(timeWindowMethod);
 	}
 
 	private void readEvents(Settings settings, String fileName) {
@@ -178,6 +181,9 @@ public class EvTour {
 
 		writeBufferSummaryCSV(handler.getSummary(), settings.directory + "/../../" + fileName + "_summary.csv",
 				settings.buffer);
+
+		writeBufferSummaryTWGroupsCSV(handler.getSummary(),
+				settings.directory + "/../../" + fileName + "_summaryGroups.csv", settings.buffer);
 	}
 
 	private void writeBufferSummaryCSV(Summary summary, String summaryFilePath, double[] usedBuffer) {
@@ -186,14 +192,55 @@ public class EvTour {
 			File csvFile = new File(summaryFilePath);
 			csvFile.getParentFile().mkdirs();
 			FileWriter csvWriter = new FileWriter(csvFile);
-			csvWriter.append(getSummaryHeadline().replace("evaluation;tour;version;window;myMethod", "") + "\n");
+			csvWriter.append(getSummaryHeadline().replace("evaluation;tour;version;window;myMethod;", "") + "\n");
 
-			String str = summary.percent_oBeforeTW + ";" + summary.percent_oInTW + ";" + summary.percent_oAfterTW + ";"
-					+ summary.avg_oEarlyTW / 60 + ";" + summary.max_oEarlyTW / 60 + ";" + summary.avg_oLateTW / 60 + ";"
-					+ summary.max_oLateTW / 60 + ";" + summary.percent_dBeforeTW + ";" + summary.percent_dInTW + ";"
-					+ summary.percent_dAfterTW + ";" + summary.avg_dEarlyTW / 60 + ";" + summary.max_dEarlyTW / 60 + ";"
-					+ summary.avg_dLateTW / 60 + ";" + summary.max_dLateTW / 60 + ";"
-					+ summary.avg_tourDuration / 60 / 1440 + ";";
+			String str = summary.percent_oBeforeTW_all + ";" + summary.percent_oInTW_all + ";"
+					+ summary.percent_oAfterTW_all + ";" + summary.avg_oEarlyTW_all / 60 + ";"
+					+ summary.max_oEarlyTW_all / 60 + ";" + summary.avg_oLateTW_all / 60 + ";"
+					+ summary.max_oLateTW_all / 60 + ";" + summary.percent_dBeforeTW_all + ";"
+					+ summary.percent_dInTW_all + ";" + summary.percent_dAfterTW_all + ";"
+					+ summary.avg_dEarlyTW_all / 60 + ";" + summary.max_dEarlyTW_all / 60 + ";"
+					+ summary.avg_dLateTW_all / 60 + ";" + summary.max_dLateTW_all / 60 + ";"
+					+ summary.avg_tourDuration_all / 60 / 1440 + ";\n";
+
+			str = str.replace(".", ",");
+
+			csvWriter.append(str);
+
+			csvWriter.flush();
+			csvWriter.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void writeBufferSummaryTWGroupsCSV(Summary summary, String summaryFilePath, double[] usedBuffer) {
+
+		try {
+			File csvFile = new File(summaryFilePath);
+			csvFile.getParentFile().mkdirs();
+			FileWriter csvWriter = new FileWriter(csvFile);
+			csvWriter.append("windowGroups;"
+					+ getSummaryHeadline().replace("evaluation;tour;version;window;myMethod;", "") + "\n");
+
+			String str = "";
+
+			Iterator<Entry<Double, Integer>> iter = summary.timewindow.entrySet().iterator();
+
+			while (iter.hasNext()) {
+				Entry<Double, Integer> entry = iter.next();
+				int i = entry.getValue();
+
+				str += entry.getKey() + ";" + summary.percent_oBeforeTW_groups[i] + ";"
+						+ summary.percent_oInTW_groups[i] + ";" + summary.percent_oAfterTW_groups[i] + ";"
+						+ summary.avg_oEarlyTW_groups[i] / 60 + ";" + summary.max_oEarlyTW_groups[i] / 60 + ";"
+						+ summary.avg_oLateTW_groups[i] / 60 + ";" + summary.max_oLateTW_groups[i] / 60 + ";"
+						+ summary.percent_dBeforeTW_groups[i] + ";" + summary.percent_dInTW_groups[i] + ";"
+						+ summary.percent_dAfterTW_groups[i] + ";" + summary.avg_dEarlyTW_groups[i] / 60 + ";"
+						+ summary.max_dEarlyTW_groups[i] / 60 + ";" + summary.avg_dLateTW_groups[i] / 60 + ";"
+						+ summary.max_dLateTW_groups[i] / 60 + ";" + summary.avg_tourDuration_all / 60 / 1440 + ";\n";
+			}
 
 			str = str.replace(".", ",");
 
@@ -209,10 +256,51 @@ public class EvTour {
 
 	protected String getSummaryHeadline() {
 		String str = "evaluation;tour;version;window;myMethod;" + "oBeforeTW;oInTW;oAfterTW;"
-				+ "oEarlyTW;oMaxEarlyTW;oLateTW;oMaxLateTW;" + "dBeforeTW;dInTW;dAfterTW;"
-				+ "dEarlyTW;dMaxEarlyTW;dLateTW;dMaxTW;tourDuration";
+				+ "oAvgEarlyTW;oMaxEarlyTW;oAvgLateTW;oMaxLateTW;" + "dBeforeTW;dInTW;dAfterTW;"
+				+ "dAvgEarlyTW;dMaxEarlyTW;dAvgLateTW;dMaxLateTW;tourDuration";
 
 		return str;
+	}
+
+	private void generateTourAndVersionSummaries_Groups(String timeWindowMethod) {
+
+		List<String> summaryStrings = new ArrayList<String>();
+
+		try {
+
+			File csvFileTour = new File(
+					tourDirectory + "/" + tourIdent + "_" + timeWindowMethod + "_summaryGroups.csv");
+			csvFileTour.getParentFile().mkdirs();
+			FileWriter csvWriterTour = new FileWriter(csvFileTour);
+			csvWriterTour.append(getSummaryHeadline().replace("myMethod", "myMethod;windowGroups") + ";difTourDurationToBASEmin;difTourDurationToBASEavg\n");
+			for (EvBufferVariant variant : evBufferVariants) {
+				File csvFileVersion = new File(variant.versionDirectory + "/" + variant.versionIdent + "_"
+						+ timeWindowMethod + "_summaryGroups.csv");
+				csvFileVersion.getParentFile().mkdirs();
+				FileWriter csvWriterVersion = new FileWriter(csvFileVersion);
+				csvWriterVersion.append(getSummaryHeadline().replace("myMethod", "myMethod;windowGroups") + "\n");
+				for (EvBufferSetup buffer : variant.buffers) {
+					String bufferSummaryGroups = readBufferSummaryString_Groups(buffer.bufferIdent.replace("_", ";") + ";",
+							buffer.bufferDirectory + "/" + buffer.bufferIdent + "_" + timeWindowMethod
+									+ "_result_summaryGroups.csv");
+
+					summaryStrings.add(bufferSummaryGroups);
+					csvWriterVersion.append(bufferSummaryGroups);
+				}
+
+				csvWriterVersion.flush();
+				csvWriterVersion.close();
+			}
+
+			for (String str : summaryStrings)
+				csvWriterTour.append(str);
+
+			csvWriterTour.flush();
+			csvWriterTour.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void generateTourAndVersionSummaries(String timeWindowMethod) {
@@ -226,8 +314,8 @@ public class EvTour {
 			FileWriter csvWriterTour = new FileWriter(csvFileTour);
 			csvWriterTour.append(getSummaryHeadline() + ";difTourDurationToBASEmin;difTourDurationToBASEavg\n");
 			for (EvBufferVariant variant : evBufferVariants) {
-				File csvFileVersion = new File(
-						variant.versionDirectory + "/" + variant.versionIdent + "_" + timeWindowMethod + "_summary.csv");
+				File csvFileVersion = new File(variant.versionDirectory + "/" + variant.versionIdent + "_"
+						+ timeWindowMethod + "_summary.csv");
 				csvFileVersion.getParentFile().mkdirs();
 				FileWriter csvWriterVersion = new FileWriter(csvFileVersion);
 				csvWriterVersion.append(getSummaryHeadline() + "\n");
@@ -254,7 +342,6 @@ public class EvTour {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
 	private List<String> extendRelativeTourDurations(List<String> summaryStrings) {
@@ -307,6 +394,23 @@ public class EvTour {
 
 		csvReader.close();
 		return secondRow;
+	}
+
+	private String readBufferSummaryString_Groups(String linePrefix, String file) throws IOException {
+
+		BufferedReader csvReader = new BufferedReader(new FileReader(file));
+
+		String firstRow = csvReader.readLine();
+
+		String content = "";
+		String line;
+
+		while ((line = csvReader.readLine()) != null) {
+			content += linePrefix + line + "\n";
+		}
+
+		csvReader.close();
+		return content;
 	}
 
 	public double getNoDelayDuration(double serviceTime) {

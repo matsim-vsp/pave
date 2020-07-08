@@ -48,10 +48,10 @@ public class Run {
 		boolean runBuffers = true;
 		String windowMethod = "PlusMinusArrival";
 		boolean runEvaluation = true;
-		boolean runSummary = false;
+		boolean runSummary = true;
 		boolean ttWithSim = false;
 		boolean bufWithModel = false;
-		boolean evaluationWithSim = true;
+		boolean evaluationWithSim = false;
 		
 		eva.run(linkIDs, name, from, to, runBuffers, windowMethod, runEvaluation, runSummary, ttWithSim, bufWithModel,
 				evaluationWithSim);

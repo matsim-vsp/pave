@@ -16,11 +16,16 @@ public class RunEvalution {
 	private List<EvTour> tours = new ArrayList<EvTour>();
 	private String evaluationIdent;
 	private String evaluationDirectory;
+	private int from;
+	private int to;
 
-	
-	public void run(String[] linkIDs, String evaluationIdent, int from, int to, boolean runBuffers, String windowMethod, boolean runEvaluation,
-			boolean runSummary, boolean ttWithSim, boolean bufWithModel, boolean evaluationWithSim) {
-		
+	public void run(String[] linkIDs, String evaluationIdent, int from, int to, boolean runBuffers, String windowMethod,
+			boolean runEvaluation, boolean runSummary, boolean ttWithSim, boolean bufWithModel,
+			boolean evaluationWithSim) {
+
+		this.from = from;
+		this.to = to;
+
 		this.evaluationIdent = evaluationIdent;
 		setEvaluationDirectory();
 
@@ -28,7 +33,6 @@ public class RunEvalution {
 		generateRandomTours(linkIDs, 20);
 		writeToursCSV();
 
-		
 		for (int i = from - 1; i < to; i++)
 			tours.get(i).setup24hTravelTimes(ttWithSim); // Simulation needed ?
 
@@ -40,27 +44,30 @@ public class RunEvalution {
 			for (int i = from - 1; i < to; i++)
 				tours.get(i).evaluate(windowMethod, evaluationWithSim);// Simulation needed ?
 
-		if (runSummary)
-			generateOverallSummary(windowMethod);
+		if (runSummary) {
+			generateOverallSummary(windowMethod, "");
+			generateOverallSummary(windowMethod, "Groups");
+		}
 
 		System.out.println("RunEvalution.run() Finished !");
 	}
 
-	private void generateOverallSummary(String timeWindowMethod) {
+	private void generateOverallSummary(String timeWindowMethod, String groups) {
 
 		List<String[]> tmpSummary = new ArrayList<String[]>();
 
 		try {
-			File csvFileResults = new File(
-					evaluationDirectory + "/" + evaluationIdent + "_" + timeWindowMethod + "_results.csv");
+			File csvFileResults = new File(evaluationDirectory + "/" + evaluationIdent + "_" + timeWindowMethod + "_f"
+					+ from + "t" + to + "_results" + groups + ".csv");
 			csvFileResults.getParentFile().mkdirs();
 			FileWriter csvWriterResults = new FileWriter(csvFileResults);
-			csvWriterResults
-					.append(tours.get(0).getSummaryHeadline() + ";difTourDurationToBASEmin;difTourDurationToBASEavg\n");
-			for (int i = 0; i < tours.size(); i++) {
+			csvWriterResults.append(
+					tours.get(from).getSummaryHeadline() + ";difTourDurationToBASEmin;difTourDurationToBASEavg\n");
+
+			for (int i = from - 1; i < to; i++) {
 
 				String results = readBufferSummariesWithoutHeadline(tours.get(i).tourDirectory + "/"
-						+ tours.get(i).tourIdent + "_" + timeWindowMethod + "_summary.csv");
+						+ tours.get(i).tourIdent + "_" + timeWindowMethod + "_summary" + groups + ".csv");
 
 				csvWriterResults.append(results + "\n");
 				tmpSummary.add(results.split("\n"));
@@ -69,8 +76,8 @@ public class RunEvalution {
 			csvWriterResults.flush();
 			csvWriterResults.close();
 
-			writeSummary(tmpSummary,
-					evaluationDirectory + "/" + evaluationIdent + "_" + timeWindowMethod + "_results_summary.csv");
+			writeSummary(tmpSummary, evaluationDirectory + "/" + evaluationIdent + "_" + timeWindowMethod + "_f" + from
+					+ "t" + to + "_results_summary" + groups + ".csv");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -116,10 +123,10 @@ public class RunEvalution {
 
 	private Double getAvgNoDelayDuration() {
 		double sum = 0;
-		for (int i = 0; i < tours.size(); i++) {
+		for (int i = from - 1; i < to; i++) {
 			sum += tours.get(i).getNoDelayDuration(2 * 60);
 		}
-		return sum / (double) tours.size() / 60.0 / 1440.0;
+		return sum / (double) (1 + to - from) / 60.0 / 1440.0;
 	}
 
 	private double readOptimalDuration(EvTour tour) {
@@ -233,7 +240,7 @@ public class RunEvalution {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void generateRandomTours(String[] linkIDs, int linksPerTour) {
 
 		// shuffle linkIDs
@@ -246,8 +253,7 @@ public class RunEvalution {
 			ids[counter++] = linkIDs[i];
 			// a tour consist of linksPerTour links
 			if (counter == linksPerTour) {
-				tours.add(
-						new EvTour(evaluationDirectory, evaluationIdent + "_tour" + ((i + 1) / counter), ids));
+				tours.add(new EvTour(evaluationDirectory, evaluationIdent + "_tour" + ((i + 1) / counter), ids));
 				ids = new String[linksPerTour];
 				counter = 0;
 			}
