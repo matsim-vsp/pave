@@ -124,6 +124,11 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
             FreightTourDataDispatched tour = this.begunFreightTours.get(vehicleId);
             PFAVServiceTask serviceTask = tour.getLastStartedServiceTask();
 
+
+            if(serviceTask == null){
+                throw new IllegalStateException("it seems like a service task is ending but no start of any service task for tour " + tour + " has ever been tracked...");
+            }
+
             double start = serviceTask.getBeginTime();
             double totalDuration = event.getTime() - start;
             tour.addToTotalServiceTime(totalDuration);
@@ -146,6 +151,11 @@ class FreightTourDispatchAnalyzer implements FreightTourRequestEventHandler, QSi
                 throw new IllegalStateException("vehicle " + vehicleId + " has just started a service activity but no tour start is registered!" +
                         "\n see the event=" + event);
             PFAVServiceTask serviceTask = tour.getLastStartedServiceTask();
+
+            if(serviceTask == null){
+                throw new IllegalStateException("it seems like a service activity has started but no start of any service task for tour " + tour + " has ever been tracked...");
+            }
+
             tour.notifyNextServiceTaskStarted(serviceTask, event.getTime());
         }
     }
