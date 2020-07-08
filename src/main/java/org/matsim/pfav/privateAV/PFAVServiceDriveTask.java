@@ -18,16 +18,19 @@
  * *********************************************************************** */
 package org.matsim.pfav.privateAV;
 
+import static org.matsim.contrib.taxi.schedule.TaxiTaskBaseType.OCCUPIED_DRIVE;
+
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.schedule.DriveTask;
-import org.matsim.contrib.taxi.schedule.TaxiOccupiedDriveTask;
+import org.matsim.contrib.taxi.schedule.TaxiTaskType;
 
 /**
  * @author tschlenther
- *
  */
 class PFAVServiceDriveTask extends DriveTask {
-    PFAVServiceDriveTask(VrpPathWithTravelData path) {
-		super(TaxiOccupiedDriveTask.TYPE, path);
+	public static final TaxiTaskType TYPE = new TaxiTaskType("SERVICE_DRIVE", OCCUPIED_DRIVE);
+
+	PFAVServiceDriveTask(VrpPathWithTravelData path) {
+		super(TYPE, path);
 	}
 }

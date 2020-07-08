@@ -18,37 +18,40 @@
  * *********************************************************************** */
 package org.matsim.pfav.privateAV;
 
+import static org.matsim.contrib.taxi.schedule.TaxiTaskBaseType.DROPOFF;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.StayTask;
-import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
+import org.matsim.contrib.taxi.schedule.TaxiTaskType;
 
 /**
  * @author tschlenther
- *
  */
 class PFAVRetoolTask extends StayTask {
+	public static final TaxiTaskType TYPE = new TaxiTaskType("RETOOL", DROPOFF);
 
 	double earliestStartTime = 0.0;
 	Id<DvrpVehicle> vehicle = null;
-	
+
 	/**
 	 * @param beginTime
 	 * @param endTime
 	 * @param link
 	 */
-    PFAVRetoolTask(double beginTime, double endTime, Link link) {
+	PFAVRetoolTask(double beginTime, double endTime, Link link) {
 		/*
 		 * we model this as a dropoff task, since retooling is closest to "picking a new car body up" or "dropping the old car body".
 		 * but pickup task type is somehow used for TaxiStatsCalculator in correspondence with a request (which we do not have here, so we use dropoff type.
 		 * furthermore, if it was of type stay, the task could be removed by the taxischeduler if there is delay in the schedule
 		 */
-		super(TaxiDropoffTask.TYPE, beginTime, endTime, link);
+		super(TYPE, beginTime, endTime, link);
 	}
-	
+
 	/**
 	 * if not set at some point, this will return 0.0
+	 *
 	 * @return
 	 */
 	double getEarliestStartTime() {
@@ -62,7 +65,7 @@ class PFAVRetoolTask extends StayTask {
 	void setVehicle(Id<DvrpVehicle> vehicle) {
 		this.vehicle = vehicle;
 	}
-	
+
 	@Override
 	public String toString() {
 		return super.toString() + " [" + this.getStatus() + "] " + "vehicle=" + this.vehicle;
