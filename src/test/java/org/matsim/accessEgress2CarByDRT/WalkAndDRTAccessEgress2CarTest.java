@@ -1,8 +1,11 @@
 package org.matsim.accessEgress2CarByDRT;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.inject.Inject;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.matsim.analysis.LegHistogram;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
@@ -14,8 +17,11 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.controler.events.IterationEndsEvent;
+import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
@@ -34,12 +40,20 @@ public class WalkAndDRTAccessEgress2CarTest {
 
 	@Rule public MatsimTestUtils utils = new MatsimTestUtils() ;
 
-
-	//TODO actually test something or classify it as an IT...
 	@Test
-	public void interModalCarDRTTest() {
-//		modifyNetwork();
+	public void testNumberOfModeDepartures() {
 
+		Controler controler = setupControler();
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				addControlerListenerBinding().to(WalkAndDRTAccessEgress2CarTestHandler.class).asEagerSingleton();
+			}
+		});
+		controler.run();
+	}
+
+	private Controler setupControler() {
 		URL configUrl = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("gridCarRestrictedInCenter"), "gridCarRestrictedInCenter_config.xml");
 		Config config = ConfigUtils.loadConfig(configUrl, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
 				new OTFVisConfigGroup());
@@ -54,24 +68,19 @@ public class WalkAndDRTAccessEgress2CarTest {
 				.build());
 		drtCfg.setUseModeFilteredSubnetwork(true);
 
-//		drtCfg.setOperationalScheme(DrtConfigGroup.OperationalScheme.stopbased);
-//		drtCfg.setTransitStopFile("drtstops.xml");
-
-		config.plans().setInputFile("gridCarRestrictedInCenter_population_car.xml");
+		config.plans().setInputFile("gridCarRestrictedInCenter_population_intermodal.xml");
 
 		config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink);
-		config.controler().setLastIteration(1);
+		config.controler().setLastIteration(0);
 		config.qsim().setStartTime(0.);
 		config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
-		config.controler().setOutputDirectory(utils.getOutputDirectory() + "carPop");
+		config.controler().setOutputDirectory(utils.getOutputDirectory());
 
 		{ //add scoring parameters for new modes
 			config.planCalcScore().addModeParams(new PlanCalcScoreConfigGroup.ModeParams("walkCarDrt"));
 			config.planCalcScore().addModeParams(new PlanCalcScoreConfigGroup.ModeParams("drtCarWalk"));
-			config.planCalcScore().addModeParams(new PlanCalcScoreConfigGroup.ModeParams("carDrtCar"));
 			config.planCalcScore().addActivityParams(new PlanCalcScoreConfigGroup.ActivityParams("walkCarDrt interaction").setScoringThisActivityAtAll(false));
 			config.planCalcScore().addActivityParams(new PlanCalcScoreConfigGroup.ActivityParams("drtCarWalk interaction").setScoringThisActivityAtAll(false));
-			config.planCalcScore().addActivityParams(new PlanCalcScoreConfigGroup.ActivityParams("carDrtCar interaction").setScoringThisActivityAtAll(false));
 		}
 
 		//this is the wrong way around (create controler before manipulating scenario, but it is handy here...
@@ -83,42 +92,64 @@ public class WalkAndDRTAccessEgress2CarTest {
 				Id<Vehicle> vehicleId = Id.createVehicleId(person.getId().toString());
 				vehicleIdMap.put("walkCarDrt", vehicleId);
 				vehicleIdMap.put("drtCarWalk", vehicleId);
-				vehicleIdMap.put("carDrtcar", vehicleId);
 				VehicleUtils.insertVehicleIdsIntoAttributes(person, vehicleIdMap);
 			});
 		}
 
 		controler.addOverridingModule(new WalkAccessDRTEgress2CarModule("walkCarDrt", drtCfg));
 		controler.addOverridingModule(new DRTAccessWalkEgress2CarModule("drtCarWalk", drtCfg));
-//		controler.addOverridingModule(new CarAccessEgress2DrtModule("carDrtCar", drtCfg));
+		return controler;
+	}
+}
 
-		controler.run();
+class WalkAndDRTAccessEgress2CarTestHandler implements IterationEndsListener{
+
+	@Inject
+	LegHistogram histogram;
+
+	@Override
+	public void notifyIterationEnds(IterationEndsEvent event) {
+/**
+ * 3 agents performing walk = 3 departures
+ * 3 agents performing walk->car->walk = 9 departures
+ * 3 agents that want perform walk->drt->walk, but 2 of them do only walk (because drt not available at origin) = 5 departures
+ * 3 agents that want to perform walk->drt->walk->drtCarWalk->walk, but 2 of them do only walk (because drt not available at origin) = 7 departures
+ * 3 agents that want to perform walk->drtCarWalk->walk->drt->walk, but 2 of them do only walk (because drt not available at destination) = 7 departures
+ *
+ * that sums up to 3 + 9 + 5 + 7 + 7 = 31 departures
+ *
+ *
+ */
+		Assert.assertEquals("the number of all departures is expected to be 31", 31, getSumOfArrayEntries(histogram.getDepartures()));
+		Assert.assertEquals("there should be 5 modes in the legHistogram ", 5, histogram.getLegModes().size());
+
+		// if you go through the comment above:
+		// 3 + 3*2 + 2 + 2*1 + 3 + 2*1 + 3 + 2*1 = 23
+		Assert.assertEquals("the should be 23 walk legs", 23, getSumOfArrayEntries(histogram.getDepartures(TransportMode.walk)));
+
+		// if you go through the comment above:
+		// 0 + 3 + 0 + 0 + 0 = 3
+		Assert.assertEquals("the should be 3 car legs", 3, getSumOfArrayEntries(histogram.getDepartures(TransportMode.car)));
+
+		// if you go through the comment above:
+		// 0 + 0 + 1 + 1 + 1 = 3
+		Assert.assertEquals("the should be 3 drt legs", 3, getSumOfArrayEntries(histogram.getDepartures(TransportMode.drt)));
+
+		// if you go through the comment above:
+		// 0 + 0 + 0 + 1 + 0 = 1
+		Assert.assertEquals("the should be 1 walkCarDrt leg", 1, getSumOfArrayEntries(histogram.getDepartures("walkCarDrt")));
+
+		// if you go through the comment above:
+		// 0 + 0 + 0 + 0 + 1 = 1
+		Assert.assertEquals("the should be 1 drtCarWalk leg", 1, getSumOfArrayEntries(histogram.getDepartures("drtCarWalk")));
+
 	}
 
-	private void modifyNetwork() {
-		URL networkUrl = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("gridCarRestrictedInCenter"), "gridCarRestrictedInCenter_network.xml");
-
-
-		Network network = NetworkUtils.readNetwork(networkUrl.toString());
-
-
-		network.getLinks().values().forEach(link -> {
-
-			link.setLength(300);
-			link.setFreespeed(15.0);
-
-			Set<String> modes = new HashSet<>();
-			modes.addAll(link.getAllowedModes());
-
-			if(modes.contains(TransportMode.walk) ) modes.add("drt");
-			else if (modes.contains(TransportMode.car)){
-				modes.add("walkCarDrt");
-				modes.add("drtCarWalk");
-			}
-			modes.add(TransportMode.walk);
-			link.setAllowedModes(modes);
-
-		});
-		NetworkUtils.writeNetwork(network, "D:/git/matsim/examples/scenarios/gridCarRestrictedInCenter/gridCarRestrictedInCenter_network_drtInZone.xml");
+	private int getSumOfArrayEntries(int[] array){
+		int sum = 0;
+		for (int i : array) {
+			sum += i;
+		}
+		return sum;
 	}
 }
