@@ -18,7 +18,6 @@ import org.matsim.contrib.taxi.optimizer.TaxiOptimizer;
 import org.matsim.contrib.taxi.passenger.SubmittedTaxiRequestsCollector;
 import org.matsim.contrib.taxi.passenger.TaxiRequestCreator;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
-import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.contrib.taxi.util.TaxiSimulationConsistencyChecker;
 import org.matsim.contrib.taxi.util.stats.TaxiStatusTimeProfileCollectorProvider;
 import org.matsim.core.api.experimental.events.EventsManager;
@@ -57,43 +56,41 @@ final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
             private MobsimTimer timer;
 
             @Inject
-            private EventsManager events;
+			private EventsManager events;
 
-            @Override
-            public TaxiOptimizer get() {
-                Fleet fleet = getModalInstance(Fleet.class);
-                TaxiScheduleInquiry taxiScheduler = getModalInstance(TaxiScheduleInquiry.class);
-                return new PFAVProvider(taxiCfg, fleet, taxiScheduler, timer, events).get();
-            }
-        });
+			@Override
+			public TaxiOptimizer get() {
+				Fleet fleet = getModalInstance(Fleet.class);
+				PFAVScheduler scheduler = getModalInstance(PFAVScheduler.class);
+				return new PFAVOptimizer(taxiCfg, fleet, scheduler, events, timer);
+			}
+		});
 
-        bindModal(TaxiScheduleInquiry.class).toProvider(
-                new ModalProviders.AbstractProvider<TaxiScheduleInquiry>(taxiCfg.getMode()) {
-                    @Inject
-                    private MobsimTimer timer;
+		bindModal(PFAVScheduler.class).toProvider(new ModalProviders.AbstractProvider<>(taxiCfg.getMode()) {
+			@Inject
+			private MobsimTimer timer;
 
-                    @Inject
-                    @Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
-                    private TravelTime travelTime;
+			@Inject
+			@Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
+			private TravelTime travelTime;
 
-                    @Inject
-                    FreightTourManagerListBased tourManager;
+			@Inject
+			FreightTourManagerListBased tourManager;
 
-                    @Inject
-                    private EventsManager events;
+			@Inject
+			private EventsManager events;
 
-                    @Override
-                    public TaxiScheduleInquiry get() {
-                        Fleet fleet = getModalInstance(Fleet.class);
-                        Network network = getModalInstance(Network.class);
-//                        TravelDisutility travelDisutility = getModalInstance(
-//                                TravelDisutilityFactory.class).createTravelDisutility(travelTime);
-                        TravelDisutility travelDisutility = getModalInstance(TravelDisutility.class);
-                        LeastCostPathCalculator router = new FastAStarLandmarksFactory(
-                                getConfig().global()).createPathCalculator(network, travelDisutility, travelTime);
-                        return new PFAVScheduler(taxiCfg, fleet, network, timer, travelTime, router, events, tourManager, pfavConfigGroup);
-                    }
-                }).asEagerSingleton();
+			@Override
+			public PFAVScheduler get() {
+				Fleet fleet = getModalInstance(Fleet.class);
+				Network network = getModalInstance(Network.class);
+				TravelDisutility travelDisutility = getModalInstance(TravelDisutility.class);
+				LeastCostPathCalculator router = new FastAStarLandmarksFactory(
+						getConfig().global()).createPathCalculator(network, travelDisutility, travelTime);
+				return new PFAVScheduler(taxiCfg, fleet, network, timer, travelTime, router, events, tourManager,
+						pfavConfigGroup);
+			}
+		}).asEagerSingleton();
 
         bindModal(VrpAgentLogic.DynActionCreator.class).toProvider(
                 new ModalProviders.AbstractProvider<PFAVActionCreator>(taxiCfg.getMode()) {
