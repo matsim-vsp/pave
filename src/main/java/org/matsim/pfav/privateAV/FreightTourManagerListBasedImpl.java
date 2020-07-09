@@ -51,6 +51,7 @@ import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.carrier.ScheduledTour;
 import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
+import org.matsim.contrib.taxi.schedule.TaxiTaskType;
 import org.matsim.contrib.util.StraightLineKnnFinder;
 import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.config.Config;
@@ -62,6 +63,8 @@ import org.matsim.core.router.util.TravelTime;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import static org.matsim.contrib.taxi.schedule.TaxiTaskBaseType.EMPTY_DRIVE;
 
 /**
  * @author tschlenther
@@ -334,7 +337,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
 //                    + " in order to be consistent with earliest start time set to " + pfavConfigGroup.getFreightTourEarliestStart());
             freightTour.getTourTasks().add(0, new TaxiStayTask(start.getBeginTime() - waitTimeAtDepot, start.getBeginTime(), start.getLink()));
         }
-        freightTour.setAccessDriveTask(new TaxiEmptyDriveTask(pathFromCurrTaskToDepot));
+        freightTour.setAccessDriveTask(new TaxiEmptyDriveTask(pathFromCurrTaskToDepot, new TaxiTaskType("accessToDepot", EMPTY_DRIVE)));
     }
 
     private double computeWaitTimeAtDepot(VrpPathWithTravelData pathFromCurrTaskToDepot) {

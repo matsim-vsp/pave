@@ -26,12 +26,7 @@ import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.taxi.passenger.TaxiRequest;
 import org.matsim.contrib.taxi.passenger.TaxiRequest.TaxiRequestStatus;
 import org.matsim.contrib.taxi.run.TaxiConfigGroup;
-import org.matsim.contrib.taxi.schedule.TaxiDropoffTask;
-import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
-import org.matsim.contrib.taxi.schedule.TaxiOccupiedDriveTask;
-import org.matsim.contrib.taxi.schedule.TaxiPickupTask;
-import org.matsim.contrib.taxi.schedule.TaxiStayTask;
-import org.matsim.contrib.taxi.schedule.TaxiTaskBaseType;
+import org.matsim.contrib.taxi.schedule.*;
 import org.matsim.contrib.taxi.scheduler.TaxiScheduleInquiry;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
@@ -39,6 +34,8 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelTime;
 
 import com.google.inject.name.Named;
+
+import static org.matsim.contrib.taxi.schedule.TaxiTaskBaseType.EMPTY_DRIVE;
 
 final class PFAVScheduler {
 
@@ -295,7 +292,7 @@ final class PFAVScheduler {
 				VrpPathWithTravelData path = VrpPaths.calcAndCreatePath(originalDriveTask.getPath().getFromLink(), originalDriveTask.getPath().getToLink(),
 						previousTask.getEndTime(), this.router, this.travelTime);
 				if (originalDriveTask instanceof TaxiEmptyDriveTask) {
-					currentTask = new TaxiEmptyDriveTask(path);
+					currentTask = new TaxiEmptyDriveTask(path, (TaxiTaskType) originalDriveTask.getTaskType());
 				} else if (originalDriveTask instanceof PFAVServiceDriveTask) {
 					currentTask = new PFAVServiceDriveTask(path);
 				} else {
@@ -313,7 +310,7 @@ final class PFAVScheduler {
 		Link returnLink = getReturnLink(vehicle);
 		VrpPathWithTravelData pathBackToOwner = VrpPaths.calcAndCreatePath(previousTask.getLink(), returnLink,
 				previousTask.getEndTime(), router, travelTime);
-		TaxiEmptyDriveTask returnDriveTask = new TaxiEmptyDriveTask(pathBackToOwner);
+		TaxiEmptyDriveTask returnDriveTask = new TaxiEmptyDriveTask(pathBackToOwner, new TaxiTaskType("egressFromDepot", EMPTY_DRIVE));
 		schedule.addTask(returnDriveTask);
 		return VrpPaths.calcDistance(pathBackToOwner);
 	}
@@ -467,7 +464,7 @@ final class PFAVScheduler {
 		}
 
 		if (vrpPath.getLinkCount() > 1) {
-			schedule.addTask(new TaxiEmptyDriveTask(vrpPath));
+			schedule.addTask(new TaxiEmptyDriveTask(vrpPath, TaxiEmptyDriveTask.TYPE));
 		}
 	}
 

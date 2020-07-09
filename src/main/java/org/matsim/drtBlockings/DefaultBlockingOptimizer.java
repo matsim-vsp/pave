@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.optimizer.DefaultDrtOptimizer;
 import org.matsim.contrib.drt.schedule.DrtDriveTask;
 import org.matsim.contrib.drt.schedule.DrtStayTask;
+import org.matsim.contrib.drt.schedule.DrtTaskFactoryImpl;
 import org.matsim.contrib.drt.scheduler.DrtScheduleInquiry;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.Fleet;
@@ -188,7 +189,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
             VrpPathWithTravelData pathToReservationStart = VrpPaths.calcAndCreatePath(stayTask.getLink(), Tasks.getBeginLink(drtBlockingRequest.getTasks().get(0)), stayTask.getEndTime(), router,
                     travelTime);
 
-            Task previousTask = new DrtDriveTask(pathToReservationStart);
+            Task previousTask = new DrtDriveTask(pathToReservationStart, DrtDriveTask.TYPE);
             schedule.addTask(previousTask);
 
             for (Task task : drtBlockingRequest.getTasks()) {

@@ -38,12 +38,15 @@ import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
 import org.matsim.contrib.freight.jsprit.NetworkRouter;
 import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
+import org.matsim.contrib.taxi.schedule.TaxiTaskType;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.util.TravelTime;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import static org.matsim.contrib.taxi.schedule.TaxiTaskBaseType.EMPTY_DRIVE;
 
 /**
  * @author tschlenther
@@ -91,7 +94,7 @@ public final class FreightTourPlanning {
                 else {
                     path = createVrpPath(route, tEnd, network, travelTime);
                 }
-                Task driveTask = (i == size - 1) ? new TaxiEmptyDriveTask(path) : new PFAVServiceDriveTask(path);
+                Task driveTask = (i == size - 1) ? new TaxiEmptyDriveTask(path, new TaxiTaskType("returnToDepot", EMPTY_DRIVE)) : new PFAVServiceDriveTask(path);
                 taskList.add(driveTask);
                 tEnd = driveTask.getEndTime();
                 tBegin = driveTask.getBeginTime();
