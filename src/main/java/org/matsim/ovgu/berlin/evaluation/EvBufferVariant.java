@@ -33,12 +33,12 @@ public class EvBufferVariant {
 	
 
 	private void setupTimeWindowBuffers(double se, double t, boolean myMethod) {
-//		setupEqualTimeWindowBuffers(se, t, myMethod);
+		setupEqualTimeWindowBuffers(se, t, myMethod);
 		setupMixedTimeWindowBuffers(se, t, myMethod);
 	}
 
 	private void setupEqualTimeWindowBuffers(double se, double t, boolean myMethod) {
-		double[] windows = new double[] { 1 };
+		double[] windows = new double[] { 10 , 1};
 //		double[] windows = new double[] { 1, 2, 3, /* 4, */ 5, /* 6, 7, 8, 9, */ 10 };
 		double factor = 60;
 		double b = 1;
@@ -68,26 +68,42 @@ public class EvBufferVariant {
 				60, 60, 60 };
 		double[] mix3 = new double[] { 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 600, 600, 600, 600, 600, 600, 600, 600,
 				600, 600 };
-		double[] mix4 = new double[] { 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 60, 60, 60, 60, 60, 60, 60, 60,
-				60, 60 };
-		double[] mix5 = new double[] { 60, 60, 600, 600, 60, 60, 600, 600, 60, 60, 600, 600, 60, 60, 600, 600, 60, 60,
+		double[] mix4 = new double[] { 60, 60, 600, 600, 60, 60, 600, 600, 60, 60, 600, 600, 60, 60, 600, 600, 60, 60,
 				600, 600 };
+		double[] mix1r = new double[] { 600, 600, 600, 600, 600, 600, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60,
+				60, 60, 60 };
+		double[] mix2r = new double[] { 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 600, 600, 600,
+				600, 600, 600 };
+		double[] mix3r = new double[] { 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 60, 60, 60, 60, 60, 60, 60, 60,
+				60, 60 };
+		double[] mix4r = new double[] { 600, 600, 60, 60, 600, 600, 60, 60, 600, 600, 60, 60, 600, 600, 60, 60, 600, 600,
+				60, 60 };
 
 		double factor = 60;
 		double b = 1;
 		double ss = 0;
 		double u = 2 * factor;
 
-//		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix1_myM-" + myMethod, se, t, b, mix1,
-//				ss, u, myMethod, expTT, delayScenarios, linkIDs));
-//		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix2_myM-" + myMethod, se, t, b, mix2,
-//				ss, u, myMethod, expTT, delayScenarios, linkIDs));
-//		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix3_myM-" + myMethod, se, t, b, mix3,
-//				ss, u, myMethod, expTT, delayScenarios, linkIDs));
-//		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix4_myM-" + myMethod, se, t, b, mix4,
-//				ss, u, myMethod, expTT, delayScenarios, linkIDs));
-		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix5_myM-" + myMethod, se, t, b, mix5,
+		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix1_myM-" + myMethod, se, t, b, mix1,
 				ss, u, myMethod, expTT, delayScenarios, linkIDs));
+		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix1r_myM-" + myMethod, se, t, b, mix1r,
+				ss, u, myMethod, expTT, delayScenarios, linkIDs));
+		
+		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix2_myM-" + myMethod, se, t, b, mix2,
+				ss, u, myMethod, expTT, delayScenarios, linkIDs));
+		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix2r_myM-" + myMethod, se, t, b, mix2r,
+				ss, u, myMethod, expTT, delayScenarios, linkIDs));
+		
+		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix3_myM-" + myMethod, se, t, b, mix3,
+				ss, u, myMethod, expTT, delayScenarios, linkIDs));
+		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix3r_myM-" + myMethod, se, t, b, mix3r,
+				ss, u, myMethod, expTT, delayScenarios, linkIDs));
+		
+		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix4_myM-" + myMethod, se, t, b, mix4,
+				ss, u, myMethod, expTT, delayScenarios, linkIDs));
+		buffers.add(new EvBufferSetup(versionDirectory, versionIdent + "_bufferWmix4r_myM-" + myMethod, se, t, b, mix4r,
+				ss, u, myMethod, expTT, delayScenarios, linkIDs));
+
 	}
 
 //	public void setupTimeWindowBuffers_SD() {
@@ -170,7 +186,7 @@ public class EvBufferVariant {
 		double t = 500;
 		// TODO: SETUP PARAMETERS FOR BUFFERS TO BE CHECKED
 		setupTimeWindowBuffers(se, t, true);
-//		setupTimeWindowBuffers(se, t, false);
+		setupTimeWindowBuffers(se, t, false);
 
 		if (runModel)
 			for (EvBufferSetup buffer : buffers)

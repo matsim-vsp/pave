@@ -61,8 +61,7 @@ public class RunEvalution {
 					+ from + "t" + to + "_results" + groups + ".csv");
 			csvFileResults.getParentFile().mkdirs();
 			FileWriter csvWriterResults = new FileWriter(csvFileResults);
-			csvWriterResults.append(
-					tours.get(from).getSummaryHeadline() + ";difTourDurationToBASEmin;difTourDurationToBASEavg\n");
+			csvWriterResults.append(getHeadline(groups, false));
 
 			for (int i = from - 1; i < to; i++) {
 
@@ -77,22 +76,39 @@ public class RunEvalution {
 			csvWriterResults.close();
 
 			writeSummary(tmpSummary, evaluationDirectory + "/" + evaluationIdent + "_" + timeWindowMethod + "_f" + from
-					+ "t" + to + "_results_summary" + groups + ".csv");
+					+ "t" + to + "_results_summary" + groups + ".csv", groups);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	private void writeSummary(List<String[]> tmpSummary, String file) throws IOException {
+	private CharSequence getHeadline(String groups, boolean withoutTour) {
+
+		String str = tours.get(from).getSummaryHeadline();
+		
+		if ("Groups".equals(groups))
+			str = str.replace("myMethod", "myMethod;windowGroups");
+		
+		str += ";difTourDurationToBASEmin;difTourDurationToBASEavg";
+
+		if (withoutTour) {
+			str = str.replace("tour;", "");
+			str += ";difTourDurationToOpt";
+		}
+		str += "\n";
+
+		return str;
+	}
+
+	private void writeSummary(List<String[]> tmpSummary, String file, String groups) throws IOException {
 
 		double optimalTourDuration = getAvgNoDelayDuration();
 
 		File csvFileSummary = new File(file);
 		csvFileSummary.getParentFile().mkdirs();
 		FileWriter csvWriterSummary = new FileWriter(csvFileSummary);
-		csvWriterSummary.append(tours.get(0).getSummaryHeadline().replace("tour;", "")
-				+ ";difTourDurationToBASEmin;difTourDurationToBASEavg;difTourDurationToOpt\n");
+		csvWriterSummary.append(getHeadline(groups, true));
 
 		double tourCount = tmpSummary.size();
 		int bufferCount = tmpSummary.get(0).length;

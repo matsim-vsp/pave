@@ -75,11 +75,11 @@ public class EvTour {
 
 	public void setupBuffersForVariants(boolean runModel) {
 		initLPmin(runModel);
-//		initLPavg(runModel);
-////		initVersionC(runModel);
-//		initBASEavg(runModel);
-//		initBASEmin(runModel);
-//		initSDavg(runModel);
+		initLPavg(runModel);
+//		initVersionC(runModel);
+		initBASEavg(runModel);
+		initBASEmin(runModel);
+		initSDavg(runModel);
 	}
 
 	private void initBASEmin(boolean runModel) {
@@ -370,7 +370,7 @@ public class EvTour {
 				double tourDuration = Double.parseDouble(split[split.length - 2].replace(",", "."));
 				str += ((tourDuration / minBASEduration) - 1);
 				str += ";" + ((tourDuration / avgBASEduration) - 1);
-				extendedSummaryStrings.add(str.replace("\n", "") + "\n");
+				extendedSummaryStrings.add(str.replace("\n", "").replace(".", ",") + "\n");
 			}
 		}
 		return extendedSummaryStrings;
