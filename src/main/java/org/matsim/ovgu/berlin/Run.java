@@ -50,8 +50,8 @@ public class Run {
 		boolean runEvaluation = true;
 		boolean runSummary = true;
 		boolean ttWithSim = false;
-		boolean bufWithModel = false;
-		boolean evaluationWithSim = false;
+		boolean bufWithModel = true;
+		boolean evaluationWithSim = true;
 		
 		eva.run(linkIDs, name, from, to, runBuffers, windowMethod, runEvaluation, runSummary, ttWithSim, bufWithModel,
 				evaluationWithSim);

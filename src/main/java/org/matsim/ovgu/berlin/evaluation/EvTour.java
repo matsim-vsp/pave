@@ -74,11 +74,11 @@ public class EvTour {
 	}
 
 	public void setupBuffersForVariants(boolean runModel) {
-		initLPmin(runModel);
-		initLPavg(runModel);
-//		initVersionC(runModel);
-		initBASEavg(runModel);
-		initBASEmin(runModel);
+//		initLPmin(runModel);
+//		initLPavg(runModel);
+////		initVersionC(runModel);
+//		initBASEavg(runModel);
+//		initBASEmin(runModel);
 		initSDavg(runModel);
 	}
 
@@ -95,7 +95,8 @@ public class EvTour {
 	}
 
 	private void initSDavg(boolean runModel) {
-		EvBufferVariant sdAvg = new EvBufferVariant(tourDirectory, tourIdent + "_SDavg", avgTravelTime, linkIDs);
+		//TODO:sdTEST
+		EvBufferVariant sdAvg = new EvBufferVariant(tourDirectory, tourIdent + "_SDavgTEST", avgTravelTime, linkIDs);
 		sdAvg.setupSDBuffers(avgTravelTime, traveltimeMatrix, runModel);
 		evBufferVariants.add(sdAvg);
 	}

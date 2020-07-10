@@ -70,7 +70,10 @@ public class EvBufferSetup {
 			double[] ttArray = new double[szenariosCount];
 			for (int s = 0; s < szenariosCount; s++)
 				ttArray[s] = traveltimeMatrix[l][s];
-			bufferValues[l] = calculateStandardDeviation(avgTT[l], ttArray);
+			double sd = calculateStandardDeviation(avgTT[l], ttArray);
+			bufferValues[l] = sd * 0.6;
+			// bei 1  Min -> 1.2
+			// bei 10 Min -> 0.6
 		}
 
 	}
