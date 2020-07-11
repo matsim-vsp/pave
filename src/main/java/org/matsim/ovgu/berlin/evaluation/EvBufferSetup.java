@@ -60,7 +60,7 @@ public class EvBufferSetup {
 	private double tourDuration;
 	protected Settings runSettings;
 
-	public void calculateStandardDeviationBuffer(double[] avgTT, double[][] traveltimeMatrix) {
+	public void calculateStandardDeviationBuffer(double[] avgTT, double[][] traveltimeMatrix, boolean test) {
 		int linksCount = traveltimeMatrix.length;
 		int szenariosCount = traveltimeMatrix[0].length;
 
@@ -71,9 +71,13 @@ public class EvBufferSetup {
 			for (int s = 0; s < szenariosCount; s++)
 				ttArray[s] = traveltimeMatrix[l][s];
 			double sd = calculateStandardDeviation(avgTT[l], ttArray);
-			bufferValues[l] = sd * 0.6;
-			// bei 1  Min -> 1.2
-			// bei 10 Min -> 0.6
+
+			if (test && w[l] == 1)
+				bufferValues[l] = sd * 1.3;
+			else
+				bufferValues[l] = sd * 1;
+			// bei 1 Min -> 1.3
+			// bei 10 Min -> 0.65
 		}
 
 	}
@@ -158,7 +162,7 @@ public class EvBufferSetup {
 			for (double window : w)
 				str += window + ";";
 			str += "\n";
-			
+
 			str += "ss;" + ss + "\n";
 			str += "u;" + u + "\n";
 			str += "myMethod;" + myMethod + "\n";

@@ -44,11 +44,11 @@ public class Run {
 		String[] linkIDs = Run.getMySample2000Links();
 		String name = "NextGen";
 		int from = 1;
-		int to = 1; // from + 99
+		int to = from + 9;
 		boolean runBuffers = true;
 		String windowMethod = "PlusMinusArrival";
 		boolean runEvaluation = true;
-		boolean runSummary = true;
+		boolean runSummary = false;
 		boolean ttWithSim = false;
 		boolean bufWithModel = true;
 		boolean evaluationWithSim = true;
