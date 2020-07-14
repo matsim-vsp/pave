@@ -22,6 +22,7 @@ package org.matsim.run;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
@@ -29,6 +30,7 @@ import org.matsim.drtSpeedUp.DrtSpeedUpModule;
 import org.matsim.optDRT.MultiModeOptDrtConfigGroup;
 import org.matsim.optDRT.OptDrt;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
+import org.matsim.scenarioCreation.ProhibitCarInDRTServiceAreaModule;
 
 public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
 
@@ -75,7 +77,7 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
 
         /**
          * the default input population contains persons that are already assigned to mobility types.
-         * if you want to run another scenario, uncomment the following line
+         * if you want to run another population but with mobility types, uncomment the following line
          */
 //        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 

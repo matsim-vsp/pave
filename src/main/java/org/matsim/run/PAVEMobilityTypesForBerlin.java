@@ -237,7 +237,7 @@ final class PAVEMobilityTypesForBerlin {
 
                     toScoringParameterSet.addModeParams(pp);
                 } else {
-                    throw new RuntimeException("couldn handle (copy) parameterset " + parameterSet);
+                    throw new RuntimeException("could not handle (copy) parameterset " + parameterSet);
                 }
             }
         }
