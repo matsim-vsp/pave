@@ -96,14 +96,12 @@ public class EvTour {
 	}
 
 	private void initSDavg(boolean runModel) {
-		//TODO:sdTEST
 		EvBufferVariant sdAvg = new EvBufferVariant(tourDirectory, tourIdent + "_SDavg", avgTravelTime, linkIDs);
 		sdAvg.setupSDBuffers(avgTravelTime, traveltimeMatrix, runModel, false);
 		evBufferVariants.add(sdAvg);
 	}
 
 	private void initSDTestavg(boolean runModel) {
-		//TODO:sdTEST
 		EvBufferVariant sdAvg = new EvBufferVariant(tourDirectory, tourIdent + "_SDavgTEST", avgTravelTime, linkIDs);
 		sdAvg.setupSDBuffers(avgTravelTime, traveltimeMatrix, runModel, true);
 		evBufferVariants.add(sdAvg);

@@ -71,8 +71,8 @@ public class EvBufferSetup {
 			for (int s = 0; s < szenariosCount; s++)
 				ttArray[s] = traveltimeMatrix[l][s];
 			double sd = calculateStandardDeviation(avgTT[l], ttArray);
-
-			if (test && w[l] == 1)
+			
+			if (test && w[l] == 1 * 60)
 				bufferValues[l] = sd * 1.3;
 			else
 				bufferValues[l] = sd * 1;
