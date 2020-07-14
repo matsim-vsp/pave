@@ -37,7 +37,11 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
 
     private static final Logger log = Logger.getLogger(RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp.class );
 
-    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/pave-berlin-drt-v5.5-1pct.config-transsims.xml";
+//    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/pave-berlin-drt-v5.5-1pct.config-transsims.xml";
+    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config_banCarTest.xml";
+
+
+    private static final boolean BAN_CAR_FROM_DRT_SERVICE_AREA = true;
 
     /**
      * @param args array containing program arguments in the following order: global sensitivity factor for mobility types (as numeric argument), path to config, custom modules to load
@@ -85,6 +89,9 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
         controler.addOverridingModule(new DrtSpeedUpModule());
         OptDrt.addAsOverridingModule(controler, ConfigUtils.addOrGetModule(scenario.getConfig(), MultiModeOptDrtConfigGroup.class));
 
+        if(BAN_CAR_FROM_DRT_SERVICE_AREA){
+            controler.addOverridingModule(new ProhibitCarInDRTServiceAreaModule(DrtConfigGroup.getSingleModeDrtConfig(config)));
+        }
 
         controler.run();
 
