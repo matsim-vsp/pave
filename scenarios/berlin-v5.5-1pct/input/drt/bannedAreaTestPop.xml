@@ -12,15 +12,34 @@
 			<attribute name="subpopulation" class="java.lang.String">person_fixed_car</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="home_48000" link="5293" end_time="08:00:00" >
+			<activity type="home_4800.0" link="5293" end_time="08:00:00" x="4563554.306093174" y="5797022.536652523" >
 			</activity>
 			<leg mode="car">
 			</leg>
-			<activity type="home_48000" link="102270" max_dur="00:05:00" >
+			<activity type="work_4800.0" link="102270" max_dur="00:05:00" x="4600759.246502705" y="5820855.95159771">
 			</activity>
 			<leg mode="car">
 			</leg>
-			<activity type="home_48000" link="5293" >
+			<activity type="home_4800.0" link="5293"  x="4563554.306093174" y="5797022.536652523" >
+			</activity>
+		</plan>
+
+	</person>
+
+	<person id="testperson2">
+		<attributes>
+			<attribute name="subpopulation" class="java.lang.String">person_flexible</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="home_4800.0" link="5293" end_time="08:00:00" x="4563554.306093174" y="5797022.536652523" >
+			</activity>
+			<leg mode="walkCarDrt">
+			</leg>
+			<activity type="work_4800.0" link="102270" max_dur="00:05:00" x="4600759.246502705" y="5820855.95159771">
+			</activity>
+			<leg mode="drtCarWalk">
+			</leg>
+			<activity type="home_4800.0" link="5293"  x="4563554.306093174" y="5797022.536652523" >
 			</activity>
 		</plan>
 
