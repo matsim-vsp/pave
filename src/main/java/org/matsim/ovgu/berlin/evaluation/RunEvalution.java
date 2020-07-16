@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Random;
 
 import org.matsim.ovgu.berlin.Settings;
+import org.matsim.ovgu.berlin.evaluation.analysis.EventAnalysis;
+import org.matsim.ovgu.berlin.evaluation.buffers.BufferSetup;
+import org.matsim.ovgu.berlin.evaluation.simulation.Simulation;
+import org.matsim.ovgu.berlin.evaluation.travelTime.TravelTimeSetup;
 
 public class RunEvalution {
 
@@ -19,9 +23,10 @@ public class RunEvalution {
 	private int from;
 	private int to;
 
-	public void run(String[] linkIDs, String evaluationIdent, int from, int to, boolean runBuffers, String windowMethod,
-			boolean runEvaluation, boolean runSummary, boolean ttWithSim, boolean bufWithModel,
-			boolean evaluationWithSim) {
+	public void run(String evaluationIdent, String[] linkIDs, int from, int to, boolean ttSimulation,
+			boolean runBufferModel, String windowMethod, boolean runSimulation, boolean runAnalysis,
+			boolean runSummary) {
+
 
 		this.from = from;
 		this.to = to;
@@ -33,16 +38,28 @@ public class RunEvalution {
 		generateRandomTours(linkIDs, 20);
 		writeToursCSV();
 
-		for (int i = from - 1; i < to; i++)
-			tours.get(i).setup24hTravelTimes(ttWithSim); // Simulation needed ?
+		for (int i = from - 1; i < to; i++) {
+			// simulate 24 hour travel time values
+			if (ttSimulation)
+				TravelTimeSetup.runTravelTimeSimulations(tours.get(i));
 
-		if (runBuffers)
-			for (int i = from - 1; i < to; i++)
-				tours.get(i).setupBuffersForVariants(bufWithModel);// LP Model needed ?
+			// read 24 hour travel time values
+			TravelTimeSetup.readTravelTimes(tours.get(i));
 
-		if (runEvaluation)
-			for (int i = from - 1; i < to; i++)
-				tours.get(i).evaluate(windowMethod, evaluationWithSim);// Simulation needed ?
+			// initialize buffer variants
+			BufferSetup.initialize(tours.get(i));
+
+			// calculate or read buffers
+			BufferSetup.load(tours.get(i), runBufferModel);
+
+			// simulate with buffer variants
+			if (runSimulation)
+				Simulation.run(tours.get(i), windowMethod);
+
+			// read and analyse events
+			if (runAnalysis)
+				EventAnalysis.run(tours.get(i), windowMethod);
+		}
 
 		if (runSummary) {
 			generateOverallSummary(windowMethod, "");
@@ -85,11 +102,11 @@ public class RunEvalution {
 
 	private CharSequence getHeadline(String groups, boolean withoutTour) {
 
-		String str = tours.get(from).getSummaryHeadline();
-		
+		String str = EventAnalysis.getSummaryHeadline();
+
 		if ("Groups".equals(groups))
 			str = str.replace("myMethod", "myMethod;windowGroups");
-		
+
 		str += ";difTourDurationToBASEmin;difTourDurationToBASEavg";
 
 		if (withoutTour) {

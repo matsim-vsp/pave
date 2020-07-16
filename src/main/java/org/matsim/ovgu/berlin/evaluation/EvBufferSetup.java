@@ -12,7 +12,7 @@ import org.matsim.ovgu.berlin.LinearProgram.LpTrip;
 
 public class EvBufferSetup {
 
-	EvBufferSetup(String versionDirectory, String bufferIdent, double se, double t, double b, double[] w, double ss,
+	public EvBufferSetup(String versionDirectory, String bufferIdent, double se, double t, double b, double[] w, double ss,
 			double u, boolean myMethod, double[] expTT, double[][] delayScenarios, String[] linkIDs) {
 		this.bufferIdent = bufferIdent;
 		this.bufferDirectory = versionDirectory + "/" + bufferIdent + "/";
@@ -58,7 +58,7 @@ public class EvBufferSetup {
 	public double[] bufferValues;
 	private double objectiveValue;
 	private double tourDuration;
-	protected Settings runSettings;
+	public Settings runSettings;
 
 	public void calculateStandardDeviationBuffer(double[] avgTT, double[][] traveltimeMatrix, boolean test) {
 		int linksCount = traveltimeMatrix.length;

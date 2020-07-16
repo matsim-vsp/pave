@@ -9,7 +9,7 @@ import org.matsim.ovgu.berlin.evaluation.RunEvalution;
 public class Run {
 
 	public static void main(String[] args) {
-		
+
 //TODO: readChangeEvents produces different results than runSimReadEvents -> so it's not used
 
 // create network change events
@@ -22,39 +22,36 @@ public class Run {
 //    	Version2_RunSimReadSim.run(InputTour.tour);
 //    	Version3_RunSimReadEvents.run(InputTour.tour);
 
-		
-				
 // run evaluation
 // create travel time Matrix included (Version3_RunSimReadEvents)
-		
+
 		// setup values in class "Input"
 		RunEvalution eva = new RunEvalution();
-		
-//		String name = args[0];
-//      int from = Integer.parseInt(args[1]);
-//      int to = Integer.parseInt(args[2]);
-//      boolean runBuffers = Boolean.parseBoolean(args[3]);
-//      String windowMethod = args[4];
-//      boolean runEvaluation = Boolean.parseBoolean(args[5]);
-//		boolean runSummary = Boolean.parseBoolean(args[6]);
-//		boolean ttWithSim = Boolean.parseBoolean(args[7]);
-//		boolean bufWithModel = Boolean.parseBoolean(args[8]);
-//		boolean evaluationWithSim = Boolean.parseBoolean(args[9]);
 
+//		String name = args[0];
+//		String[] linkIDs = Run.getMySample2000Links();
+//		int from = Integer.parseInt(args[1]);
+//		int to = Integer.parseInt(args[2]);
+//		boolean ttSimulation = Boolean.parseBoolean(args[3]);
+//		boolean runBufferModel = Boolean.parseBoolean(args[4]);
+//		String windowMethod = args[5];
+//		boolean runSimulation = Boolean.parseBoolean(args[6]);
+//		boolean runAnalysis = Boolean.parseBoolean(args[7]);
+//		boolean runSummary = Boolean.parseBoolean(args[8]);
+
+		String name = "NextGen2";
 		String[] linkIDs = Run.getMySample2000Links();
-		String name = "NextGen";
 		int from = 1;
-		int to = from + 9;
-		boolean runBuffers = true;
+		int to = from;
+		boolean ttSimulation = false;
+		boolean runBufferModel = false;
 		String windowMethod = "PlusMinusArrival";
-		boolean runEvaluation = true;
+		boolean runSimulation = false;
+		boolean runAnalysis = true;
 		boolean runSummary = false;
-		boolean ttWithSim = false;
-		boolean bufWithModel = true;
-		boolean evaluationWithSim = true;
-		
-		eva.run(linkIDs, name, from, to, runBuffers, windowMethod, runEvaluation, runSummary, ttWithSim, bufWithModel,
-				evaluationWithSim);
+
+		eva.run(name, linkIDs, from, to, ttSimulation, runBufferModel, windowMethod, runSimulation, runAnalysis,
+				runSummary);
 	}
 
 	private static String[] getMySample2000Links() {
@@ -245,7 +242,7 @@ public class Run {
 
 		return mySample;
 	}
-	
+
 	private static String[] getMySample200Links() {
 
 		String[] mySample = new String[] { "50878", "55084", "89524", "90752", "11821", "5712", "23654", "23362",
