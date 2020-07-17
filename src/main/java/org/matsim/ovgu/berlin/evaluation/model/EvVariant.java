@@ -1,4 +1,4 @@
-package org.matsim.ovgu.berlin.evaluation;
+package org.matsim.ovgu.berlin.evaluation.model;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EvBufferVariant {
-	public EvBufferVariant(String variantType, String tourDirectory, String versionIdent, double[] expTravelTimes,
+public class EvVariant {
+	public EvVariant(String variantType, String tourDirectory, String versionIdent, double[] expTravelTimes,
 			String[] linkIDs) {
 		this.variantType = variantType;
 		this.versionIdent = versionIdent;
@@ -24,7 +24,7 @@ public class EvBufferVariant {
 
 	// scenario / link --> delay
 	public double[][] delayScenarios;
-	public List<EvBufferSetup> buffers = new ArrayList<EvBufferSetup>();
+	public List<EvBuffer> buffers = new ArrayList<EvBuffer>();
 
 	public void writeScenariosCSV() {
 		try {
@@ -56,21 +56,12 @@ public class EvBufferVariant {
 
 	public void writeOrLoad(boolean write) {
 		if (write) {
-			for (EvBufferSetup buffer : buffers) {
-				buffer.writeParameters();
-				buffer.generateRunSettings();
+			for (EvBuffer buffer : buffers) {
+				buffer.write();
 			}
 			writeScenariosCSV();
 		} else
-			loadRunSettings();
+			for (EvBuffer buffer : buffers)
+				buffer.load();
 	}
-
-	public void loadRunSettings() {
-		for (EvBufferSetup buffer : buffers) {
-			buffer.readRunSettings();
-//			buffer.runSettings.directory = buffer.runSettings.directory.replace("C:\\Users\\koetscha\\Desktop\\develop\\matsim.pave\\pave", "D:\\Rico\\ExperimentsMay2020");
-//			buffer.writeRunSettingsCSV();
-		}
-	}
-
 }

@@ -1,4 +1,4 @@
-package org.matsim.ovgu.berlin.evaluation;
+package org.matsim.ovgu.berlin.evaluation.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ public class EvTour {
 	public String tourIdent;
 	public String[] linkIDs;
 
-	public List<EvBufferVariant> evBufferVariants = new ArrayList<EvBufferVariant>();
+	public List<EvVariant> evBufferVariants = new ArrayList<EvVariant>();
 
 	public double getNoDelayDuration(double serviceTime) {
 		double sum = 0;

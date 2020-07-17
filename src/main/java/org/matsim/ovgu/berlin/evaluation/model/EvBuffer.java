@@ -1,4 +1,4 @@
-package org.matsim.ovgu.berlin.evaluation;
+package org.matsim.ovgu.berlin.evaluation.model;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,9 +10,9 @@ import org.matsim.ovgu.berlin.Settings;
 import org.matsim.ovgu.berlin.LinearProgram.GenLpSolver;
 import org.matsim.ovgu.berlin.LinearProgram.LpTrip;
 
-public class EvBufferSetup {
+public class EvBuffer {
 
-	public EvBufferSetup(String versionDirectory, String bufferIdent, double se, double t, double b, double[] w, double ss,
+	public EvBuffer(String versionDirectory, String bufferIdent, double se, double t, double b, double[] w, double ss,
 			double u, boolean myMethod, double[] expTT, double[][] delayScenarios, String[] linkIDs) {
 		this.bufferIdent = bufferIdent;
 		this.bufferDirectory = versionDirectory + "/" + bufferIdent + "/";
@@ -27,7 +27,6 @@ public class EvBufferSetup {
 		if (delayScenarios != null)
 			this.scenarioCount = delayScenarios.length;
 
-		this.trips = createLpTrips(expTT, delayScenarios);
 		this.linkIDs = linkIDs;
 		this.bufferValues = new double[linkIDs.length - 1];
 	}
@@ -43,112 +42,34 @@ public class EvBufferSetup {
 
 	public String bufferIdent;
 	public String bufferDirectory;
-	private String[] linkIDs;
-	private double se;
-	private double t;
-	private double b;
+	public String[] linkIDs;
+	public double se;
+	public double t;
+	public double b;
 	public double[] w;
-	private double ss;
+	public double ss;
 	public double u;
-	private boolean myMethod;
+	public boolean myMethod;
 	public double[] expTT;
-	private LpTrip[] trips;
-	private int scenarioCount;
-	private double[] scenarioProb;
+	public LpTrip[] trips;
+	public int scenarioCount;
+	public double[] scenarioProb;
 	public double[] bufferValues;
-	private double objectiveValue;
-	private double tourDuration;
+	public double objectiveValue;
+	public double tourDuration;
 	public Settings runSettings;
-
-	public void calculateStandardDeviationBuffer(double[] avgTT, double[][] traveltimeMatrix, boolean test) {
-		int linksCount = traveltimeMatrix.length;
-		int szenariosCount = traveltimeMatrix[0].length;
-
-		bufferValues = new double[linksCount];
-
-		for (int l = 0; l < linksCount; l++) {
-			double[] ttArray = new double[szenariosCount];
-			for (int s = 0; s < szenariosCount; s++)
-				ttArray[s] = traveltimeMatrix[l][s];
-			double sd = calculateStandardDeviation(avgTT[l], ttArray);
-			
-			if (test && w[l] == 1 * 60)
-				bufferValues[l] = sd * 1.3;
-			else
-				bufferValues[l] = sd * 1;
-			// bei 1 Min -> 1.3
-			// bei 10 Min -> 0.65
-		}
-
+	
+	public void load() {
+		loadRunSettings();
+	}
+	
+	protected void write() {
+		writeParameters();
+		generateRunSettings();
+		writeRunSettingsCSV();		
 	}
 
-	private double calculateStandardDeviation(double avgTT, double[] ttArray) {
-		// expTT <- is expected to be the average
-		double variance = 0;
-
-//		Take each number and subtract the mean, then square the result. 
-//		Finally, divide by the length of the array and add that to your sum. 
-		for (int i = 0; i < ttArray.length; i++) {
-			variance += (ttArray[i] - avgTT) * (ttArray[i] - avgTT) / ttArray.length;
-		}
-
-//		The sum is the variance, and the square root of that is the standard deviation: 
-		double sd = Math.sqrt(variance);
-		return sd;
-	}
-
-	public void runLP() {
-
-//		scenarioProb = getEqualScenarioProb(trips[0].delay.length);
-		scenarioProb = getEqualScenarioProb(scenarioCount);
-
-		trips = new GenLpSolver(ss, se, b, trips, scenarioProb, myMethod).solve();
-		objectiveValue = trips[0].objectiveValue;
-		tourDuration = trips[trips.length - 1].departure;
-
-		bufferValues = new double[trips.length - 2];
-		for (int i = 0; i < bufferValues.length; i++)
-			bufferValues[i] = Math.round(
-					trips[i + 2].departure - trips[i + 2].serviceTime - trips[i + 1].distance - trips[i + 1].departure);
-
-		for (int i = 0; i < trips.length; i++)
-			System.out.println("LoadAndSolveTest.runLP() s" + i + ":\t" + trips[i].departure);
-		System.out.println("LoadAndSolveTest.runLP() obj:\t" + trips[0].objectiveValue);
-	}
-
-	private LpTrip[] createLpTrips(double[] expTT, double[][] delayScenarios) {
-
-		int tripsFromCustomer = expTT.length;
-		LpTrip[] trips = new LpTrip[tripsFromCustomer + 2]; // customerTrips + FromDepot + ToDepot
-
-		// setup Depot start trip
-		double[] noDelays = new double[scenarioCount];
-		trips[0] = new LpTrip(0, 0, 0, 0, 0, noDelays); // Instant from Depot to first Location, without any delays
-
-		// setup Customer trips
-		double delayProbability = 1 / ((double) tripsFromCustomer); // p
-		for (int i = 0; i < tripsFromCustomer; i++) {
-			double[] delay = new double[scenarioCount];
-			for (int s = 0; s < scenarioCount; s++)
-				delay[s] = delayScenarios[s][i];
-
-//TODO: Check that the right time window is taken
-			trips[i + 1] = new LpTrip(expTT[i], w[i], u, t, delayProbability, delay);
-		}
-
-		// setup end trip to Depot
-		trips[trips.length - 1] = new LpTrip(0, 0, 0, 0, 0, null); // Instant from last Location to Depot;
-		return trips;
-	}
-
-	private static double[] getEqualScenarioProb(int number) {
-		double[] scenarioProb = new double[number];
-		for (int i = 0; i < number; i++)
-			scenarioProb[i] = 1 / (double) number; // g
-		return scenarioProb;
-	}
-
-	public void writeParameters() {
+	private void writeParameters() {
 		try {
 			File csvFile = new File(bufferDirectory + "/" + bufferIdent + "_parameters.csv");
 			csvFile.getParentFile().mkdirs();
@@ -203,7 +124,7 @@ public class EvBufferSetup {
 		}
 	}
 
-	protected void writeRunSettingsCSV() {
+	private void writeRunSettingsCSV() {
 		try {
 			File csvFile = new File(bufferDirectory + "/" + bufferIdent + "_runSettings.csv");
 			csvFile.getParentFile().mkdirs();
@@ -238,7 +159,7 @@ public class EvBufferSetup {
 		}
 	}
 
-	protected void generateRunSettings() {
+	private void generateRunSettings() {
 		runSettings = new Settings();
 		runSettings.directory = bufferDirectory + "/matsimData/";
 		runSettings.tour = linkIDs;
@@ -247,7 +168,6 @@ public class EvBufferSetup {
 		runSettings.expectedTravelTime = expTT;
 		runSettings.buffer = bufferValues;
 		addPseudoDepot(runSettings, linkIDs[0], 0, 0);
-		writeRunSettingsCSV();
 	}
 
 	private void addPseudoDepot(Settings settings, String depotLinkID, int expectedTravelTime, int buffer) {
@@ -264,7 +184,7 @@ public class EvBufferSetup {
 		return newArray;
 	}
 
-	public void readRunSettings() {
+	private void loadRunSettings() {
 		try {
 			BufferedReader csvReader = new BufferedReader(
 					new FileReader(bufferDirectory + "/" + bufferIdent + "_runSettings.csv"));

@@ -1,8 +1,8 @@
 package org.matsim.ovgu.berlin.evaluation.buffers;
 
-import org.matsim.ovgu.berlin.evaluation.EvBufferSetup;
-import org.matsim.ovgu.berlin.evaluation.EvBufferVariant;
-import org.matsim.ovgu.berlin.evaluation.EvTour;
+import org.matsim.ovgu.berlin.evaluation.model.EvBuffer;
+import org.matsim.ovgu.berlin.evaluation.model.EvTour;
+import org.matsim.ovgu.berlin.evaluation.model.EvVariant;
 
 public class BufferSetup {
 
@@ -11,20 +11,38 @@ public class BufferSetup {
 	}
 
 	private static void setupBuffersForVariants(EvTour tour) {
-		initLPmin(tour);
-//		initLPavg(tour);
-//		initBASEavg(tour);
-//		initBASEmin(tour);
-//		initSDavg(tour);
-//		initSDTestavg(tour);
+		setupTimeWindowBuffers(BufferBASE.init("min", tour.minTravelTime, tour), 0, 0, false);
+		setupTimeWindowBuffers(BufferBASE.init("avg", tour.avgTravelTime, tour), 0, 0, false);
+
+		setupTimeWindowBuffers(BufferSD.init(tour, false), 0, 0, false);
+		setupTimeWindowBuffers(BufferSD.init(tour, true), 0, 0, true);
+
+		double t = 500;
+
+		double se = getBestCaseDuration(2 * 60, tour.minTravelTime);
+		setupTimeWindowBuffers(BufferLP.init("min", tour.minTravelTime, tour), se, t, true);
+		setupTimeWindowBuffers(BufferLP.init("min", tour.minTravelTime, tour), se, t, false);
+
+		se = getBestCaseDuration(2 * 60, tour.avgTravelTime);
+		setupTimeWindowBuffers(BufferLP.init("avg", tour.avgTravelTime, tour), se, t, true);
+		setupTimeWindowBuffers(BufferLP.init("avg", tour.avgTravelTime, tour), se, t, false);
+
 	}
 
-	private static void setupTimeWindowBuffers(EvBufferVariant variant, double se, double t, boolean myMethod) {
+// without delay
+	private static double getBestCaseDuration(double serviceTime, double[] expTT) {
+		double expDuration = 0;
+		for (double tt : expTT)
+			expDuration += tt + serviceTime;
+		return expDuration;
+	}
+
+	private static void setupTimeWindowBuffers(EvVariant variant, double se, double t, boolean myMethod) {
 		setupEqualTimeWindowBuffers(variant, se, t, myMethod);
 		setupMixedTimeWindowBuffers(variant, se, t, myMethod);
 	}
 
-	private static void setupEqualTimeWindowBuffers(EvBufferVariant variant, double se, double t, boolean myMethod) {
+	private static void setupEqualTimeWindowBuffers(EvVariant variant, double se, double t, boolean myMethod) {
 //		double[] windows = new double[] { 10 };
 		double[] windows = new double[] { 10, 1 };
 //		double[] windows = new double[] { 1, 2, 3, /* 4, */ 5, /* 6, 7, 8, 9, */ 10 };
@@ -41,7 +59,7 @@ public class BufferSetup {
 		}
 	}
 
-	private static void setupMixedTimeWindowBuffers(EvBufferVariant variant, double se, double t, boolean myMethod) {
+	private static void setupMixedTimeWindowBuffers(EvVariant variant, double se, double t, boolean myMethod) {
 		double[] mix1 = new double[] { 60, 60, 60, 60, 60, 60, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600,
 				600, 600, 600 };
 		double[] mix2 = new double[] { 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 600, 60, 60, 60,
@@ -74,21 +92,19 @@ public class BufferSetup {
 		variant.buffers.add(createBuffer(mix4r, "_bufferWmix4r", variant, myMethod, se, t, b, ss, u));
 	}
 
-
-
 	public static void load(EvTour tour, boolean runModel) {
-		for (EvBufferVariant variant : tour.evBufferVariants) {
+		for (EvVariant variant : tour.evBufferVariants) {
 			if (runModel)
-				for (EvBufferSetup buffer : variant.buffers) {
+				for (EvBuffer buffer : variant.buffers) {
 					switch (variant.variantType) {
 					case "LP":
-						buffer.runLP();
+						BufferLP.runLP(buffer, variant.delayScenarios);
 						break;
 					case "SD":
-						buffer.calculateStandardDeviationBuffer(tour.avgTravelTime, tour.traveltimeMatrix, false);
+						BufferSD.calculate(buffer, tour, false);
 						break;
 					case "SD-Test":
-						buffer.calculateStandardDeviationBuffer(tour.avgTravelTime, tour.traveltimeMatrix, true);
+						BufferSD.calculate(buffer, tour, true);
 						break;
 					case "BASE":
 						break;
@@ -102,90 +118,6 @@ public class BufferSetup {
 		}
 	}
 
-	private static void initBASEmin(EvTour tour) {
-		EvBufferVariant baseMin = new EvBufferVariant("BASE", tour.tourDirectory, tour.tourIdent + "_BASEmin",
-				tour.minTravelTime, tour.linkIDs);
-		setupTimeWindowBuffers(baseMin, 0, 0, false);
-		tour.evBufferVariants.add(baseMin);
-	}
-
-	private static void initBASEavg(EvTour tour) {
-		EvBufferVariant baseAvg = new EvBufferVariant("BASE", tour.tourDirectory, tour.tourIdent + "_BASEavg",
-				tour.avgTravelTime, tour.linkIDs);
-		setupTimeWindowBuffers(baseAvg, 0, 0, false);
-		tour.evBufferVariants.add(baseAvg);
-	}
-
-	private static void initSDavg(EvTour tour) {
-		EvBufferVariant sdAvg = new EvBufferVariant("SD", tour.tourDirectory, tour.tourIdent + "_SDavg",
-				tour.avgTravelTime, tour.linkIDs);
-		setupTimeWindowBuffers(sdAvg, 0, 0, false);
-		tour.evBufferVariants.add(sdAvg);
-	}
-
-	private static void initSDTestavg(EvTour tour) {
-		EvBufferVariant sdAvgTest = new EvBufferVariant("SD-Test", tour.tourDirectory, tour.tourIdent + "_SDavgTEST",
-				tour.avgTravelTime, tour.linkIDs);
-		setupTimeWindowBuffers(sdAvgTest, 0, 0, true);
-		tour.evBufferVariants.add(sdAvgTest);
-	}
-
-	private static void initLPmin(EvTour tour) {
-		EvBufferVariant lpMin = new EvBufferVariant("LP", tour.tourDirectory, tour.tourIdent + "_LPmin",
-				tour.minTravelTime, tour.linkIDs);
-		lpMin.delayScenarios = calcDelayScenarios(tour.traveltimeMatrix, lpMin.expTT);
-		lpMin.writeScenariosCSV();
-		setupLPBuffers(lpMin);
-		tour.evBufferVariants.add(lpMin);
-	}
-
-	private static void initLPavg(EvTour tour) {
-		EvBufferVariant lpAvg = new EvBufferVariant("LP", tour.tourDirectory, tour.tourIdent + "_LPavg",
-				tour.avgTravelTime, tour.linkIDs);
-		lpAvg.delayScenarios = removeNegativScenarioValues(calcDelayScenarios(tour.traveltimeMatrix, lpAvg.expTT));
-		lpAvg.writeScenariosCSV();
-		setupLPBuffers(lpAvg);
-		tour.evBufferVariants.add(lpAvg);
-	}
-
-	private static double[][] removeNegativScenarioValues(double[][] delayScenarios) {
-		int szenariosCount = delayScenarios.length;
-		int linksCount = delayScenarios[0].length;
-
-		for (int s = 0; s < szenariosCount; s++)
-			for (int l = 0; l < linksCount; l++)
-				if (delayScenarios[s][l] < 0)
-					delayScenarios[s][l] = 0;
-		return delayScenarios;
-	}
-
-	private static double[][] calcDelayScenarios(double[][] traveltimeMatrix, double[] expTT) {
-		int linksCount = traveltimeMatrix.length;
-		int szenariosCount = traveltimeMatrix[0].length;
-		double[][] delayScenarios = new double[szenariosCount][linksCount];
-
-		for (int s = 0; s < szenariosCount; s++)
-			for (int l = 0; l < linksCount; l++)
-				delayScenarios[s][l] = traveltimeMatrix[l][s] - expTT[l];
-		return delayScenarios;
-	}
-
-	private static void setupLPBuffers(EvBufferVariant variant) {
-		double se = getBestCaseDuration(2 * 60, variant.expTT);
-		double t = 500;
-		// TODO: SETUP PARAMETERS FOR BUFFERS TO BE CHECKED
-		setupTimeWindowBuffers(variant, se, t, true);
-		setupTimeWindowBuffers(variant, se, t, false);
-	}
-
-	// without delay
-	private static double getBestCaseDuration(double serviceTime, double[] expTT) {
-		double expDuration = 0;
-		for (double tt : expTT)
-			expDuration += tt + serviceTime;
-		return expDuration;
-	}
-
 	private static double[] generateEqualWindows(double window, int length) {
 		double[] windows = new double[length];
 		for (int i = 0; i < windows.length; i++)
@@ -193,11 +125,11 @@ public class BufferSetup {
 		return windows;
 	}
 
-	private static EvBufferSetup createBuffer(double[] w, String bufferIdent, EvBufferVariant variant, boolean myMethod,
-			double se, double t, double b, double ss, double u) {
+	private static EvBuffer createBuffer(double[] w, String bufferIdent, EvVariant variant, boolean myMethod, double se,
+			double t, double b, double ss, double u) {
 
-		return new EvBufferSetup(variant.versionDirectory, variant.versionIdent + bufferIdent + "_myM-" + myMethod, se,
-				t, b, w, ss, u, myMethod, variant.expTT, variant.delayScenarios, variant.linkIDs);
+		return new EvBuffer(variant.versionDirectory, variant.versionIdent + bufferIdent + "_myM-" + myMethod, se, t, b,
+				w, ss, u, myMethod, variant.expTT, variant.delayScenarios, variant.linkIDs);
 
 	}
 }

@@ -15,9 +15,9 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.ovgu.berlin.Settings;
-import org.matsim.ovgu.berlin.evaluation.EvBufferSetup;
-import org.matsim.ovgu.berlin.evaluation.EvBufferVariant;
-import org.matsim.ovgu.berlin.evaluation.EvTour;
+import org.matsim.ovgu.berlin.evaluation.model.EvBuffer;
+import org.matsim.ovgu.berlin.evaluation.model.EvTour;
+import org.matsim.ovgu.berlin.evaluation.model.EvVariant;
 import org.matsim.ovgu.berlin.eventHandling.Summary;
 import org.matsim.ovgu.berlin.eventHandling.TourEventsHandler;
 
@@ -30,9 +30,9 @@ public class EventAnalysis {
 
 	private static void evaluate(EvTour tour, String timeWindowMethod) {
 
-		for (EvBufferVariant variant : tour.evBufferVariants) {
-			for (EvBufferSetup buffer : variant.buffers) {
-				buffer.readRunSettings();
+		for (EvVariant variant : tour.evBufferVariants) {
+			for (EvBuffer buffer : variant.buffers) {
+				buffer.load();
 				Settings settings = buffer.runSettings;
 				settings.directory += timeWindowMethod + "/";
 				settings.timeWindowMethod = timeWindowMethod;
@@ -153,13 +153,13 @@ public class EventAnalysis {
 			FileWriter csvWriterTour = new FileWriter(csvFileTour);
 			csvWriterTour.append(getSummaryHeadline().replace("myMethod", "myMethod;windowGroups")
 					+ ";difTourDurationToBASEmin;difTourDurationToBASEavg\n");
-			for (EvBufferVariant variant : tour.evBufferVariants) {
+			for (EvVariant variant : tour.evBufferVariants) {
 				File csvFileVersion = new File(variant.versionDirectory + "/" + variant.versionIdent + "_"
 						+ timeWindowMethod + "_summaryGroups.csv");
 				csvFileVersion.getParentFile().mkdirs();
 				FileWriter csvWriterVersion = new FileWriter(csvFileVersion);
 				csvWriterVersion.append(getSummaryHeadline().replace("myMethod", "myMethod;windowGroups") + "\n");
-				for (EvBufferSetup buffer : variant.buffers) {
+				for (EvBuffer buffer : variant.buffers) {
 					String bufferSummaryGroups = readBufferSummaryString_Groups(
 							buffer.bufferIdent.replace("_", ";") + ";", buffer.bufferDirectory + "/"
 									+ buffer.bufferIdent + "_" + timeWindowMethod + "_result_summaryGroups.csv");
@@ -194,13 +194,13 @@ public class EventAnalysis {
 			csvFileTour.getParentFile().mkdirs();
 			FileWriter csvWriterTour = new FileWriter(csvFileTour);
 			csvWriterTour.append(getSummaryHeadline() + ";difTourDurationToBASEmin;difTourDurationToBASEavg\n");
-			for (EvBufferVariant variant : tour.evBufferVariants) {
+			for (EvVariant variant : tour.evBufferVariants) {
 				File csvFileVersion = new File(variant.versionDirectory + "/" + variant.versionIdent + "_"
 						+ timeWindowMethod + "_summary.csv");
 				csvFileVersion.getParentFile().mkdirs();
 				FileWriter csvWriterVersion = new FileWriter(csvFileVersion);
 				csvWriterVersion.append(getSummaryHeadline() + "\n");
-				for (EvBufferSetup buffer : variant.buffers) {
+				for (EvBuffer buffer : variant.buffers) {
 					String bufferSummary = readBufferSummaryString(buffer.bufferDirectory + "/" + buffer.bufferIdent
 							+ "_" + timeWindowMethod + "_result_summary.csv");
 

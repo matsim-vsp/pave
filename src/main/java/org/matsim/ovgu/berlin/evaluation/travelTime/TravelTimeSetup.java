@@ -7,7 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.matsim.ovgu.berlin.createTravelTimeMatrix.Version3_RunSimReadEvents;
-import org.matsim.ovgu.berlin.evaluation.EvTour;
+import org.matsim.ovgu.berlin.evaluation.model.EvTour;
 
 public class TravelTimeSetup {
 
