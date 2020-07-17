@@ -31,7 +31,6 @@ import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.router.DefaultRoutingModules;
-import org.matsim.core.router.FallbackRoutingModule;
 import org.matsim.core.router.RoutingModule;
 import org.matsim.core.router.SingleModeNetworksCache;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
@@ -50,8 +49,7 @@ import java.util.Set;
 class DRTAccessWalkEgress2CarRoutingModuleProvider implements Provider<RoutingModule> {
 	private static final Logger log = Logger.getLogger( DRTAccessWalkEgress2CarRoutingModuleProvider.class ) ;
 
-	private final String mode;
-	private final String routingMode = TransportMode.car;
+	private final String mode = TransportMode.car;
 
 	private final com.google.inject.Provider<RoutingModule> drtRoutingModuleProvider;
 
@@ -69,14 +67,11 @@ class DRTAccessWalkEgress2CarRoutingModuleProvider implements Provider<RoutingMo
 
 	/**
 	 * This provider will return a routing module that uses drt for access and walk for egress while the main trip is routed based on the car disutility, car travel time and on the car network.<br>
-	 * That means, the {@code mode} is a representation for the modeChain drt->car->walk. Note that, in standard configuration, drt uses walk for access and egress itself, so the trip might end up
+	 * Note that, in standard configuration, drt uses walk for access and egress itself, so the trip might end up
 	 * as walk->drt->walk->car->walk
 	 *
-	 * @param mode the mode representing drt->car->walk
 	 */
-	DRTAccessWalkEgress2CarRoutingModuleProvider(String mode, DrtConfigGroup drtConfigGroup,
-												 com.google.inject.Provider<RoutingModule> drtRoutingModuleProvider) {
-		this.mode = mode;
+	DRTAccessWalkEgress2CarRoutingModuleProvider(com.google.inject.Provider<RoutingModule> drtRoutingModuleProvider) {
 		this.drtRoutingModuleProvider = drtRoutingModuleProvider;
 	}
 
@@ -85,16 +80,16 @@ class DRTAccessWalkEgress2CarRoutingModuleProvider implements Provider<RoutingMo
 	public RoutingModule get() {
 
 		//we use the car network for routing here....
-		Network filteredNetwork = getFilteredNetwork(routingMode);
+		Network filteredNetwork = getFilteredNetwork(mode);
 
 		// the travel time & disutility refer to the routing mode:
-		TravelDisutilityFactory travelDisutilityFactory = this.travelDisutilityFactories.get(routingMode);
+		TravelDisutilityFactory travelDisutilityFactory = this.travelDisutilityFactories.get(mode);
 		if (travelDisutilityFactory == null) {
-			throw new RuntimeException("No TravelDisutilityFactory bound for mode "+routingMode+".");
+			throw new RuntimeException("No TravelDisutilityFactory bound for mode "+ mode +".");
 		}
-		TravelTime travelTime = travelTimes.get(routingMode);
+		TravelTime travelTime = travelTimes.get(mode);
 		if (travelTime == null) {
-			throw new RuntimeException("No TravelTime bound for mode "+routingMode+".");
+			throw new RuntimeException("No TravelTime bound for mode "+ mode +".");
 		}
 		LeastCostPathCalculator routeAlgo =
 				leastCostPathCalculatorFactory.createPathCalculator(

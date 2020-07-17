@@ -67,7 +67,7 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypesAndDrtSpeedUp {
         double sensitivityFactor = 0.1;
         String[] configArgs;
         if ( args.length==0 ) {
-            configArgs = new String[]{BERLIN_V5_5_CONFIG, "--config:controler.outputDirectory", "output/berlin5.5_1pct_testBannedCarArea2"};
+            configArgs = new String[]{BERLIN_V5_5_CONFIG, "--config:controler.outputDirectory", "output/berlin5.5_1pct_testBannedCarArea"};
         } else {
             sensitivityFactor = Double.parseDouble(args[0]);
             configArgs = new String[args.length-1];
@@ -104,6 +104,11 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypesAndDrtSpeedUp {
         //insert vehicles for new modes
         configureVehicleIdsForNewModes(scenario);
 
+//        TODO: neue modi zu subtourmodechoice hinzufügen!;
+//
+//
+//        car als chain Based mode ausstellen
+
         //prepare controler
         Controler controler = RunDrtOpenBerlinScenario.prepareControler(scenario);
         controler.addOverridingModule(new DrtSpeedUpModule());
@@ -125,7 +130,7 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypesAndDrtSpeedUp {
         controler.run();
 
         //run analysis
-        RunBerlinScenario.runAnalysis(controler);
+//        RunBerlinScenario.runAnalysis(controler);
     }
 
     private static final void configureVehicleIdsForNewModes(Scenario scenario) {
