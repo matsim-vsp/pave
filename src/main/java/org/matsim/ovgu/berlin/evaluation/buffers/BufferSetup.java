@@ -10,101 +10,13 @@ public class BufferSetup {
 		setupBuffersForVariants(tour);
 	}
 
-	public static void load(EvTour tour, boolean runModel) {
-		for (EvBufferVariant variant : tour.evBufferVariants) {
-			if (runModel)
-				for (EvBufferSetup buffer : variant.buffers) {
-					switch (variant.variantType) {
-					case "LP":
-						buffer.runLP();
-						break;
-					case "SD":
-						buffer.calculateStandardDeviationBuffer(tour.avgTravelTime, tour.traveltimeMatrix, false);
-						break;
-					case "SD-Test":
-						buffer.calculateStandardDeviationBuffer(tour.avgTravelTime, tour.traveltimeMatrix, true);
-						break;
-					case "BASE":
-						break;
-					default:
-						System.out.println(
-								"BufferSetup.load() - Unknown Buffer Variant Type: \"" + variant.variantType + "\"");
-						break;
-					}
-				}
-			variant.writeOrLoad(runModel);
-		}
-	}
-
 	private static void setupBuffersForVariants(EvTour tour) {
 		initLPmin(tour);
-		initLPavg(tour);
-//		initVersionC();
-		initBASEavg(tour);
-		initBASEmin(tour);
-		initSDavg(tour);
-		initSDTestavg(tour);
-	}
-
-	private static void initBASEmin(EvTour tour) {
-		EvBufferVariant baseMin = new EvBufferVariant("BASE", tour.tourDirectory, tour.tourIdent + "_BASEmin",
-				tour.minTravelTime, tour.linkIDs);
-		setupTimeWindowBuffers(baseMin, 0, 0, false);
-		tour.evBufferVariants.add(baseMin);
-	}
-
-	private static void initBASEavg(EvTour tour) {
-		EvBufferVariant baseAvg = new EvBufferVariant("BASE", tour.tourDirectory, tour.tourIdent + "_BASEavg",
-				tour.avgTravelTime, tour.linkIDs);
-		setupTimeWindowBuffers(baseAvg, 0, 0, false);
-		tour.evBufferVariants.add(baseAvg);
-	}
-
-	private static void initSDavg(EvTour tour) {
-		EvBufferVariant sdAvg = new EvBufferVariant("SD", tour.tourDirectory, tour.tourIdent + "_SDavg",
-				tour.avgTravelTime, tour.linkIDs);
-		setupTimeWindowBuffers(sdAvg, 0, 0, false);
-		tour.evBufferVariants.add(sdAvg);
-	}
-
-	private static void initSDTestavg(EvTour tour) {
-		EvBufferVariant sdAvgTest = new EvBufferVariant("SD-Test", tour.tourDirectory, tour.tourIdent + "_SDavgTEST",
-				tour.avgTravelTime, tour.linkIDs);
-		setupTimeWindowBuffers(sdAvgTest, 0, 0, true);
-		tour.evBufferVariants.add(sdAvgTest);
-	}
-
-	private static void initLPmin(EvTour tour) {
-		EvBufferVariant lpMin = new EvBufferVariant("LP", tour.tourDirectory, tour.tourIdent + "_LPmin",
-				tour.minTravelTime, tour.linkIDs);
-		lpMin.calcDelayScenarios(tour.traveltimeMatrix);
-		setupLPBuffers(lpMin);
-		tour.evBufferVariants.add(lpMin);
-	}
-
-	private static void initLPavg(EvTour tour) {
-		EvBufferVariant lpAvg = new EvBufferVariant("LP", tour.tourDirectory, tour.tourIdent + "_LPavg",
-				tour.avgTravelTime, tour.linkIDs);
-		lpAvg.calcDelayScenarios(tour.traveltimeMatrix);
-		lpAvg.removeNegativScenarioValues();
-		setupLPBuffers(lpAvg);
-		tour.evBufferVariants.add(lpAvg);
-	}
-
-	private static void setupLPBuffers(EvBufferVariant variant) {
-		double se = getBestCaseDuration(2 * 60, variant.expTT);
-		double t = 500;
-		// TODO: SETUP PARAMETERS FOR BUFFERS TO BE CHECKED
-		setupTimeWindowBuffers(variant, se, t, true);
-		setupTimeWindowBuffers(variant, se, t, false);
-	}
-
-	// without delay
-	private static double getBestCaseDuration(double serviceTime, double[] expTT) {
-		double expDuration = 0;
-		for (double tt : expTT)
-			expDuration += tt + serviceTime;
-		return expDuration;
+//		initLPavg(tour);
+//		initBASEavg(tour);
+//		initBASEmin(tour);
+//		initSDavg(tour);
+//		initSDTestavg(tour);
 	}
 
 	private static void setupTimeWindowBuffers(EvBufferVariant variant, double se, double t, boolean myMethod) {
@@ -127,13 +39,6 @@ public class BufferSetup {
 			double[] wArray = generateEqualWindows(w, variant.expTT.length);
 			variant.buffers.add(createBuffer(wArray, "_bufferW" + w, variant, myMethod, se, t, b, ss, u));
 		}
-	}
-
-	private static double[] generateEqualWindows(double window, int length) {
-		double[] windows = new double[length];
-		for (int i = 0; i < windows.length; i++)
-			windows[i] = window;
-		return windows;
 	}
 
 	private static void setupMixedTimeWindowBuffers(EvBufferVariant variant, double se, double t, boolean myMethod) {
@@ -167,7 +72,125 @@ public class BufferSetup {
 		variant.buffers.add(createBuffer(mix3r, "_bufferWmix3r", variant, myMethod, se, t, b, ss, u));
 		variant.buffers.add(createBuffer(mix4, "_bufferWmix4", variant, myMethod, se, t, b, ss, u));
 		variant.buffers.add(createBuffer(mix4r, "_bufferWmix4r", variant, myMethod, se, t, b, ss, u));
+	}
 
+
+
+	public static void load(EvTour tour, boolean runModel) {
+		for (EvBufferVariant variant : tour.evBufferVariants) {
+			if (runModel)
+				for (EvBufferSetup buffer : variant.buffers) {
+					switch (variant.variantType) {
+					case "LP":
+						buffer.runLP();
+						break;
+					case "SD":
+						buffer.calculateStandardDeviationBuffer(tour.avgTravelTime, tour.traveltimeMatrix, false);
+						break;
+					case "SD-Test":
+						buffer.calculateStandardDeviationBuffer(tour.avgTravelTime, tour.traveltimeMatrix, true);
+						break;
+					case "BASE":
+						break;
+					default:
+						System.out.println(
+								"BufferSetup.load() - Unknown Buffer Variant Type: \"" + variant.variantType + "\"");
+						break;
+					}
+				}
+			variant.writeOrLoad(runModel);
+		}
+	}
+
+	private static void initBASEmin(EvTour tour) {
+		EvBufferVariant baseMin = new EvBufferVariant("BASE", tour.tourDirectory, tour.tourIdent + "_BASEmin",
+				tour.minTravelTime, tour.linkIDs);
+		setupTimeWindowBuffers(baseMin, 0, 0, false);
+		tour.evBufferVariants.add(baseMin);
+	}
+
+	private static void initBASEavg(EvTour tour) {
+		EvBufferVariant baseAvg = new EvBufferVariant("BASE", tour.tourDirectory, tour.tourIdent + "_BASEavg",
+				tour.avgTravelTime, tour.linkIDs);
+		setupTimeWindowBuffers(baseAvg, 0, 0, false);
+		tour.evBufferVariants.add(baseAvg);
+	}
+
+	private static void initSDavg(EvTour tour) {
+		EvBufferVariant sdAvg = new EvBufferVariant("SD", tour.tourDirectory, tour.tourIdent + "_SDavg",
+				tour.avgTravelTime, tour.linkIDs);
+		setupTimeWindowBuffers(sdAvg, 0, 0, false);
+		tour.evBufferVariants.add(sdAvg);
+	}
+
+	private static void initSDTestavg(EvTour tour) {
+		EvBufferVariant sdAvgTest = new EvBufferVariant("SD-Test", tour.tourDirectory, tour.tourIdent + "_SDavgTEST",
+				tour.avgTravelTime, tour.linkIDs);
+		setupTimeWindowBuffers(sdAvgTest, 0, 0, true);
+		tour.evBufferVariants.add(sdAvgTest);
+	}
+
+	private static void initLPmin(EvTour tour) {
+		EvBufferVariant lpMin = new EvBufferVariant("LP", tour.tourDirectory, tour.tourIdent + "_LPmin",
+				tour.minTravelTime, tour.linkIDs);
+		lpMin.delayScenarios = calcDelayScenarios(tour.traveltimeMatrix, lpMin.expTT);
+		lpMin.writeScenariosCSV();
+		setupLPBuffers(lpMin);
+		tour.evBufferVariants.add(lpMin);
+	}
+
+	private static void initLPavg(EvTour tour) {
+		EvBufferVariant lpAvg = new EvBufferVariant("LP", tour.tourDirectory, tour.tourIdent + "_LPavg",
+				tour.avgTravelTime, tour.linkIDs);
+		lpAvg.delayScenarios = removeNegativScenarioValues(calcDelayScenarios(tour.traveltimeMatrix, lpAvg.expTT));
+		lpAvg.writeScenariosCSV();
+		setupLPBuffers(lpAvg);
+		tour.evBufferVariants.add(lpAvg);
+	}
+
+	private static double[][] removeNegativScenarioValues(double[][] delayScenarios) {
+		int szenariosCount = delayScenarios.length;
+		int linksCount = delayScenarios[0].length;
+
+		for (int s = 0; s < szenariosCount; s++)
+			for (int l = 0; l < linksCount; l++)
+				if (delayScenarios[s][l] < 0)
+					delayScenarios[s][l] = 0;
+		return delayScenarios;
+	}
+
+	private static double[][] calcDelayScenarios(double[][] traveltimeMatrix, double[] expTT) {
+		int linksCount = traveltimeMatrix.length;
+		int szenariosCount = traveltimeMatrix[0].length;
+		double[][] delayScenarios = new double[szenariosCount][linksCount];
+
+		for (int s = 0; s < szenariosCount; s++)
+			for (int l = 0; l < linksCount; l++)
+				delayScenarios[s][l] = traveltimeMatrix[l][s] - expTT[l];
+		return delayScenarios;
+	}
+
+	private static void setupLPBuffers(EvBufferVariant variant) {
+		double se = getBestCaseDuration(2 * 60, variant.expTT);
+		double t = 500;
+		// TODO: SETUP PARAMETERS FOR BUFFERS TO BE CHECKED
+		setupTimeWindowBuffers(variant, se, t, true);
+		setupTimeWindowBuffers(variant, se, t, false);
+	}
+
+	// without delay
+	private static double getBestCaseDuration(double serviceTime, double[] expTT) {
+		double expDuration = 0;
+		for (double tt : expTT)
+			expDuration += tt + serviceTime;
+		return expDuration;
+	}
+
+	private static double[] generateEqualWindows(double window, int length) {
+		double[] windows = new double[length];
+		for (int i = 0; i < windows.length; i++)
+			windows[i] = window;
+		return windows;
 	}
 
 	private static EvBufferSetup createBuffer(double[] w, String bufferIdent, EvBufferVariant variant, boolean myMethod,

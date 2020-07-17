@@ -1,9 +1,5 @@
 package org.matsim.ovgu.berlin;
 
-import org.matsim.ovgu.berlin.createNetworkChangeEvents.CreateNetworkChangeEventsFile;
-import org.matsim.ovgu.berlin.createTravelTimeMatrix.Version1_ReadChangeEvents;
-import org.matsim.ovgu.berlin.createTravelTimeMatrix.Version2_RunSimReadSim;
-import org.matsim.ovgu.berlin.createTravelTimeMatrix.Version3_RunSimReadEvents;
 import org.matsim.ovgu.berlin.evaluation.RunEvalution;
 
 public class Run {
@@ -28,8 +24,10 @@ public class Run {
 		// setup values in class "Input"
 		RunEvalution eva = new RunEvalution();
 
+		String[] linkIDs = Run.getMySample2000Links();
+		eva.runDefault(linkIDs);
+
 //		String name = args[0];
-//		String[] linkIDs = Run.getMySample2000Links();
 //		int from = Integer.parseInt(args[1]);
 //		int to = Integer.parseInt(args[2]);
 //		boolean ttSimulation = Boolean.parseBoolean(args[3]);
@@ -38,20 +36,8 @@ public class Run {
 //		boolean runSimulation = Boolean.parseBoolean(args[6]);
 //		boolean runAnalysis = Boolean.parseBoolean(args[7]);
 //		boolean runSummary = Boolean.parseBoolean(args[8]);
-
-		String name = "NextGen2";
-		String[] linkIDs = Run.getMySample2000Links();
-		int from = 1;
-		int to = from;
-		boolean ttSimulation = false;
-		boolean runBufferModel = false;
-		String windowMethod = "PlusMinusArrival";
-		boolean runSimulation = false;
-		boolean runAnalysis = true;
-		boolean runSummary = false;
-
-		eva.run(name, linkIDs, from, to, ttSimulation, runBufferModel, windowMethod, runSimulation, runAnalysis,
-				runSummary);
+//		eva.run(name, linkIDs, from, to, ttSimulation, runBufferModel, windowMethod, runSimulation, runAnalysis,
+//				runSummary);
 	}
 
 	private static String[] getMySample2000Links() {

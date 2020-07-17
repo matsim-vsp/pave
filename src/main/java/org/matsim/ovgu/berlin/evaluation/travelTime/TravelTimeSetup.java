@@ -1,6 +1,8 @@
 package org.matsim.ovgu.berlin.evaluation.travelTime;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -9,18 +11,44 @@ import org.matsim.ovgu.berlin.evaluation.EvTour;
 
 public class TravelTimeSetup {
 
-	public static void runTravelTimeSimulations(EvTour tour) {
-		Version3_RunSimReadEvents.run(tour.linkIDs, tour.tourDirectory + "/matrixData", true, false, true);
+	public static void runTravelTimeSimulations(EvTour tour, boolean readEventsOnly) {
+		tour.traveltimeMatrix = Version3_RunSimReadEvents.run(tour.linkIDs, tour.tourDirectory + "/matrixData",
+				!readEventsOnly, false, true);
 		calcAggTravelTimes(tour);
 		writeTravelTimesCSV(tour);
 	}
 
 	public static void readTravelTimes(EvTour tour) {
+		int arcs = tour.linkIDs.length - 1;
+		tour.traveltimeMatrix = new double[arcs][24];
+		tour.minTravelTime = new double[arcs];
+		tour.avgTravelTime = new double[arcs];
+		tour.maxTravelTime = new double[arcs];
 		readTravelTimesCSV(tour);
 	}
 
 	private static void readTravelTimesCSV(EvTour tour) {
-		// TODO Auto-generated method stub
+		try {
+			BufferedReader csvReader = new BufferedReader(
+					new FileReader(tour.tourDirectory + "/" + tour.tourIdent + "_traveltimes.csv"));
+			String firstRow = csvReader.readLine();
+			String row;
+			int rowCounter = 0;
+			while ((row = csvReader.readLine()) != null) {
+				String[] data = row.replace(",", ".").split(";");
+				for (int i = 0; i < 24; i++)
+					tour.traveltimeMatrix[rowCounter][i] = Double.parseDouble(data[i + 3]);
+
+				tour.minTravelTime[rowCounter] = Double.parseDouble(data[28]);
+				tour.avgTravelTime[rowCounter] = Double.parseDouble(data[29]);
+				tour.maxTravelTime[rowCounter] = Double.parseDouble(data[30]);
+				rowCounter++;
+			}
+			csvReader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 //	public TravelTimeSetup(EvTour tour, boolean runSimulation) {

@@ -26,41 +26,7 @@ public class EvBufferVariant {
 	public double[][] delayScenarios;
 	public List<EvBufferSetup> buffers = new ArrayList<EvBufferSetup>();
 
-//	public void setupTimeWindowBuffers_SD() {
-//		double[] windows = new double[] { 1, 2 , 3, 4, 5/*, 6, 7, 8, 9, 10 */ };
-//		double factor = 60;
-//		double u = 2 * factor;
-//
-//		for (double window : windows) {
-//			double w = window * factor;
-//			buffers.add(
-//					new EvBufferVersion(versionDirectory, versionIdent + "_bufferW" + w, w, u, expTT, linkIDs));
-//		}
-//	}
-
-	public void calcDelayScenarios(double[][] traveltimeMatrix) {
-		int linksCount = traveltimeMatrix.length;
-		int szenariosCount = traveltimeMatrix[0].length;
-		delayScenarios = new double[szenariosCount][linksCount];
-
-		for (int s = 0; s < szenariosCount; s++)
-			for (int l = 0; l < linksCount; l++)
-				delayScenarios[s][l] = traveltimeMatrix[l][s] - expTT[l];
-
-		writeScenariosCSV();
-	}
-
-	public void removeNegativScenarioValues() {
-		int szenariosCount = delayScenarios.length;
-		int linksCount = delayScenarios[0].length;
-
-		for (int s = 0; s < szenariosCount; s++)
-			for (int l = 0; l < linksCount; l++)
-				if (delayScenarios[s][l] < 0)
-					delayScenarios[s][l] = 0;
-	}
-
-	private void writeScenariosCSV() {
+	public void writeScenariosCSV() {
 		try {
 			File csvFile = new File(versionDirectory + "/" + versionIdent + "_scenarios.csv");
 			csvFile.getParentFile().mkdirs();

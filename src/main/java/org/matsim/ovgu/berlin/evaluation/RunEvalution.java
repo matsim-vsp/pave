@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.matsim.ovgu.berlin.Run;
 import org.matsim.ovgu.berlin.Settings;
 import org.matsim.ovgu.berlin.evaluation.analysis.EventAnalysis;
 import org.matsim.ovgu.berlin.evaluation.buffers.BufferSetup;
@@ -23,10 +24,24 @@ public class RunEvalution {
 	private int from;
 	private int to;
 
+	public void runDefault(String[] linkIDs) {
+		String name = "NextGen2";
+		int from = 1;
+		int to = from;
+		boolean ttSimulation = false;
+		boolean runBufferModel = false;
+		String windowMethod = "PlusMinusArrival";
+		boolean runSimulation = false;
+		boolean runAnalysis = true;
+		boolean runSummary = true;
+		
+		run(name, linkIDs, from, to, ttSimulation, runBufferModel, windowMethod, runSimulation, runAnalysis,
+				runSummary);
+	}
+
 	public void run(String evaluationIdent, String[] linkIDs, int from, int to, boolean ttSimulation,
 			boolean runBufferModel, String windowMethod, boolean runSimulation, boolean runAnalysis,
 			boolean runSummary) {
-
 
 		this.from = from;
 		this.to = to;
@@ -41,7 +56,7 @@ public class RunEvalution {
 		for (int i = from - 1; i < to; i++) {
 			// simulate 24 hour travel time values
 			if (ttSimulation)
-				TravelTimeSetup.runTravelTimeSimulations(tours.get(i));
+				TravelTimeSetup.runTravelTimeSimulations(tours.get(i), false);
 
 			// read 24 hour travel time values
 			TravelTimeSetup.readTravelTimes(tours.get(i));
