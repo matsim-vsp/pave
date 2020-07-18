@@ -169,4 +169,8 @@ public class TourEventsHandler implements LinkEnterEventHandler, LinkLeaveEventH
 	public Summary getSummary() {
 		return new Summary(plans);
 	}
+
+	public FilteredSummaries getFilteredSummaries() {
+		return new FilteredSummaries(plans);
+	}
 }

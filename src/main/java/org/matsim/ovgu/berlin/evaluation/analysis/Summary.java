@@ -144,7 +144,7 @@ public class Summary {
 
 	private CharSequence getHeadline(String groups, boolean withoutTour) {
 
-		String str = EventAnalysis.getSummaryHeadline();
+		String str = Analysis.getSummaryHeadline();
 
 		if ("Groups".equals(groups))
 			str = str.replace("myMethod", "myMethod;windowGroups");

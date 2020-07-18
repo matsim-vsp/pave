@@ -7,21 +7,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
-import org.matsim.core.api.experimental.events.EventsManager;
-import org.matsim.core.events.EventsUtils;
-import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.ovgu.berlin.Settings;
 import org.matsim.ovgu.berlin.evaluation.model.EvBuffer;
 import org.matsim.ovgu.berlin.evaluation.model.EvTour;
 import org.matsim.ovgu.berlin.evaluation.model.EvVariant;
-import org.matsim.ovgu.berlin.eventHandling.Summary;
-import org.matsim.ovgu.berlin.eventHandling.TourEventsHandler;
 
-public class EventAnalysis {
+public class Analysis {
 
 	public static void run(EvTour tour, String timeWindowMethod) {
 		evaluate(tour, timeWindowMethod);
@@ -36,102 +29,14 @@ public class EventAnalysis {
 				Settings settings = buffer.runSettings;
 				settings.directory += timeWindowMethod + "/";
 				settings.timeWindowMethod = timeWindowMethod;
-				readEvents(settings, buffer.bufferIdent + "_" + timeWindowMethod + "_result");
+				EventReader.read(settings, buffer.bufferIdent + "_" + timeWindowMethod + "_result");
 			}
 		}
 		generateTourAndVersionSummaries(tour, timeWindowMethod);
 		generateTourAndVersionSummaries_Groups(tour, timeWindowMethod);
 	}
 
-	private static void readEvents(Settings settings, String fileName) {
-		TourEventsHandler handler = new TourEventsHandler();
-		EventsManager manager = EventsUtils.createEventsManager();
-		manager.addHandler(handler);
-		MatsimEventsReader reader = new MatsimEventsReader(manager);
 
-		reader.readFile(settings.directory + "/output_events.xml.gz");
-		System.out.println("Events file read!");
-
-		handler.compareExpectedArrivals(settings);
-		System.out.println("post calculations finished!");
-
-		handler.writeCSV(settings.directory + "/../../" + fileName + ".csv");
-		System.out.println("CSV finished!");
-
-		writeBufferSummaryCSV(handler.getSummary(), settings.directory + "/../../" + fileName + "_summary.csv",
-				settings.buffer);
-
-		writeBufferSummaryTWGroupsCSV(handler.getSummary(),
-				settings.directory + "/../../" + fileName + "_summaryGroups.csv", settings.buffer);
-	}
-
-	private static void writeBufferSummaryCSV(Summary summary, String summaryFilePath, double[] usedBuffer) {
-
-		try {
-			File csvFile = new File(summaryFilePath);
-			csvFile.getParentFile().mkdirs();
-			FileWriter csvWriter = new FileWriter(csvFile);
-			csvWriter.append(getSummaryHeadline().replace("evaluation;tour;version;window;myMethod;", "") + "\n");
-
-			String str = summary.percent_oBeforeTW_all + ";" + summary.percent_oInTW_all + ";"
-					+ summary.percent_oAfterTW_all + ";" + summary.avg_oEarlyTW_all / 60 + ";"
-					+ summary.max_oEarlyTW_all / 60 + ";" + summary.avg_oLateTW_all / 60 + ";"
-					+ summary.max_oLateTW_all / 60 + ";" + summary.percent_dBeforeTW_all + ";"
-					+ summary.percent_dInTW_all + ";" + summary.percent_dAfterTW_all + ";"
-					+ summary.avg_dEarlyTW_all / 60 + ";" + summary.max_dEarlyTW_all / 60 + ";"
-					+ summary.avg_dLateTW_all / 60 + ";" + summary.max_dLateTW_all / 60 + ";"
-					+ summary.avg_tourDuration_all / 60 / 1440 + ";\n";
-
-			str = str.replace(".", ",");
-
-			csvWriter.append(str);
-
-			csvWriter.flush();
-			csvWriter.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	private static void writeBufferSummaryTWGroupsCSV(Summary summary, String summaryFilePath, double[] usedBuffer) {
-
-		try {
-			File csvFile = new File(summaryFilePath);
-			csvFile.getParentFile().mkdirs();
-			FileWriter csvWriter = new FileWriter(csvFile);
-			csvWriter.append("windowGroups;"
-					+ getSummaryHeadline().replace("evaluation;tour;version;window;myMethod;", "") + "\n");
-
-			String str = "";
-
-			Iterator<Entry<Double, Integer>> iter = summary.timewindow.entrySet().iterator();
-
-			while (iter.hasNext()) {
-				Entry<Double, Integer> entry = iter.next();
-				int i = entry.getValue();
-
-				str += entry.getKey() + ";" + summary.percent_oBeforeTW_groups[i] + ";"
-						+ summary.percent_oInTW_groups[i] + ";" + summary.percent_oAfterTW_groups[i] + ";"
-						+ summary.avg_oEarlyTW_groups[i] / 60 + ";" + summary.max_oEarlyTW_groups[i] / 60 + ";"
-						+ summary.avg_oLateTW_groups[i] / 60 + ";" + summary.max_oLateTW_groups[i] / 60 + ";"
-						+ summary.percent_dBeforeTW_groups[i] + ";" + summary.percent_dInTW_groups[i] + ";"
-						+ summary.percent_dAfterTW_groups[i] + ";" + summary.avg_dEarlyTW_groups[i] / 60 + ";"
-						+ summary.max_dEarlyTW_groups[i] / 60 + ";" + summary.avg_dLateTW_groups[i] / 60 + ";"
-						+ summary.max_dLateTW_groups[i] / 60 + ";" + summary.avg_tourDuration_all / 60 / 1440 + ";\n";
-			}
-
-			str = str.replace(".", ",");
-
-			csvWriter.append(str);
-
-			csvWriter.flush();
-			csvWriter.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
 	public static String getSummaryHeadline() {
 		String str = "evaluation;tour;version;window;myMethod;" + "oBeforeTW;oInTW;oAfterTW;"

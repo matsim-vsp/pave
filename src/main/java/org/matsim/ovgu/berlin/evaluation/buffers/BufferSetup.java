@@ -11,11 +11,11 @@ public class BufferSetup {
 	}
 
 	private static void setupBuffersForVariants(EvTour tour) {
-		setupTimeWindowBuffers(BufferBASE.init("min", tour.minTravelTime, tour), 0, 0, false);
-		setupTimeWindowBuffers(BufferBASE.init("avg", tour.avgTravelTime, tour), 0, 0, false);
-
-		setupTimeWindowBuffers(BufferSD.init(tour, false), 0, 0, false);
-		setupTimeWindowBuffers(BufferSD.init(tour, true), 0, 0, true);
+//		setupTimeWindowBuffers(BufferBASE.init("min", tour.minTravelTime, tour), 0, 0, false);
+//		setupTimeWindowBuffers(BufferBASE.init("avg", tour.avgTravelTime, tour), 0, 0, false);
+//
+//		setupTimeWindowBuffers(BufferSD.init(tour, false), 0, 0, false);
+//		setupTimeWindowBuffers(BufferSD.init(tour, true), 0, 0, true);
 
 		double t = 500;
 
@@ -23,9 +23,9 @@ public class BufferSetup {
 		setupTimeWindowBuffers(BufferLP.init("min", tour.minTravelTime, tour), se, t, true);
 		setupTimeWindowBuffers(BufferLP.init("min", tour.minTravelTime, tour), se, t, false);
 
-		se = getBestCaseDuration(2 * 60, tour.avgTravelTime);
-		setupTimeWindowBuffers(BufferLP.init("avg", tour.avgTravelTime, tour), se, t, true);
-		setupTimeWindowBuffers(BufferLP.init("avg", tour.avgTravelTime, tour), se, t, false);
+//		se = getBestCaseDuration(2 * 60, tour.avgTravelTime);
+//		setupTimeWindowBuffers(BufferLP.init("avg", tour.avgTravelTime, tour), se, t, true);
+//		setupTimeWindowBuffers(BufferLP.init("avg", tour.avgTravelTime, tour), se, t, false);
 
 	}
 

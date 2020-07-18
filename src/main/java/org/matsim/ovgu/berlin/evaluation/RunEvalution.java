@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.matsim.ovgu.berlin.Settings;
-import org.matsim.ovgu.berlin.evaluation.analysis.EventAnalysis;
+import org.matsim.ovgu.berlin.evaluation.analysis.Analysis;
 import org.matsim.ovgu.berlin.evaluation.buffers.BufferSetup;
 import org.matsim.ovgu.berlin.evaluation.model.EvTour;
 import org.matsim.ovgu.berlin.evaluation.simulation.Simulation;
@@ -29,7 +29,7 @@ public class RunEvalution {
 		boolean runBufferModel = false;
 		String windowMethod = "PlusMinusArrival";
 		boolean runSimulation = false;
-		boolean runAnalysis = false;
+		boolean runAnalysis = true;
 		boolean runSummary = false;
 
 		run(name, linkIDs, from, to, ttSimulation, ttReadEventsOnly, runBufferModel, windowMethod, runSimulation, runAnalysis,
@@ -67,7 +67,7 @@ public class RunEvalution {
 
 			// read and analyse events
 			if (runAnalysis)
-				EventAnalysis.run(tours.get(i), windowMethod);
+				Analysis.run(tours.get(i), windowMethod);
 		}
 
 		if (runSummary) {
