@@ -20,12 +20,14 @@ public class BufferSetup {
 		double t = 500;
 
 		double se = getBestCaseDuration(2 * 60, tour.minTravelTime);
-		setupTimeWindowBuffers(BufferLP.init("min", tour.minTravelTime, tour), se, t, true);
-		setupTimeWindowBuffers(BufferLP.init("min", tour.minTravelTime, tour), se, t, false);
+		EvVariant min = BufferLP.init("min", tour.minTravelTime, tour);
+		setupTimeWindowBuffers(min, se, t, true);
+		setupTimeWindowBuffers(min, se, t, false);
 
 //		se = getBestCaseDuration(2 * 60, tour.avgTravelTime);
-//		setupTimeWindowBuffers(BufferLP.init("avg", tour.avgTravelTime, tour), se, t, true);
-//		setupTimeWindowBuffers(BufferLP.init("avg", tour.avgTravelTime, tour), se, t, false);
+//		EvVariant avg = BufferLP.init("avg", tour.avgTravelTime, tour)
+//		setupTimeWindowBuffers(avg, se, t, true);
+//		setupTimeWindowBuffers(avg, se, t, false);
 
 	}
 

@@ -14,10 +14,10 @@ public class FilteredSummaries {
 	private List<Customer>[] customers_tw;
 	private List<Customer>[] customers_cp;
 	private List<Customer>[][] customers_tw_cp;
-	public Summary2 summary_all;
-	public Summary2[] summary_tw;
-	public Summary2[] summary_cp;
-	public Summary2[][] summary_tw_cp;
+	public Summary summary_all;
+	public Summary[] summary_tw;
+	public Summary[] summary_cp;
+	public Summary[][] summary_tw_cp;
 
 	public FilteredSummaries(List<CarrierTour> plans) {
 		init(plans);
@@ -51,22 +51,22 @@ public class FilteredSummaries {
 	}
 
 	private void calculateSummaries() {
-		summary_all = new Summary2(customers_all);
+		summary_all = new Summary(customers_all);
 		summary_all.avg_tourDuration_all = avg_tourDuration;
 
 		for (int i = 0; i < timeWindows.size(); i++) {
-			summary_tw[i] = new Summary2(customers_tw[i]);
+			summary_tw[i] = new Summary(customers_tw[i]);
 			summary_tw[i].avg_tourDuration_all = avg_tourDuration;
 		}
 
 		for (int i = 0; i < customerPositions.size(); i++) {
-			summary_cp[i] = new Summary2(customers_cp[i]);
+			summary_cp[i] = new Summary(customers_cp[i]);
 			summary_cp[i].avg_tourDuration_all = avg_tourDuration;
 		}
 
 		for (int w = 0; w < timeWindows.size(); w++) {
 			for (int p = 0; p < customerPositions.size(); p++) {
-				summary_tw_cp[w][p] = new Summary2(customers_tw_cp[w][p]);
+				summary_tw_cp[w][p] = new Summary(customers_tw_cp[w][p]);
 				summary_tw_cp[w][p].avg_tourDuration_all = avg_tourDuration;
 			}
 		}
@@ -117,8 +117,8 @@ public class FilteredSummaries {
 			}
 		}
 
-		summary_tw = new Summary2[tw];
-		summary_cp = new Summary2[cp];
-		summary_tw_cp = new Summary2[tw][cp];
+		summary_tw = new Summary[tw];
+		summary_cp = new Summary[cp];
+		summary_tw_cp = new Summary[tw][cp];
 	}
 }

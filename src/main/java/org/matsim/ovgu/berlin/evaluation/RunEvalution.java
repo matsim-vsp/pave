@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.matsim.ovgu.berlin.Settings;
-import org.matsim.ovgu.berlin.evaluation.analysis.Analysis;
+import org.matsim.ovgu.berlin.evaluation.analysis.EventAnalysis;
+import org.matsim.ovgu.berlin.evaluation.analysis.SumAnalysis;
 import org.matsim.ovgu.berlin.evaluation.buffers.BufferSetup;
 import org.matsim.ovgu.berlin.evaluation.model.EvTour;
 import org.matsim.ovgu.berlin.evaluation.simulation.Simulation;
@@ -29,11 +30,11 @@ public class RunEvalution {
 		boolean runBufferModel = false;
 		String windowMethod = "PlusMinusArrival";
 		boolean runSimulation = false;
-		boolean runAnalysis = true;
-		boolean runSummary = false;
+		boolean runAnalysis = false;
+		boolean runSummary = true;
 
-		run(name, linkIDs, from, to, ttSimulation, ttReadEventsOnly, runBufferModel, windowMethod, runSimulation, runAnalysis,
-				runSummary);
+		run(name, linkIDs, from, to, ttSimulation, ttReadEventsOnly, runBufferModel, windowMethod, runSimulation,
+				runAnalysis, runSummary);
 	}
 
 	public void run(String evaluationIdent, String[] linkIDs, int from, int to, boolean ttSimulation,
@@ -67,11 +68,11 @@ public class RunEvalution {
 
 			// read and analyse events
 			if (runAnalysis)
-				Analysis.run(tours.get(i), windowMethod);
+				EventAnalysis.run(evaluationIdent, tours.get(i), windowMethod);
 		}
 
 		if (runSummary) {
-
+			new SumAnalysis(tours, evaluationDirectory, evaluationIdent, from, to, windowMethod);
 		}
 
 		System.out.println("RunEvalution.run() Finished !");
