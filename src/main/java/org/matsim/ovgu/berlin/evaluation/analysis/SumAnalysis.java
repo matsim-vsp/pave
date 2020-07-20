@@ -31,32 +31,138 @@ public class SumAnalysis {
 		for (int i = from - 1; i < to; i++) {
 
 			for (EvVariant variant : tours.get(i).evBufferVariants) {
-				sumVariant(variant, windowMethod);
+				sumBuffers(variant, windowMethod);
 			}
-			sumTour(tours.get(i), windowMethod);
+			sumVariants(tours.get(i), windowMethod);
 		}
 		sumTours(windowMethod);
-		avgSummaries(windowMethod);
 	}
 
-	private void avgSummaries(String windowMethod) {
+	private void sumBuffers(EvVariant variant, String windowMethod) {
 		try {
-			avgSummary(windowMethod, "all");
-			avgSummary(windowMethod, "tw");
-			avgSummary(windowMethod, "cp");
-			avgSummary(windowMethod, "tw_cp");
+			summariesBuffers(variant, windowMethod, "all");
+			summariesBuffers(variant, windowMethod, "tw");
+			summariesBuffers(variant, windowMethod, "cp");
+			summariesBuffers(variant, windowMethod, "tw_cp");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	private void avgSummary(String windowMethod, String group) throws IOException {
+	private void sumVariants(EvTour tour, String windowMethod) {
+		try {
+			summariesVariants(tour, windowMethod, "sum_all");
+			summariesVariants(tour, windowMethod, "avg_all");
+			summariesVariants(tour, windowMethod, "sum_tw");
+			summariesVariants(tour, windowMethod, "avg_tw");
+			summariesVariants(tour, windowMethod, "sum_cp");
+			summariesVariants(tour, windowMethod, "avg_cp");
+			summariesVariants(tour, windowMethod, "sum_tw_cp");
+			summariesVariants(tour, windowMethod, "avg_tw_cp");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void sumTours(String windowMethod) {
+		try {
+			summariesTours(windowMethod, "sum_sum_all");
+			summariesTours(windowMethod, "sum_avg_all");
+			summariesTours(windowMethod, "avg_sum_all");
+			summariesTours(windowMethod, "avg_avg_all");
+			summariesTours(windowMethod, "sum_sum_tw");
+			summariesTours(windowMethod, "sum_avg_tw");
+			summariesTours(windowMethod, "avg_sum_tw");
+			summariesTours(windowMethod, "avg_avg_tw");
+			summariesTours(windowMethod, "sum_sum_cp");
+			summariesTours(windowMethod, "sum_avg_cp");
+			summariesTours(windowMethod, "avg_sum_cp");
+			summariesTours(windowMethod, "avg_avg_cp");
+			summariesTours(windowMethod, "sum_sum_tw_cp");
+			summariesTours(windowMethod, "sum_avg_tw_cp");
+			summariesTours(windowMethod, "avg_sum_tw_cp");
+			summariesTours(windowMethod, "avg_avg_tw_cp");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void summariesBuffers(EvVariant variant, String windowMethod, String group) throws IOException {
+
+		String fileString = variant.versionDirectory + "/" + variant.versionIdent + "_" + windowMethod + "_summary_";
+		String fileStringSum = fileString + "sum_";
+		String fileStringAvg = fileString + "avg_";
+
+		FileWriter csvWriterSum = getFileWriter(fileStringSum + group + ".csv");
+		FileWriter csvWriterAvg = getFileWriter(fileStringAvg + group + ".csv");
+
 		List<String[]> tmpData = new ArrayList<String[]>();
+		boolean headline = true;
 
-		String fileString = evaluationDirectory + "/" + evaluationIdent + "_" + windowMethod + "_result_avg_";
-		FileWriter csvWriter = getFileWriter(fileString + group + ".csv");
+		for (EvBuffer buffer : variant.buffers) {
+			String file = buffer.bufferDirectory + "/" + buffer.bufferIdent + "_" + windowMethod + "_result_summary_";
 
+			if (headline) {
+				String hl = readFileHeadline(file + group + ".csv");
+				csvWriterSum.append(hl);
+				csvWriterAvg.append(hl);
+				headline = false;
+			}
+			String content = readFileContent(file + group + ".csv");
+			csvWriterSum.append(content);
+			tmpData.add(content.split("\n"));
+		}
+		csvWriterSum.flush();
+		csvWriterSum.close();
+		csvWriterAvg.append(calculateAvg(tmpData));
+		csvWriterAvg.flush();
+		csvWriterAvg.close();
+	}
+
+	private void summariesVariants(EvTour tour, String windowMethod, String group) throws IOException {
+
+		String fileString = tour.tourDirectory + "/" + tour.tourIdent + "_" + windowMethod + "_summary_";
+		String fileStringSum = fileString + "sum_";
+		String fileStringAvg = fileString + "avg_";
+
+		FileWriter csvWriterSum = getFileWriter(fileStringSum + group + ".csv");
+		FileWriter csvWriterAvg = getFileWriter(fileStringAvg + group + ".csv");
+
+		List<String[]> tmpData = new ArrayList<String[]>();
+		boolean headline = true;
+
+		for (EvVariant variant : tour.evBufferVariants) {
+			String file = variant.versionDirectory + "/" + variant.versionIdent + "_" + windowMethod + "_summary_";
+			if (headline) {
+				String hl = readFileHeadline(file + group + ".csv");
+				csvWriterSum.append(hl);
+				csvWriterAvg.append(hl);
+				headline = false;
+			}
+			String content = readFileContent(file + group + ".csv");
+			csvWriterSum.append(content);
+			tmpData.add(content.split("\n"));
+		}
+		csvWriterSum.flush();
+		csvWriterSum.close();
+		csvWriterAvg.append(calculateAvg(tmpData));
+		csvWriterAvg.flush();
+		csvWriterAvg.close();
+	}
+
+	private void summariesTours(String windowMethod, String group) throws IOException {
+
+		String fileString = evaluationDirectory + "/" + evaluationIdent + "_" + windowMethod + "_result_";
+		String fileStringSum = fileString + "sum_";
+		String fileStringAvg = fileString + "avg_";
+
+		FileWriter csvWriterSum = getFileWriter(fileStringSum + group + ".csv");
+		FileWriter csvWriterAvg = getFileWriter(fileStringAvg + group + ".csv");
+
+		List<String[]> tmpData = new ArrayList<String[]>();
 		boolean headline = true;
 
 		for (int i = from - 1; i < to; i++) {
@@ -64,23 +170,27 @@ public class SumAnalysis {
 			String file = tours.get(i).tourDirectory + "/" + tours.get(i).tourIdent + "_" + windowMethod + "_summary_";
 
 			if (headline) {
-				csvWriter.append(readFileHeadline(file + group + ".csv"));
+				String hl = readFileHeadline(file + group + ".csv");
+				csvWriterSum.append(hl);
+				csvWriterAvg.append(hl);
 				headline = false;
 			}
-			tmpData.add(readFileContent(file + group + ".csv").split("\n"));
-
+			String content = readFileContent(file + group + ".csv");
+			csvWriterSum.append(content);
+			tmpData.add(content.split("\n"));
 		}
-		csvWriter.append(calculateAvg(tmpData));
-		csvWriter.flush();
-		csvWriter.close();
-
+		csvWriterSum.flush();
+		csvWriterSum.close();
+		csvWriterAvg.append(calculateAvg(tmpData));
+		csvWriterAvg.flush();
+		csvWriterAvg.close();
 	}
 
 	private String calculateAvg(List<String[]> tmpData) throws IOException {
 
 		String result = "";
 
-		double optimalTourDuration = getAvgNoDelayDuration();
+//		double optimalTourDuration = getAvgNoDelayDuration();
 
 		double toursCount = tmpData.size();
 		int linesCount = tmpData.get(0).length;
@@ -100,7 +210,7 @@ public class SumAnalysis {
 //			avgString += difOptTourDuration;
 			result += avgString.replace(".", ",") + "\n";
 		}
-		result += ("optimalTourDuration;" + optimalTourDuration).replace(".", ",");
+//		result += ("optimalTourDuration;" + optimalTourDuration).replace(".", ",");
 		return result;
 	}
 
@@ -108,7 +218,9 @@ public class SumAnalysis {
 		String[] result = new String[b.length];
 		for (int i = 0; i < a.length; i++)
 			try {
-				result[i] = "" + (Double.parseDouble(a[i]) + Double.parseDouble(b[i]));
+				double aValue = getDouble(a[i]);
+				double bValue = getDouble(b[i]);
+				result[i] = "" + (aValue + bValue);
 			} catch (NumberFormatException e) {
 				result[i] = a[i];
 			} catch (NullPointerException e) {
@@ -121,104 +233,19 @@ public class SumAnalysis {
 		String[] avgElements = new String[sumElements.length];
 		for (int i = 0; i < avgElements.length; i++)
 			try {
-				avgElements[i] = "" + (Double.parseDouble(sumElements[i]) / tourCount);
+				double value = getDouble(sumElements[i]);
+				avgElements[i] = "" + (value / tourCount);
 			} catch (NumberFormatException e) {
 				avgElements[i] = sumElements[i];
 			}
 		return avgElements;
 	}
-
-	private void sumTours(String windowMethod) {
-		try {
-			summariesTours(windowMethod, "all");
-			summariesTours(windowMethod, "tw");
-			summariesTours(windowMethod, "cp");
-			summariesTours(windowMethod, "tw_cp");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	private void sumTour(EvTour tour, String windowMethod) {
-		try {
-			summariesTour(tour, windowMethod, "all");
-			summariesTour(tour, windowMethod, "tw");
-			summariesTour(tour, windowMethod, "cp");
-			summariesTour(tour, windowMethod, "tw_cp");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	private void sumVariant(EvVariant variant, String windowMethod) {
-		try {
-			summariesVariant(variant, windowMethod, "all");
-			summariesVariant(variant, windowMethod, "tw");
-			summariesVariant(variant, windowMethod, "cp");
-			summariesVariant(variant, windowMethod, "tw_cp");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	private void summariesTour(EvTour tour, String windowMethod, String group) throws IOException {
-
-		String fileString = tour.tourDirectory + "/" + tour.tourIdent + "_" + windowMethod + "_summary_";
-		FileWriter csvWriter = getFileWriter(fileString + group + ".csv");
-		boolean headline = true;
-
-		for (EvVariant variant : tour.evBufferVariants) {
-			String file = variant.versionDirectory + "/" + variant.versionIdent + "_" + windowMethod + "_summary_";
-			if (headline) {
-				csvWriter.append(readFileHeadline(file + group + ".csv"));
-				headline = false;
-			}
-			csvWriter.append(readFileContent(file + group + ".csv"));
-		}
-		csvWriter.flush();
-		csvWriter.close();
-	}
-
-	private void summariesVariant(EvVariant variant, String windowMethod, String group) throws IOException {
-		String fileString = variant.versionDirectory + "/" + variant.versionIdent + "_" + windowMethod + "_summary_";
-		FileWriter csvWriter = getFileWriter(fileString + group + ".csv");
-		boolean headline = true;
-
-		for (EvBuffer buffer : variant.buffers) {
-			String file = buffer.bufferDirectory + "/" + buffer.bufferIdent + "_" + windowMethod + "_result_summary_";
-
-			if (headline) {
-				csvWriter.append(readFileHeadline(file + group + ".csv"));
-				headline = false;
-			}
-			csvWriter.append(readFileContent(file + group + ".csv"));
-		}
-		csvWriter.flush();
-		csvWriter.close();
-	}
-
-	private void summariesTours(String windowMethod, String group) throws IOException {
-
-		String fileString = evaluationDirectory + "/" + evaluationIdent + "_" + windowMethod + "_result_";
-		FileWriter csvWriter = getFileWriter(fileString + group + ".csv");
-
-		boolean headline = true;
-
-		for (int i = from - 1; i < to; i++) {
-
-			String file = tours.get(i).tourDirectory + "/" + tours.get(i).tourIdent + "_" + windowMethod + "_summary_";
-
-			if (headline) {
-				csvWriter.append(readFileHeadline(file + group + ".csv"));
-				headline = false;
-			}
-			csvWriter.append(readFileContent(file + group + ".csv"));
-		}
-		csvWriter.flush();
-		csvWriter.close();
+	
+	private double getDouble(String str) {
+		double value = Double.parseDouble(str);
+		if (Double.isNaN(value))
+			value = 0;
+		return value;
 	}
 
 	private FileWriter getFileWriter(String file) throws IOException {

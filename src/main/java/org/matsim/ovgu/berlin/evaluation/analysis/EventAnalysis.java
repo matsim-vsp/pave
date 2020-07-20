@@ -100,9 +100,9 @@ public class EventAnalysis {
 			}
 
 			iterTW = summaries.timeWindows.entrySet().iterator();
-			iterCP = summaries.customerPositions.entrySet().iterator();
 			while (iterTW.hasNext()) {
 				Entry<Double, Integer> entryTW = iterTW.next();
+				iterCP = summaries.customerPositions.entrySet().iterator();
 				while (iterCP.hasNext()) {
 					Entry<Integer, Integer> entryCP = iterCP.next();
 					csvWriterSumTWCP
@@ -134,6 +134,7 @@ public class EventAnalysis {
 				+ summary.avg_tourDuration_all / 60 / 1440 + ";\n";
 
 		str = str.replace(".", ",");
+		str = str.replace("NaN", "0");
 		return str;
 	}
 }

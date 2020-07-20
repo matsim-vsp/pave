@@ -30,7 +30,7 @@ public class RunEvalution {
 		boolean runBufferModel = false;
 		String windowMethod = "PlusMinusArrival";
 		boolean runSimulation = false;
-		boolean runAnalysis = false;
+		boolean runAnalysis = true;
 		boolean runSummary = true;
 
 		run(name, linkIDs, from, to, ttSimulation, ttReadEventsOnly, runBufferModel, windowMethod, runSimulation,
