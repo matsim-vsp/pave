@@ -20,8 +20,6 @@
 
 package org.matsim.run;
 
-import com.sun.jdi.connect.Transport;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.router.AnalysisMainModeIdentifier;

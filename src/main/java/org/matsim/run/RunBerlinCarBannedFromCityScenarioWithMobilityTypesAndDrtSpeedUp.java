@@ -31,7 +31,7 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.router.AnalysisMainModeIdentifier;
-import org.matsim.core.router.MainModeIdentifier;
+import org.matsim.core.utils.collections.Tuple;
 import org.matsim.drtSpeedUp.DrtSpeedUpModule;
 import org.matsim.optDRT.MultiModeOptDrtConfigGroup;
 import org.matsim.optDRT.OptDrt;
@@ -39,7 +39,6 @@ import org.matsim.run.drt.RunDrtOpenBerlinScenario;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleUtils;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,9 +47,7 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypesAndDrtSpeedUp {
 
     private static final Logger log = Logger.getLogger(RunBerlinCarBannedFromCityScenarioWithMobilityTypesAndDrtSpeedUp.class );
 
-//    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/pave-berlin-drt-v5.5-1pct.config-transsims.xml";
     private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config_banCarTest.xml";
-
 
     static final String WALK_ACCESS_DRT_EGRESS_MODE = "walkCarDrt";
     static final String DRT_ACCESS_DRT_WALK_MODE = "drtCarWalk";
@@ -87,7 +84,7 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypesAndDrtSpeedUp {
         DrtConfigGroup drtConfigGroup = DrtConfigGroup.getSingleModeDrtConfig(config);
 
         //prepare car banned specific parameter settings
-        CarBannedScenarioPreparation.prepareConfig(config,drtConfigGroup, Arrays.asList(WALK_ACCESS_DRT_EGRESS_MODE, DRT_ACCESS_DRT_WALK_MODE));
+        CarBannedScenarioPreparation.prepareConfig(config,drtConfigGroup, new Tuple<>(WALK_ACCESS_DRT_EGRESS_MODE, DRT_ACCESS_DRT_WALK_MODE));
 
         //prepare scenario
         Scenario scenario = RunDrtOpenBerlinScenario.prepareScenario(config);
@@ -103,11 +100,6 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypesAndDrtSpeedUp {
 
         //insert vehicles for new modes
         configureVehicleIdsForNewModes(scenario);
-
-//        TODO: neue modi zu subtourmodechoice hinzufügen!;
-//
-//
-//        car als chain Based mode ausstellen
 
         //prepare controler
         Controler controler = RunDrtOpenBerlinScenario.prepareControler(scenario);

@@ -32,12 +32,10 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.algorithms.MultimodalNetworkCleaner;
+import org.matsim.core.utils.collections.Tuple;
 import org.matsim.run.drt.BerlinShpUtils;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class CarBannedScenarioPreparation {
@@ -89,24 +87,31 @@ class CarBannedScenarioPreparation {
 		log.info("finished");
 	}
 
-	//need the specific DrtCOnfigGroup, this is why this is not converted to a proper ConfigConsistencyChecker yet...
+	//need the specific DrtConfigGroup, this is why this is not converted to a proper ConfigConsistencyChecker yet...
 
 	/**
 	 *
 	 * @param config
 	 * @param drtConfigGroup the DrtConfigGroup for the drt mode which will be used in intermodal car+drt trip within the carBanned area
-	 * @param additionalModes the modes that represent the intermodal mode chains with drt as access or egress mode to car, respectively. Most typically: walkCarDrt and drtCarWalk
+	 * @param additionalModes the modes that represent the mode chains with drt as access or egress mode to car, respectively. Most typically: 'walkCarDrt' and 'drtCarWalk'
 	 */
-	static final void prepareConfig(Config config, DrtConfigGroup drtConfigGroup, Collection<String> additionalModes) {
+	static final void prepareConfig(Config config, DrtConfigGroup drtConfigGroup, Tuple<String,String> additionalModes) {
+		checkRoutingConfiguration(config);
+		configureDVRPAndDRT(config, drtConfigGroup);
+		configureScoringForNewModes(config, additionalModes);
+		configureSubtourModeChoice(config, additionalModes);
+	}
 
+	private static final void checkRoutingConfiguration(Config config) {
 		if(! config.plansCalcRoute().getAccessEgressType().equals(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink) ||
 				config.plansCalcRoute().getAccessEgressType().equals(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLinkPlusTimeConstant)){
 			throw new IllegalArgumentException("if you want to simulate a carBannedFromCity scenario using intermodal car+drt trips, you must configure network routing for access and egress by setting " +
 					"PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink or PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLinkPlusTimeConstant!!!"
 			);
 		}
+	}
 
-
+	private static final void configureDVRPAndDRT(Config config, DrtConfigGroup drtConfigGroup) {
 		DvrpConfigGroup dvrpConfigGroup = DvrpConfigGroup.get(config);
 		if(! dvrpConfigGroup.getNetworkModes().contains(drtConfigGroup.getMode()) ){
 			log.warn("the drt mode " + drtConfigGroup.getMode() + " is not registered as network mode for dvrp - which is necessary in a bannedCarInDRTServiceArea scenario");
@@ -121,18 +126,34 @@ class CarBannedScenarioPreparation {
 			log.warn("setting drtConfigGroup.isUseModeFilteredSubnetwork() to true...");
 			drtConfigGroup.setUseModeFilteredSubnetwork(true);
 		}
-
-		configureScoringForNewModes(config, additionalModes);
 	}
 
-	private static final void configureScoringForNewModes(Config config, Collection<String> additionalModes) {
+	private static final void configureSubtourModeChoice(Config config, Tuple<String, String> additionalModes) {
+		String[] oldModeChoiceModes = config.subtourModeChoice().getModes();
+		String[] newModeChoiceModes = new String[oldModeChoiceModes.length + 2];
+		for (int i = 0; i<= oldModeChoiceModes.length - 1; i++){
+			newModeChoiceModes[i] = oldModeChoiceModes[i];
+		}
+		newModeChoiceModes[oldModeChoiceModes.length] = additionalModes.getFirst();
+		newModeChoiceModes[oldModeChoiceModes.length + 1] = additionalModes.getSecond();
+		config.subtourModeChoice().setModes(newModeChoiceModes);
+
+		String[] chainBasedModes = config.subtourModeChoice().getChainBasedModes();
+		for (int i = 0; i<= chainBasedModes.length - 1; i++){
+			if(chainBasedModes[i].equals(TransportMode.car)) chainBasedModes[i] = "";
+			break;
+		}
+	}
+
+	private static final void configureScoringForNewModes(Config config, Tuple<String, String> additionalModes) {
 		log.info("configure new modes for car trips originating or destined to the banned area. will copy scoring parameters from mode TransportMode.car");
 		{
 			//add scoring parameters for new modes - copied from car
 			Map<String, PlanCalcScoreConfigGroup.ScoringParameterSet> scoringParams = config.planCalcScore().getScoringParametersPerSubpopulation();
 			scoringParams.values().forEach(scoringParameterSet -> {
 				PlanCalcScoreConfigGroup.ModeParams carParams = scoringParameterSet.getOrCreateModeParams(TransportMode.car);
-				additionalModes.forEach(additionalMode -> configureScoringForMode(config, scoringParameterSet, carParams, additionalMode));
+				configureScoringForMode(config, scoringParameterSet, carParams, additionalModes.getFirst());
+				configureScoringForMode(config, scoringParameterSet, carParams, additionalModes.getSecond());
 			});
 		}
 	}
