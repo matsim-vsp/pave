@@ -82,7 +82,12 @@ class CarBannedScenarioPreparation {
 
 		Set<String> modes = new HashSet<>();
 		modes.add(drtConfigGroup.getMode());
-		log.info("clean network");
+		log.info("clean drt network");
+		new MultimodalNetworkCleaner(scenario.getNetwork()).run(modes);
+		log.info("finished");
+		log.info("clean car network"); //we need to make sure that both individual mode networks are strongly connected, this is why we clean them separately. Otherwise, we will run into routing failures at the borders...
+		modes.clear();
+		modes.add(TransportMode.car);
 		new MultimodalNetworkCleaner(scenario.getNetwork()).run(modes);
 		log.info("finished");
 	}

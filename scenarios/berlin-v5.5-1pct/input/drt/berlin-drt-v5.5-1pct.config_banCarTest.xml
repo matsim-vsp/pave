@@ -5,10 +5,10 @@
 		<param name="mutationRange" value="7200.0" />
 	</module>
 	<module name="controler" >
-		<param name="lastIteration" value="30" />
+		<param name="lastIteration" value="0" />
 		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
 		<param name="runId" value="berlin-drt-v5.5-1pct" />
-		<param name="outputDirectory" value="../../../output/berlin-v5.5-1pct-bannedAreaTest" />
+		<param name="outputDirectory" value="../../../output/berlin-v5.5-1pct-bannedArea-inside-a10-test" />
 		<param name="writeEventsInterval" value="5" />
 		<param name="writePlansInterval" value="5" />
 	</module>
@@ -165,7 +165,10 @@
 			<!-- If true, the startLink is changed to last link in the current schedule, so the taxi starts the next day at the link where it stopped operating the day before. False by default. -->
 			<param name="changeStartLinkToLastLinkInSchedule" value="true" />
 			<!-- allows to configure a service area per drt mode.Used with serviceArea Operational Scheme -->
-			<param name="drtServiceAreaShapeFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-shp/berlin.shp" />
+			<!-- <param name="drtServiceAreaShapeFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-shp/berlin.shp" /> -->
+			<param name="drtServiceAreaShapeFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/shp-files/berlin-inside-a10.shp" />
+
+			
 			<!-- Beeline distance factor for DRT. Used in analyis and in plans file. The default value is 1.3. -->
 			<param name="estimatedBeelineDistanceFactor" value="1.3" />
 			<!-- Beeline-speed estimate for DRT. Used in analysis, optimisation constraints and in plans file, [m/s]. The default value is 25 km/h -->
@@ -195,7 +198,7 @@
 			<!-- Limit the operation of vehicles to links (of the 'dvrp_routing' network) with 'allowedModes' containing this 'mode'. For backward compatibility, the value is set to false by default - this means that the vehicles are allowed to operate on all links of the 'dvrp_routing' network. The 'dvrp_routing' is defined by DvrpConfigGroup.networkModes) -->
 			<param name="useModeFilteredSubnetwork" value="false" />
 			<!-- An XML file specifying the vehicle fleet. The file format according to dvrp_vehicles_v1.dtd -->
-			<param name="vehiclesFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/avoev/berlin-drt-v5.5-10pct/input/berlin-drt-v5.5.drt-1000vehicles-4seats.xml.gz" />
+			<param name="vehiclesFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/berlin-drt-v5.5-10pct/input/drtVehicles/berlin-drt-v5.5.drt-inside-a10-by-rndLocations-100000vehicles-4seats.xml.gz" />
 			<!-- Writes out detailed DRT customer stats in each iteration. True by default. -->
 			<param name="writeDetailedCustomerStats" value="true" />
 		</parameterset>

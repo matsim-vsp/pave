@@ -64,7 +64,7 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypesAndDrtSpeedUp {
         double sensitivityFactor = 0.1;
         String[] configArgs;
         if ( args.length==0 ) {
-            configArgs = new String[]{BERLIN_V5_5_CONFIG, "--config:controler.outputDirectory", "output/berlin5.5_1pct_testBannedCarArea"};
+            configArgs = new String[]{BERLIN_V5_5_CONFIG};
         } else {
             sensitivityFactor = Double.parseDouble(args[0]);
             configArgs = new String[args.length-1];
