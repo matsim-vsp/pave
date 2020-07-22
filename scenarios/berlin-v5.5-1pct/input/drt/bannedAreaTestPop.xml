@@ -42,7 +42,42 @@
 			<activity type="home_4800.0" link="5293"  x="4563554.306093174" y="5797022.536652523" >
 			</activity>
 		</plan>
+	</person>
 
+	<person id="testperson3">
+		<attributes>
+			<attribute name="subpopulation" class="java.lang.String">person_flexible</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="home_4800.0" link="149336" end_time="08:00:00" x="4589741.853433731" y="5817858.2129915655" >
+			</activity>
+			<leg mode="car">
+			</leg>
+			<activity type="work_4800.0" link="91755" max_dur="00:05:00" x="4590000" y="5821571">
+			</activity>
+			<leg mode="car">
+			</leg>
+			<activity type="home_4800.0" link="149336" end_time="08:00:00" x="4589741.853433731" y="5817858.2129915655" >
+			</activity>
+		</plan>
+	</person>
+
+	<person id="testperson4">
+		<attributes>
+			<attribute name="subpopulation" class="java.lang.String">person_flexible</attribute>
+		</attributes>
+		<plan selected="yes">
+			<activity type="home_4800.0" link="149336" end_time="08:00:00" x="4589741.853433731" y="5817858.2129915655" >
+			</activity>
+			<leg mode="car">
+			</leg>
+			<activity type="work_4800.0" link="66154" max_dur="00:05:00" x="4599564.538084117" y="5825168.889839408">
+			</activity>
+			<leg mode="car">
+			</leg>
+			<activity type="home_4800.0" link="149336" end_time="08:00:00" x="4589741.853433731" y="5817858.2129915655" >
+			</activity>
+		</plan>
 	</person>
 
 <!-- ====================================================================== -->

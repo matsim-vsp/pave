@@ -5,17 +5,17 @@
 		<param name="mutationRange" value="7200.0" />
 	</module>
 	<module name="controler" >
-		<param name="lastIteration" value="0" />
+		<param name="lastIteration" value="100" />
 		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
 		<param name="runId" value="berlin-drt-v5.5-1pct" />
-		<param name="outputDirectory" value="../../../output/berlin-v5.5-1pct-bannedArea-inside-a10-test" />
-		<param name="writeEventsInterval" value="5" />
-		<param name="writePlansInterval" value="5" />
+		<param name="outputDirectory" value="output/berlin-v5.5-1pct-bannedArea-inside-a10-test" />
+		<param name="writeEventsInterval" value="50" />
+		<param name="writePlansInterval" value="50" />
 	</module>
 	<module name="global" >
 		<param name="coordinateSystem" value="EPSG:31468" />
 		<param name="insistingOnDeprecatedConfigVersion" value="false" />
-		<param name="numberOfThreads" value="8" />
+		<param name="numberOfThreads" value="4" />
 	</module>
 	<module name="berlinExperimental" >
 		<parameterset type="intermodalAccessEgressModeUtilityRandomization" >
@@ -198,7 +198,7 @@
 			<!-- Limit the operation of vehicles to links (of the 'dvrp_routing' network) with 'allowedModes' containing this 'mode'. For backward compatibility, the value is set to false by default - this means that the vehicles are allowed to operate on all links of the 'dvrp_routing' network. The 'dvrp_routing' is defined by DvrpConfigGroup.networkModes) -->
 			<param name="useModeFilteredSubnetwork" value="false" />
 			<!-- An XML file specifying the vehicle fleet. The file format according to dvrp_vehicles_v1.dtd -->
-			<param name="vehiclesFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/berlin-drt-v5.5-10pct/input/drtVehicles/berlin-drt-v5.5.drt-inside-a10-by-rndLocations-100000vehicles-4seats.xml.gz" />
+			<param name="vehiclesFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/berlin-drt-v5.5-10pct/input/drtVehicles/berlin-drt-v5.5.drt-inside-a10-by-rndLocations-1000vehicles-4seats.xml.gz" />
 			<!-- Writes out detailed DRT customer stats in each iteration. True by default. -->
 			<param name="writeDetailedCustomerStats" value="true" />
 		</parameterset>
