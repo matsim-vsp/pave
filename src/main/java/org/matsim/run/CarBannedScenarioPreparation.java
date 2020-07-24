@@ -33,14 +33,21 @@ import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.algorithms.MultimodalNetworkCleaner;
 import org.matsim.core.utils.collections.Tuple;
+import org.matsim.core.utils.io.IOUtils;
 import org.matsim.run.drt.BerlinShpUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 class CarBannedScenarioPreparation {
 
 	private static Logger log = Logger.getLogger(CarBannedScenarioPreparation.class);
+
+	//this file contains some link ids of the A10 Berliner Ring that still should remain car links...
+	//the A100 (Stadtautobahn) is explicitly supposed to be turned into non car links though (will be usable for drt)
+	private static final String INPUT_HIGHWAYLINKSINBERLIN = "scenarios/berlin/input/highwayLinksInsideBerlinShp.txt";
 
 	/**
 	 * Firstly, attempts to load the drt service area shape file form {@code drtConfigGroup}.
@@ -50,6 +57,8 @@ class CarBannedScenarioPreparation {
 	 * @param drtConfigGroup
 	 */
 	static final void banCarFromDRTServiceArea(Scenario scenario, DrtConfigGroup drtConfigGroup) {
+
+		Set<Id<Link>> highwayLinks = parseHighwayLinksInBerlin();
 
 		String drtServiceAreaShapeFile = drtConfigGroup.getDrtServiceAreaShapeFile();
 		if (drtServiceAreaShapeFile == null || drtServiceAreaShapeFile.equals("") || drtServiceAreaShapeFile.equals("null")) {
@@ -63,8 +72,9 @@ class CarBannedScenarioPreparation {
 		Set<Id<Link>> serviceAreaLinks = scenario.getNetwork().getLinks().values()
 				.parallelStream()
 				.filter(link -> link.getAllowedModes().contains(TransportMode.car))
-				.filter(link -> shpUtils.isCoordInDrtServiceArea(link.getFromNode().getCoord())
+				.filter(link -> (shpUtils.isCoordInDrtServiceArea(link.getFromNode().getCoord())
 						|| shpUtils.isCoordInDrtServiceArea(link.getToNode().getCoord()))
+						&& ! highwayLinks.contains(link.getId()) ) //we do not want to convert some highway links into drt links (A10 Berliner Ring)
 				.map(link -> link.getId())
 				.collect(Collectors.toSet());
 
@@ -90,6 +100,22 @@ class CarBannedScenarioPreparation {
 		modes.add(TransportMode.car);
 		new MultimodalNetworkCleaner(scenario.getNetwork()).run(modes);
 		log.info("finished");
+	}
+
+	private static Set<Id<Link>> parseHighwayLinksInBerlin() {
+		Set<Id<Link>> linkIds = new LinkedHashSet<>();
+		BufferedReader reader = IOUtils.getBufferedReader(INPUT_HIGHWAYLINKSINBERLIN);
+		try {
+			String line = reader.readLine();
+			while (line != "" && line != null){
+				linkIds.add(Id.createLinkId(line));
+				line = reader.readLine();
+			}
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return linkIds;
 	}
 
 	//need the specific DrtConfigGroup, this is why this is not converted to a proper ConfigConsistencyChecker yet...

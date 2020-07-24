@@ -5,10 +5,10 @@
 		<param name="mutationRange" value="7200.0" />
 	</module>
 	<module name="controler" >
-		<param name="lastIteration" value="0" />
+		<param name="lastIteration" value="100" />
 		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
 		<param name="runId" value="berlin-drt-v5.5-1pct" />
-		<param name="outputDirectory" value="output/berlin-v5.5-1pct-bannedArea-test-woA10" />
+		<param name="outputDirectory" value="output/berlin-v5.5-1pct-bannedArea-inside-a10-test-rebalancing" />
 		<param name="writeEventsInterval" value="50" />
 		<param name="writePlansInterval" value="50" />
 	</module>
@@ -168,7 +168,7 @@
 			 <param name="drtServiceAreaShapeFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-shp/berlin.shp" />
 <!--			<param name="drtServiceAreaShapeFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/shp-files/berlin-inside-a10.shp" />-->
 
-			
+
 			<!-- Beeline distance factor for DRT. Used in analyis and in plans file. The default value is 1.3. -->
 			<param name="estimatedBeelineDistanceFactor" value="1.3" />
 			<!-- Beeline-speed estimate for DRT. Used in analysis, optimisation constraints and in plans file, [m/s]. The default value is 25 km/h -->
@@ -201,6 +201,16 @@
 			<param name="vehiclesFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/berlin-drt-v5.5-10pct/input/drtVehicles/berlin-drt-v5.5.drt-inside-a10-by-rndLocations-1000vehicles-4seats.xml.gz" />
 			<!-- Writes out detailed DRT customer stats in each iteration. True by default. -->
 			<param name="writeDetailedCustomerStats" value="true" />
+			<parameterset type="minCostFlowRebalancing">
+				<!-- defaults from example at matsim-maas -->
+				<param name="targetAlpha" value="0"/>
+				<param name="targetBeta" value="1"/>
+				<param name="cellSize" value="2000"/>
+				<param name="interval" value="1800"/>
+				<param name="zonalDemandAggregatorType" value="EqualVehicleDensity"/>
+				<param name="rebalancingZonesGeneration" value="ShapeFile"/>
+				<param name="rebalancingZonesShapeFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/avoev/shp-files/shp-berlin-bezirksregionen/berlin-bezirksregion_GK4_fixed.shp"/>
+			</parameterset>
 		</parameterset>
 	</module>
 	
