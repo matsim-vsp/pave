@@ -24,14 +24,14 @@ public class RunEvalution {
 	public void runDefault(String[] linkIDs) {
 		String name = "NextGen2";
 		int from = 1;
-		int to = from;
+		int to = from + 99;
 		boolean ttSimulation = false;
 		boolean ttReadEventsOnly = false;
 		boolean runBufferModel = false;
 		String windowMethod = "PlusMinusArrival";
 		boolean runSimulation = false;
-		boolean runAnalysis = true;
-		boolean runSummary = true;
+		boolean runAnalysis = false;
+		boolean runSummary = false;
 
 		run(name, linkIDs, from, to, ttSimulation, ttReadEventsOnly, runBufferModel, windowMethod, runSimulation,
 				runAnalysis, runSummary);

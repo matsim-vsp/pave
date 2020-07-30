@@ -11,23 +11,29 @@ public class BufferSetup {
 	}
 
 	private static void setupBuffersForVariants(EvTour tour) {
-//		setupTimeWindowBuffers(BufferBASE.init("min", tour.minTravelTime, tour), 0, 0, false);
-//		setupTimeWindowBuffers(BufferBASE.init("avg", tour.avgTravelTime, tour), 0, 0, false);
-//
-//		setupTimeWindowBuffers(BufferSD.init(tour, false), 0, 0, false);
-//		setupTimeWindowBuffers(BufferSD.init(tour, true), 0, 0, true);
+		setupTimeWindowBuffers(BufferBASE.init("min", tour.minTravelTime, tour), 0, 0, false);
+		setupTimeWindowBuffers(BufferBASE.init("avg", tour.avgTravelTime, tour), 0, 0, false);
+
+		setupTimeWindowBuffers(BufferSD.init(tour, false), 0, 0, false);
+		setupTimeWindowBuffers(BufferSD.init(tour, true), 0, 0, true);
 
 		double t = 500;
-
 		double se = getBestCaseDuration(2 * 60, tour.minTravelTime);
-		EvVariant min = BufferLP.init("min", tour.minTravelTime, tour);
+		EvVariant min = BufferLP.init("min", tour.minTravelTime, tour, false);
 		setupTimeWindowBuffers(min, se, t, true);
 		setupTimeWindowBuffers(min, se, t, false);
 
-//		se = getBestCaseDuration(2 * 60, tour.avgTravelTime);
-//		EvVariant avg = BufferLP.init("avg", tour.avgTravelTime, tour)
-//		setupTimeWindowBuffers(avg, se, t, true);
-//		setupTimeWindowBuffers(avg, se, t, false);
+		EvVariant minHalf = BufferLP.init("min", tour.minTravelTime, tour, true);
+		setupTimeWindowBuffers(minHalf, se, t, true);
+		setupTimeWindowBuffers(minHalf, se, t, false);
+		
+		se = getBestCaseDuration(2 * 60, tour.avgTravelTime);
+		EvVariant avg = BufferLP.init("avg", tour.avgTravelTime, tour, false);
+		setupTimeWindowBuffers(avg, se, t, true);
+		setupTimeWindowBuffers(avg, se, t, false);
+		EvVariant avgHalf = BufferLP.init("avg", tour.avgTravelTime, tour, true);
+		setupTimeWindowBuffers(avgHalf, se, t, true);
+		setupTimeWindowBuffers(avgHalf, se, t, false);
 
 	}
 
@@ -100,7 +106,10 @@ public class BufferSetup {
 				for (EvBuffer buffer : variant.buffers) {
 					switch (variant.variantType) {
 					case "LP":
-						BufferLP.runLP(buffer, variant.delayScenarios);
+						BufferLP.runLP(buffer, variant.delayScenarios, false);
+						break;
+					case "LP-halfTW":
+						BufferLP.runLP(buffer, variant.delayScenarios, true);
 						break;
 					case "SD":
 						BufferSD.calculate(buffer, tour, false);

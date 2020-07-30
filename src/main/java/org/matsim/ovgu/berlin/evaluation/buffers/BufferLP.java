@@ -8,15 +8,19 @@ import org.matsim.ovgu.berlin.evaluation.model.EvVariant;
 
 public class BufferLP {
 
-	protected static EvVariant init(String name, double[] expTT, EvTour tour) {
-		EvVariant lp = new EvVariant("LP", tour.tourDirectory, tour.tourIdent + "_LP"+name,
-				expTT, tour.linkIDs);
-		
+	protected static EvVariant init(String name, double[] expTT, EvTour tour, boolean halfTW) {
+		String ident = "LP";
+		if (halfTW)
+			ident += "-halfTW";
+
+		EvVariant lp = new EvVariant(ident, tour.tourDirectory, tour.tourIdent + "_" + ident + name, expTT,
+				tour.linkIDs);
+
 		lp.delayScenarios = calcDelayScenarios(tour.traveltimeMatrix, lp.expTT);
-		
+
 		if ("avg".equals(name))
 			lp.delayScenarios = removeNegativScenarioValues(lp.delayScenarios);
-		
+
 		lp.writeScenariosCSV();
 		tour.evBufferVariants.add(lp);
 		return lp;
@@ -44,28 +48,29 @@ public class BufferLP {
 		return delayScenarios;
 	}
 
-	protected static void runLP(EvBuffer buffer, double[][] delayScenarios) {
+	protected static void runLP(EvBuffer buffer, double[][] delayScenarios, boolean halfTW) {
 
-		buffer.trips = createLpTrips(buffer, delayScenarios);
+		buffer.trips = createLpTrips(buffer, delayScenarios, halfTW);
 
 //		buffer.scenarioProb = getEqualScenarioProb(trips[0].delay.length);
 		buffer.scenarioProb = getEqualScenarioProb(buffer.scenarioCount);
 
-		buffer.trips = new GenLpSolver(buffer.ss, buffer.se, buffer.b, buffer.trips, buffer.scenarioProb, buffer.myMethod).solve();
+		buffer.trips = new GenLpSolver(buffer.ss, buffer.se, buffer.b, buffer.trips, buffer.scenarioProb,
+				buffer.myMethod).solve();
 		buffer.objectiveValue = buffer.trips[0].objectiveValue;
 		buffer.tourDuration = buffer.trips[buffer.trips.length - 1].departure;
 
 		buffer.bufferValues = new double[buffer.trips.length - 2];
 		for (int i = 0; i < buffer.bufferValues.length; i++)
-			buffer.bufferValues[i] = Math.round(
-					buffer.trips[i + 2].departure - buffer.trips[i + 2].serviceTime - buffer.trips[i + 1].distance - buffer.trips[i + 1].departure);
+			buffer.bufferValues[i] = Math.round(buffer.trips[i + 2].departure - buffer.trips[i + 2].serviceTime
+					- buffer.trips[i + 1].distance - buffer.trips[i + 1].departure);
 
 		for (int i = 0; i < buffer.trips.length; i++)
 			System.out.println("LoadAndSolveTest.runLP() s" + i + ":\t" + buffer.trips[i].departure);
 		System.out.println("LoadAndSolveTest.runLP() obj:\t" + buffer.trips[0].objectiveValue);
 	}
 
-	private static LpTrip[] createLpTrips(EvBuffer buffer, double[][] delayScenarios) {
+	private static LpTrip[] createLpTrips(EvBuffer buffer, double[][] delayScenarios, boolean halfTW) {
 
 		int tripsFromCustomer = buffer.expTT.length;
 		LpTrip[] trips = new LpTrip[tripsFromCustomer + 2]; // customerTrips + FromDepot + ToDepot
@@ -81,8 +86,11 @@ public class BufferLP {
 			for (int s = 0; s < buffer.scenarioCount; s++)
 				delay[s] = delayScenarios[s][i];
 
-//TODO: Check that the right time window is taken
-			trips[i + 1] = new LpTrip(buffer.expTT[i], buffer.w[i], buffer.u, buffer.t, delayProbability, delay);
+			double window = buffer.w[i];
+			if (halfTW)
+				window = window / 2;
+
+			trips[i + 1] = new LpTrip(buffer.expTT[i], window, buffer.u, buffer.t, delayProbability, delay);
 		}
 
 		// setup end trip to Depot
