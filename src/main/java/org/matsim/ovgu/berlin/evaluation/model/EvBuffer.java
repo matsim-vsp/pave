@@ -7,7 +7,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.matsim.ovgu.berlin.Settings;
-import org.matsim.ovgu.berlin.LinearProgram.GenLpSolver;
 import org.matsim.ovgu.berlin.LinearProgram.LpTrip;
 
 public class EvBuffer {
@@ -58,15 +57,15 @@ public class EvBuffer {
 	public double objectiveValue;
 	public double tourDuration;
 	public Settings runSettings;
-	
+
 	public void load() {
 		loadRunSettings();
 	}
-	
+
 	protected void write() {
 		writeParameters();
 		generateRunSettings();
-		writeRunSettingsCSV();		
+		writeRunSettingsCSV();
 	}
 
 	private void writeParameters() {
@@ -236,4 +235,38 @@ public class EvBuffer {
 			e.printStackTrace();
 		}
 	}
+
+
+//	public double readSumBuffer() {
+//		double[] buffer = readBuffer();
+//		double sumBuffer = 0;
+//		for (int i = 0; i < buffer.length; i++)
+//			sumBuffer += buffer[i];
+//		return sumBuffer;
+//	}
+//
+//	private double[] readBuffer() {
+//		try {
+//			BufferedReader csvReader = new BufferedReader(
+//					new FileReader(bufferDirectory + "/" + bufferIdent + "_runSettings.csv"));
+//			runSettings = new Settings();
+//			String row;
+//			while ((row = csvReader.readLine()) != null) {
+//				String[] data = row.split(";");
+//
+//				if ("buffer".equals(data[0])) {
+//					double[] buffer = new double[data.length - 1];
+//					for (int i = 0; i < buffer.length; i++)
+//						buffer[i] = Double.parseDouble(data[i + 1]);
+//					csvReader.close();
+//					return buffer;
+//				}
+//			}
+//			csvReader.close();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return null;
+//	}
 }

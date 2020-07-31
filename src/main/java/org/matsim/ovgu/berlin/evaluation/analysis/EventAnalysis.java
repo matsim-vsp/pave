@@ -22,7 +22,8 @@ public class EventAnalysis {
 	public static String getSummaryHeadline() {
 		String str = "evaluation;tour;variant;buffer;myMethod;"
 				+ "oBeforeTW;oInTW;oAfterTW;oAvgEarlyTW;oMaxEarlyTW;oAvgLateTW;oMaxLateTW;"
-				+ "dBeforeTW;dInTW;dAfterTW;dAvgEarlyTW;dMaxEarlyTW;dAvgLateTW;dMaxLateTW;" + "tourDuration";
+				+ "dBeforeTW;dInTW;dAfterTW;dAvgEarlyTW;dMaxEarlyTW;dAvgLateTW;dMaxLateTW;" + "tourDuration;"
+				+ "sumBuffer";
 
 		return str;
 	}
@@ -36,13 +37,21 @@ public class EventAnalysis {
 				settings.directory += timeWindowMethod + "/";
 				settings.timeWindowMethod = timeWindowMethod;
 				String analysisIdent = buffer.bufferIdent.replace("_", ";");
-				EventAnalysis.readEvents(settings, buffer.bufferIdent + "_" + timeWindowMethod + "_result",
-						analysisIdent);
+				String fileName = buffer.bufferIdent + "_" + timeWindowMethod + "_result";
+				double sumBuffer = sumBuffer(buffer.runSettings.buffer);
+				EventAnalysis.readEvents(settings, fileName, analysisIdent, sumBuffer);
 			}
 		}
 	}
 
-	private static void readEvents(Settings settings, String fileName, String analysisIdent) {
+	private static double sumBuffer(double[] buffer) {
+		double sumBuffer = 0;
+		for (int i = 0; i < buffer.length; i++)
+			sumBuffer += buffer[i];
+		return sumBuffer;
+	}
+
+	private static void readEvents(Settings settings, String fileName, String analysisIdent, double sumBuffer) {
 		TourEventsHandler handler = new TourEventsHandler();
 		EventsManager manager = EventsUtils.createEventsManager();
 		manager.addHandler(handler);
@@ -58,12 +67,13 @@ public class EventAnalysis {
 
 		handler.writeCSV(file + ".csv");
 
-		writeSummaries(handler.getFilteredSummaries(), file, analysisIdent);
+		writeSummaries(handler.getFilteredSummaries(), file, analysisIdent, sumBuffer);
 
 		System.out.println("CSV finished!");
 	}
 
-	private static void writeSummaries(FilteredSummaries summaries, String file, String analysisIdent) {
+	private static void writeSummaries(FilteredSummaries summaries, String file, String analysisIdent,
+			double sumBuffer) {
 		try {
 			File csvFileSum = new File(file + "_summary_all.csv");
 			File csvFileSumTW = new File(file + "_summary_tw.csv");
@@ -83,20 +93,20 @@ public class EventAnalysis {
 			csvWriterSumCP.append("GroupCP;" + getSummaryHeadline() + "\n");
 			csvWriterSumTWCP.append("GroupTW;GroupCP;" + getSummaryHeadline() + "\n");
 
-			csvWriterSum.append(getSummaryStr(analysisIdent, summaries.summary_all));
+			csvWriterSum.append(getSummaryStr(analysisIdent, summaries.summary_all, sumBuffer));
 
 			Iterator<Entry<Double, Integer>> iterTW = summaries.timeWindows.entrySet().iterator();
 			while (iterTW.hasNext()) {
 				Entry<Double, Integer> entry = iterTW.next();
-				csvWriterSumTW.append(
-						entry.getKey() + ";" + getSummaryStr(analysisIdent, summaries.summary_tw[entry.getValue()]));
+				csvWriterSumTW.append(entry.getKey() + ";"
+						+ getSummaryStr(analysisIdent, summaries.summary_tw[entry.getValue()], sumBuffer));
 			}
 
 			Iterator<Entry<Integer, Integer>> iterCP = summaries.customerPositions.entrySet().iterator();
 			while (iterCP.hasNext()) {
 				Entry<Integer, Integer> entry = iterCP.next();
-				csvWriterSumCP.append(
-						entry.getKey() + ";" + getSummaryStr(analysisIdent, summaries.summary_cp[entry.getValue()]));
+				csvWriterSumCP.append(entry.getKey() + ";"
+						+ getSummaryStr(analysisIdent, summaries.summary_cp[entry.getValue()], sumBuffer));
 			}
 
 			iterTW = summaries.timeWindows.entrySet().iterator();
@@ -107,7 +117,7 @@ public class EventAnalysis {
 					Entry<Integer, Integer> entryCP = iterCP.next();
 					csvWriterSumTWCP
 							.append(entryTW.getKey() + ";" + entryCP.getKey() + ";" + getSummaryStr(analysisIdent,
-									summaries.summary_tw_cp[entryTW.getValue()][entryCP.getValue()]));
+									summaries.summary_tw_cp[entryTW.getValue()][entryCP.getValue()], sumBuffer));
 				}
 			}
 
@@ -125,13 +135,13 @@ public class EventAnalysis {
 		}
 	}
 
-	private static String getSummaryStr(String analysisIdent, Summary summary) {
+	private static String getSummaryStr(String analysisIdent, Summary summary, double sumBuffer) {
 		String str = analysisIdent + ";" + summary.percent_oBeforeTW + ";" + summary.percent_oInTW + ";"
 				+ summary.percent_oAfterTW + ";" + summary.avg_oEarlyTW / 60 + ";" + summary.max_oEarlyTW / 60 + ";"
 				+ summary.avg_oLateTW / 60 + ";" + summary.max_oLateTW / 60 + ";" + summary.percent_dBeforeTW + ";"
 				+ summary.percent_dInTW + ";" + summary.percent_dAfterTW + ";" + summary.avg_dEarlyTW / 60 + ";"
 				+ summary.max_dEarlyTW / 60 + ";" + summary.avg_dLateTW / 60 + ";" + summary.max_dLateTW / 60 + ";"
-				+ summary.avg_tourDuration_all / 60 / 1440 + ";\n";
+				+ summary.avg_tourDuration_all / 60 / 1440 + ";" + sumBuffer + ";\n";
 
 		str = str.replace(".", ",");
 		str = str.replace("NaN", "0");
