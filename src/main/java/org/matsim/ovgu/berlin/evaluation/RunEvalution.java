@@ -22,7 +22,7 @@ public class RunEvalution {
 	private String evaluationDirectory;
 
 	public void runDefault(String[] linkIDs) {
-		String name = "NextGen2";
+		String name = "NextGen";
 		int from = 1;
 		int to = from + 99;
 		boolean ttSimulation = false;
