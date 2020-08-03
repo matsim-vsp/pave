@@ -125,7 +125,7 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypesAndDrtSpeedUp {
 //        RunBerlinScenario.runAnalysis(controler);
     }
 
-    private static final void configureVehicleIdsForNewModes(Scenario scenario) {
+    private static void configureVehicleIdsForNewModes(Scenario scenario) {
         //add mode vehicle id's
         scenario.getPopulation().getPersons().values().parallelStream().forEach(person -> {
             Map<String, Id<Vehicle>> vehicleIdMap = new HashMap<>();

@@ -47,7 +47,7 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 
     private static final Logger log = Logger.getLogger(RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp.class );
 
-    private static final String BERLIN_V5_5_CONFIG = "no config provided";
+    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config.xml";
 
     static final String WALK_ACCESS_DRT_EGRESS_MODE = "walkCarDrt";
     static final String DRT_ACCESS_DRT_WALK_MODE = "drtCarWalk";
@@ -63,7 +63,7 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 
         String[] configArgs;
         if ( args.length==0 ) {
-            configArgs = new String[]{BERLIN_V5_5_CONFIG};
+            configArgs = new String[]{BERLIN_V5_5_CONFIG ,"--config:controler.outputDirectory", "output/berlin5.5_1pct/bannedCarFromCity/test"};
         } else {
             configArgs = args;
         }
@@ -111,7 +111,7 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 //        RunBerlinScenario.runAnalysis(controler);
     }
 
-    private static final void configureVehicleIdsForNewModes(Scenario scenario) {
+    private static void configureVehicleIdsForNewModes(Scenario scenario) {
         //add mode vehicle id's
         scenario.getPopulation().getPersons().values().parallelStream().forEach(person -> {
             Map<String, Id<Vehicle>> vehicleIdMap = new HashMap<>();
