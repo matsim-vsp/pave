@@ -33,17 +33,27 @@ import java.util.Collections;
 public class RunBerlinScenarioWithCSVSnapshots {
 
 	private static final double[] BERLINER_STR_CARREE = new double[] {4589900,4590248,5817804,5817993};
+	private static final double[] BERLINER_STR_CARREE_LANG = new double[] {45899798,4590248,5817804,5817993};
+	private static final double[] BERLINER_STR_CARREE_GROSS = new double[] {4589800,4590515,5817700,5818000};
 
-	private static final double START_MONITORING = 6*3600;
-	private static final double END_MONITORING = 20*3600;
+
+
+	private static final double START_MONITORING = 8*3600;
+	private static final double END_MONITORING = 10*3600;
 
 	public static void main(String[] args) {
 
 		Config config = RunBerlinScenario.prepareConfig(new String[]{"scenarios/berlin-v5.5-1pct/input/berlin-v5.5-1pct.config.xml"});
 
-		config.controler().setLastIteration(0);
-		config.controler().setOutputDirectory("output/berlin-v5.5-1pct-snapshots-");
+		{
+			config.controler().setOutputDirectory("output/berlin-v5.5-1pct-snapshots-1testperson");
+			config.plans().setInputFile("1personTestPop.xml");
+			config.qsim().setStartTime(8 * 3600);
+			config.qsim().setEndTime(8.5 * 3600);
+			config.qsim().setSimEndtimeInterpretation(QSimConfigGroup.EndtimeInterpretation.onlyUseEndtime);
+		}
 
+		config.controler().setLastIteration(0);
 //		config.controler().setSnapshotFormat(Collections.emptyList());
 		config.controler().setWriteSnapshotsInterval(1);
 		config.qsim().setSnapshotStyle(QSimConfigGroup.SnapshotStyle.kinematicWaves);
@@ -53,7 +63,7 @@ public class RunBerlinScenarioWithCSVSnapshots {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				addSnapshotWriterBinding().toProvider(new CSVSnapshotWriterFactory(BERLINER_STR_CARREE, new GK4toWGS84(), START_MONITORING,END_MONITORING));
+				addSnapshotWriterBinding().toProvider(new CSVSnapshotWriterFactory(BERLINER_STR_CARREE_GROSS, new GK4toWGS84(), START_MONITORING,END_MONITORING));
 			}
 		});
 		controler.run();

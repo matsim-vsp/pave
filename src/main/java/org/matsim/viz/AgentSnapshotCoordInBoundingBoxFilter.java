@@ -26,9 +26,10 @@ import org.matsim.vis.snapshotwriters.AgentSnapshotInfo;
 
 public class AgentSnapshotCoordInBoundingBoxFilter implements AgentSnapshotFilter{
 
-	double[] boundingBox = new double[4];
+	double[] boundingBox;
 
 	AgentSnapshotCoordInBoundingBoxFilter(double[] boundingBox) {
+		if(boundingBox.length != 4) throw new IllegalArgumentException("expecting an array of size 4");
 		this.boundingBox = boundingBox;
 	}
 
