@@ -47,7 +47,7 @@ class CarBannedScenarioPreparation {
 
 	//this file contains some link ids of the A10 Berliner Ring that still should remain car links...
 	//the A100 (Stadtautobahn) is explicitly supposed to be turned into non car links though (will be usable for drt)
-	private static final String INPUT_HIGHWAYLINKSINBERLIN = "scenarios/berlin/input/highwayLinksInsideBerlinShp.txt";
+	private static final String INPUT_HIGHWAYLINKSINBERLIN = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/highwayLinksInsideBerlinShp.txt";
 
 	/**
 	 * Firstly, attempts to load the drt service area shape file form {@code drtConfigGroup}.
