@@ -15,7 +15,7 @@ public class BufferSetup {
 		setupTimeWindowBuffers(BufferBASE.init("avg", tour.avgTravelTime, tour), 0, 0, false);
 
 		setupTimeWindowBuffers(BufferSD.init(tour, false), 0, 0, false);
-		setupTimeWindowBuffers(BufferSD.init(tour, true), 0, 0, true);
+		setupTimeWindowBuffers(BufferSD.init(tour, true), 0, 0, false);
 
 		double t = 500;
 		double se = getBestCaseDuration(2 * 60, tour.minTravelTime);
@@ -107,7 +107,8 @@ public class BufferSetup {
 //		******5er******
 
 		double[] mix5P2 = getWindows( 600, 60, 60, 60, 60, 60, 600, 600, 600, 600);
-		double[] mix5P3 = getWindows( 600, 600, 60, 60, 60, 60, 60, 600, 600, 690);
+//		double[] mix5P3 = getWindows( 600, 600, 60, 60, 60, 60, 60, 600, 600, 690);
+		double[] mix5P3 = getWindows( 600, 600, 60, 60, 60, 60, 60, 600, 600, 600);
 		double[] mix5P4 = getWindows( 600, 600, 600, 60, 60, 60, 60, 60, 600, 600);
 		double[] mix5P5 = getWindows( 600, 600, 600, 600, 60, 60, 60, 60, 60, 600);
 
