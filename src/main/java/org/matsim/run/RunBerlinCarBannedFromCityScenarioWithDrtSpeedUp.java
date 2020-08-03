@@ -61,16 +61,11 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
             log.info( arg );
         }
 
-        double sensitivityFactor = 0.1;
         String[] configArgs;
         if ( args.length==0 ) {
             configArgs = new String[]{BERLIN_V5_5_CONFIG};
         } else {
-            sensitivityFactor = Double.parseDouble(args[0]);
-            configArgs = new String[args.length-1];
-            for(int i = 1; i < args.length; i++){
-                configArgs[i-1] = args[i];
-            }
+            configArgs = args;
         }
 
         //prepare config
