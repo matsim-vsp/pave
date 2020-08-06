@@ -74,7 +74,7 @@ public class RunDrtBlocking {
 	 */
 	public static void main(String[] args) {
 
-		if(args.length <= 4){
+		if(args.length != 4){
 			throw new IllegalArgumentException("wrong number of program arguments. expected 4, but was " + args.length);
 		}
 
