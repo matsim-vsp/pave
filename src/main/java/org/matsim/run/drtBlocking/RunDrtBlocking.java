@@ -90,7 +90,7 @@ public class RunDrtBlocking {
 		controler.run();
 	}
 
-	static Scenario prepareScenario(String configPath, String carrierPlans, String carrierVehTypes, boolean performTourplanning) {
+	public static Scenario prepareScenario(String configPath, String carrierPlans, String carrierVehTypes, boolean performTourplanning) {
 		Config config = RunDrtOpenBerlinScenario.prepareConfig(new String[]{configPath});
 //		config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
 		config.controler().setLastIteration(0);
@@ -129,7 +129,7 @@ public class RunDrtBlocking {
 		return scenario;
 	}
 
-	static Controler prepareControler(Scenario scenario){
+	public static Controler prepareControler(Scenario scenario){
 		Controler controler = RunBerlinScenario.prepareControler( scenario ) ;
 
 		configureDRT(scenario, controler);
