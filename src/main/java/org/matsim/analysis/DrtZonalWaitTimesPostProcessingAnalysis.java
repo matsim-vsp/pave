@@ -54,8 +54,13 @@ final class DrtZonalWaitTimesPostProcessingAnalysis {
 
 		String pathToConfig = "D:/rebalancingStudy/output/pave/pave109a/pave109a.output_config.xml";
 		String pathToEvents = "D:/rebalancingStudy/output/pave/pave109a/pave109a.output_events.xml.gz";
-		String pathToZonesShapeFile = "D:/rebalancingStudy/shp/planungsraum_analyse.shp";
-		String outputCSVFilePath = "D:/rebalancingStudy/output/pave/pave109a/pave109a.output_waitStats_drt_zonal_planungsraum.csv";
+
+//		String pathToZonesShapeFile = "D:/rebalancingStudy/shp/planungsraum_analyse.shp";
+		String pathToZonesShapeFile = "D:/svn/public-svn/matsim/scenarios/countries/de/berlin/projects/avoev/shp-files/shp-berlin-bezirksregionen/berlin-bezirksregion_GK4_fixed.shp";
+
+//		String outputCSVFilePath = "D:/rebalancingStudy/output/pave/pave109a/pave109a.output_waitStats_drt_zonal_planungsraum.csv";
+		String outputCSVFilePath = "D:/rebalancingStudy/output/pave/pave109a/pave109a.output_waitStats_drt_zonal_bezirksregionen.csv";
+
 
 		Config config = ConfigUtils.loadConfig(pathToConfig, new MultiModeDrtConfigGroup(), new DvrpConfigGroup());
 
