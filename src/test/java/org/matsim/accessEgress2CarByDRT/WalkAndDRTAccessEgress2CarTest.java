@@ -119,36 +119,28 @@ class WalkAndDRTAccessEgress2CarTestHandler implements IterationEndsListener{
 /**
  * 3 agents performing walk = 3 departures
  * 3 agents performing walk->car->walk = 9 departures
- * 3 agents that want perform walk->drt->walk, but 2 of them do only walk (because drt not available at origin) = 5 departures
- * 3 agents that want to perform walk->drt->walk->drtCarWalk->walk, but 2 of them do only walk (because drt not available at origin) = 7 departures
- * 3 agents that want to perform walk->drtCarWalk->walk->drt->walk, but 2 of them do only walk (because drt not available at destination) = 7 departures
+ * 3 agents that want to perform walk->drt->walk, but 2 of them do only walk (because drt not available at origin) = 5 departures
+ * 3 agents that want to perform walk->drt->walk->car->walk, but 2 of them do only walk (because drt not available at origin) = 7 departures
+ * 3 agents that want to perform walk->car->walk->drt->walk, but 2 of them do only walk (because drt not available at destination) = 7 departures
  *
  * that sums up to 3 + 9 + 5 + 7 + 7 = 31 departures
  *
  *
  */
 		Assert.assertEquals("the number of all departures is expected to be 31", 31, getSumOfArrayEntries(histogram.getDepartures()));
-		Assert.assertEquals("there should be 5 modes in the legHistogram ", 5, histogram.getLegModes().size());
+		Assert.assertEquals("there should be 5 modes in the legHistogram ", 3, histogram.getLegModes().size());
 
 		// if you go through the comment above:
 		// 3 + 3*2 + 2 + 2*1 + 3 + 2*1 + 3 + 2*1 = 23
 		Assert.assertEquals("the should be 23 walk legs", 23, getSumOfArrayEntries(histogram.getDepartures(TransportMode.walk)));
 
 		// if you go through the comment above:
-		// 0 + 3 + 0 + 0 + 0 = 3
-		Assert.assertEquals("the should be 3 car legs", 3, getSumOfArrayEntries(histogram.getDepartures(TransportMode.car)));
+		// 0 + 3 + 0 + 1 + 1 = 3
+		Assert.assertEquals("the should be 5 car legs", 5, getSumOfArrayEntries(histogram.getDepartures(TransportMode.car)));
 
 		// if you go through the comment above:
 		// 0 + 0 + 1 + 1 + 1 = 3
 		Assert.assertEquals("the should be 3 drt legs", 3, getSumOfArrayEntries(histogram.getDepartures(TransportMode.drt)));
-
-		// if you go through the comment above:
-		// 0 + 0 + 0 + 1 + 0 = 1
-		Assert.assertEquals("the should be 1 walkCarDrt leg", 1, getSumOfArrayEntries(histogram.getDepartures("walkCarDrt")));
-
-		// if you go through the comment above:
-		// 0 + 0 + 0 + 0 + 1 = 1
-		Assert.assertEquals("the should be 1 drtCarWalk leg", 1, getSumOfArrayEntries(histogram.getDepartures("drtCarWalk")));
 
 	}
 
