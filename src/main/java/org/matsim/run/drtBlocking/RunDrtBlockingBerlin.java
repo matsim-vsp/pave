@@ -41,14 +41,18 @@ public class RunDrtBlockingBerlin {
 	private static final String CARRIER_VEHICLE_TYPES = "berlin-vehicleTypes.xml";
 	private static final boolean RUN_TOURPLANNING = false;
 
+	private static final String OUTPUT_DIR = "./output/berlin-v5.5-1pct/drtBlockingTest";
+
 	public static void main(String[] args) {
 
 		Scenario scenario = RunDrtBlocking.prepareScenario(BERLIN_V5_5_1PCT_DRT_CONFIG, CARRIERS_PLANS_PLANNED, CARRIER_VEHICLE_TYPES, false);
+		scenario.getConfig().controler().setOutputDirectory(OUTPUT_DIR);
+
 		makePeopleUseDRTForRandomLegs(scenario.getPopulation());
 		Controler controler = RunDrtBlocking.prepareControler(scenario);
 		controler.run();
 
-		RunBerlinScenario.runAnalysis(controler);
+//		RunBerlinScenario.runAnalysis(controler);
 	}
 
 	private static void makePeopleUseDRTForRandomLegs(Population population){

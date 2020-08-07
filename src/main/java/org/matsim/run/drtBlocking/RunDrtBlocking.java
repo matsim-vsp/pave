@@ -166,7 +166,7 @@ public class RunDrtBlocking {
 			public void install() {
 				install(new DvrpModule());
 				install(new DrtModeModule(drtCfg));
-//				install(new DrtModeAnalysisModule(drtCfg)); TODO: we have to write a custom OccupancyProfileCalculator that can handle FreightTasks...
+				install(new DrtModeAnalysisModule(drtCfg));
 				install(new DrtBlockingModule(drtCfg));
 				bind(MainModeIdentifier.class).toInstance(new MultiModeDrtMainModeIdentifier(multiModeDrtCfg));
 			}
