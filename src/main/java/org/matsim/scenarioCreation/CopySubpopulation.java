@@ -26,9 +26,9 @@ import org.matsim.core.population.PopulationUtils;
 public class CopySubpopulation {
 
 	public static void main(String[] args) {
-		Population original = PopulationUtils.readPopulation("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-10pct.plans.xml.gz");
+		Population original = PopulationUtils.readPopulation("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-10pct.plans-selectedPlans-woRoutes.xml.gz");
 
-		Population hasMobTypes = PopulationUtils.readPopulation("C:/Users/Tilmann/Desktop/mT_001.output_plans.xml.gz");
+		Population hasMobTypes = PopulationUtils.readPopulation("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/berlin-drt-v5.5-10pct/input/berlin-v5.5-10pct.plans.mobilityTypes.xml.gz");
 
 
 		original.getPersons().forEach( (id,person) -> {
@@ -37,7 +37,7 @@ public class CopySubpopulation {
 			PopulationUtils.putSubpopulation(person, mobType);
 		});
 
-		PopulationUtils.writePopulation(original, "D:/svn/shared-svn/projects/pave/data/mobilityTypes/berlin-v5.5-10pct.plans.mobilityTypes.xml.gz");
+		PopulationUtils.writePopulation(original, "D:/svn/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/berlin-drt-v5.5-10pct/input/berlin-v5.5-10pct.selected-plans.mobilityTypes-woRoutes.xml.gz");
 
 	}
 }
