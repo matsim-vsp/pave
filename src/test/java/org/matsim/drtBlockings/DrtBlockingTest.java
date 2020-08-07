@@ -43,11 +43,11 @@ import java.util.logging.Logger;
  * this class contains 2 tests.
  *
  * (1) testBlockingDispatchLogic
- * tests whether the logic/chronology of dispatch events is maintained. For instance, only no blocking can end that has not begun before...
+ * tests whether the logic/chronology of dispatch events is maintained. For instance, no blocking can end that has not begun before...
  *
  * (2) testDrtBlockingTime
  * tests whether the times and/or the chronology of actions performed while blockings are correct.
- * For instance, blockings should end in the same second, the second retool activity of the tour has ended.
+ * For instance, blockings should end in the same second the second retool activity of the tour has ended.
  * Delivery time window enforcement is tested...
  *
  */
@@ -147,10 +147,11 @@ public class DrtBlockingTest {
         public void handleEvent(DrtBlockingEndedEvent event) {
             if(! this.retoolEndTimes.containsKey(event.getVehicleId().toString())){
                 this.errors.add("the DrtBlocking of vehicle " + event.getVehicleId() + " just ended - but no corresponding retool activity was recorded..");
+                return;
             }
             double retoolEndTime = this.retoolEndTimes.remove(event.getVehicleId().toString());
             if(retoolEndTime != event.getTime()){
-                this.errors.add("DrtBlockingEnd time is supposed to be equal to end the time of the corresponding retool activity - but is not for vehicle " + event.getVehicleId() +
+                this.errors.add("DrtBlockingEnd time is supposed to be equal to the end time of the corresponding retool activity - but is not for vehicle " + event.getVehicleId() +
                         "\n blocking end time = " + event.getTime() +
                         "\n retool end time = " + retoolEndTime);
             }
