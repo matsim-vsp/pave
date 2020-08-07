@@ -21,16 +21,21 @@
 package org.matsim.drtBlockings.tasks;
 
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.drt.schedule.DrtTaskType;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.freight.carrier.TimeWindow;
 import org.matsim.contrib.freight.carrier.Tour;
 
-public class FreightDeliveryTask extends StayTask {
+import static org.matsim.contrib.drt.schedule.DrtTaskBaseType.STAY;
+
+public class    FreightDeliveryTask extends StayTask {
 
     private final Tour.TourActivity tourActivity;
 
+    public static final DrtTaskType FREIGHT_DELIVERY_TASK_TYPE = new DrtTaskType("DELIVERY", STAY);
+
     public FreightDeliveryTask(Tour.TourActivity deliveryActivity, double start, double end, Link location){
-        super(FreightTaskType.DELIVERY, start, end, location);
+        super(FREIGHT_DELIVERY_TASK_TYPE, start, end, location);
         if(location.getId() != deliveryActivity.getLocation()) throw new IllegalArgumentException();
 
         if(! (deliveryActivity instanceof Tour.ShipmentBasedActivity || deliveryActivity instanceof Tour.ServiceActivity) ){

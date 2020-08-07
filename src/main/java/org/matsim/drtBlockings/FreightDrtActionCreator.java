@@ -20,7 +20,6 @@
 
 package org.matsim.drtBlockings;
 
-import org.matsim.contrib.drt.schedule.DrtTaskType;
 import org.matsim.contrib.drt.vrpagent.DrtActionCreator;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.passenger.PassengerEngine;
@@ -33,7 +32,9 @@ import org.matsim.contrib.dynagent.DynAction;
 import org.matsim.contrib.dynagent.DynAgent;
 import org.matsim.contrib.dynagent.IdleDynActivity;
 import org.matsim.core.mobsim.framework.MobsimTimer;
-import org.matsim.drtBlockings.tasks.FreightTaskType;
+import org.matsim.drtBlockings.tasks.FreightDeliveryTask;
+import org.matsim.drtBlockings.tasks.FreightPickupTask;
+import org.matsim.drtBlockings.tasks.FreightRetoolTask;
 
 class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
 
@@ -56,28 +57,20 @@ class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
     @Override
     public DynAction createAction(DynAgent dynAgent, DvrpVehicle vehicle, double now) {
         Task currentTask = vehicle.getSchedule().getCurrentTask();
-        if(currentTask.getTaskType() instanceof DrtTaskType){
-            return delegate.createAction(dynAgent, vehicle, now);
-        } else if( currentTask.getTaskType() instanceof FreightTaskType){
-            switch ((FreightTaskType)currentTask.getTaskType()) {
-                //we can use IdleDynActivity even though vehicle is not idle. The object type only
-                //prohibits to alter the activity and time...
-                case DRIVE:
-                    return legFactory.create(vehicle);
-                case DELIVERY:
-                    return new IdleDynActivity("FreightDrtDelivery", currentTask::getEndTime);
-                case PICKUP:
-                    return new IdleDynActivity("FreightDrtPickup", currentTask::getEndTime);
-                case RETOOL:
-                    return new IdleDynActivity("FreightDrtRetooling", currentTask::getEndTime);
-                default:
-                    throw new IllegalStateException();
-            }
-        } else{
-            throw new IllegalArgumentException("this action creator can only deal with tasks" +
-                    " that are either of FreightTaskType or DrtTaskType but the current task of vehicle "
-                    + vehicle.getId() + " is of type " + currentTask.getTaskType().getClass());
-        }
+
+        //we can use IdleDynActivity even though vehicle is not idle. The object type only
+        //prohibits to alter the activity and time...
+
+        if(currentTask.getTaskType().equals(FreightDeliveryTask.FREIGHT_DELIVERY_TASK_TYPE))
+                return new IdleDynActivity("FreightDrtDelivery", currentTask::getEndTime);
+
+        if(currentTask.getTaskType().equals(FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE.name()))
+                return new IdleDynActivity("FreightDrtPickup", currentTask::getEndTime);
+
+        if(currentTask.getTaskType().equals(FreightRetoolTask.RETOOL_TASK_TYPE.name()))
+                return new IdleDynActivity("FreightDrtRetooling", currentTask::getEndTime);
+
+        else return delegate.createAction(dynAgent, vehicle, now);
     }
 
 }

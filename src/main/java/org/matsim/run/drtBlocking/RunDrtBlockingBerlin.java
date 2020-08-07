@@ -25,6 +25,7 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.run.RunBerlinScenario;
@@ -47,6 +48,7 @@ public class RunDrtBlockingBerlin {
 
 		Scenario scenario = RunDrtBlocking.prepareScenario(BERLIN_V5_5_1PCT_DRT_CONFIG, CARRIERS_PLANS_PLANNED, CARRIER_VEHICLE_TYPES, false);
 		scenario.getConfig().controler().setOutputDirectory(OUTPUT_DIR);
+		scenario.getConfig().controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
 
 		makePeopleUseDRTForRandomLegs(scenario.getPopulation());
 		Controler controler = RunDrtBlocking.prepareControler(scenario);
