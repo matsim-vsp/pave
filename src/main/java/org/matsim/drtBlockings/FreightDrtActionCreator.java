@@ -61,13 +61,13 @@ class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
         //we can use IdleDynActivity even though vehicle is not idle. The object type only
         //prohibits to alter the activity and time...
 
-        if(currentTask.getTaskType().equals(FreightDeliveryTask.FREIGHT_DELIVERY_TASK_TYPE))
+        if(currentTask instanceof FreightDeliveryTask)
                 return new IdleDynActivity("FreightDrtDelivery", currentTask::getEndTime);
 
-        if(currentTask.getTaskType().equals(FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE.name()))
+        if(currentTask instanceof FreightPickupTask)
                 return new IdleDynActivity("FreightDrtPickup", currentTask::getEndTime);
 
-        if(currentTask.getTaskType().equals(FreightRetoolTask.RETOOL_TASK_TYPE.name()))
+        if(currentTask instanceof FreightRetoolTask)
                 return new IdleDynActivity("FreightDrtRetooling", currentTask::getEndTime);
 
         else return delegate.createAction(dynAgent, vehicle, now);
