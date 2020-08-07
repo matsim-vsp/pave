@@ -25,6 +25,7 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.run.RunBerlinScenario;
@@ -41,14 +42,19 @@ public class RunDrtBlockingBerlin {
 	private static final String CARRIER_VEHICLE_TYPES = "berlin-vehicleTypes.xml";
 	private static final boolean RUN_TOURPLANNING = false;
 
+	private static final String OUTPUT_DIR = "./output/berlin-v5.5-1pct/drtBlockingTest";
+
 	public static void main(String[] args) {
 
 		Scenario scenario = RunDrtBlocking.prepareScenario(BERLIN_V5_5_1PCT_DRT_CONFIG, CARRIERS_PLANS_PLANNED, CARRIER_VEHICLE_TYPES, false);
+		scenario.getConfig().controler().setOutputDirectory(OUTPUT_DIR);
+		scenario.getConfig().controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+
 		makePeopleUseDRTForRandomLegs(scenario.getPopulation());
 		Controler controler = RunDrtBlocking.prepareControler(scenario);
 		controler.run();
 
-		RunBerlinScenario.runAnalysis(controler);
+//		RunBerlinScenario.runAnalysis(controler);
 	}
 
 	private static void makePeopleUseDRTForRandomLegs(Population population){

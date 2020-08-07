@@ -38,10 +38,9 @@ public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
 
     @Override
     public double calcNewEndTime(DvrpVehicle vehicle, StayTask task, double newBeginTime) {
-        if(task.getTaskType() instanceof FreightTaskType){
-            double duration = task.getEndTime() - task.getBeginTime();
-
-            if(task instanceof FreightDeliveryTask && timeWindowHandling.equals(FreightConfigGroup.TimeWindowHandling.enforceBeginnings)){
+        double duration = task.getEndTime() - task.getBeginTime();
+        if(task.getTaskType().equals(FreightDeliveryTask.FREIGHT_DELIVERY_TASK_TYPE)
+                && timeWindowHandling.equals(FreightConfigGroup.TimeWindowHandling.enforceBeginnings)){
                 TimeWindow timeWindow = ((FreightDeliveryTask) task).getTimeWindow();
                 duration = ((FreightDeliveryTask) task).getDeliveryDuration();
                 if(newBeginTime <= timeWindow.getStart()){
@@ -50,11 +49,10 @@ public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
                     //TODO do something less restrictive
                     throw new RuntimeException("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() + " but it will come too late for that");
                 }
-            }
-
+        } else if(task.getTaskType().equals(FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE)
+            || task.getTaskType().equals(FreightRetoolTask.RETOOL_TASK_TYPE)){
             return newBeginTime + duration;
-        } else {
-            return super.calcNewEndTime(vehicle, task, newBeginTime);
         }
+        return super.calcNewEndTime(vehicle, task, newBeginTime);
     }
 }

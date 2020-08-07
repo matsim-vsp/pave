@@ -80,7 +80,7 @@
 		<dependency>
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim-examples</artifactId>
-			<version>13.0-SNAPSHOT</version>
+			<version>${matsim.version}</version>
 			<!--(not in weekly release!)-->
 		</dependency>
 
@@ -134,8 +134,6 @@
 		<dependency>
 			<groupId>com.github.matsim-scenarios</groupId>
 			<artifactId>matsim-berlin</artifactId>
-
-<!--			<version>5.5.x-a498c2c8db-1</version> &lt;!&ndash; january 2020 &ndash;&gt;-->
 			<version>5.5.x-SNAPSHOT</version>
 		</dependency>
 

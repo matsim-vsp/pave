@@ -21,12 +21,17 @@
 package org.matsim.drtBlockings.tasks;
 
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.drt.schedule.DrtTaskType;
 import org.matsim.contrib.dvrp.schedule.StayTask;
+
+import static org.matsim.contrib.drt.schedule.DrtTaskBaseType.STAY;
 
 public class FreightRetoolTask extends StayTask {
 
+    public static final DrtTaskType RETOOL_TASK_TYPE = new DrtTaskType("RETOOL", STAY);
+
     public FreightRetoolTask(double beginTime, double endTime, Link link) {
-        super(FreightTaskType.RETOOL, beginTime, endTime, link);
+        super(RETOOL_TASK_TYPE, beginTime, endTime, link);
     }
 
 

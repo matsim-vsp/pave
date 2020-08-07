@@ -20,12 +20,18 @@
 
 package org.matsim.drtBlockings.tasks;
 
+import org.matsim.contrib.drt.schedule.DrtTaskType;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.schedule.DriveTask;
 
+import static org.matsim.contrib.drt.schedule.DrtTaskBaseType.DRIVE;
+
 //TODO maybe we should differ loaded from empty drives ?
 public class FreightDriveTask extends DriveTask {
+
+    public static final DrtTaskType FREIGHT_DRIVE_TASK_TYPE = new DrtTaskType("FREIGHTDRIVE", DRIVE);
+
     public FreightDriveTask(VrpPathWithTravelData path) {
-        super(FreightTaskType.DRIVE, path);
+        super(FREIGHT_DRIVE_TASK_TYPE, path);
     }
 }
