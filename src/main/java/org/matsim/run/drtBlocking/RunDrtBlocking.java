@@ -59,6 +59,7 @@ import javax.management.InvalidAttributeValueException;
 import java.io.File;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class RunDrtBlocking {
@@ -122,7 +123,9 @@ public class RunDrtBlocking {
 				FreightUtils.runJsprit(scenario, freightCfg);
 				new File(config.controler().getOutputDirectory()).mkdirs();
 				new CarrierPlanXmlWriterV2(FreightUtils.getCarriers(scenario)).write(config.controler().getOutputDirectory() + "carriers_planned.xml");
-			} catch (InvalidAttributeValueException e) {
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
 				e.printStackTrace();
 			}
 		}
