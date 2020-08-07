@@ -51,6 +51,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 import javax.management.InvalidAttributeValueException;
 import java.util.Collection;
+import java.util.concurrent.ExecutionException;
 
 class DrtBlockingTestControlerCreator {
 
@@ -74,7 +75,13 @@ class DrtBlockingTestControlerCreator {
 
 		FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
-		FreightUtils.runJsprit(scenario, freightCfg);
+		try {
+			FreightUtils.runJsprit(scenario, freightCfg);
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 //        new CarrierPlanXmlWriterV2(FreightUtils.getCarriers(scenario)).write(config.controler().getOutputDirectory() + "carriers_planned.xml");
 
 		setupPopulation(scenario);
