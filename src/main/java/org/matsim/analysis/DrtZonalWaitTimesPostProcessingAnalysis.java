@@ -83,8 +83,10 @@ final class DrtZonalWaitTimesPostProcessingAnalysis {
 		EventsManager eventsManager = EventsUtils.createEventsManager(config);
 
 		DrtConfigGroup drtConfig = DrtConfigGroup.getSingleModeDrtConfig(config);
-		DrtRequestAnalyzer requestAnalyzer = new DrtRequestAnalyzer(eventsManager, drtNetwork, drtConfig);
-		DrtZonalWaitTimesAnalyzer analyzer = new DrtZonalWaitTimesAnalyzer(drtConfig, eventsManager, requestAnalyzer, zones);
+		DrtRequestAnalyzer requestAnalyzer = new DrtRequestAnalyzer(drtNetwork, drtConfig);
+		eventsManager.addHandler(requestAnalyzer);
+		DrtZonalWaitTimesAnalyzer analyzer = new DrtZonalWaitTimesAnalyzer(drtConfig, requestAnalyzer, zones);
+		eventsManager.addHandler(analyzer);
 
 		DrtPassengerEventsReader reader = new DrtPassengerEventsReader(eventsManager);
 		reader.readFile(pathToEvents);
