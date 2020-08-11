@@ -12,28 +12,28 @@ public class BufferSetup {
 
 	private static void setupBuffersForVariants(EvTour tour) {
 		setupTimeWindowBuffers(BufferBASE.init("min", tour.minTravelTime, tour), 0, 0, false);
-		setupTimeWindowBuffers(BufferBASE.init("avg", tour.avgTravelTime, tour), 0, 0, false);
+//		setupTimeWindowBuffers(BufferBASE.init("avg", tour.avgTravelTime, tour), 0, 0, false);
 
-		setupTimeWindowBuffers(BufferSD.init(tour, false), 0, 0, false);
-		setupTimeWindowBuffers(BufferSD.init(tour, true), 0, 0, false);
+//		setupTimeWindowBuffers(BufferSD.init(tour, false), 0, 0, false);
+//		setupTimeWindowBuffers(BufferSD.init(tour, true), 0, 0, false);
 
 		double t = 500;
 		double se = getBestCaseDuration(2 * 60, tour.minTravelTime);
-		EvVariant min = BufferLP.init("min", tour.minTravelTime, tour, false);
-		setupTimeWindowBuffers(min, se, t, true);
-		setupTimeWindowBuffers(min, se, t, false);
+//		EvVariant min = BufferLP.init("min", tour.minTravelTime, tour, false);
+//		setupTimeWindowBuffers(min, se, t, true);
+//		setupTimeWindowBuffers(min, se, t, false);
 
 		EvVariant minHalf = BufferLP.init("min", tour.minTravelTime, tour, true);
-		setupTimeWindowBuffers(minHalf, se, t, true);
+//		setupTimeWindowBuffers(minHalf, se, t, true);
 		setupTimeWindowBuffers(minHalf, se, t, false);
-
-		se = getBestCaseDuration(2 * 60, tour.avgTravelTime);
-		EvVariant avg = BufferLP.init("avg", tour.avgTravelTime, tour, false);
-		setupTimeWindowBuffers(avg, se, t, true);
-		setupTimeWindowBuffers(avg, se, t, false);
-		EvVariant avgHalf = BufferLP.init("avg", tour.avgTravelTime, tour, true);
-		setupTimeWindowBuffers(avgHalf, se, t, true);
-		setupTimeWindowBuffers(avgHalf, se, t, false);
+//
+//		se = getBestCaseDuration(2 * 60, tour.avgTravelTime);
+//		EvVariant avg = BufferLP.init("avg", tour.avgTravelTime, tour, false);
+//		setupTimeWindowBuffers(avg, se, t, true);
+//		setupTimeWindowBuffers(avg, se, t, false);
+//		EvVariant avgHalf = BufferLP.init("avg", tour.avgTravelTime, tour, true);
+//		setupTimeWindowBuffers(avgHalf, se, t, true);
+//		setupTimeWindowBuffers(avgHalf, se, t, false);
 
 	}
 
@@ -46,14 +46,14 @@ public class BufferSetup {
 	}
 
 	private static void setupTimeWindowBuffers(EvVariant variant, double se, double t, boolean myMethod) {
-//		setupEqualTimeWindowBuffers(variant, se, t, myMethod);
-		setupMixedTimeWindowBuffers(variant, se, t, myMethod);
+		setupEqualTimeWindowBuffers(variant, se, t, myMethod);
+//		setupMixedTimeWindowBuffers(variant, se, t, myMethod);
 	}
 
 	private static void setupEqualTimeWindowBuffers(EvVariant variant, double se, double t, boolean myMethod) {
-//		double[] windows = new double[] { 10 };
+		double[] windows = new double[] { 2 };
 //		double[] windows = new double[] { 10, 1 };
-		double[] windows = new double[] { 1, 2, 3, /* 4, */ 5, /* 6, 7, 8, 9, */ 10 };
+//		double[] windows = new double[] { 1, 2, 3, /* 4, */ 5, /* 6, 7, 8, 9, */ 10 };
 		double factor = 60;
 		double b = 1;
 		double ss = 0;

@@ -22,9 +22,9 @@ public class RunEvalution {
 	private String evaluationDirectory;
 
 	public void runDefault(String[] linkIDs) {
-		String name = "NextGen";
+		String name = "TestGen";
 		int from = 1;
-		int to = from + 99;
+		int to = from + 0;
 		boolean ttSimulation = false;
 		boolean ttReadEventsOnly = false;
 		boolean runBufferModel = false;

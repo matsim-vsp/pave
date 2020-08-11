@@ -177,7 +177,8 @@ public class FreightOnlyMatsim {
 
 		// create one carrier for each our
 		if (settings.tour.length > 0)
-			for (int i = 0; i < 24; i++) {
+			//TODO: for (int i = 0; i < 24; i++) {
+				for (int i = 8; i < 9; i++) {
 				Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
 				createAndAddCarrierSerivces(carrier, i);
 
