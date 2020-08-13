@@ -4,9 +4,9 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.freight.Freight;
 import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.Carrier;
+import org.matsim.contrib.freight.carrier.CarrierPlanWriter;
 import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.controler.CarrierModule;
-import org.matsim.contrib.freight.jsprit.MatsimJspritFactory;
 import org.matsim.contrib.freight.jsprit.NetworkBasedTransportCosts;
 import org.matsim.contrib.freight.jsprit.NetworkRouter;
 import org.matsim.contrib.freight.utils.FreightUtils;
@@ -26,8 +26,8 @@ import org.matsim.core.scenario.ScenarioUtils;
  */
 class KMTRunFreight {
 
-//	private static String WORKINGDIR =  "/Users/kturner/Desktop/OVGU/Tour2BASE";
-	private static String WORKINGDIR =  "/Users/kturner/Desktop/OVGU/Tour2oLP";
+	private static String WORKINGDIR =  "/Users/kturner/Desktop/OVGU/Tour2BASE";
+//	private static String WORKINGDIR =  "/Users/kturner/Desktop/OVGU/Tour2oLP";
 
 	public static void main(String[] args){
 
@@ -40,9 +40,10 @@ class KMTRunFreight {
 		config.controler().setLastIteration(0);
 		config.controler().setCreateGraphs(false);
 //		config.controler().setOutputDirectory(WORKINGDIR + "/output/1withRoutes");
-		config.controler().setOutputDirectory(WORKINGDIR + "/output/2emptyRoutes");		//--> kracht, weil Route keine Weg von c1 weiter liefert -> Agent StuckAndAbort in Simulation ###
+//		config.controler().setOutputDirectory(WORKINGDIR + "/output/2emptyRoutes");		//--> kracht, weil Route keine Weg von c1 weiter liefert -> Agent StuckAndAbort in Simulation ###
 //		config.controler().setOutputDirectory(WORKINGDIR + "/output/3noRoutes");		//--> kracht, weil Route fehlt -> NullPointer in CarrierAgent Z.262 ###
 		// ### sofern man die Pläne vor der Simulation neu routen lässt (siehe unten: ####), kommt das gleiche raus, wie bei 1) und bei Ricos Ergebnissen.
+		config.controler().setOutputDirectory(WORKINGDIR + "/output/4cnoRoutesWithNWCE");
 		
 		config.plansCalcRoute().setRoutingRandomness(0);
 
@@ -76,11 +77,14 @@ class KMTRunFreight {
 			NetworkBasedTransportCosts netbasedTransportcosts = tpcostsBuilder.build();
 			NetworkRouter.routePlan(carrier.getSelectedPlan(), netbasedTransportcosts);
 		}
+		
+		CarrierPlanWriter carrierPlanWriter = new CarrierPlanWriter(carriers.getCarriers().values()); 
+		carrierPlanWriter.write(config.controler().getOutputDirectory() + "plannedCarriers.xml");
 
 		Controler controler = new Controler(scenario);
 
 		Freight.configure(controler);
-		
+
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
