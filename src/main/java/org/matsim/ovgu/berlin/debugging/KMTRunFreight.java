@@ -1,4 +1,4 @@
-package org.matsim.run;
+package org.matsim.ovgu.berlin.debugging;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.freight.Freight;
