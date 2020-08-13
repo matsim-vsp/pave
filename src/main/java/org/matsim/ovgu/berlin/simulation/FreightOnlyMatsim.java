@@ -75,8 +75,7 @@ public class FreightOnlyMatsim {
 		}
 
 		Config config = prepareConfig(settings.pathChangeEvents, settings.directory);
-		Config noChangeEvents = prepareConfig("", settings.directory);
-		Scenario scenario = prepareScenario(config, noChangeEvents);
+		Scenario scenario = prepareScenario(config);
 		Controler controler = prepareControler(scenario);
 
 		controler.run();
@@ -151,20 +150,20 @@ public class FreightOnlyMatsim {
 		return config;
 	}
 
-	private Scenario prepareScenario(Config config, Config noChangeEvents) {
+	private Scenario prepareScenario(Config config) {
 		Scenario scenario = ScenarioUtils.loadScenario(config);
 		Carriers carriers = FreightUtils.getOrCreateCarriers(scenario);
 		createAndaddCarriers(scenario.getNetwork(), carriers);
 		createAndLoadVehicleType(scenario);
-		routePlans(scenario, noChangeEvents);
+		routePlans(scenario);
 
 		return scenario;
 	}
 
-	private void routePlans(Scenario scenario, Config noChangeEvents) {
+	private void routePlans(Scenario scenario) {
 		Carriers carriers = FreightUtils.getOrCreateCarriers(scenario);
 
-//		scenario.getConfig().network().setTimeVariantNetwork(false);  //Route im "leeren" Netzwerk -> immer die gleiche Route (hoffentlich)
+		Config noChangeEvents = prepareConfig("", settings.directory);
 		Scenario tmpScenario = ScenarioUtils.loadScenario(noChangeEvents);
 		
 		for (Carrier carrier : carriers.getCarriers().values()) {
@@ -175,8 +174,6 @@ public class FreightOnlyMatsim {
 			NetworkBasedTransportCosts netbasedTransportcosts = tpcostsBuilder.build();
 			NetworkRouter.routePlan(carrier.getSelectedPlan(), netbasedTransportcosts);
 		}
-
-//		scenario.getConfig().network().setTimeVariantNetwork(true); //und wieder einschalten :)
 	}
 
 	private void createAndaddCarriers(Network network, Carriers carriers) {
