@@ -24,7 +24,10 @@ import org.matsim.vehicles.Vehicle;
  */
 class KMTCompareRoutes {
 
-	private static String WORKINGDIR =  "/Users/kturner/Desktop/OVGU/Tour2oLP/Output/1withTours";
+//	private static String WORKINGDIR =  "/Users/kturner/Desktop/OVGU/Tour2oLP/Output/1withTours";
+	private static String WORKINGDIR =  "/Users/kturner/git-and-svn/tubCloud/kturner/Arbeit/40 Projekte/40.10 PAVE/PAVE-Cloud/PAVE-Projekte/Daten/Repo/AnalyseOVGUMATSim/ForKai/Tour2-oLP/NextGen_tour2_LP-halfTWmin_bufferW120.0_myM-false/matsimData/PlusMinusArrival";
+	
+	
 
 	static Logger log = Logger.getLogger(KMTCompareRoutes.class);
 
@@ -49,12 +52,12 @@ class KMTCompareRoutes {
 
 		for (Id<Carrier> carrierId : routesFromCarrierFile.keySet()) {
 			log.info("Carrier has #links in carriers Route:" + carrierId + " : " + routesFromCarrierFile.get(carrierId).size());
-			log.info("Route: " + routesFromCarrierFile.get(carrierId).toString());
+			log.debug("Route: " + routesFromCarrierFile.get(carrierId).toString());
 		}
 		
 		for (Id<Carrier> carrierId : routesFromEventsFile.keySet()) {
 			log.info("Carrier has #links in events Route:" + carrierId + " : " + routesFromEventsFile.get(carrierId).size());
-			log.info("Route: " + routesFromEventsFile.get(carrierId).toString());
+			log.debug("Route: " + routesFromEventsFile.get(carrierId).toString());
 		}
 		
 		log.info("Beide Listen haben die gleichen Carrier: " + routesFromCarrierFile.keySet().equals(routesFromEventsFile.keySet()));
