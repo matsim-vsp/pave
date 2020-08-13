@@ -75,7 +75,8 @@ public class FreightOnlyMatsim {
 		}
 
 		Config config = prepareConfig(settings.pathChangeEvents, settings.directory);
-		Scenario scenario = prepareScenario(config);
+		Config noChangeEvents = prepareConfig("", settings.directory);
+		Scenario scenario = prepareScenario(config, noChangeEvents);
 		Controler controler = prepareControler(scenario);
 
 		controler.run();
@@ -150,39 +151,39 @@ public class FreightOnlyMatsim {
 		return config;
 	}
 
-	private Scenario prepareScenario(Config config) {
+	private Scenario prepareScenario(Config config, Config noChangeEvents) {
 		Scenario scenario = ScenarioUtils.loadScenario(config);
 		Carriers carriers = FreightUtils.getOrCreateCarriers(scenario);
 		createAndaddCarriers(scenario.getNetwork(), carriers);
 		createAndLoadVehicleType(scenario);
-		routePlans(scenario);
+		routePlans(scenario, noChangeEvents);
 
 		return scenario;
 	}
 
-	private void routePlans(Scenario scenario) {
+	private void routePlans(Scenario scenario, Config noChangeEvents) {
 		Carriers carriers = FreightUtils.getOrCreateCarriers(scenario);
 
-		scenario.getConfig().network().setTimeVariantNetwork(false);  //Route im "leeren" Netzwerk -> immer die gleiche Route (hoffentlich)
-
+//		scenario.getConfig().network().setTimeVariantNetwork(false);  //Route im "leeren" Netzwerk -> immer die gleiche Route (hoffentlich)
+		Scenario tmpScenario = ScenarioUtils.loadScenario(noChangeEvents);
+		
 		for (Carrier carrier : carriers.getCarriers().values()) {
 			NetworkBasedTransportCosts.Builder tpcostsBuilder = NetworkBasedTransportCosts.Builder
-					.newInstance(scenario.getNetwork(), carrier.getCarrierCapabilities().getVehicleTypes());
-			tpcostsBuilder.setTimeSliceWidth(900);
+					.newInstance(tmpScenario.getNetwork(), carrier.getCarrierCapabilities().getVehicleTypes());
+			tpcostsBuilder.setTimeSliceWidth(1);
 			// assign netBasedCosts to RoutingProblem
 			NetworkBasedTransportCosts netbasedTransportcosts = tpcostsBuilder.build();
 			NetworkRouter.routePlan(carrier.getSelectedPlan(), netbasedTransportcosts);
 		}
 
-		scenario.getConfig().network().setTimeVariantNetwork(true); //und wieder einschalten :)
+//		scenario.getConfig().network().setTimeVariantNetwork(true); //und wieder einschalten :)
 	}
 
 	private void createAndaddCarriers(Network network, Carriers carriers) {
 
 		// create one carrier for each our
 		if (settings.tour.length > 0)
-			//TODO: for (int i = 0; i < 24; i++) {
-				for (int i = 8; i < 9; i++) {
+			for (int i = 0; i < 24; i++) {
 				Carrier carrier = CarrierUtils.createCarrier(Id.create("carrier" + i, Carrier.class));
 				createAndAddCarrierSerivces(carrier, i);
 
