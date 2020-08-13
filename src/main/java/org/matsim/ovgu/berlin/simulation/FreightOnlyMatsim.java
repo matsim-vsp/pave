@@ -163,6 +163,8 @@ public class FreightOnlyMatsim {
 	private void routePlans(Scenario scenario) {
 		Carriers carriers = FreightUtils.getOrCreateCarriers(scenario);
 
+		scenario.getConfig().network().setTimeVariantNetwork(false);  //Route im "leeren" Netzwerk -> immer die gleiche Route (hoffentlich)
+
 		for (Carrier carrier : carriers.getCarriers().values()) {
 			NetworkBasedTransportCosts.Builder tpcostsBuilder = NetworkBasedTransportCosts.Builder
 					.newInstance(scenario.getNetwork(), carrier.getCarrierCapabilities().getVehicleTypes());
@@ -171,6 +173,8 @@ public class FreightOnlyMatsim {
 			NetworkBasedTransportCosts netbasedTransportcosts = tpcostsBuilder.build();
 			NetworkRouter.routePlan(carrier.getSelectedPlan(), netbasedTransportcosts);
 		}
+
+		scenario.getConfig().network().setTimeVariantNetwork(true); //und wieder einschalten :)
 	}
 
 	private void createAndaddCarriers(Network network, Carriers carriers) {
