@@ -26,6 +26,9 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.controler.events.StartupEvent;
+import org.matsim.core.controler.listener.StartupListener;
 import org.matsim.core.utils.geometry.transformations.GK4toWGS84;
 import org.matsim.viz.CSVSnapshotWriterFactory;
 
@@ -45,7 +48,10 @@ public class RunBerlinScenarioWithCSVSnapshots {
 		Config config = RunBerlinScenario.prepareConfig(new String[]{"scenarios/berlin-v5.5-1pct/input/berlin-v5.5-1pct.config.xml"});
 
 		{
-			config.controler().setOutputDirectory("output/berlin-v5.5-1pct-snapshots-1testperson-linkWidthZero");
+			config.controler().setOutputDirectory("output/berlin-v5.5-1pct-snapshots-1testperson-linkWidthLaneWidthZero-v1");
+
+			config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
+
 			config.plans().setInputFile("1personTestPop.xml");
 
 			//do not simulate transit
@@ -74,7 +80,16 @@ public class RunBerlinScenarioWithCSVSnapshots {
 				addSnapshotWriterBinding().toProvider(new CSVSnapshotWriterFactory("snapshots_DHDNGK4", BERLINER_STR_CARREE_GROSS, null, START_MONITORING,END_MONITORING));
 			}
 		});
+
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				addControlerListenerBinding().toInstance((StartupListener) event -> event.getServices().getScenario().getNetwork().setEffectiveLaneWidth(0));
+			}
+		});
+
 		controler.run();
+
 	}
 
 
