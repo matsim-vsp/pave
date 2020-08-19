@@ -21,6 +21,7 @@
 package org.matsim.run;
 
 
+import org.matsim.api.core.v01.Coord;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
@@ -36,8 +37,6 @@ public class RunBerlinScenarioWithCSVSnapshots {
 	private static final double[] BERLINER_STR_CARREE_LANG = new double[] {45899798,4590248,5817804,5817993};
 	private static final double[] BERLINER_STR_CARREE_GROSS = new double[] {4589800,4590515,5817700,5818000};
 
-
-
 	private static final double START_MONITORING = 8*3600;
 	private static final double END_MONITORING = 10*3600;
 
@@ -46,11 +45,19 @@ public class RunBerlinScenarioWithCSVSnapshots {
 		Config config = RunBerlinScenario.prepareConfig(new String[]{"scenarios/berlin-v5.5-1pct/input/berlin-v5.5-1pct.config.xml"});
 
 		{
-			config.controler().setOutputDirectory("output/berlin-v5.5-1pct-snapshots-1testperson");
+			config.controler().setOutputDirectory("output/berlin-v5.5-1pct-snapshots-1testperson-linkWidthZero");
 			config.plans().setInputFile("1personTestPop.xml");
+
+			//do not simulate transit
+			config.transit().setUseTransit(false);
+
 			config.qsim().setStartTime(8 * 3600);
 			config.qsim().setEndTime(8.5 * 3600);
 			config.qsim().setSimEndtimeInterpretation(QSimConfigGroup.EndtimeInterpretation.onlyUseEndtime);
+
+			//set the link width to zero so agents are drawn directly on the link
+			config.qsim().setLinkWidthForVis(0);
+
 		}
 
 		config.controler().setLastIteration(0);
@@ -63,7 +70,8 @@ public class RunBerlinScenarioWithCSVSnapshots {
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
-				addSnapshotWriterBinding().toProvider(new CSVSnapshotWriterFactory(BERLINER_STR_CARREE_GROSS, new GK4toWGS84(), START_MONITORING,END_MONITORING));
+				addSnapshotWriterBinding().toProvider(new CSVSnapshotWriterFactory("snapshots_WGS84", BERLINER_STR_CARREE_GROSS, new GK4toWGS84(), START_MONITORING,END_MONITORING));
+				addSnapshotWriterBinding().toProvider(new CSVSnapshotWriterFactory("snapshots_DHDNGK4", BERLINER_STR_CARREE_GROSS, null, START_MONITORING,END_MONITORING));
 			}
 		});
 		controler.run();

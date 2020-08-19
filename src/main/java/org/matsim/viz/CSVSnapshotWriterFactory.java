@@ -36,22 +36,24 @@ public class CSVSnapshotWriterFactory implements Provider<SnapshotWriter> {
 	private final double start;
 	private final double end;
 	private final CoordinateTransformation transformation;
+	private final String iterationFileName;
 
 	@Inject
 	private OutputDirectoryHierarchy controlerIO;
 	@Inject
 	private ReplanningContext replanningContext;
 
-	public CSVSnapshotWriterFactory(@Nullable double[] coordBoundingBox, @Nullable CoordinateTransformation outputTransformation, double startMonitoringTime, double endMonitoringTime) {
+	public CSVSnapshotWriterFactory(String iterationFileName, @Nullable double[] coordBoundingBox, @Nullable CoordinateTransformation outputTransformation, double startMonitoringTime, double endMonitoringTime) {
 		this.boundingBox = coordBoundingBox;
 		this.start = startMonitoringTime;
 		this.end = endMonitoringTime;
 		this.transformation = outputTransformation;
+		this.iterationFileName = iterationFileName;
 	}
 
 	@Override
 	public SnapshotWriter get() {
-		String fileName = controlerIO.getIterationFilename(replanningContext.getIteration(), "snapshots.csv");
+		String fileName = controlerIO.getIterationFilename(replanningContext.getIteration(), iterationFileName + ".csv");
 		CSVSnapshotWriter snapshotWriter = new CSVSnapshotWriter(fileName);
 		if(this.boundingBox != null) snapshotWriter.addFilter(new AgentSnapshotCoordInBoundingBoxFilter(this.boundingBox));
 		snapshotWriter.addFilter(agentSnapshotInfo -> ! agentSnapshotInfo.getAgentState().equals(AgentSnapshotInfo.AgentState.PERSON_AT_ACTIVITY));
