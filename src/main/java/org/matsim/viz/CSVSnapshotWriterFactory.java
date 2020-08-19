@@ -57,6 +57,7 @@ public class CSVSnapshotWriterFactory implements Provider<SnapshotWriter> {
 		CSVSnapshotWriter snapshotWriter = new CSVSnapshotWriter(fileName);
 		if(this.boundingBox != null) snapshotWriter.addFilter(new AgentSnapshotCoordInBoundingBoxFilter(this.boundingBox));
 		snapshotWriter.addFilter(agentSnapshotInfo -> ! agentSnapshotInfo.getAgentState().equals(AgentSnapshotInfo.AgentState.PERSON_AT_ACTIVITY));
+		snapshotWriter.addFilter(agentSnapshotInfo -> ! agentSnapshotInfo.getAgentState().equals(AgentSnapshotInfo.AgentState.TRANSIT_DRIVER));
 		snapshotWriter.setStartTime(start);
 		snapshotWriter.setEndTime(end);
 		snapshotWriter.setCoordinateTransformation(transformation);
