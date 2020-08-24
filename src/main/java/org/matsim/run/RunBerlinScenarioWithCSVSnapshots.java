@@ -52,15 +52,19 @@ public class RunBerlinScenarioWithCSVSnapshots {
 
 	public static void main(String[] args) {
 		printBoundingBoxInWGS84(MITTE_GROSS);
-//		run(MITTE_GROSS);
+		run(MITTE_GROSS);
 	}
 
 	private static void run(double[] boundingBox) {
 		Config config = RunBerlinScenario.prepareConfig(new String[]{"scenarios/berlin-v5.5-1pct/input/berlin-v5.5-1pct.config.xml"});
 
 		{
-			config.controler().setOutputDirectory("output/berlin-v5.5-1pct-snapshots-linkWidthZero.laneWidth375");
-			config.controler().setRunId("linkWidthZero.laneWidth375");
+			String runId = "detNet.linkWidthZero.laneWidthZero";
+			config.controler().setRunId(runId);
+			config.controler().setOutputDirectory("output/berlin-v5.5-1pct-snapshots-" + runId);
+
+			config.network().setInputFile("D:/svn/shared-svn/studies/countries/de/open_berlin_scenario/be_5/network/berlin-car_be_5_withVspAdjustments2020-08-21_keepPaths-true_network.xml.gz");
+
 
 //			config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
 //			config.plans().setInputFile("1personTestPop.xml");
@@ -94,12 +98,12 @@ public class RunBerlinScenarioWithCSVSnapshots {
 			}
 		});
 
-//		controler.addOverridingModule(new AbstractModule() {
-//			@Override
-//			public void install() {
-//				addControlerListenerBinding().toInstance((StartupListener) event -> event.getServices().getScenario().getNetwork().setEffectiveLaneWidth(0));
-//			}
-//		});
+		controler.addOverridingModule(new AbstractModule() {
+			@Override
+			public void install() {
+				addControlerListenerBinding().toInstance((StartupListener) event -> event.getServices().getScenario().getNetwork().setEffectiveLaneWidth(0));
+			}
+		});
 
 		controler.run();
 	}
