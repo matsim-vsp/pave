@@ -20,6 +20,7 @@
 
 package org.matsim.analysis;
 
+import one.util.streamex.EntryStream;
 import org.apache.log4j.Logger;
 import org.geotools.util.URLs;
 import org.locationtech.jts.geom.Geometry;
@@ -68,13 +69,9 @@ final class DrtZonalWaitTimesPostProcessingAnalysis {
 
 		final List<PreparedGeometry> preparedGeometries = ShpGeometryUtils.loadPreparedGeometries(URLs.fileToUrl(new File(pathToZonesShapeFile)));
 		Map<String, Geometry> geoms = new HashMap<>();
-		for (int i = 0; i < preparedGeometries.size(); i++) {
-			geoms.put("" + (i + 1), preparedGeometries.get(i).getGeometry());
-		}
 
-		DrtZonalSystem zones = new DrtZonalSystem(drtNetwork, geoms);
+		DrtZonalSystem zones = DrtZonalSystem.createFromPreparedGeometries(drtNetwork, EntryStream.of(preparedGeometries).mapKeys(i -> (i + 1) + "").toMap());
 		DrtZonalWaitTimesPostProcessingAnalysis.analyzeRun(config, pathToEvents, drtNetwork, zones, outputCSVFilePath);
-
 	}
 
 
