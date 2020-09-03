@@ -146,7 +146,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 
             if(drtBlockingRequest.getStartTime() < timer.getTimeOfDay() /* + 1 TODO ???*/){
                 log.warn("drt blocking request " + drtBlockingRequest + " could not be assigned in time. It is rejected.");
-                eventsManager.processEvent(new DrtBlockingRequestRejectedEvent(timer.getTimeOfDay(), drtBlockingRequest));
+                eventsManager.processEvent(new DrtBlockingRequestRejectedEvent(timer.getTimeOfDay(), drtBlockingRequest.getId(), drtBlockingRequest.getSubmissionTime()));
                 blockingRequestsIterator.remove();
                 //TODO: what to do with the unassigned blocking tasks (=freight tour) ? ReSubmit? RePlan?
             } else{
