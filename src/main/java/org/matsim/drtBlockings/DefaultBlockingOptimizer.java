@@ -122,7 +122,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
             //if the blocking request has started and the vehicle is idle then we can unblock the vehicle..
             this.blockedVehicles.remove(vehicle);
             this.blockingManager.unblockVehicleAfterTime(vehicle, timer.getTimeOfDay());
-            this.eventsManager.processEvent(new DrtBlockingEndedEvent(timer.getTimeOfDay(), vehicle));
+            this.eventsManager.processEvent(new DrtBlockingEndedEvent(timer.getTimeOfDay(), vehicle.getId()));
         } else {
             updateBlockingEndTime(vehicle);
         }
