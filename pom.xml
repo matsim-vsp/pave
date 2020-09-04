@@ -134,7 +134,8 @@
 		<dependency>
 			<groupId>com.github.matsim-scenarios</groupId>
 			<artifactId>matsim-berlin</artifactId>
-			<version>5.5.x-SNAPSHOT</version>
+<!--			<version>5.5.x-SNAPSHOT</version>-->
+			<version>5.5.x-a8413839c3-1</version>
 		</dependency>
 
 		<dependency>
