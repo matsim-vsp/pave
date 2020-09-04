@@ -134,14 +134,13 @@
 		<dependency>
 			<groupId>com.github.matsim-scenarios</groupId>
 			<artifactId>matsim-berlin</artifactId>
-<!--			<version>5.5.x-SNAPSHOT</version>-->
-			<version>5.5.x-b33335ce17-1</version>
+			<version>5.5.x-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.github.matsim-vsp</groupId>
 			<artifactId>drt-speed-up</artifactId>
-			<version>333d065ae1</version>
+			<version>d744a322dd1</version>
 		</dependency>
 
 		<dependency>
