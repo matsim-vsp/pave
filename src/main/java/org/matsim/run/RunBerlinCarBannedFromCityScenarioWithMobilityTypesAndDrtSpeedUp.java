@@ -95,7 +95,7 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypesAndDrtSpeedUp {
          */
 //        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 
-        //ban car from drt service area
+        //ban car from drt service area -- be aware that this will not create a transfer zone (where both car and drt are allowed)
         CarBannedScenarioPreparation.banCarFromDRTServiceArea(scenario, drtConfigGroup);
 
         //insert vehicles for new modes

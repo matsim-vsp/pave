@@ -22,10 +22,12 @@ package org.matsim.run;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
@@ -35,9 +37,11 @@ import org.matsim.core.network.algorithms.MultimodalNetworkCleaner;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.run.drt.BerlinShpUtils;
+import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,7 +51,24 @@ class CarBannedScenarioPreparation {
 
 	//this file contains some link ids of the A10 Berliner Ring that still should remain car links...
 	//the A100 (Stadtautobahn) is explicitly supposed to be turned into non car links though (will be usable for drt)
-	private static final String INPUT_HIGHWAYLINKSINBERLIN = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/highwayLinksInsideBerlinShp.txt";
+	private static final String INPUT_HIGHWAYLINKSINBERLIN = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/highwayLinksInsideBerlinShpWith500mBuffer.txt";
+	private static final String BERLIN_SHP = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-shp/berlin.shp";
+
+
+
+	static final void banCarFromLinkInsideBerlin(Network network){
+		List<Geometry> berlinGeom = ShpGeometryUtils.loadGeometries(IOUtils.resolveFileOrResource(BERLIN_SHP));
+		network.getLinks().values().parallelStream()
+				.filter(l -> l.getAllowedModes().contains(TransportMode.car))
+				.filter(l -> ShpGeometryUtils.isCoordInGeometries(l.getToNode().getCoord(), berlinGeom))
+				.forEach(l -> {
+					Set<String> allowedModes = new HashSet<>(l.getAllowedModes());
+					allowedModes.remove(TransportMode.car);
+					l.setAllowedModes(allowedModes);
+				});
+		cleanModalNetwork(network,TransportMode.car);
+	}
+
 
 	/**
 	 * Firstly, attempts to load the drt service area shape file form {@code drtConfigGroup}.
@@ -82,24 +103,47 @@ class CarBannedScenarioPreparation {
 
 		log.info("Start adjusting network. That means, car will be prohibited and " + drtConfigGroup.getMode() + " will be allowed. All other modes are not touched..");
 		//i am not sure whether we could integrate the following step into the procedure above, as the manipulation of allowedModes could mean interference...
-		serviceAreaLinks.parallelStream().forEach(linkId -> {
-			Link link = scenario.getNetwork().getLinks().get(linkId);
-			Set<String> allowedModes = new HashSet<>(link.getAllowedModes());
-			allowedModes.remove(TransportMode.car);
-			allowedModes.add(drtConfigGroup.getMode());
-			link.setAllowedModes(allowedModes);
+		serviceAreaLinks.parallelStream()
+				.map(id -> scenario.getNetwork().getLinks().get(id))
+				.forEach(link -> {
+					Set<String> allowedModes = new HashSet<>(link.getAllowedModes());
+					allowedModes.remove(TransportMode.car);
+					allowedModes.add(drtConfigGroup.getMode());
+					link.setAllowedModes(allowedModes);
 		});
 
-		Set<String> modes = new HashSet<>();
-		modes.add(drtConfigGroup.getMode());
+		//now add car back to allowed modes for links at the edge of the service area (as a transfer zone)
+		serviceAreaLinks.stream()
+				.map(l -> scenario.getNetwork().getLinks().get(l))
+				.filter(link -> linkHasContactToCarLink(link))
+				.forEach(link -> {
+					HashSet<String> allowedModes = new HashSet<>(link.getAllowedModes());
+					allowedModes.add(TransportMode.car);
+					link.setAllowedModes(allowedModes);
+				});
 		log.info("clean drt network");
-		new MultimodalNetworkCleaner(scenario.getNetwork()).run(modes);
-		log.info("finished");
+		cleanModalNetwork(scenario.getNetwork(), drtConfigGroup.getMode());
 		log.info("clean car network"); //we need to make sure that both individual mode networks are strongly connected, this is why we clean them separately. Otherwise, we will run into routing failures at the borders...
-		modes.clear();
-		modes.add(TransportMode.car);
-		new MultimodalNetworkCleaner(scenario.getNetwork()).run(modes);
+		cleanModalNetwork(scenario.getNetwork(),TransportMode.car);
+	}
+
+	static void cleanModalNetwork(Network network, String mode) {
+		Set<String> modes = new HashSet<>();
+		modes.add(mode);
+		new MultimodalNetworkCleaner(network).run(modes);
 		log.info("finished");
+	}
+
+	private static boolean linkHasContactToCarLink(Link link) {
+		if(link.getFromNode().getInLinks().values().
+				stream().
+				filter(l -> l.getAllowedModes().contains(TransportMode.car)).
+				findAny().isPresent()) return true;
+		if(link.getToNode().getOutLinks().values().
+				stream().
+				filter(l -> l.getAllowedModes().contains(TransportMode.car)).
+				findAny().isPresent()) return true;
+		return false;
 	}
 
 	private static Set<Id<Link>> parseHighwayLinksInBerlin() {

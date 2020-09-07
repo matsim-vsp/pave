@@ -47,7 +47,9 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 
     private static final Logger log = Logger.getLogger(RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp.class );
 
-    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config.xml";
+//    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config.xml";
+    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config_banCarTest.xml";
+
 
     static final String WALK_ACCESS_DRT_EGRESS_MODE = "walkCarDrt";
     static final String DRT_ACCESS_DRT_WALK_MODE = "drtCarWalk";
@@ -63,7 +65,7 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 
         String[] configArgs;
         if ( args.length==0 ) {
-            configArgs = new String[]{BERLIN_V5_5_CONFIG ,"--config:controler.outputDirectory", "output/berlin5.5_1pct/bannedCarFromCity/test"};
+            configArgs = new String[]{BERLIN_V5_5_CONFIG ,"--config:controler.outputDirectory", "output/berlin5.5_1pct/bannedCarFromCity/testNewNet"};
         } else {
             configArgs = args;
         }
@@ -81,8 +83,14 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
         //prepare scenario
         Scenario scenario = RunDrtOpenBerlinScenario.prepareScenario(config);
 
-        //ban car from drt service area
-        CarBannedScenarioPreparation.banCarFromDRTServiceArea(scenario, drtConfigGroup);
+//        ban car from drt service area -- be aware that this will not create a transfer zone (where both car and drt are allowed)
+//        CarBannedScenarioPreparation.banCarFromDRTServiceArea(scenario, drtConfigGroup);
+
+        { //this is for open berlin scenario in pave context only! //TODO
+            RunDrtOpenBerlinScenario.addDRTmode(scenario, drtConfigGroup.getMode(), drtConfigGroup.getDrtServiceAreaShapeFile());
+            CarBannedScenarioPreparation.banCarFromLinkInsideBerlin(scenario.getNetwork());
+        }
+
 
         //insert vehicles for new modes
         configureVehicleIdsForNewModes(scenario);
