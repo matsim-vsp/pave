@@ -5,12 +5,12 @@
 		<param name="mutationRange" value="7200.0" />
 	</module>
 	<module name="controler" >
-		<param name="lastIteration" value="0" />
+		<param name="lastIteration" value="5" />
 		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
 		<param name="runId" value="berlin-drt-v5.5-1pct" />
-		<param name="outputDirectory" value="output/berlin-v5.5-1pct-bannedArea-test-woA10" />
-		<param name="writeEventsInterval" value="50" />
-		<param name="writePlansInterval" value="50" />
+		<param name="outputDirectory" value="output/berlin-v5.5-1pct-bannedArea-test" />
+		<param name="writeEventsInterval" value="1" />
+		<param name="writePlansInterval" value="1" />
 	</module>
 	<module name="global" >
 		<param name="coordinateSystem" value="EPSG:31468" />
@@ -37,7 +37,7 @@
 	</module>
 	<module name="transit" >
 		<param name="transitScheduleFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-transit-schedule.xml.gz" />
-		<param name="useTransit" value="true" />
+		<param name="useTransit" value="false" />
 		<param name="vehiclesFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-transit-vehicles.xml.gz" />
 	</module>
 	<module name="planscalcroute" >
@@ -68,15 +68,20 @@
 	</module>
 	<module name="strategy" >
 		<param name="fractionOfIterationsToDisableInnovation" value="0.8" />
+<!--		<parameterset type="strategysettings" >-->
+<!--			<param name="strategyName" value="ChangeExpBeta" />-->
+<!--			<param name="subpopulation" value="person" />-->
+<!--			<param name="weight" value="0.2" />-->
+<!--		</parameterset>-->
+<!--		<parameterset type="strategysettings" >-->
+<!--			<param name="strategyName" value="SubtourModeChoice" />-->
+<!--			<param name="subpopulation" value="person" />-->
+<!--			<param name="weight" value="0.8" />-->
+<!--		</parameterset>-->
 		<parameterset type="strategysettings" >
-			<param name="strategyName" value="ChangeExpBeta" />
+			<param name="strategyName" value="ReRoute" />
 			<param name="subpopulation" value="person" />
-			<param name="weight" value="0.2" />
-		</parameterset>
-		<parameterset type="strategysettings" >
-			<param name="strategyName" value="SubtourModeChoice" />
-			<param name="subpopulation" value="person" />
-			<param name="weight" value="0.8" />
+			<param name="weight" value="1" />
 		</parameterset>
 		<parameterset type="strategysettings" >
 			<param name="strategyName" value="ChangeExpBeta" />
@@ -86,7 +91,7 @@
 		<parameterset type="strategysettings" >
 			<param name="strategyName" value="ReRoute" />
 			<param name="subpopulation" value="freight" />
-			<param name="weight" value="0.05" />
+			<param name="weight" value="1" />
 		</parameterset>
 	</module>
 	<module name="subtourModeChoice" >
@@ -197,9 +202,9 @@
 			<!-- Limit the operation of vehicles to links (of the 'dvrp_routing' network) with 'allowedModes' containing this 'mode'. For backward compatibility, the value is set to false by default - this means that the vehicles are allowed to operate on all links of the 'dvrp_routing' network. The 'dvrp_routing' is defined by DvrpConfigGroup.networkModes) -->
 			<param name="useModeFilteredSubnetwork" value="false" />
 			<!-- An XML file specifying the vehicle fleet. The file format according to dvrp_vehicles_v1.dtd -->
-			<param name="vehiclesFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/berlin-drt-v5.5-10pct/input/drtVehicles/berlin-drt-v5.5.drt-by-rndLocations-10000vehicles-4seats.xml.gz" />
+<!--			<param name="vehiclesFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/berlin-drt-v5.5-10pct/input/drtVehicles/berlin-drt-v5.5.drt-by-rndLocations-10000vehicles-4seats.xml.gz" />-->
 
-<!--			<param name="vehiclesFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/avoev/berlin-drt-v5.5-10pct/input/berlin-drt-v5.5.drt-10vehicles-4seats.xml.gz" />-->
+			<param name="vehiclesFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/avoev/berlin-drt-v5.5-10pct/input/berlin-drt-v5.5.drt-10vehicles-4seats.xml.gz" />
 
 			<!-- Writes out detailed DRT customer stats in each iteration. True by default. -->
 			<param name="writeDetailedCustomerStats" value="true" />

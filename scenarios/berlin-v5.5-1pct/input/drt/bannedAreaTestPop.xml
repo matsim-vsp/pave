@@ -9,7 +9,7 @@
 
 	<person id="testperson">
 		<attributes>
-			<attribute name="subpopulation" class="java.lang.String">person_fixed_car</attribute>
+			<attribute name="subpopulation" class="java.lang.String">person</attribute>
 		</attributes>
 		<plan selected="yes">
 			<activity type="home_4800.0" link="5293" end_time="08:00:00" x="4563554.306093174" y="5797022.536652523" >
@@ -28,7 +28,7 @@
 
 	<person id="testperson2">
 		<attributes>
-			<attribute name="subpopulation" class="java.lang.String">person_flexible</attribute>
+			<attribute name="subpopulation" class="java.lang.String">person</attribute>
 		</attributes>
 		<plan selected="yes">
 			<activity type="home_4800.0" link="5293" end_time="08:00:00" x="4563554.306093174" y="5797022.536652523" >
@@ -46,7 +46,7 @@
 
 	<person id="testperson3">
 		<attributes>
-			<attribute name="subpopulation" class="java.lang.String">person_flexible</attribute>
+			<attribute name="subpopulation" class="java.lang.String">person</attribute>
 		</attributes>
 		<plan selected="yes">
 			<activity type="home_4800.0" link="149336" end_time="08:00:00" x="4589741.853433731" y="5817858.2129915655" >
@@ -64,7 +64,7 @@
 
 	<person id="testperson4">
 		<attributes>
-			<attribute name="subpopulation" class="java.lang.String">person_flexible</attribute>
+			<attribute name="subpopulation" class="java.lang.String">person</attribute>
 		</attributes>
 		<plan selected="yes">
 			<activity type="home_4800.0" link="149336" end_time="08:00:00" x="4589741.853433731" y="5817858.2129915655" >

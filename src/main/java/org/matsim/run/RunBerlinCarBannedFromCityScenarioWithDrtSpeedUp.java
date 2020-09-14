@@ -32,7 +32,6 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.router.AnalysisMainModeIdentifier;
 import org.matsim.core.utils.collections.Tuple;
-import org.matsim.drtSpeedUp.MultiModeDrtSpeedUpModule;
 import org.matsim.optDRT.MultiModeOptDrtConfigGroup;
 import org.matsim.optDRT.OptDrt;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
@@ -65,14 +64,19 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 
         String[] configArgs;
         if ( args.length==0 ) {
-            configArgs = new String[]{BERLIN_V5_5_CONFIG ,"--config:controler.outputDirectory", "output/berlin5.5_1pct/bannedCarFromCity/testNewNet"};
+            configArgs = new String[]{BERLIN_V5_5_CONFIG ,"--config:controler.outputDirectory", "output/berlin5.5_1pct/bannedCarFromCity/testNewNet-sevIters"};
         } else {
             configArgs = args;
         }
 
         //prepare config
         Config config = RunDrtOpenBerlinScenario.prepareConfig(configArgs);
-        MultiModeDrtSpeedUpModule.addTeleportedDrtMode(config);
+
+//        config.plans().setInputFile("pave509.output_plans.xml.gz");
+        config.controler().setLastIteration(1);
+//        config.controler().setOutputDirectory("D:/bannedCarStudy/output/pave509-outputAsInput-Test-Debug-deletedRoutes");
+
+//        MultiModeDrtSpeedUpModule.addTeleportedDrtMode(config);
 
         //this will throw an exception if more than one drt mode is configured... multiple drt operators are currently not supported with car banned scenario..
         DrtConfigGroup drtConfigGroup = DrtConfigGroup.getSingleModeDrtConfig(config);
@@ -82,6 +86,13 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 
         //prepare scenario
         Scenario scenario = RunDrtOpenBerlinScenario.prepareScenario(config);
+
+//        PopulationUtils.sampleDown(scenario.getPopulation(), 0.1);
+
+//        scenario.getPopulation().getPersons().values().stream()
+//                .flatMap(person -> person.getPlans().stream())
+//                .flatMap(plan -> TripStructureUtils.getLegs(plan).stream())
+//                .forEach(leg -> leg.setRoute(null));
 
 //        ban car from drt service area -- be aware that this will not create a transfer zone (where both car and drt are allowed)
 //        CarBannedScenarioPreparation.banCarFromDRTServiceArea(scenario, drtConfigGroup);
@@ -97,7 +108,7 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 
         //prepare controler
         Controler controler = RunDrtOpenBerlinScenario.prepareControler(scenario);
-        controler.addOverridingModule(new MultiModeDrtSpeedUpModule());
+//        controler.addOverridingModule(new MultiModeDrtSpeedUpModule());
         OptDrt.addAsOverridingModule(controler, ConfigUtils.addOrGetModule(scenario.getConfig(), MultiModeOptDrtConfigGroup.class));
 
         //configure intermodal routing modules for new modes
