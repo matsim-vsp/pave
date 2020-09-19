@@ -19,7 +19,7 @@
 package org.matsim.pfav.privateAV;
 
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
-import org.matsim.contrib.dvrp.passenger.PassengerEngine;
+import org.matsim.contrib.dvrp.passenger.PassengerHandler;
 import org.matsim.contrib.dvrp.passenger.SinglePassengerDropoffActivity;
 import org.matsim.contrib.dvrp.passenger.SinglePassengerPickupActivity;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
@@ -47,24 +47,25 @@ public final class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 	public static final String PICKUP_ACTIVITY_TYPE = "TaxiPickup";
 	static final String DROPOFF_ACTIVITY_TYPE = "TaxiDropoff";
 	static final String STAY_ACTIVITY_TYPE = "TaxiStay";
-	
+
 	public static final String SERVICE_ACTIVITY_TYPE = "service";
 	static final String RETOOL_ACTIVITY_TYPE = "retool";
 
-	private final PassengerEngine passengerEngine;
+	private final PassengerHandler passengerHandler;
 	private final VrpLegFactory legFactory;
 	private final double pickupDuration;
 
-	PFAVActionCreator(PassengerEngine passengerEngine, TaxiConfigGroup taxiCfg,
-					  TaxiOptimizer optimizer, MobsimTimer timer, DvrpConfigGroup dvrpCfg) {
-		this(passengerEngine, taxiCfg.isOnlineVehicleTracker() ?
-						v -> VrpLegFactory.createWithOnlineTracker(dvrpCfg.getMobsimMode(), v, OnlineTrackerListener.NO_LISTENER, timer) :
+	PFAVActionCreator(PassengerHandler passengerHandler, TaxiConfigGroup taxiCfg, TaxiOptimizer optimizer,
+			MobsimTimer timer, DvrpConfigGroup dvrpCfg) {
+		this(passengerHandler, taxiCfg.isOnlineVehicleTracker() ?
+						v -> VrpLegFactory.createWithOnlineTracker(dvrpCfg.getMobsimMode(), v,
+								OnlineTrackerListener.NO_LISTENER, timer) :
 						v -> VrpLegFactory.createWithOfflineTracker(dvrpCfg.getMobsimMode(), v, timer),
 				taxiCfg.getPickupDuration());
 	}
 
-    private PFAVActionCreator(PassengerEngine passengerEngine, VrpLegFactory legFactory, double pickupDuration) {
-		this.passengerEngine = passengerEngine;
+	private PFAVActionCreator(PassengerHandler passengerHandler, VrpLegFactory legFactory, double pickupDuration) {
+		this.passengerHandler = passengerHandler;
 		this.legFactory = legFactory;
 		this.pickupDuration = pickupDuration;
 	}
@@ -79,17 +80,17 @@ public final class PFAVActionCreator implements VrpAgentLogic.DynActionCreator {
 
 			case PICKUP:
 				final TaxiPickupTask pst = (TaxiPickupTask)task;
-				return new SinglePassengerPickupActivity(passengerEngine, dynAgent, pst, pst.getRequest(),
+				return new SinglePassengerPickupActivity(passengerHandler, dynAgent, pst, pst.getRequest(),
 						PICKUP_ACTIVITY_TYPE);
 
 			case DROPOFF:
-			
-			if(task instanceof TaxiDropoffTask) {
-				final TaxiDropoffTask dst = (TaxiDropoffTask)task;
-				return new SinglePassengerDropoffActivity(passengerEngine, dynAgent, dst, dst.getRequest(),
-						DROPOFF_ACTIVITY_TYPE);
-			} else if( task instanceof PFAVServiceTask) {
-                return new PFAVServiceActivity(SERVICE_ACTIVITY_TYPE, (PFAVServiceTask) task, vehicle.getId());
+
+				if (task instanceof TaxiDropoffTask) {
+					final TaxiDropoffTask dst = (TaxiDropoffTask)task;
+					return new SinglePassengerDropoffActivity(passengerHandler, dynAgent, dst, dst.getRequest(),
+							DROPOFF_ACTIVITY_TYPE);
+				} else if (task instanceof PFAVServiceTask) {
+					return new PFAVServiceActivity(SERVICE_ACTIVITY_TYPE, (PFAVServiceTask)task, vehicle.getId());
 			} else if(task instanceof PFAVRetoolTask) {
 				return new IdleDynActivity(RETOOL_ACTIVITY_TYPE, task::getEndTime);
 			} else {

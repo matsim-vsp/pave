@@ -22,7 +22,7 @@ package org.matsim.drtBlockings;
 
 import org.matsim.contrib.drt.vrpagent.DrtActionCreator;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
-import org.matsim.contrib.dvrp.passenger.PassengerEngine;
+import org.matsim.contrib.dvrp.passenger.PassengerHandler;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.tracker.OnlineTrackerListener;
@@ -38,27 +38,26 @@ import org.matsim.drtBlockings.tasks.FreightRetoolTask;
 
 class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
 
-    private final VrpLegFactory legFactory;
-    private final PassengerEngine passengerEngine;
-    private final DrtActionCreator delegate;
+	private final VrpLegFactory legFactory;
+	private final PassengerHandler passengerHandler;
+	private final DrtActionCreator delegate;
 
-    FreightDrtActionCreator(PassengerEngine passengerEngine, MobsimTimer timer, DvrpConfigGroup dvrpCfg) {
-        this(passengerEngine, v -> VrpLegFactory.createWithOnlineTracker(dvrpCfg.getMobsimMode(), v,
-                OnlineTrackerListener.NO_LISTENER, timer));
-    }
+	FreightDrtActionCreator(PassengerHandler passengerHandler, MobsimTimer timer, DvrpConfigGroup dvrpCfg) {
+		this(passengerHandler, v -> VrpLegFactory.createWithOnlineTracker(dvrpCfg.getMobsimMode(), v,
+				OnlineTrackerListener.NO_LISTENER, timer));
+	}
 
-    private FreightDrtActionCreator(PassengerEngine passengerEngine, VrpLegFactory legFactory) {
-        this.passengerEngine = passengerEngine;
-        this.legFactory = legFactory;
-        this.delegate = new DrtActionCreator(this.passengerEngine, this.legFactory);
-    }
+	private FreightDrtActionCreator(PassengerHandler passengerHandler, VrpLegFactory legFactory) {
+		this.passengerHandler = passengerHandler;
+		this.legFactory = legFactory;
+		this.delegate = new DrtActionCreator(this.passengerHandler, this.legFactory);
+	}
 
+	@Override
+	public DynAction createAction(DynAgent dynAgent, DvrpVehicle vehicle, double now) {
+		Task currentTask = vehicle.getSchedule().getCurrentTask();
 
-    @Override
-    public DynAction createAction(DynAgent dynAgent, DvrpVehicle vehicle, double now) {
-        Task currentTask = vehicle.getSchedule().getCurrentTask();
-
-        //we can use IdleDynActivity even though vehicle is not idle. The object type only
+		//we can use IdleDynActivity even though vehicle is not idle. The object type only
         //prohibits to alter the activity and time...
 
         if(currentTask instanceof FreightDeliveryTask)
