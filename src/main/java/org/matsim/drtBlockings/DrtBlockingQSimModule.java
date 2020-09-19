@@ -20,17 +20,18 @@
 
 package org.matsim.drtBlockings;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
-import com.google.inject.name.Named;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.drt.optimizer.*;
+import org.matsim.contrib.drt.optimizer.DefaultDrtOptimizer;
+import org.matsim.contrib.drt.optimizer.DrtOptimizer;
+import org.matsim.contrib.drt.optimizer.QSimScopeForkJoinPoolHolder;
+import org.matsim.contrib.drt.optimizer.VehicleData;
 import org.matsim.contrib.drt.optimizer.depot.DepotFinder;
 import org.matsim.contrib.drt.optimizer.depot.NearestStartLinkAsDepot;
-import org.matsim.contrib.drt.optimizer.insertion.*;
+import org.matsim.contrib.drt.optimizer.insertion.DefaultUnplannedRequestInserter;
+import org.matsim.contrib.drt.optimizer.insertion.DrtInsertionSearch;
+import org.matsim.contrib.drt.optimizer.insertion.InsertionCostCalculator;
+import org.matsim.contrib.drt.optimizer.insertion.UnplannedRequestInserter;
 import org.matsim.contrib.drt.optimizer.rebalancing.RebalancingStrategy;
 import org.matsim.contrib.drt.passenger.DrtRequestCreator;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
@@ -42,7 +43,11 @@ import org.matsim.contrib.drt.scheduler.EmptyVehicleRelocator;
 import org.matsim.contrib.drt.scheduler.RequestInsertionScheduler;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
-import org.matsim.contrib.dvrp.passenger.*;
+import org.matsim.contrib.dvrp.passenger.DefaultPassengerRequestValidator;
+import org.matsim.contrib.dvrp.passenger.PassengerEngineQSimModule;
+import org.matsim.contrib.dvrp.passenger.PassengerHandler;
+import org.matsim.contrib.dvrp.passenger.PassengerRequestCreator;
+import org.matsim.contrib.dvrp.passenger.PassengerRequestValidator;
 import org.matsim.contrib.dvrp.path.OneToManyPathSearch;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
@@ -59,15 +64,21 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.drtBlockings.tasks.FreightTaskEndTimeCalculator;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
+import com.google.inject.name.Named;
+
 class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
 
-    private final DrtConfigGroup drtCfg;
+	private final DrtConfigGroup drtCfg;
 
-    //TODO configurable
-    private static int defaultMaxAmountOfBlockings = 1;
+	//TODO configurable
+	private static int defaultMaxAmountOfBlockings = 1;
 
-    DrtBlockingQSimModule(DrtConfigGroup drtConfigGroup){
-        super(drtConfigGroup.getMode());
+	DrtBlockingQSimModule(DrtConfigGroup drtConfigGroup) {
+		super(drtConfigGroup.getMode());
         this.drtCfg = drtConfigGroup;
     }
 
@@ -133,9 +144,9 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                 getter -> new ScheduleTimingUpdater(getter.get(MobsimTimer.class), new FreightTaskEndTimeCalculator(drtCfg, getter.get(FreightConfigGroup.class)))))
                 .asEagerSingleton();
 
-        bindModal(VrpAgentLogic.DynActionCreator.class).
-                toProvider(modalProvider(getter -> new FreightDrtActionCreator(getter.getModal(PassengerEngine.class),
-                        getter.get(MobsimTimer.class), getter.get(DvrpConfigGroup.class)))).
+		bindModal(VrpAgentLogic.DynActionCreator.class).
+				toProvider(modalProvider(getter -> new FreightDrtActionCreator(getter.getModal(PassengerHandler.class),
+						getter.get(MobsimTimer.class), getter.get(DvrpConfigGroup.class)))).
                 asEagerSingleton();
 
         configureStandardDrt();

@@ -4,7 +4,6 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.passenger.DefaultPassengerRequestValidator;
-import org.matsim.contrib.dvrp.passenger.PassengerEngine;
 import org.matsim.contrib.dvrp.passenger.PassengerEngineQSimModule;
 import org.matsim.contrib.dvrp.passenger.PassengerHandler;
 import org.matsim.contrib.dvrp.passenger.PassengerRequestCreator;
@@ -103,10 +102,10 @@ final class PFAVModuleQSim extends AbstractDvrpModeQSimModule {
 
                     @Override
                     public PFAVActionCreator get() {
-						PassengerHandler passengerHandler = getModalInstance(PassengerEngine.class);
+						PassengerHandler passengerHandler = getModalInstance(PassengerHandler.class);
 						TaxiOptimizer optimizer = getModalInstance(TaxiOptimizer.class);
 						return new PFAVActionCreator(passengerHandler, taxiCfg, optimizer, timer, dvrpCfg);
-                    }
+					}
                 }).asEagerSingleton();
 
         bindModal(PassengerRequestCreator.class).toProvider(modalProvider(
