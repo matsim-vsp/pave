@@ -31,6 +31,7 @@ import org.matsim.contrib.freight.carrier.CarrierPlanXmlReader;
 import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsManagerImpl;
+import org.matsim.core.events.MatsimEventsReader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +58,7 @@ public class FreightTourDispatchTest {
 
         PFAVRequestHandler eventHandler = new PFAVRequestHandler();
         events.addHandler(eventHandler);
-        PFAVEventsReader reader = new PFAVEventsReader(events);
+        MatsimEventsReader reader = PFAVEventsReader.create(events);
         reader.readFile(eventsFile);
 
         //test count of events

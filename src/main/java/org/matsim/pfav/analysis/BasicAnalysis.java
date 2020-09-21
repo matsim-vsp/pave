@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.events.*;
 import org.matsim.api.core.v01.events.handler.*;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsUtils;
+import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.pfav.privateAV.PFAVEventsReader;
 
 import java.util.HashSet;
@@ -52,7 +53,7 @@ public class BasicAnalysis implements ActivityStartEventHandler, ActivityEndEven
         EventsManager manager = EventsUtils.createEventsManager();
 
         manager.addHandler(new BasicAnalysis());
-        PFAVEventsReader reader = new PFAVEventsReader(manager);
+        MatsimEventsReader reader = PFAVEventsReader.create(manager);
 
         reader.readFile(input);
 

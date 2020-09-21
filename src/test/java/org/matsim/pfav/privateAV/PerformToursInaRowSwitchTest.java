@@ -9,6 +9,7 @@ import org.matsim.api.core.v01.events.handler.ActivityStartEventHandler;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsManagerImpl;
+import org.matsim.core.events.MatsimEventsReader;
 
 import java.util.*;
 
@@ -31,7 +32,7 @@ public class PerformToursInaRowSwitchTest {
 
 		PFAVRequestHandler eventHandler = new PFAVRequestHandler();
 		events.addHandler(eventHandler);
-		PFAVEventsReader reader = new PFAVEventsReader(events);
+		MatsimEventsReader reader = PFAVEventsReader.create(events);
 		reader.readFile(eventsFile);
 
 		double firstDropOffTime = 0;

@@ -10,6 +10,7 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.freight.carrier.*;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsManagerImpl;
+import org.matsim.core.events.MatsimEventsReader;
 
 import java.util.*;
 
@@ -34,7 +35,7 @@ public class SortedToDoListTest {
 		EventsManager events = new EventsManagerImpl();
 		ServiceActStartHandler eventHandler = new ServiceActStartHandler();
 		events.addHandler(eventHandler);
-		PFAVEventsReader reader = new PFAVEventsReader(events);
+		MatsimEventsReader reader = PFAVEventsReader.create(events);
 		reader.readFile(eventsFile);
 
 		List<Id<CarrierService>> serviceList = eventHandler.lastServices;

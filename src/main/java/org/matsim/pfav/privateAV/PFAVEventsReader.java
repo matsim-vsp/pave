@@ -26,6 +26,7 @@ import java.util.Stack;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.contrib.drt.util.DrtEventsReaders;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsReaderXMLv1;
@@ -34,24 +35,23 @@ import org.matsim.core.utils.io.MatsimXmlParser;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-public class PFAVEventsReader extends MatsimXmlParser {
+public class PFAVEventsReader {
 
-    private EventsReaderXMLv1 delegate;
 
-    public PFAVEventsReader(EventsManager events) {
-        delegate = new EventsReaderXMLv1(events);
-        this.setValidating(false);
+    public static MatsimEventsReader create(EventsManager events) {
+        MatsimEventsReader delegate = DrtEventsReaders.createEventsReader(events);
         delegate.addCustomEventMapper(EventFreightTourCompleted.EVENT_TYPE, getFreightTourCompletedEventMapper());
         delegate.addCustomEventMapper(EventFreightTourRequestRejected.EVENT_TYPE, getFreightTourRequestDeniedEventMapper());
         delegate.addCustomEventMapper(EventFreightTourScheduled.EVENT_TYPE, getFreightTourScheduledEventMapper());
         delegate.addCustomEventMapper(EventPFAVOwnerWaitsForVehicle.EVENT_TYPE, getPFAVOwnerWaitsEventMapper());
+        return delegate;
     }
 
-    public void characters(char[] ch, int start, int length) throws SAXException {
-        delegate.characters(ch, start, length);
-    }
+//    public void characters(char[] ch, int start, int length) throws SAXException {
+//        delegate.characters(ch, start, length);
+//    }
 
-    private MatsimEventsReader.CustomEventMapper<EventFreightTourCompleted> getFreightTourCompletedEventMapper() {
+    private static MatsimEventsReader.CustomEventMapper getFreightTourCompletedEventMapper() {
         return event -> {
 
             Map<String, String> attributes = event.getAttributes();
@@ -63,7 +63,7 @@ public class PFAVEventsReader extends MatsimXmlParser {
         };
     }
 
-    private MatsimEventsReader.CustomEventMapper<EventFreightTourRequestRejected> getFreightTourRequestDeniedEventMapper() {
+    private static MatsimEventsReader.CustomEventMapper getFreightTourRequestDeniedEventMapper() {
         return event -> {
 
             Map<String, String> attributes = event.getAttributes();
@@ -78,7 +78,7 @@ public class PFAVEventsReader extends MatsimXmlParser {
         };
     }
 
-    private MatsimEventsReader.CustomEventMapper<EventFreightTourScheduled> getFreightTourScheduledEventMapper() {
+    private static MatsimEventsReader.CustomEventMapper getFreightTourScheduledEventMapper() {
         return event -> {
 
             Map<String, String> attributes = event.getAttributes();
@@ -94,7 +94,7 @@ public class PFAVEventsReader extends MatsimXmlParser {
         };
     }
 
-    private MatsimEventsReader.CustomEventMapper<EventPFAVOwnerWaitsForVehicle> getPFAVOwnerWaitsEventMapper() {
+    private static MatsimEventsReader.CustomEventMapper getPFAVOwnerWaitsEventMapper() {
         return event -> {
 
             Map<String, String> attributes = event.getAttributes();
@@ -107,13 +107,14 @@ public class PFAVEventsReader extends MatsimXmlParser {
         };
     }
 
-    @Override
-    public void startTag(String name, Attributes atts, Stack<String> context) {
-        delegate.startTag(name, atts, context);
-    }
 
-    @Override
-    public void endTag(String name, String content, Stack<String> context) {
-        delegate.endTag(name, content, context);
-    }
+//    @Override
+//    public void startTag(String name, Attributes atts, Stack<String> context) {
+//        delegate.startTag(name, atts, context);
+//    }
+
+//    @Override
+//    public void endTag(String name, String content, Stack<String> context) {
+//        delegate.endTag(name, content, context);
+//    }
 }

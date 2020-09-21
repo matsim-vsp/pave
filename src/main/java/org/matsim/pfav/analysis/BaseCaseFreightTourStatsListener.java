@@ -30,6 +30,7 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.events.EventsUtils;
+import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.io.IOUtils;
@@ -92,7 +93,7 @@ public class BaseCaseFreightTourStatsListener implements ActivityEndEventHandler
 
         BaseCaseFreightTourStatsListener handler = new BaseCaseFreightTourStatsListener(network, carriers);
         manager.addHandler(handler);
-        PFAVEventsReader reader = new PFAVEventsReader(manager);
+        MatsimEventsReader reader = PFAVEventsReader.create(manager);
         String output = dir + "/ITERS/it.0/FreightTourStats_it0.csv";
 
         reader.readFile(input);

@@ -29,14 +29,15 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.analysis.DrtRequestAnalyzer;
 import org.matsim.contrib.drt.analysis.zonal.DrtZonalSystem;
 import org.matsim.contrib.drt.analysis.zonal.DrtZonalWaitTimesAnalyzer;
-import org.matsim.contrib.drt.passenger.events.DrtPassengerEventsReader;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
+import org.matsim.contrib.drt.util.DrtEventsReaders;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.events.EventsUtils;
+import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
@@ -80,12 +81,12 @@ final class DrtZonalWaitTimesPostProcessingAnalysis {
 		EventsManager eventsManager = EventsUtils.createEventsManager(config);
 
 		DrtConfigGroup drtConfig = DrtConfigGroup.getSingleModeDrtConfig(config);
-		DrtRequestAnalyzer requestAnalyzer = new DrtRequestAnalyzer(drtNetwork, drtConfig);
+		DrtRequestAnalyzer requestAnalyzer = new DrtRequestAnalyzer(drtConfig);
 		eventsManager.addHandler(requestAnalyzer);
 		DrtZonalWaitTimesAnalyzer analyzer = new DrtZonalWaitTimesAnalyzer(drtConfig, requestAnalyzer, zones);
 		eventsManager.addHandler(analyzer);
 
-		DrtPassengerEventsReader reader = new DrtPassengerEventsReader(eventsManager);
+		MatsimEventsReader reader = DrtEventsReaders.createEventsReader(eventsManager);
 		reader.readFile(pathToEvents);
 
 		log.info("start writing output to " + outputCSVFilePath);

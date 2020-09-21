@@ -29,6 +29,7 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.events.EventsUtils;
+import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.pfav.privateAV.EventPFAVOwnerWaitsForVehicle;
 import org.matsim.pfav.privateAV.PFAVActionCreator;
@@ -54,7 +55,7 @@ public class PFAVWaitTimesAnalyzer implements PFAVWaitTimesListener, ActivitySta
 
         PFAVWaitTimesAnalyzer handler = new PFAVWaitTimesAnalyzer();
         manager.addHandler(handler);
-        PFAVEventsReader reader = new PFAVEventsReader(manager);
+        MatsimEventsReader reader = PFAVEventsReader.create(manager);
 
 //        String dir = "C:/Users/Work/tubCloud/MasterArbeit/Runs/serious/Dep3_11kPFAV_gzBln_Transporter/";
 //        String input = dir + "berlin-v5.3-1pct.output_events.xml.gz";

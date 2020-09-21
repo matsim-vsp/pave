@@ -29,6 +29,7 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.events.EventsUtils;
+import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.io.IOUtils;
@@ -89,7 +90,7 @@ public class OverallTravelTimeAndDistanceListener implements PersonDepartureEven
 
         OverallTravelTimeAndDistanceListener handler = new OverallTravelTimeAndDistanceListener(network);
         manager.addHandler(handler);
-        PFAVEventsReader reader = new PFAVEventsReader(manager);
+        MatsimEventsReader reader = PFAVEventsReader.create(manager);
 
         String output = dir + "/ITERS/it.0/OverallStats_it0_NEU.csv";
 

@@ -12,6 +12,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.freight.carrier.CarrierCapabilities;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsManagerImpl;
+import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 
@@ -39,7 +40,7 @@ public class DispatchAlgoTest {
 		EventsManager events = new EventsManagerImpl();
 		PFAVRequestHandler eventHandler = new PFAVRequestHandler();
 		events.addHandler(eventHandler);
-		PFAVEventsReader reader = new PFAVEventsReader(events);
+		MatsimEventsReader reader = PFAVEventsReader.create(events);
 		reader.readFile(eventsFile);
 
 		Network network = NetworkUtils.createNetwork();
