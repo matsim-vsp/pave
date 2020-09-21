@@ -17,7 +17,7 @@
 <!--		<matsim.version>13.0-SNAPSHOT</matsim.version>-->
 
 		<!--weekly "release":-->
-		<matsim.version>13.0-2020w37-SNAPSHOT</matsim.version>
+		<matsim.version>13.0-2020w38-SNAPSHOT</matsim.version>
 
 	</properties>
 
