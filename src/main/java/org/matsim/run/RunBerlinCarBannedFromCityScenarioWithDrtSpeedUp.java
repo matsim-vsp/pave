@@ -30,8 +30,12 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.AnalysisMainModeIdentifier;
+import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.utils.collections.Tuple;
+import org.matsim.drtSpeedUp.MultiModeDrtSpeedUpModule;
 import org.matsim.optDRT.MultiModeOptDrtConfigGroup;
 import org.matsim.optDRT.OptDrt;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
@@ -46,8 +50,8 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 
     private static final Logger log = Logger.getLogger(RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp.class );
 
-//    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config.xml";
-    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config_banCarTest.xml";
+    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config.xml";
+//    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config_banCarTest.xml";
 
 
     static final String WALK_ACCESS_DRT_EGRESS_MODE = "walkCarDrt";
@@ -64,7 +68,7 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 
         String[] configArgs;
         if ( args.length==0 ) {
-            configArgs = new String[]{BERLIN_V5_5_CONFIG ,"--config:controler.outputDirectory", "output/berlin5.5_1pct/bannedCarFromCity/testNewNet-sevIters"};
+            configArgs = new String[]{BERLIN_V5_5_CONFIG ,"--config:controler.outputDirectory", "output/berlin5.5_1pct/bannedCarFromCity/berlinPopDrtConfig-woSBBintermodal"};
         } else {
             configArgs = args;
         }
@@ -73,10 +77,13 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
         Config config = RunDrtOpenBerlinScenario.prepareConfig(configArgs);
 
 //        config.plans().setInputFile("pave509.output_plans.xml.gz");
-        config.controler().setLastIteration(1);
 //        config.controler().setOutputDirectory("D:/bannedCarStudy/output/pave509-outputAsInput-Test-Debug-deletedRoutes");
+//        config.controler().setLastIteration(1);
+//        config.plans().setInputFile("../berlin-v5.5-0.1pct-woRoutes.xml.gz");
+//        config.transit().setUseTransit(true);
+//        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
 
-//        MultiModeDrtSpeedUpModule.addTeleportedDrtMode(config);
+        MultiModeDrtSpeedUpModule.addTeleportedDrtMode(config);
 
         //this will throw an exception if more than one drt mode is configured... multiple drt operators are currently not supported with car banned scenario..
         DrtConfigGroup drtConfigGroup = DrtConfigGroup.getSingleModeDrtConfig(config);
@@ -87,28 +94,21 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
         //prepare scenario
         Scenario scenario = RunDrtOpenBerlinScenario.prepareScenario(config);
 
-//        PopulationUtils.sampleDown(scenario.getPopulation(), 0.1);
-
-//        scenario.getPopulation().getPersons().values().stream()
-//                .flatMap(person -> person.getPlans().stream())
-//                .flatMap(plan -> TripStructureUtils.getLegs(plan).stream())
-//                .forEach(leg -> leg.setRoute(null));
-
 //        ban car from drt service area -- be aware that this will not create a transfer zone (where both car and drt are allowed)
 //        CarBannedScenarioPreparation.banCarFromDRTServiceArea(scenario, drtConfigGroup);
 
-        { //this is for open berlin scenario in pave context only! //TODO
+        { //this is for open berlin scenario in pave context only!
+            //we need a transfer zone because otherwise we might get rejections. we do this by having a service area slightly larger than berlin and then removing car from links within berlin
             RunDrtOpenBerlinScenario.addDRTmode(scenario, drtConfigGroup.getMode(), drtConfigGroup.getDrtServiceAreaShapeFile());
             CarBannedScenarioPreparation.banCarFromLinkInsideBerlin(scenario.getNetwork());
         }
-
 
         //insert vehicles for new modes
         configureVehicleIdsForNewModes(scenario);
 
         //prepare controler
         Controler controler = RunDrtOpenBerlinScenario.prepareControler(scenario);
-//        controler.addOverridingModule(new MultiModeDrtSpeedUpModule());
+        controler.addOverridingModule(new MultiModeDrtSpeedUpModule());
         OptDrt.addAsOverridingModule(controler, ConfigUtils.addOrGetModule(scenario.getConfig(), MultiModeOptDrtConfigGroup.class));
 
         //configure intermodal routing modules for new modes

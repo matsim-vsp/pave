@@ -21,14 +21,32 @@
 package org.matsim.scenarioCreation;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.*;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.population.PopulationUtils;
+import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
 public class TestPopCreator {
 
 	public static void main(String[] args) {
+//		create1PersonTestPop();
+
+		Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+
+		String berlin1pctPlans = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-1pct/input/berlin-v5.5-1pct.plans.xml.gz";
+		PopulationUtils.readPopulation(scenario.getPopulation(),berlin1pctPlans);
+		PopulationUtils.sampleDown(scenario.getPopulation(), 0.1);
+		scenario.getPopulation().getPersons().values().stream()
+				.flatMap(person -> person.getPlans().stream())
+				.flatMap(plan -> TripStructureUtils.getLegs(plan).stream())
+				.forEach(leg -> leg.setRoute(null));
+
+		PopulationUtils.writePopulation(scenario.getPopulation(), "scenarios/berlin-v5.5-1pct/input/berlin-v5.5-0.1pct-woRoutes.xml.gz");
+	}
+
+	private static void create1PersonTestPop() {
 		Population population = ScenarioUtils.createScenario(ConfigUtils.createConfig()).getPopulation();
 
 		PopulationFactory fact = population.getFactory();
