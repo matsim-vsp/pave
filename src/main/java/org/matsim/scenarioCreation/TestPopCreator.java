@@ -37,13 +37,13 @@ public class TestPopCreator {
 
 		String berlin1pctPlans = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-1pct/input/berlin-v5.5-1pct.plans.xml.gz";
 		PopulationUtils.readPopulation(scenario.getPopulation(),berlin1pctPlans);
-		PopulationUtils.sampleDown(scenario.getPopulation(), 0.1);
+//		PopulationUtils.sampleDown(scenario.getPopulation(), 0.1);
 		scenario.getPopulation().getPersons().values().stream()
 				.flatMap(person -> person.getPlans().stream())
 				.flatMap(plan -> TripStructureUtils.getLegs(plan).stream())
 				.forEach(leg -> leg.setRoute(null));
 
-		PopulationUtils.writePopulation(scenario.getPopulation(), "scenarios/berlin-v5.5-1pct/input/berlin-v5.5-0.1pct-woRoutes.xml.gz");
+		PopulationUtils.writePopulation(scenario.getPopulation(), "scenarios/berlin-v5.5-1pct/input/berlin-v5.5-1pct-woRoutes.xml.gz");
 	}
 
 	private static void create1PersonTestPop() {
