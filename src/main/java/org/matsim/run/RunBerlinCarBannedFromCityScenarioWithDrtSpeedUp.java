@@ -51,6 +51,9 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
     private static final Logger log = Logger.getLogger(RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp.class );
 
     private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config.xml";
+
+//    private static final String BERLIN_V5_5_CONFIG = "D:/bannedCarStudy/berlin-drt-v5.5-10pct.config_pave508.xml";
+
 //    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config_banCarTest.xml";
 
 
@@ -68,7 +71,7 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 
         String[] configArgs;
         if ( args.length==0 ) {
-            configArgs = new String[]{BERLIN_V5_5_CONFIG ,"--config:controler.outputDirectory", "output/berlin5.5_1pct/bannedCarFromCity/berlinPopDrtConfig-woSBBintermodal"};
+            configArgs = new String[]{BERLIN_V5_5_CONFIG ,"--config:controler.outputDirectory", "output/berlin5.5_1pct/bannedCarFromCity/pave508-trial"};
         } else {
             configArgs = args;
         }
@@ -79,6 +82,9 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 //        config.plans().setInputFile("pave509.output_plans.xml.gz");
 //        config.controler().setOutputDirectory("D:/bannedCarStudy/output/pave509-outputAsInput-Test-Debug-deletedRoutes");
 //        config.controler().setLastIteration(1);
+//        config.controler().setWriteTripsInterval(1);
+//        config.controler().setWriteEventsInterval(1);
+
 //        config.plans().setInputFile("../berlin-v5.5-0.1pct-woRoutes.xml.gz");
 //        config.transit().setUseTransit(true);
 //        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
@@ -93,6 +99,8 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 
         //prepare scenario
         Scenario scenario = RunDrtOpenBerlinScenario.prepareScenario(config);
+
+//        PopulationUtils.sampleDown(scenario.getPopulation(), 0.01);
 
 //        ban car from drt service area -- be aware that this will not create a transfer zone (where both car and drt are allowed)
 //        CarBannedScenarioPreparation.banCarFromDRTServiceArea(scenario, drtConfigGroup);
