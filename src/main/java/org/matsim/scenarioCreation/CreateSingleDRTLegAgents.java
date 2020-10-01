@@ -33,7 +33,7 @@ public class CreateSingleDRTLegAgents {
 
 	private static final String INPUT_POPULATION = "C:/Users/Tilmann/tubCloud/VSP_WiMi/MA-Meinhardt/berlin-v5.5-10pct/output/blckBase1.output_plans.xml.gz";
 	private static final String INPUT_CONFIG = "scenarios/berlin-v5.5-10pct/input/drtBlocking/blckBase1.output_config.xml";
-	private static final String OUTPUT_DRTPOP = "scenarios/berlin-v5.5-10pct/input/drtBlocking/blckBase1.output_plans_drtOnly_splitAgents.xml";
+	private static final String OUTPUT_DRTPOP = "scenarios/berlin-v5.5-10pct/input/drtBlocking/blckBase1.output_plans_drtOnly_splitAgents.xml.gz";
 
 
 	public static void main(String[] args) {
@@ -45,8 +45,8 @@ public class CreateSingleDRTLegAgents {
 				.map(person -> person.getSelectedPlan())
 				.forEach(plan -> {
 					List<TripStructureUtils.Trip> trips = TripStructureUtils.getTrips(plan);
+					int cnt = 1;
 					for (TripStructureUtils.Trip trip : trips) {
-						int cnt = 1;
 						if(TripStructureUtils.getRoutingMode(trip.getLegsOnly().get(0)).equals("drt")){
 							Person copy = fac.createPerson(Id.createPersonId(plan.getPerson().getId().toString() + "_" + cnt));
 							Plan drtPlan = fac.createPlan();
@@ -55,8 +55,10 @@ public class CreateSingleDRTLegAgents {
 							Activity dest = trip.getDestinationActivity();
 							dest.setEndTimeUndefined();
 							drtPlan.addActivity(dest);
+							copy.addPlan(drtPlan);
 							copy.setSelectedPlan(drtPlan);
 							drtPop.addPerson(copy);
+							cnt ++;
 						}
 					}
 				});
