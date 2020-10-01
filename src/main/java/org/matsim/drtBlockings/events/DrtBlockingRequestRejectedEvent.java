@@ -21,6 +21,7 @@ package org.matsim.drtBlockings.events;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
+import org.matsim.api.core.v01.events.GenericEvent;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.freight.carrier.Carrier;
 
@@ -59,5 +60,15 @@ public class DrtBlockingRequestRejectedEvent extends Event {
     }
 
     public Id<Carrier> getCarrierId() { return carrierId; }
+
+    public static DrtBlockingRequestRejectedEvent convert(GenericEvent event) {
+        Map<String, String> attributes = event.getAttributes();
+        double time = Double.parseDouble(attributes.get(ATTRIBUTE_TIME));
+        Id<Request> requestId = Id.create(attributes.get(ATTRIBUTE_REQUEST_ID), Request.class);
+        Id<Carrier> carrierId = Id.create(attributes.get(ATTRIBUTE_CARRIER), Carrier.class);
+        double submissionTime = Double.parseDouble(attributes.get(ATTRIBUTE_SUBMISSION_TIME));
+
+        return new DrtBlockingRequestRejectedEvent(time, requestId, carrierId, submissionTime);
+    }
 
 }

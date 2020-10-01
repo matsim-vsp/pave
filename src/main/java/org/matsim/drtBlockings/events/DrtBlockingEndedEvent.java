@@ -22,6 +22,7 @@ package org.matsim.drtBlockings.events;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
+import org.matsim.api.core.v01.events.GenericEvent;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 
 import java.util.Map;
@@ -52,4 +53,20 @@ public class DrtBlockingEndedEvent extends Event {
     public Id<DvrpVehicle> getVehicleId() {
         return vehicleId;
     }
+
+    public static DrtBlockingEndedEvent convert(GenericEvent event) {
+        Map<String, String> attributes = event.getAttributes();
+        double time = Double.parseDouble(attributes.get(ATTRIBUTE_TIME));
+//        String type = Objects.requireNonNull(attributes.get(ATTRIBUTE_TYPE));
+
+        Id<DvrpVehicle> vehicleId = Id.create(attributes.get(ATTRIBUTE_VEHICLE_ID), DvrpVehicle.class);
+
+        //I'd like to save the x and y coords as coord but dont know how to convert them from string to coord, HOW?
+//        String yCoord = Objects.requireNonNull(attributes.get(ATTRIBUTE_Y));
+//        String xCoord = Objects.requireNonNull(attributes.get(ATTRIBUTE_X));
+//        return new DrtBlockingEndedEvent1(time, type, vehicleId, yCoord, xCoord);
+        return new DrtBlockingEndedEvent(time, vehicleId);
+
+    }
+
 }
