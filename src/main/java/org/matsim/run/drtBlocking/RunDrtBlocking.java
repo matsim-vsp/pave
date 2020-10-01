@@ -84,14 +84,16 @@ public class RunDrtBlocking {
 		String carrierVehTypes = args[2];
 		boolean performTourplanning = Boolean.valueOf(args[3]);
 
-		Scenario scenario = prepareScenario(configPath, carrierPlans, carrierVehTypes, performTourplanning);
+		Config config = prepareConfig(configPath, carrierPlans, carrierVehTypes);
+
+		Scenario scenario = prepareScenario(config, performTourplanning);
 
 		Controler controler = prepareControler(scenario);
 
 		controler.run();
 	}
 
-	public static Scenario prepareScenario(String configPath, String carrierPlans, String carrierVehTypes, boolean performTourplanning) {
+	public static Config prepareConfig(String configPath, String carrierPlans, String carrierVehTypes){
 		Config config = RunDrtOpenBerlinScenario.prepareConfig(new String[]{configPath});
 //		config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
 		config.controler().setLastIteration(0);
@@ -108,8 +110,13 @@ public class RunDrtBlocking {
 		FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
 		freightCfg.setCarriersFile(carrierPlans);
 		freightCfg.setCarriersVehicleTypesFile(carrierVehTypes);
+		return config;
+	}
+
+	public static Scenario prepareScenario(Config config, boolean performTourplanning) {
 
 		DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(config);
+		FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
 
 		Scenario scenario = RunDrtOpenBerlinScenario.prepareScenario(config);
 		FreightUtils.loadCarriersAccordingToFreightConfig(scenario);

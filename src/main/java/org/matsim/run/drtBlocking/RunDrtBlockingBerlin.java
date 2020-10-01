@@ -24,11 +24,11 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
+import org.matsim.core.config.Config;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.TripStructureUtils;
-import org.matsim.run.RunBerlinScenario;
 
 import java.util.List;
 import java.util.Random;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 public class RunDrtBlockingBerlin {
 
-	private static final String BERLIN_V5_5_1PCT_DRT_CONFIG = "../../svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin-drt-v5.5-1pct.config.xml";
+	private static final String INPUT_CONFIG = "../../svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin-drt-v5.5-1pct.config.xml";
 	private static final String CARRIERS_PLANS_PLANNED = "berlin5.5_1pct_pave_drtBlockingcarriers_planned.xml";
 	private static final String CARRIERS_PLANS = "berlin-carriers.xml";
 	private static final String CARRIER_VEHICLE_TYPES = "berlin-vehicleTypes.xml";
@@ -46,11 +46,14 @@ public class RunDrtBlockingBerlin {
 
 	public static void main(String[] args) {
 
-		Scenario scenario = RunDrtBlocking.prepareScenario(BERLIN_V5_5_1PCT_DRT_CONFIG, CARRIERS_PLANS_PLANNED, CARRIER_VEHICLE_TYPES, false);
+
+		Config config = RunDrtBlocking.prepareConfig(INPUT_CONFIG, CARRIERS_PLANS_PLANNED, CARRIER_VEHICLE_TYPES);
+
+		Scenario scenario = RunDrtBlocking.prepareScenario(config, false);
 		scenario.getConfig().controler().setOutputDirectory(OUTPUT_DIR);
 		scenario.getConfig().controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
 
-		makePeopleUseDRTForRandomLegs(scenario.getPopulation());
+//		makePeopleUseDRTForRandomLegs(scenario.getPopulation());
 		Controler controler = RunDrtBlocking.prepareControler(scenario);
 		controler.run();
 
