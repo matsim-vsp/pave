@@ -87,20 +87,20 @@
 		<!-- Specifies how often the counts comparison should be calculated and written. -->
 		<param name="writeCountsInterval" value="10" />
 	</module>
-	<module name="drtSpeedUp" >
-		<param name="firstSimulatedDrtIterationToReplaceInitialDrtPerformanceParams" value="0" />
-		<param name="fractionOfIterationSwitchOn" value="0.0" />
-		<param name="fractionOfIterationsSwitchOff" value="0.99" />
-		<param name="initialBeelineFactorForDrtFare" value="1.5" />
-		<param name="initialInVehicleBeelineSpeed" value="4.16667" />
-		<param name="initialWaitingTime" value="900.0" />
-		<param name="intervalDetailedIteration" value="25" />
-		<param name="modes" value="drt" />
-		<param name="movingAverageSize" value="2" />
-		<param name="numberOfThreadsForMobsimDuringSpeedUp" value="8" />
-		<!-- Possible values: Disabled, LinearRegression -->
-		<param name="waitingTimeUpdateDuringSpeedUp" value="Disabled" />
-	</module>
+<!--	<module name="drtSpeedUp" >-->
+<!--		<param name="firstSimulatedDrtIterationToReplaceInitialDrtPerformanceParams" value="0" />-->
+<!--		<param name="fractionOfIterationSwitchOn" value="0.0" />-->
+<!--		<param name="fractionOfIterationsSwitchOff" value="0.99" />-->
+<!--		<param name="initialBeelineFactorForDrtFare" value="1.5" />-->
+<!--		<param name="initialInVehicleBeelineSpeed" value="4.16667" />-->
+<!--		<param name="initialWaitingTime" value="900.0" />-->
+<!--		<param name="intervalDetailedIteration" value="25" />-->
+<!--		<param name="modes" value="drt" />-->
+<!--		<param name="movingAverageSize" value="2" />-->
+<!--		<param name="numberOfThreadsForMobsimDuringSpeedUp" value="8" />-->
+<!--		&lt;!&ndash; Possible values: Disabled, LinearRegression &ndash;&gt;-->
+<!--		<param name="waitingTimeUpdateDuringSpeedUp" value="Disabled" />-->
+<!--	</module>-->
 	<module name="drtfares" >
 		<parameterset type="drtfare" >
 			<!-- Basefare per Trip (fare = positive value) -->
@@ -212,11 +212,11 @@
 			</parameterset>
 		</parameterset>
 	</module>
-	<module name="multiModeOptDrt" >
-		<!-- Possible values: Off, StrategyConfigFractionOfIterationsToDisableInnovation, UpdateIterationOnly -->
-		<param name="disableInnovationInOptDrtUpdateInterval" value="StrategyConfigFractionOfIterationsToDisableInnovation" />
-		<param name="optDrtUpdateInterval" value="1" />
-	</module>
+<!--	<module name="multiModeOptDrt" >-->
+<!--		&lt;!&ndash; Possible values: Off, StrategyConfigFractionOfIterationsToDisableInnovation, UpdateIterationOnly &ndash;&gt;-->
+<!--		<param name="disableInnovationInOptDrtUpdateInterval" value="StrategyConfigFractionOfIterationsToDisableInnovation" />-->
+<!--		<param name="optDrtUpdateInterval" value="1" />-->
+<!--	</module>-->
 	<module name="network" >
 		<!-- The Coordinates Reference System in which the coordinates are expressed in the input file. At import, the coordinates will be converted to the coordinate system defined in "global", and willbe converted back at export. If not specified, no conversion happens. -->
 		<param name="inputCRS" value="null" />

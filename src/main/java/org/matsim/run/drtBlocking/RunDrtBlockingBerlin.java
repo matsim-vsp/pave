@@ -36,18 +36,30 @@ import java.util.stream.Collectors;
 
 public class RunDrtBlockingBerlin {
 
-	private static final String INPUT_CONFIG = "../../svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin-drt-v5.5-1pct.config.xml";
-	private static final String CARRIERS_PLANS_PLANNED = "berlin5.5_1pct_pave_drtBlockingcarriers_planned.xml";
+	private static final String INPUT_CONFIG = "scenarios/berlin-v5.5-10pct/input/drtBlocking/blckBase1.output_config.xml";
+	private static final String INPUT_NETWORK_CHANGE_EVENTS = "blckBase1.networkChangeEvents.xml.gz";
+	private static final String INPUT_DRT_PLANS = "blckBase1.output_plans_drtOnly_splitAgents.xml.gz";
+
+	//TODO
+	private static final String CARRIERS_PLANS_PLANNED = "D:/svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin5.5_1pct_pave_drtBlockingcarriers_planned.xml";
 	private static final String CARRIERS_PLANS = "berlin-carriers.xml";
-	private static final String CARRIER_VEHICLE_TYPES = "berlin-vehicleTypes.xml";
+	//TODO
+	private static final String CARRIER_VEHICLE_TYPES = "D:/svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin-vehicleTypes.xml";
+
 	private static final boolean RUN_TOURPLANNING = false;
 
-	private static final String OUTPUT_DIR = "./output/berlin-v5.5-1pct/drtBlockingTest";
+	//TODO
+	private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/drtBlockingTest";
 
 	public static void main(String[] args) {
 
 
 		Config config = RunDrtBlocking.prepareConfig(INPUT_CONFIG, CARRIERS_PLANS_PLANNED, CARRIER_VEHICLE_TYPES);
+
+		config.network().setChangeEventsInputFile(INPUT_NETWORK_CHANGE_EVENTS);
+		config.network().setTimeVariantNetwork(true);
+
+		config.plans().setInputFile(INPUT_DRT_PLANS);
 
 		Scenario scenario = RunDrtBlocking.prepareScenario(config, false);
 		scenario.getConfig().controler().setOutputDirectory(OUTPUT_DIR);
