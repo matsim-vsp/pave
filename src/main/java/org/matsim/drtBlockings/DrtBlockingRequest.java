@@ -5,6 +5,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.schedule.Tasks;
+import org.matsim.contrib.freight.carrier.Carrier;
 
 import java.util.List;
 
@@ -14,16 +15,19 @@ public class DrtBlockingRequest implements Request {
     private double endTime;
     private final double startTime;
     private final double submissionTime;
+    private final Id<Carrier> carrierId;
 
     private List<Task> tasks;
 
-    DrtBlockingRequest(final Id<Request> id, final double submissionTime, final double startTime, final double endTime, List<Task> dvrpVehicleTasks) {
+    //TODO maybe add CarrierVehId as well?
+    DrtBlockingRequest(final Id<Request> id, final Id<Carrier> carrierId, final double submissionTime, final double startTime, final double endTime, List<Task> dvrpVehicleTasks) {
         this.id = id;
         this.submissionTime = submissionTime;
         this.startTime = startTime;
         this.endTime = endTime;
         this.tasks = dvrpVehicleTasks;
         checkStartAndEndTimeConsistency();
+        this.carrierId = carrierId;
     }
 
     private void checkStartAndEndTimeConsistency() {
@@ -67,4 +71,6 @@ public class DrtBlockingRequest implements Request {
     public Link getStartLink() {
         return Tasks.getEndLink(this.tasks.get(0));
     }
+
+    public Id<Carrier> getCarrierId() { return carrierId; }
 }

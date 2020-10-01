@@ -23,6 +23,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.Event;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.optimizer.Request;
+import org.matsim.contrib.freight.carrier.Carrier;
 
 import java.util.Map;
 
@@ -30,15 +31,18 @@ public class DrtBlockingRequestScheduledEvent extends Event {
 
     public static final String EVENT_TYPE = "DrtBlockingRequest scheduled";
     public static final String ATTRIBUTE_VEHICLE = "vehicle";
+    public static final String ATTRIBUTE_CARRIER = "carrier";
     public static final String ATTRIBUTE_REQUEST = "request";
     private final Id<Request> requestId;
 
     private final Id<DvrpVehicle> vehicleId;
+    private final Id<Carrier> carrierId;
 
-    public DrtBlockingRequestScheduledEvent(double timeOfDay, Id<Request> requestId, Id<DvrpVehicle> vehicleId) {
+    public DrtBlockingRequestScheduledEvent(double timeOfDay, Id<Request> requestId, Id<Carrier> carrierId, Id<DvrpVehicle> vehicleId) {
         super(timeOfDay);
         this.requestId = requestId;
         this.vehicleId = vehicleId;
+        this.carrierId = carrierId;
     }
 
     @Override
@@ -50,6 +54,7 @@ public class DrtBlockingRequestScheduledEvent extends Event {
     public Map<String, String> getAttributes() {
         Map<String, String> attr = super.getAttributes();
         attr.put(ATTRIBUTE_REQUEST, requestId + "");
+        attr.put(ATTRIBUTE_CARRIER, carrierId + "");
         attr.put(ATTRIBUTE_VEHICLE, vehicleId + "");
         return attr;
     }
@@ -62,4 +67,5 @@ public class DrtBlockingRequestScheduledEvent extends Event {
         return vehicleId;
     }
 
+    public Id<Carrier> getCarrierId() { return carrierId; }
 }

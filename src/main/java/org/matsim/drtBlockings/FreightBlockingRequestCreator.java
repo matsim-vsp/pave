@@ -76,7 +76,6 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
     private Set<DrtBlockingRequest> createBlockingRequestsForCarrier(Carrier carrier){
         Set<DrtBlockingRequest> requests = new HashSet<>();
-
         Map<Id<CarrierVehicle>, Integer> vehicleCount = new HashMap<>();
 
         for (ScheduledTour tour : carrier.getSelectedPlan().getScheduledTours()){
@@ -87,17 +86,17 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
                 vehCount = vehicleCount.get(tour.getVehicle().getId());
             }
             String tourID = carrier.getId() + "_" + tour.getVehicle().getId() + "_" + vehCount;
-            requests.add(createRequest(tour, tourID));
+            requests.add(createRequest(carrier.getId(), tour, tourID));
         }
         return requests;
     }
 
-    private DrtBlockingRequest createRequest(ScheduledTour scheduledTour, String tourID) {
+    private DrtBlockingRequest createRequest(Id<Carrier> carrierId, ScheduledTour scheduledTour, String tourID) {
         Id<Request> id = Id.create(tourID, Request.class);
         double blockingStart = determineStartOfBlocking(scheduledTour);
         List<Task> tourTasks = convertScheduledTour2DvrpTasks(scheduledTour, blockingStart);
         double blockingEnd = tourTasks.get(tourTasks.size() - 1).getEndTime();
-        return new DrtBlockingRequest(id, Math.max(qSimStartTime, blockingStart - SUBMISSION_LOOK_AHEAD), blockingStart, blockingEnd, tourTasks);
+        return new DrtBlockingRequest(id, carrierId, Math.max(qSimStartTime, blockingStart - SUBMISSION_LOOK_AHEAD), blockingStart, blockingEnd, tourTasks);
     }
 
 
