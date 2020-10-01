@@ -22,10 +22,9 @@ public class DrtBlockingEventsReaders {
 
     }
 
-    public static MatsimEventsReader createEventsReader(EventsManager eventsManager,
-                                                        Function<String, Task.TaskType> stringToTaskTypeConverter) {
+    public static MatsimEventsReader createEventsReader(EventsManager eventsManager) {
         MatsimEventsReader reader = new MatsimEventsReader(eventsManager);
-        createCustomEventMappers(stringToTaskTypeConverter).forEach(reader::addCustomEventMapper);
+//        createCustomEventMappers(stringToTaskTypeConverter).forEach(reader::addCustomEventMapper);
         return reader;
     }
 }
