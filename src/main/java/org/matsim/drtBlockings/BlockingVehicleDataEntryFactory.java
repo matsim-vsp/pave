@@ -6,6 +6,7 @@ import org.matsim.contrib.drt.optimizer.VehicleDataEntryFactoryImpl;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.schedule.DrtTaskType;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.core.config.Config;
 
 import javax.inject.Inject;
@@ -22,6 +23,10 @@ import javax.inject.Inject;
 
     @Override
     public VehicleData.Entry create(DvrpVehicle vehicle, double currentTime) {
+        //can not touch vehicles out of order
+        if(vehicle.getSchedule().getStatus() == Schedule.ScheduleStatus.UNPLANNED){
+            return null;
+        }
         if(! blockingManager.isVehicleBlocked(vehicle, currentTime)){
             if(! (vehicle.getSchedule().getCurrentTask().getTaskType() instanceof DrtTaskType)){
                 throw new IllegalStateException("vehicle " + vehicle + " is not blocked but still is performing a task that has no DrtTaskType." +
