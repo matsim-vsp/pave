@@ -95,14 +95,14 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         //check if veh has a running tour
 
         //could be that the vehicle will not be recognized because its VehicleId and not DvrpVehicleId
+        //maybe its necessary to add .toString after getVehicleId() but should work like this too
         //maybe like that
         if (this.currentTours.containsKey(Id.create(event.getVehicleId(), DvrpVehicle.class))) {
-            //add up linkLength to distane travelled so far
+            //add up linkLength to distance travelled so far
             Double distanceSoFar = this.vehToDistance.get(Id.create(event.getVehicleId(), DvrpVehicle.class));
             this.vehToDistance.replace(Id.create(event.getVehicleId(), DvrpVehicle.class),
                     distanceSoFar + network.getLinks().get(event.getLinkId()).getLength());
         }
-
     }
 
     @Override
@@ -124,7 +124,24 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
 
     @Override
     public void handleEvent(DrtBlockingEndedEvent event) {
-        //TODO: add up distance, get travelDuration, remove from currentTours, put onto finishedTours, get arrival time
+        if (this.currentTours.containsKey(event.getVehicleId())) {
+            //add up linkLength to distance travelled so far
+            Double distanceSoFar = this.vehToDistance.get(event.getVehicleId());
+            this.vehToDistance.replace(event.getVehicleId(),
+                    distanceSoFar + network.getLinks().get(event.getLinkId()).getLength());
+            //get eventTime and calculate tourDuration
+            //The following should be the case for every tour!
+            if (event.getTime() > this.vehToDeparture.get(event.getVehicleId())) {
+                this.vehToArrival.put(event.getVehicleId(), event.getTime());
+                Double tourDuration = event.getTime() - vehToDeparture.get(event.getVehicleId());
+                this.vehToDuration.put(event.getVehicleId(), tourDuration);
+            } else {
+                System.out.println("The tours of vehicle " + event.getVehicleId() + " are not correctly handled!");
+            }
+            //remove  veh from currentTours and out it onto finishedTours
+            this.currentTours.remove(event.getVehicleId());
+            this.finishedTours.add(event.getVehicleId());
+        }
     }
 
     @Override
