@@ -23,19 +23,19 @@ import javax.inject.Inject;
 
     @Override
     public VehicleData.Entry create(DvrpVehicle vehicle, double currentTime) {
-        //can not touch vehicles out of order
-        if(vehicle.getSchedule().getStatus() == Schedule.ScheduleStatus.UNPLANNED){
-            return null;
-        }
         if(! blockingManager.isVehicleBlocked(vehicle, currentTime)){
-            if(! (vehicle.getSchedule().getCurrentTask().getTaskType() instanceof DrtTaskType)){
-                throw new IllegalStateException("vehicle " + vehicle + " is not blocked but still is performing a task that has no DrtTaskType." +
-                        "\n Task=" + vehicle.getSchedule().getCurrentTask());
-            }
-            {//TODO this is only here as long as blockings are not supported to start in the future
-                for(int i = vehicle.getSchedule().getCurrentTask().getTaskIdx(); i < vehicle.getSchedule().getTaskCount(); i++){
-                    if(! (vehicle.getSchedule().getTasks().get(i).getTaskType() instanceof DrtTaskType) ){
-                        throw new IllegalStateException("vehicle " + vehicle + " \n is not blocked but still has tasks planned that are of other type than DrtTaskType.");
+            //can not touch vehicles out of order
+            if(vehicle.getSchedule().getStatus() == Schedule.ScheduleStatus.STARTED){
+                //do some consistency checks
+                if(! (vehicle.getSchedule().getCurrentTask().getTaskType() instanceof DrtTaskType)){
+                    throw new IllegalStateException("vehicle " + vehicle + " is not blocked but still is performing a task that has no DrtTaskType." +
+                            "\n Task=" + vehicle.getSchedule().getCurrentTask());
+                }
+                {//TODO this is only here as long as blockings are not supported to start in the future
+                    for(int i = vehicle.getSchedule().getCurrentTask().getTaskIdx(); i < vehicle.getSchedule().getTaskCount(); i++){
+                        if(! (vehicle.getSchedule().getTasks().get(i).getTaskType() instanceof DrtTaskType) ){
+                            throw new IllegalStateException("vehicle " + vehicle + " \n is not blocked but still has tasks planned that are of other type than DrtTaskType.");
+                        }
                     }
                 }
             }
