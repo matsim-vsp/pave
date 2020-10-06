@@ -2,6 +2,7 @@ package org.matsim.drtBlockings;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -41,7 +42,7 @@ public class FreightBlockingRequestCreatorTest {
         VehicleType vehicleType = CarrierVehicleType.Builder.newInstance(vehicleTypeId)
                 .setCapacity(1)
                 .setCostPerDistanceUnit(1)
-                .setCostPerTimeUnit(1)
+                .setCostPerTimeUnit(100)
                 .setFixCost(1)
                 .build();
         vTypes.getVehicleTypes().put(vehicleTypeId,vehicleType);
@@ -87,9 +88,10 @@ public class FreightBlockingRequestCreatorTest {
                 .build();
         CarrierUtils.addService(carrier, service2);
 
-        CarrierUtils.setJspritIterations(carrier, 30);
+        CarrierUtils.setJspritIterations(carrier, 3000);
     }
 
+    @Ignore
     @Test
     public void createRequestsForIteration() {
 
