@@ -1,9 +1,10 @@
 /* *********************************************************************** *
- * project: org.matsim.*												   *
+ * project: org.matsim.*
+ * Controler.java
  *                                                                         *
  * *********************************************************************** *
  *                                                                         *
- * copyright       : (C) 2008 by the members listed in the COPYING,        *
+ * copyright       : (C) 2007 by the members listed in the COPYING,        *
  *                   LICENSE and WARRANTY file.                            *
  * email           : info at matsim dot org                                *
  *                                                                         *
@@ -16,34 +17,29 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
+
 package org.matsim.pfav.privateAV;
 
-import static org.matsim.contrib.taxi.schedule.TaxiTaskBaseType.DROPOFF;
-
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.dvrp.schedule.StayTask;
-import org.matsim.contrib.freight.carrier.CarrierService;
+import com.google.common.collect.ImmutableList;
 import org.matsim.contrib.taxi.schedule.TaxiTaskType;
 
-/**
- * @author tschlenther
- */
-class PFAVServiceTask extends StayTask {
-	public static final TaxiTaskType TYPE = PFAVTaskTypes.SERVICE;
+import java.util.List;
 
-	CarrierService service;
+import static org.matsim.contrib.taxi.schedule.TaxiTaskBaseType.*;
 
-	/**
-	 * @param beginTime
-	 * @param endTime
-	 * @param link
-	 */
-	PFAVServiceTask(double beginTime, double endTime, Link link, CarrierService service) {
-		super(TYPE, beginTime, endTime, link);
-		this.service = service;
-	}
+class PFAVTaskTypes {
 
-	CarrierService getCarrierService() {
-		return this.service;
-	}
+	static final TaxiTaskType ACCESS_TO_DEPOT = new TaxiTaskType("accessToDepot",EMPTY_DRIVE);
+	static final TaxiTaskType RETOOL = new TaxiTaskType("RETOOL", DROPOFF);
+	static final TaxiTaskType SERVICE =  new TaxiTaskType("SERVICE", DROPOFF);
+	static final TaxiTaskType SERVICE_DRIVE = new TaxiTaskType("SERVICE_DRIVE", OCCUPIED_DRIVE);
+	static final TaxiTaskType RETURN_TO_DEPOT =new TaxiTaskType("returnToDepot", EMPTY_DRIVE);
+	static final TaxiTaskType EGRESS_FROM_DEPOT = new TaxiTaskType("egressFromDepot",EMPTY_DRIVE);
+
+	static final List<TaxiTaskType> TYPES = ImmutableList.of(ACCESS_TO_DEPOT,
+			RETOOL,
+			SERVICE,
+			SERVICE_DRIVE,
+			RETURN_TO_DEPOT,
+			EGRESS_FROM_DEPOT);
 }

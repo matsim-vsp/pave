@@ -72,6 +72,7 @@ import static org.matsim.contrib.taxi.schedule.TaxiTaskBaseType.EMPTY_DRIVE;
 class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
 
     private final static Logger log = Logger.getLogger(FreightTourManagerListBasedImpl.class);
+
     private final FreightAVConfigGroup pfavConfigGroup;
 
     private Map<Link, LinkedList<FreightTourDataPlanned>> depotToFreightTour = new HashMap<>();
@@ -337,7 +338,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
 //                    + " in order to be consistent with earliest start time set to " + pfavConfigGroup.getFreightTourEarliestStart());
             freightTour.getTourTasks().add(0, new TaxiStayTask(start.getBeginTime() - waitTimeAtDepot, start.getBeginTime(), start.getLink()));
         }
-        freightTour.setAccessDriveTask(new TaxiEmptyDriveTask(pathFromCurrTaskToDepot, new TaxiTaskType("accessToDepot", EMPTY_DRIVE)));
+        freightTour.setAccessDriveTask(new TaxiEmptyDriveTask(pathFromCurrTaskToDepot, PFAVTaskTypes.ACCESS_TO_DEPOT));
     }
 
     private double computeWaitTimeAtDepot(VrpPathWithTravelData pathFromCurrTaskToDepot) {

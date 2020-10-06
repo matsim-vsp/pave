@@ -30,7 +30,7 @@ import org.matsim.contrib.taxi.schedule.TaxiTaskType;
  * @author tschlenther
  */
 class PFAVRetoolTask extends StayTask {
-	public static final TaxiTaskType TYPE = new TaxiTaskType("RETOOL", DROPOFF);
+	public static final TaxiTaskType TYPE = PFAVTaskTypes.RETOOL;
 
 	double earliestStartTime = 0.0;
 	Id<DvrpVehicle> vehicle = null;

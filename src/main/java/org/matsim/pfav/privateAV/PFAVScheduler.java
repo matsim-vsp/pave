@@ -35,8 +35,6 @@ import org.matsim.core.router.util.TravelTime;
 
 import com.google.inject.name.Named;
 
-import static org.matsim.contrib.taxi.schedule.TaxiTaskBaseType.EMPTY_DRIVE;
-
 final class PFAVScheduler {
 
 	private static final Logger log = Logger.getLogger(PFAVScheduler.class);
@@ -310,7 +308,7 @@ final class PFAVScheduler {
 		Link returnLink = getReturnLink(vehicle);
 		VrpPathWithTravelData pathBackToOwner = VrpPaths.calcAndCreatePath(previousTask.getLink(), returnLink,
 				previousTask.getEndTime(), router, travelTime);
-		TaxiEmptyDriveTask returnDriveTask = new TaxiEmptyDriveTask(pathBackToOwner, new TaxiTaskType("egressFromDepot", EMPTY_DRIVE));
+		TaxiEmptyDriveTask returnDriveTask = new TaxiEmptyDriveTask(pathBackToOwner, PFAVTaskTypes.EGRESS_FROM_DEPOT);
 		schedule.addTask(returnDriveTask);
 		return VrpPaths.calcDistance(pathBackToOwner);
 	}

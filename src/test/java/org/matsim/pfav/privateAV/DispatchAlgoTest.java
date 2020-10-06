@@ -32,7 +32,7 @@ public class DispatchAlgoTest {
 	}
 
 	@Test
-	public final void testDispatchAlgoTest() {
+	public final void testDispatchAlgo() {
 
 		String eventsFile = OUTPUT + "output_events.xml.gz";
 		String networkPath = OUTPUT + "output_network.xml.gz";
@@ -53,14 +53,14 @@ public class DispatchAlgoTest {
 		Id<Link> firstRetool = retoolLink.get(0);
 		Id<Link> thirdRetool = retoolLink.get(2);
 
-		double firstDepotnDistance = getDistance(network.getLinks().get(firstFreigtTourScheduledLink).getCoord(),
+		double firstDepotDistance = getDistance(network.getLinks().get(firstFreigtTourScheduledLink).getCoord(),
 				network.getLinks().get(firstRetool).getCoord());
 
 		double secondDepotDistance = getDistance(network.getLinks().get(firstFreigtTourScheduledLink).getCoord(),
 				network.getLinks().get(thirdRetool).getCoord());
 		Assert.assertTrue(
 				"The euclidean distance from the first dropoff link to the first depot(retool) location should be less than the distance from first dropoff to second depot(retool) location",
-				firstDepotnDistance < secondDepotDistance);
+				firstDepotDistance < secondDepotDistance);
 	}
 
 	class PFAVRequestHandler implements FreightTourRequestEventHandler, ActivityStartEventHandler {

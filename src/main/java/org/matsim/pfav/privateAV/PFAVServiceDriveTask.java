@@ -28,7 +28,7 @@ import org.matsim.contrib.taxi.schedule.TaxiTaskType;
  * @author tschlenther
  */
 class PFAVServiceDriveTask extends DriveTask {
-	public static final TaxiTaskType TYPE = new TaxiTaskType("SERVICE_DRIVE", OCCUPIED_DRIVE);
+	public static final TaxiTaskType TYPE = PFAVTaskTypes.SERVICE_DRIVE;
 
 	PFAVServiceDriveTask(VrpPathWithTravelData path) {
 		super(TYPE, path);
