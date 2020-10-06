@@ -94,7 +94,7 @@ public final class FreightTourPlanning {
                 else {
                     path = createVrpPath(route, tEnd, network, travelTime);
                 }
-                Task driveTask = (i == size - 1) ? new TaxiEmptyDriveTask(path, new TaxiTaskType("returnToDepot", EMPTY_DRIVE)) : new PFAVServiceDriveTask(path);
+                Task driveTask = (i == size - 1) ? new TaxiEmptyDriveTask(path, PFAVTaskTypes.RETURN_TO_DEPOT) : new PFAVServiceDriveTask(path);
                 taskList.add(driveTask);
                 tEnd = driveTask.getEndTime();
                 tBegin = driveTask.getBeginTime();
