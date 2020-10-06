@@ -3,6 +3,7 @@ package org.matsim.drtBlockings.analysis;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.LinkEnterEvent;
 import org.matsim.api.core.v01.events.handler.LinkEnterEventHandler;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.Task;
@@ -12,6 +13,7 @@ import org.matsim.contrib.dvrp.vrpagent.TaskEndedEventHandler;
 import org.matsim.contrib.dvrp.vrpagent.TaskStartedEvent;
 import org.matsim.contrib.dvrp.vrpagent.TaskStartedEventHandler;
 import org.matsim.contrib.freight.carrier.CarrierPlanXmlReader;
+import org.matsim.contrib.freight.carrier.CarrierVehicle;
 import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsUtils;
@@ -20,6 +22,7 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.drtBlockings.events.*;
+import org.matsim.drtBlockings.tasks.FreightRetoolTask;
 import org.matsim.pfav.analysis.BaseCaseFreightTourStatsListener;
 
 import java.io.BufferedWriter;
@@ -40,8 +43,12 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
     private Map<Id<DvrpVehicle>, Double> vehToDeparture = new HashMap<>();
     private Map<Id<DvrpVehicle>, Double> vehToArrival = new HashMap<>();
     private Map<Id<DvrpVehicle>, Double> vehToDuration = new HashMap<>();
+    private Map<Id<DvrpVehicle>, Double> vehToAccessDistance = new HashMap<>();
+    private Map<Id<DvrpVehicle>, Double> vehToAccessDuration = new HashMap<>();
 
     private List<Id<DvrpVehicle>> finishedTours = new ArrayList<>();
+
+    private final Boolean isDepotLink = Boolean.FALSE;
 
     public BasicTourStatsAnalysis(Network network) {
         this.network = network;
@@ -65,9 +72,6 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         MatsimEventsReader reader = DrtBlockingEventsReaders.createEventsReader(manager);
         reader.readFile(eventsFile);
         handler.writeStats(outputFile);
-
-
-
     }
 
     private void writeStats(String file) {
@@ -94,14 +98,20 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
     public void handleEvent(LinkEnterEvent event) {
         //check if veh has a running tour
 
-        //could be that the vehicle will not be recognized because its VehicleId and not DvrpVehicleId
+        //could be that the vehicle will not be recognized because its VehicleId and not vId
         //maybe its necessary to add .toString after getVehicleId() but should work like this too
         //maybe like that
-        if (this.currentTours.containsKey(Id.create(event.getVehicleId(), DvrpVehicle.class))) {
+        Id<DvrpVehicle> dvrpVehicleId = Id.create(event.getVehicleId(), DvrpVehicle.class);
+        if (this.currentTours.containsKey(dvrpVehicleId)) {
             //add up linkLength to distance travelled so far
-            Double distanceSoFar = this.vehToDistance.get(Id.create(event.getVehicleId(), DvrpVehicle.class));
-            this.vehToDistance.replace(Id.create(event.getVehicleId(), DvrpVehicle.class),
-                    distanceSoFar + network.getLinks().get(event.getLinkId()).getLength());
+            Double distanceSoFar = this.vehToDistance.get(dvrpVehicleId);
+            if (distanceSoFar == 0) {
+                this.vehToDistance.put(dvrpVehicleId, network.getLinks().get(event.getLinkId()).getLength());
+                this.vehToDeparture.putIfAbsent(dvrpVehicleId, event.getTime());
+            } else {
+                this.vehToDistance.replace(dvrpVehicleId,
+                        distanceSoFar + network.getLinks().get(event.getLinkId()).getLength());
+            }
         }
     }
 
@@ -113,12 +123,19 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
 
     @Override
     public void handleEvent(TaskStartedEvent event) {
+        //here we register the access leg
         //check if veh has a running tour
-        if (this.currentTours.containsKey(event.getDvrpVehicleId())) {
-            //register distance travelled so far
-            this.vehToDistance.put(event.getDvrpVehicleId(), network.getLinks().get(event.getLinkId()).getLength());
-            //register time = tourDepartureTime
-            this.vehToDeparture.put((event.getDvrpVehicleId()), event.getTime());
+        Id<DvrpVehicle> dvrpVehicleId = event.getDvrpVehicleId();
+        if (this.currentTours.containsKey(dvrpVehicleId)) {
+            if (event.getTaskType().equals(FreightRetoolTask.RETOOL_TASK_TYPE)) {
+                this.vehToAccessDistance.putIfAbsent(dvrpVehicleId, this.vehToDistance.get(dvrpVehicleId));
+                Double accessDuration = event.getTime() - this.vehToDeparture.get(dvrpVehicleId);
+                if (accessDuration >= 0) {
+                    this.vehToAccessDuration.putIfAbsent(dvrpVehicleId, accessDuration);
+                } else {
+                    System.out.println("Access leg duration for vehicle " + dvrpVehicleId + " is " + accessDuration + " (< 0!");
+                }
+            }
         }
     }
 
@@ -139,8 +156,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
                 System.out.println("The tours of vehicle " + event.getVehicleId() + " are not correctly handled!");
             }
             //remove  veh from currentTours and out it onto finishedTours
-            this.currentTours.remove(event.getVehicleId());
-            this.finishedTours.add(event.getVehicleId());
+            this.finishedTours.add(this.currentTours.remove(event.getVehicleId()));
         }
     }
 
@@ -148,6 +164,9 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
     public void handleEvent(DrtBlockingRequestScheduledEvent event) {
         //put veh into map of current tours when Request is requested
         currentTours.put(event.getVehicleId(), event.getVehicleId());
-        //TODO: how to get access leg length? With next link enter event after drt blocking request??
+    }
+
+    private class DrtBlockingTourData {
+        //TODO: switch from data in maps to data in here!
     }
 }
