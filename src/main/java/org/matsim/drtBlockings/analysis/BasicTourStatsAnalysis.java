@@ -3,17 +3,13 @@ package org.matsim.drtBlockings.analysis;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.LinkEnterEvent;
 import org.matsim.api.core.v01.events.handler.LinkEnterEventHandler;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
-import org.matsim.contrib.dvrp.schedule.Task;
-import org.matsim.contrib.dvrp.util.DvrpEventsReaders;
 import org.matsim.contrib.dvrp.vrpagent.TaskEndedEvent;
 import org.matsim.contrib.dvrp.vrpagent.TaskEndedEventHandler;
 import org.matsim.contrib.dvrp.vrpagent.TaskStartedEvent;
 import org.matsim.contrib.dvrp.vrpagent.TaskStartedEventHandler;
 import org.matsim.contrib.freight.carrier.CarrierPlanXmlReader;
-import org.matsim.contrib.freight.carrier.CarrierVehicle;
 import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsUtils;
@@ -23,7 +19,6 @@ import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.drtBlockings.events.*;
 import org.matsim.drtBlockings.tasks.FreightRetoolTask;
-import org.matsim.pfav.analysis.BaseCaseFreightTourStatsListener;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -31,24 +26,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 public class BasicTourStatsAnalysis implements DrtBlockingRequestScheduledEventHandler, TaskStartedEventHandler,
 TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
 
     private Network network;
-    private Map<Id<DvrpVehicle>, Id<DvrpVehicle>> currentTours = new HashMap<>();
+    private Map<Id<DvrpVehicle>, DrtBlockingTourData> currentTours = new HashMap<>();
     private Map<Id<DvrpVehicle>, Double> vehToDistance = new HashMap<>();
-    private Map<Id<DvrpVehicle>, Double> vehToAccess = new HashMap<>();
+//    private Map<Id<DvrpVehicle>, Double> vehToAccess = new HashMap<>();
     private Map<Id<DvrpVehicle>, Double> vehToDeparture = new HashMap<>();
     private Map<Id<DvrpVehicle>, Double> vehToArrival = new HashMap<>();
-    private Map<Id<DvrpVehicle>, Double> vehToDuration = new HashMap<>();
+//    private Map<Id<DvrpVehicle>, Double> vehToDuration = new HashMap<>();
     private Map<Id<DvrpVehicle>, Double> vehToAccessDistance = new HashMap<>();
     private Map<Id<DvrpVehicle>, Double> vehToAccessDuration = new HashMap<>();
 
-    private List<Id<DvrpVehicle>> finishedTours = new ArrayList<>();
-
-    private final Boolean isDepotLink = Boolean.FALSE;
+    private List<DrtBlockingTourData> finishedTours = new ArrayList<>();
 
     public BasicTourStatsAnalysis(Network network) {
         this.network = network;
@@ -78,12 +70,12 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         BufferedWriter writer = IOUtils.getBufferedWriter(file);
         try {
             int i =1;
-            writer.write("no;vehId;totalDistance;accessLegDistance;departureTime;arrivalTime;tourDuration");
+            writer.write("no;vehId;totalDistance;accessLegDistance;departureTime;arrivalTime;tourDuration;accessLegDuration");
             writer.newLine();
 
-            for (Id<DvrpVehicle> vehId : this.finishedTours) {
-                writer.write(i + ";" + vehId + ";" + vehToDistance.get(vehId) + ";" + vehToAccess.get(vehId) + ";"
-                + vehToDeparture.get(vehId) + ";" + vehToArrival.get(vehId) + ";" + vehToDuration.get(vehId));
+            for (DrtBlockingTourData data  : this.finishedTours) {
+                writer.write(i + ";" + data.veh + ";" + data.tourDistance + ";" + data.accessDistance + ";"
+                + data.departure + ";" + data.arrival + ";" + data.tourDuration + data.accessDuration);
                 writer.newLine();
                 i++;
             }
@@ -144,29 +136,53 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         if (this.currentTours.containsKey(event.getVehicleId())) {
             //add up linkLength to distance travelled so far
             Double distanceSoFar = this.vehToDistance.get(event.getVehicleId());
-            this.vehToDistance.replace(event.getVehicleId(),
-                    distanceSoFar + network.getLinks().get(event.getLinkId()).getLength());
+            DrtBlockingTourData data = this.currentTours.remove(event.getVehicleId());
+            data.tourDistance = distanceSoFar + network.getLinks().get(event.getLinkId()).getLength();
+            data.accessDistance = this.vehToAccessDistance.remove(event.getVehicleId());
+//            this.vehToDistance.replace(event.getVehicleId(),
+//                    distanceSoFar + network.getLinks().get(event.getLinkId()).getLength());
+
             //get eventTime and calculate tourDuration
             //The following should be the case for every tour!
             if (event.getTime() > this.vehToDeparture.get(event.getVehicleId())) {
                 this.vehToArrival.put(event.getVehicleId(), event.getTime());
                 Double tourDuration = event.getTime() - vehToDeparture.get(event.getVehicleId());
-                this.vehToDuration.put(event.getVehicleId(), tourDuration);
+                data.tourDuration = tourDuration;
+                data.accessDuration = this.vehToAccessDuration.remove(event.getVehicleId());
+                data.departure = this.vehToDeparture.remove(event.getVehicleId());
+                data.arrival = this.vehToArrival.remove(event.getVehicleId());
+
+//                this.vehToDuration.put(event.getVehicleId(), tourDuration);
             } else {
                 System.out.println("The tours of vehicle " + event.getVehicleId() + " are not correctly handled!");
             }
             //remove  veh from currentTours and out it onto finishedTours
-            this.finishedTours.add(this.currentTours.remove(event.getVehicleId()));
+//            this.finishedTours.add(this.currentTours.remove(event.getVehicleId()));
+            this.finishedTours.add(data);
         }
     }
 
     @Override
     public void handleEvent(DrtBlockingRequestScheduledEvent event) {
         //put veh into map of current tours when Request is requested
-        currentTours.put(event.getVehicleId(), event.getVehicleId());
+//        currentTours.put(event.getVehicleId(), event.getVehicleId());
+        DrtBlockingTourData data = new DrtBlockingTourData(event.getVehicleId(), 0.);
+        this.currentTours.put(event.getVehicleId(), data);
     }
 
     private class DrtBlockingTourData {
         //TODO: switch from data in maps to data in here!
+        private final Id<DvrpVehicle> veh;
+        private double departure;
+        private double arrival;
+        private double tourDuration;
+        private double accessDuration;
+        private double tourDistance = 0.;
+        private double accessDistance = 0.;
+
+        private DrtBlockingTourData(Id<DvrpVehicle> veh, double departure) {
+            this.veh = veh;
+            this.departure = departure;
+        }
     }
 }
