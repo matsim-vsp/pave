@@ -5,6 +5,7 @@ import org.matsim.api.core.v01.events.LinkEnterEvent;
 import org.matsim.api.core.v01.events.handler.LinkEnterEventHandler;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
+import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.vrpagent.TaskEndedEvent;
 import org.matsim.contrib.dvrp.vrpagent.TaskEndedEventHandler;
 import org.matsim.contrib.dvrp.vrpagent.TaskStartedEvent;
@@ -39,6 +40,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
 //    private Map<Id<DvrpVehicle>, Double> vehToDuration = new HashMap<>();
     private Map<Id<DvrpVehicle>, Double> vehToAccessDistance = new HashMap<>();
     private Map<Id<DvrpVehicle>, Double> vehToAccessDuration = new HashMap<>();
+    private Map<Id<DvrpVehicle>, Id<Request>> vehToRequest = new HashMap<>();
 
     private List<DrtBlockingTourData> finishedTours = new ArrayList<>();
 
@@ -49,11 +51,11 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
     public static void main(String[] args) {
         String dir = "";
         String eventsFile = dir + "";
-        String carriersFile = dir + "";
+//        String carriersFile = dir + "";
         String inputNetwork = dir + "";
         String outputFile = dir + "";
-        final Carriers carriers = new Carriers();
-        new CarrierPlanXmlReader(carriers).readFile(carriersFile);
+//        final Carriers carriers = new Carriers();
+//        new CarrierPlanXmlReader(carriers).readFile(carriersFile);
 
         EventsManager manager = EventsUtils.createEventsManager();
         Network network = NetworkUtils.createNetwork();
@@ -70,12 +72,12 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         BufferedWriter writer = IOUtils.getBufferedWriter(file);
         try {
             int i =1;
-            writer.write("no;vehId;totalDistance;accessLegDistance;departureTime;arrivalTime;tourDuration;accessLegDuration");
+            writer.write("no;vehId;totalDistance;accessLegDistance;departureTime;arrivalTime;tourDuration;accessLegDuration;requestId");
             writer.newLine();
 
             for (DrtBlockingTourData data  : this.finishedTours) {
                 writer.write(i + ";" + data.veh + ";" + data.tourDistance + ";" + data.accessDistance + ";"
-                + data.departure + ";" + data.arrival + ";" + data.tourDuration + data.accessDuration);
+                + data.departure + ";" + data.arrival + ";" + data.tourDuration + data.accessDuration + ";" + data.requestId);
                 writer.newLine();
                 i++;
             }
@@ -151,6 +153,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
                 data.accessDuration = this.vehToAccessDuration.remove(event.getVehicleId());
                 data.departure = this.vehToDeparture.remove(event.getVehicleId());
                 data.arrival = this.vehToArrival.remove(event.getVehicleId());
+                data.requestId = this.vehToRequest.remove(event.getVehicleId());
 
 //                this.vehToDuration.put(event.getVehicleId(), tourDuration);
             } else {
@@ -168,6 +171,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
 //        currentTours.put(event.getVehicleId(), event.getVehicleId());
         DrtBlockingTourData data = new DrtBlockingTourData(event.getVehicleId(), 0.);
         this.currentTours.put(event.getVehicleId(), data);
+        this.vehToRequest.put(event.getVehicleId(), event.getRequestId());
     }
 
     private class DrtBlockingTourData {
@@ -179,6 +183,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         private double accessDuration;
         private double tourDistance = 0.;
         private double accessDistance = 0.;
+        private Id<Request> requestId;
 
         private DrtBlockingTourData(Id<DvrpVehicle> veh, double departure) {
             this.veh = veh;
