@@ -42,7 +42,7 @@ public class FreightBlockingRequestCreatorTest {
         VehicleType vehicleType = CarrierVehicleType.Builder.newInstance(vehicleTypeId)
                 .setCapacity(1)
                 .setCostPerDistanceUnit(1)
-                .setCostPerTimeUnit(100)
+                .setCostPerTimeUnit(1)
                 .setFixCost(1)
                 .build();
         vTypes.getVehicleTypes().put(vehicleTypeId,vehicleType);
@@ -83,15 +83,14 @@ public class FreightBlockingRequestCreatorTest {
         CarrierUtils.addService(carrier, service1);
         CarrierService service2 = CarrierService.Builder.newInstance(Id.create(2, CarrierService.class), Id.createLinkId(3))
                 .setCapacityDemand(1)
-                .setServiceStartTimeWindow(TimeWindow.newInstance(6*3600,12*3600))
+                .setServiceStartTimeWindow(TimeWindow.newInstance(6*3600,8*3600))
                 .setServiceDuration(5*60)
                 .build();
         CarrierUtils.addService(carrier, service2);
 
-        CarrierUtils.setJspritIterations(carrier, 3000);
+        CarrierUtils.setJspritIterations(carrier, 30);
     }
 
-    @Ignore
     @Test
     public void createRequestsForIteration() {
 
