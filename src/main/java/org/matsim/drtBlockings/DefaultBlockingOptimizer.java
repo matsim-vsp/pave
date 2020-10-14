@@ -20,6 +20,7 @@
 
 package org.matsim.drtBlockings;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.optimizer.DefaultDrtOptimizer;
 import org.matsim.contrib.drt.schedule.DrtDriveTask;
@@ -35,6 +36,7 @@ import org.matsim.contrib.dvrp.router.TimeAsTravelDisutility;
 import org.matsim.contrib.dvrp.schedule.Schedule;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.schedule.Tasks;
+import org.matsim.contrib.freight.carrier.CarrierVehicle;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.mobsim.framework.MobsimTimer;
@@ -122,7 +124,8 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
             //if the blocking request has started and the vehicle is idle then we can unblock the vehicle..
             this.blockedVehicles.remove(vehicle);
             this.blockingManager.unblockVehicleAfterTime(vehicle, timer.getTimeOfDay());
-            this.eventsManager.processEvent(new DrtBlockingEndedEvent(timer.getTimeOfDay(), vehicle.getId()));
+            //What is the start link in this case??
+            this.eventsManager.processEvent(new DrtBlockingEndedEvent(timer.getTimeOfDay(), vehicle.getId(), vehicle.getStartLink().getId()));
         } else {
             updateBlockingEndTime(vehicle);
         }
@@ -169,7 +172,8 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
                         scheduleTasksForBlockedVehicle(drtBlockingRequest, vehicle);
                         this.blockedVehicles.put(vehicle, drtBlockingRequest);
                         blockingRequestsIterator.remove();
-                        eventsManager.processEvent(new DrtBlockingRequestScheduledEvent(timer.getTimeOfDay(), drtBlockingRequest.getId(), drtBlockingRequest.getCarrierId(), vehicle.getId()));
+                        eventsManager.processEvent(new DrtBlockingRequestScheduledEvent(timer.getTimeOfDay(), drtBlockingRequest.getId(), drtBlockingRequest.getCarrierId(), Id.create(drtBlockingRequest.getCarrierId(), CarrierVehicle.class), vehicle.getId()));
+
                     }
                 } else{
                     return;
