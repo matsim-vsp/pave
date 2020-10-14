@@ -7,6 +7,7 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.MatsimEventsReader;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class DrtBlockingEventsReaders {
@@ -22,9 +23,10 @@ public class DrtBlockingEventsReaders {
 
     }
 
-    public static MatsimEventsReader createEventsReader(EventsManager eventsManager) {
+    public static MatsimEventsReader createEventsReader(EventsManager eventsManager,
+                                                        Function<String, Task.TaskType> stringToTaskTypeConverter) {
         MatsimEventsReader reader = new MatsimEventsReader(eventsManager);
-//        createCustomEventMappers(stringToTaskTypeConverter).forEach(reader::addCustomEventMapper);
+        createCustomEventMappers(stringToTaskTypeConverter).forEach(reader::addCustomEventMapper);
         return reader;
     }
 }
