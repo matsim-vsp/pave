@@ -140,12 +140,6 @@
 
 		<dependency>
 			<groupId>com.github.matsim-vsp</groupId>
-			<artifactId>drt-speed-up</artifactId>
-			<version>1dfb20495f</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.github.matsim-vsp</groupId>
 			<artifactId>opt-drt</artifactId>
 			<version>4c06b135f3</version>
 		</dependency>
