@@ -57,10 +57,12 @@ class CarBannedScenarioPreparation {
 
 
 	static final void banCarFromLinkInsideBerlin(Network network){
+		Set<Id<Link>> highwayLinks = parseHighwayLinksInBerlin();
 		List<Geometry> berlinGeom = ShpGeometryUtils.loadGeometries(IOUtils.resolveFileOrResource(BERLIN_SHP));
 		network.getLinks().values().parallelStream()
 				.filter(l -> l.getAllowedModes().contains(TransportMode.car))
-				.filter(l -> ShpGeometryUtils.isCoordInGeometries(l.getToNode().getCoord(), berlinGeom))
+				.filter(l -> ShpGeometryUtils.isCoordInGeometries(l.getToNode().getCoord(), berlinGeom)
+								&& ! highwayLinks.contains(l.getId()) ) //we do not want to convert some highway links into drt links (A10 Berliner Ring)
 				.forEach(l -> {
 					Set<String> allowedModes = new HashSet<>(l.getAllowedModes());
 					allowedModes.remove(TransportMode.car);
@@ -79,7 +81,6 @@ class CarBannedScenarioPreparation {
 	 */
 	static final void banCarFromDRTServiceArea(Scenario scenario, DrtConfigGroup drtConfigGroup) {
 
-		Set<Id<Link>> highwayLinks = parseHighwayLinksInBerlin();
 
 		String drtServiceAreaShapeFile = drtConfigGroup.getDrtServiceAreaShapeFile();
 		if (drtServiceAreaShapeFile == null || drtServiceAreaShapeFile.equals("") || drtServiceAreaShapeFile.equals("null")) {
@@ -94,8 +95,7 @@ class CarBannedScenarioPreparation {
 				.parallelStream()
 				.filter(link -> link.getAllowedModes().contains(TransportMode.car))
 				.filter(link -> (shpUtils.isCoordInDrtServiceArea(link.getFromNode().getCoord())
-						|| shpUtils.isCoordInDrtServiceArea(link.getToNode().getCoord()))
-						&& ! highwayLinks.contains(link.getId()) ) //we do not want to convert some highway links into drt links (A10 Berliner Ring)
+						|| shpUtils.isCoordInDrtServiceArea(link.getToNode().getCoord())))
 				.map(link -> link.getId())
 				.collect(Collectors.toSet());
 
