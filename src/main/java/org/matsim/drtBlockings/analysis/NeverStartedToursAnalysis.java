@@ -9,7 +9,7 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.utils.io.IOUtils;
-import org.matsim.drtBlockings.events.DrtBlockingEventsReaders;
+import org.matsim.drtBlockings.events.DrtBlockingEventsReader;
 import org.matsim.drtBlockings.events.DrtBlockingRequestScheduledEvent;
 import org.matsim.drtBlockings.events.DrtBlockingRequestScheduledEventHandler;
 
@@ -34,7 +34,7 @@ public class NeverStartedToursAnalysis implements DrtRequestSubmittedEventHandle
         EventsManager manager = EventsUtils.createEventsManager();
         NeverStartedToursAnalysis handler = new NeverStartedToursAnalysis();
         manager.addHandler(handler);
-        MatsimEventsReader reader = DrtBlockingEventsReaders.createEventsReader(manager);
+        MatsimEventsReader reader = DrtBlockingEventsReader.create(manager);
         reader.readFile(eventsFile);
         handler.writeStats(outputFile);
     }

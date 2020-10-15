@@ -10,8 +10,6 @@ import org.matsim.contrib.dvrp.vrpagent.TaskEndedEvent;
 import org.matsim.contrib.dvrp.vrpagent.TaskEndedEventHandler;
 import org.matsim.contrib.dvrp.vrpagent.TaskStartedEvent;
 import org.matsim.contrib.dvrp.vrpagent.TaskStartedEventHandler;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlReader;
-import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
@@ -49,11 +47,11 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
     }
 
     public static void main(String[] args) {
-        String dir = "";
-        String eventsFile = dir + "";
+        String dir = "output/chessboard/drtBlocking/";
+        String eventsFile = dir + "output_events.xml.gz";
 //        String carriersFile = dir + "";
-        String inputNetwork = dir + "";
-        String outputFile = dir + "";
+        String inputNetwork = dir + "output_network.xml.gz";
+        String outputFile = dir + "drtBlockingAnalysis.csv";
 //        final Carriers carriers = new Carriers();
 //        new CarrierPlanXmlReader(carriers).readFile(carriersFile);
 
@@ -63,8 +61,11 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
 
         BasicTourStatsAnalysis handler = new BasicTourStatsAnalysis(network);
         manager.addHandler(handler);
-        MatsimEventsReader reader = DrtBlockingEventsReaders.createEventsReader(manager);
+//        manager.addHandler((LinkEnterEventHandler) linkEnterEvent -> System.out.println("HEY"));
+        manager.initProcessing();
+        MatsimEventsReader reader = DrtBlockingEventsReader.create(manager);
         reader.readFile(eventsFile);
+        manager.finishProcessing();
         handler.writeStats(outputFile);
     }
 
@@ -98,14 +99,10 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         Id<DvrpVehicle> dvrpVehicleId = Id.create(event.getVehicleId(), DvrpVehicle.class);
         if (this.currentTours.containsKey(dvrpVehicleId)) {
             //add up linkLength to distance travelled so far
-            Double distanceSoFar = this.vehToDistance.get(dvrpVehicleId);
-            if (distanceSoFar == 0) {
-                this.vehToDistance.put(dvrpVehicleId, network.getLinks().get(event.getLinkId()).getLength());
-                this.vehToDeparture.putIfAbsent(dvrpVehicleId, event.getTime());
-            } else {
-                this.vehToDistance.replace(dvrpVehicleId,
+            Double distanceSoFar = this.vehToDistance.computeIfAbsent(dvrpVehicleId, v -> 0.);
+            this.vehToDeparture.putIfAbsent(dvrpVehicleId, event.getTime());
+            this.vehToDistance.replace(dvrpVehicleId,
                         distanceSoFar + network.getLinks().get(event.getLinkId()).getLength());
-            }
         }
     }
 

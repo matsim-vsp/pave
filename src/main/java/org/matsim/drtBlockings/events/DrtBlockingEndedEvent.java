@@ -67,7 +67,7 @@ public class DrtBlockingEndedEvent extends Event {
 //        String type = Objects.requireNonNull(attributes.get(ATTRIBUTE_TYPE));
 
         Id<DvrpVehicle> vehicleId = Id.create(attributes.get(ATTRIBUTE_VEHICLE_ID), DvrpVehicle.class);
-        Id<Link> linkId = Id.createLinkId(ATTRIBUTE_LINK_ID);
+        Id<Link> linkId = Id.createLinkId(attributes.get(ATTRIBUTE_LINK_ID));
 
         //I'd like to save the x and y coords as coord but dont know how to convert them from string to coord, HOW?
 //        String yCoord = Objects.requireNonNull(attributes.get(ATTRIBUTE_Y));
