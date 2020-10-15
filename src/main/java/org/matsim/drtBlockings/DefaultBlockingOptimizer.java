@@ -124,8 +124,8 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
             //if the blocking request has started and the vehicle is idle then we can unblock the vehicle..
             this.blockedVehicles.remove(vehicle);
             this.blockingManager.unblockVehicleAfterTime(vehicle, timer.getTimeOfDay());
-            //What is the start link in this case??
-            this.eventsManager.processEvent(new DrtBlockingEndedEvent(timer.getTimeOfDay(), vehicle.getId(), vehicle.getStartLink().getId()));
+            this.eventsManager.processEvent(
+                    new DrtBlockingEndedEvent(timer.getTimeOfDay(), vehicle.getId(), Tasks.getEndLink(vehicle.getSchedule().getCurrentTask()).getId()));
         } else {
             updateBlockingEndTime(vehicle);
         }
