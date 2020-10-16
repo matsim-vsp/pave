@@ -27,15 +27,17 @@ public class NeverStartedToursAnalysis implements DrtRequestSubmittedEventHandle
     private List<Id<Request>> neverScheduledTours = new ArrayList<>();
 
     public static void main(String[] args) {
-        String dir = "";
-        String eventsFile = dir + "";
-        String outputFile = dir + "";
+        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/drtBlocking/Analysis_test/";
+        String eventsFile = dir + "output_events.xml.gz";
+        String outputFile = dir + "neverStartedTourStats.csv";
 
         EventsManager manager = EventsUtils.createEventsManager();
         NeverStartedToursAnalysis handler = new NeverStartedToursAnalysis();
         manager.addHandler(handler);
+        manager.initProcessing();
         MatsimEventsReader reader = DrtBlockingEventsReader.create(manager);
         reader.readFile(eventsFile);
+        manager.finishProcessing();
         handler.writeStats(outputFile);
     }
 
@@ -65,11 +67,13 @@ public class NeverStartedToursAnalysis implements DrtRequestSubmittedEventHandle
     public void handleEvent(DrtRequestSubmittedEvent event) {
         this.neverScheduledTours.add(event.getRequestId());
         this.requestToTime.putIfAbsent(event.getRequestId(), event.getTime());
+        System.out.println("test");
     }
 
     @Override
     public void handleEvent(DrtBlockingRequestScheduledEvent event) {
-        this.neverScheduledTours.remove(event.getRequestId());
+//        this.neverScheduledTours.remove(event.getRequestId());
         this.requestToVehicleId.putIfAbsent(event.getRequestId(), event.getVehicleId());
+        System.out.println(this.neverScheduledTours.remove(event.getRequestId()));
     }
 }
