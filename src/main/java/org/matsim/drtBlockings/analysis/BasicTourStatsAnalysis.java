@@ -47,11 +47,11 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
     }
 
     public static void main(String[] args) {
-        String dir = "output/chessboard/drtBlocking/";
+        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/drtBlocking/Analysis_test/";
         String eventsFile = dir + "output_events.xml.gz";
 //        String carriersFile = dir + "";
         String inputNetwork = dir + "output_network.xml.gz";
-        String outputFile = dir + "drtBlockingAnalysis.csv";
+        String outputFile = dir + "testBasicTourStats.csv";
 //        final Carriers carriers = new Carriers();
 //        new CarrierPlanXmlReader(carriers).readFile(carriersFile);
 
@@ -78,7 +78,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
 
             for (DrtBlockingTourData data  : this.finishedTours) {
                 writer.write(i + ";" + data.veh + ";" + data.tourDistance + ";" + data.accessDistance + ";"
-                + data.departure + ";" + data.arrival + ";" + data.tourDuration + data.accessDuration + ";" + data.requestId);
+                + data.departure + ";" + data.arrival + ";" + data.tourDuration + ";" + data.accessDuration + ";" + data.requestId);
                 writer.newLine();
                 i++;
             }
@@ -103,6 +103,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
             this.vehToDeparture.putIfAbsent(dvrpVehicleId, event.getTime());
             this.vehToDistance.replace(dvrpVehicleId,
                         distanceSoFar + network.getLinks().get(event.getLinkId()).getLength());
+            System.out.println(event.getLinkId());
         }
     }
 
@@ -134,12 +135,14 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
     public void handleEvent(DrtBlockingEndedEvent event) {
         if (this.currentTours.containsKey(event.getVehicleId())) {
             //add up linkLength to distance travelled so far
-            Double distanceSoFar = this.vehToDistance.get(event.getVehicleId());
+            Double distanceSoFar = this.vehToDistance.remove(event.getVehicleId());
             DrtBlockingTourData data = this.currentTours.remove(event.getVehicleId());
             data.tourDistance = distanceSoFar + network.getLinks().get(event.getLinkId()).getLength();
             data.accessDistance = this.vehToAccessDistance.remove(event.getVehicleId());
 //            this.vehToDistance.replace(event.getVehicleId(),
 //                    distanceSoFar + network.getLinks().get(event.getLinkId()).getLength());
+
+            System.out.println(data.tourDistance);
 
             //get eventTime and calculate tourDuration
             //The following should be the case for every tour!
@@ -151,6 +154,8 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
                 data.departure = this.vehToDeparture.remove(event.getVehicleId());
                 data.arrival = this.vehToArrival.remove(event.getVehicleId());
                 data.requestId = this.vehToRequest.remove(event.getVehicleId());
+
+                System.out.println(event.getLinkId() + " END OF TOUR!");
 
 //                this.vehToDuration.put(event.getVehicleId(), tourDuration);
             } else {
