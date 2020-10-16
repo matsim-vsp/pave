@@ -1,6 +1,7 @@
 package org.matsim.drtBlockings.events;
 
 import com.google.common.collect.Lists;
+import org.matsim.contrib.drt.passenger.events.DrtRequestSubmittedEvent;
 import org.matsim.contrib.drt.util.DrtEventsReaders;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.util.DvrpEventsReaders;
@@ -35,6 +36,7 @@ public class DrtBlockingEventsReader {
         reader.addCustomEventMapper(DrtBlockingEndedEvent.EVENT_TYPE, DrtBlockingEndedEvent::convert);
         reader.addCustomEventMapper(DrtBlockingRequestRejectedEvent.EVENT_TYPE, DrtBlockingRequestRejectedEvent::convert);
         reader.addCustomEventMapper(DrtBlockingRequestScheduledEvent.EVENT_TYPE, DrtBlockingRequestScheduledEvent::convert);
+        reader.addCustomEventMapper(DrtRequestSubmittedEvent.EVENT_TYPE, DrtRequestSubmittedEvent::convert);
 
         Map<String, Task.TaskType> taskTypeMap = CUSTOM_TASK_TYPE_MAP;
         taskTypeMap.putAll(DrtEventsReaders.TASK_TYPE_MAP);
