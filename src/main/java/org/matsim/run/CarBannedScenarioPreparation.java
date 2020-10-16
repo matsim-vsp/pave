@@ -23,17 +23,23 @@ package org.matsim.run;
 import com.google.common.collect.ImmutableSet;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.api.core.v01.population.Population;
+import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.algorithms.MultimodalNetworkCleaner;
+import org.matsim.core.router.TripRouter;
+import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.run.drt.BerlinShpUtils;
@@ -41,9 +47,10 @@ import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.matsim.utils.gis.shp2matsim.ShpGeometryUtils.loadPreparedGeometries;
 
 class CarBannedScenarioPreparation {
 
@@ -55,8 +62,27 @@ class CarBannedScenarioPreparation {
 	private static final String BERLIN_SHP = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-shp/berlin.shp";
 
 
+	static final void replaceRideTripsWithinGeomsWithSingleLegTripsOfMode(Population population, String modeToReplaceRideTrips, List<PreparedGeometry> geoms){
+		log.info("replacing all ride trips that originate or end inside drt service area with single leg trips of mode " + modeToReplaceRideTrips);
+		PopulationFactory fac = population.getFactory();
+		population.getPersons().values().stream()
+				.flatMap(person -> person.getPlans().stream())
+				.forEach(plan -> {
+					TripStructureUtils.getTrips(plan).stream()
+							//find ride trips that originate or end in one of the geoms
+							.filter(trip -> trip.getLegsOnly().stream().filter(leg -> leg.getMode().equals(TransportMode.ride)).findAny().isPresent()
+									&&
+									( ShpGeometryUtils.isCoordInPreparedGeometries(trip.getOriginActivity().getCoord(), geoms)
+											|| ShpGeometryUtils.isCoordInPreparedGeometries(trip.getDestinationActivity().getCoord(), geoms) ))
+							//replace trip
+							.forEach(trip -> {
+								List<PlanElement> newTrip = List.of(fac.createLeg(modeToReplaceRideTrips));
+								TripRouter.insertTrip(plan.getPlanElements(), trip.getOriginActivity(), newTrip , trip.getDestinationActivity());
+							});
+				});
+	}
 
-	static final void banCarFromLinkInsideBerlin(Network network){
+	static final void banCarAndRideFromLinkInsideBerlin(Network network){
 		Set<Id<Link>> highwayLinks = parseHighwayLinksInBerlin();
 		List<Geometry> berlinGeom = ShpGeometryUtils.loadGeometries(IOUtils.resolveFileOrResource(BERLIN_SHP));
 		network.getLinks().values().parallelStream()
@@ -66,9 +92,13 @@ class CarBannedScenarioPreparation {
 				.forEach(l -> {
 					Set<String> allowedModes = new HashSet<>(l.getAllowedModes());
 					allowedModes.remove(TransportMode.car);
+					allowedModes.remove(TransportMode.ride);
 					l.setAllowedModes(allowedModes);
 				});
+		log.info("clean car network");
 		cleanModalNetwork(network,TransportMode.car);
+		log.info("clean ride network");
+		cleanModalNetwork(network,TransportMode.ride);
 	}
 
 
@@ -79,23 +109,24 @@ class CarBannedScenarioPreparation {
 	 * @param scenario
 	 * @param drtConfigGroup
 	 */
-	static final void banCarFromDRTServiceArea(Scenario scenario, DrtConfigGroup drtConfigGroup) {
+	static final void banCarAndRideFromDRTServiceArea(Scenario scenario, DrtConfigGroup drtConfigGroup, String modeToReplaceRideInsideServiceArea) {
 
-
-		String drtServiceAreaShapeFile = drtConfigGroup.getDrtServiceAreaShapeFile();
-		if (drtServiceAreaShapeFile == null || drtServiceAreaShapeFile.equals("") || drtServiceAreaShapeFile.equals("null")) {
-			throw new IllegalArgumentException("if you want to ban cars from the drt service area you must provide a service area shape file in the DrtConfigGroup!");
-		}
+//		String drtServiceAreaShapeFile = drtConfigGroup.getDrtServiceAreaShapeFile();
+//		if (drtServiceAreaShapeFile == null || drtServiceAreaShapeFile.equals("") || drtServiceAreaShapeFile.equals("null")) {
+//			throw new IllegalArgumentException("if you want to ban cars from the drt service area you must provide a service area shape file in the DrtConfigGroup!");
+//		}
 
 		log.info("Read service area shape file.");
-		BerlinShpUtils shpUtils = new BerlinShpUtils( drtServiceAreaShapeFile );
+		List<PreparedGeometry> serviceAreaGeoms = loadPreparedGeometries(drtConfigGroup.getDrtServiceAreaShapeFileURL(scenario.getConfig().getContext()));
+
+		replaceRideTripsWithinGeomsWithSingleLegTripsOfMode(scenario.getPopulation(), modeToReplaceRideInsideServiceArea, serviceAreaGeoms);
 
 		log.info("collect car links in service area");
 		Set<Id<Link>> serviceAreaLinks = scenario.getNetwork().getLinks().values()
 				.parallelStream()
 				.filter(link -> link.getAllowedModes().contains(TransportMode.car))
-				.filter(link -> (shpUtils.isCoordInDrtServiceArea(link.getFromNode().getCoord())
-						|| shpUtils.isCoordInDrtServiceArea(link.getToNode().getCoord())))
+				.filter(link -> (ShpGeometryUtils.isCoordInPreparedGeometries(link.getFromNode().getCoord(),serviceAreaGeoms)
+						|| ShpGeometryUtils.isCoordInPreparedGeometries(link.getToNode().getCoord(),serviceAreaGeoms)))
 				.map(link -> link.getId())
 				.collect(Collectors.toSet());
 
@@ -108,6 +139,7 @@ class CarBannedScenarioPreparation {
 				.forEach(link -> {
 					Set<String> allowedModes = new HashSet<>(link.getAllowedModes());
 					allowedModes.remove(TransportMode.car);
+					allowedModes.remove(TransportMode.ride);
 					allowedModes.add(drtConfigGroup.getMode());
 					link.setAllowedModes(allowedModes);
 		});
@@ -125,6 +157,8 @@ class CarBannedScenarioPreparation {
 		cleanModalNetwork(scenario.getNetwork(), drtConfigGroup.getMode());
 		log.info("clean car network"); //we need to make sure that both individual mode networks are strongly connected, this is why we clean them separately. Otherwise, we will run into routing failures at the borders...
 		cleanModalNetwork(scenario.getNetwork(),TransportMode.car);
+		log.info("clean ride network");
+		cleanModalNetwork(scenario.getNetwork(),TransportMode.ride);
 	}
 
 	static void cleanModalNetwork(Network network, String mode) {

@@ -5,17 +5,17 @@
 		<param name="mutationRange" value="7200.0" />
 	</module>
 	<module name="controler" >
-		<param name="lastIteration" value="100" />
-		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
-		<param name="runId" value="berlin-drt-v5.5-1pct" />
-		<param name="outputDirectory" value="output/berlin-v5.5-1pct-bannedArea-inside-a10-test-rebalancing" />
-		<param name="writeEventsInterval" value="50" />
-		<param name="writePlansInterval" value="50" />
+		<param name="lastIteration" value="10" />
+		<param name="overwriteFiles" value="failIfDirectoryExists" />
+		<param name="runId" value="berlin-drt-v5.5-1pct-drtSpeedUp" />
+		<param name="outputDirectory" value="./scenarios/berlin-v5.5-1pct/output-berlin-drt-v5.5-1pct" />
+		<param name="writeEventsInterval" value="2" />
+		<param name="writePlansInterval" value="2" />
 	</module>
 	<module name="global" >
 		<param name="coordinateSystem" value="EPSG:31468" />
 		<param name="insistingOnDeprecatedConfigVersion" value="false" />
-		<param name="numberOfThreads" value="4" />
+		<param name="numberOfThreads" value="8" />
 	</module>
 	<module name="berlinExperimental" >
 		<parameterset type="intermodalAccessEgressModeUtilityRandomization" >
@@ -28,8 +28,8 @@
 		<param name="inputNetworkFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-network.xml.gz" />
 	</module>
 	<module name="plans" >
-<!--		<param name="inputPlansFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-1pct/input/berlin-v5.5-1pct.plans.xml.gz" />-->
-		<param name="inputPlansFile" value="bannedAreaTestPop.xml" />
+		<param name="inputPlansFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-1pct/input/berlin-v5.5-1pct.plans.xml.gz" />
+
 		<param name="removingUnnecessaryPlanAttributes" value="false" />
 	</module>
 	<module name="vehicles" >
@@ -74,9 +74,20 @@
 			<param name="weight" value="0.2" />
 		</parameterset>
 		<parameterset type="strategysettings" >
+			<!-- <param name="strategyName" value="ReRoute" /> -->
+			<param name="strategyName" value="RandomSingleTripReRoute" />
+			<param name="subpopulation" value="person" />
+			<param name="weight" value="0.2" />
+		</parameterset>
+		<parameterset type="strategysettings" >
 			<param name="strategyName" value="SubtourModeChoice" />
 			<param name="subpopulation" value="person" />
-			<param name="weight" value="0.8" />
+			<param name="weight" value="0.6" />
+		</parameterset>
+		<parameterset type="strategysettings" >
+			<param name="strategyName" value="TimeAllocationMutator" />
+			<param name="subpopulation" value="person" />
+			<param name="weight" value="0.05" />
 		</parameterset>
 		<parameterset type="strategysettings" >
 			<param name="strategyName" value="ChangeExpBeta" />
@@ -164,10 +175,10 @@
 			<parameterset type="ExtensiveInsertionSearch"/>
 			<!-- If true, the startLink is changed to last link in the current schedule, so the taxi starts the next day at the link where it stopped operating the day before. False by default. -->
 			<param name="changeStartLinkToLastLinkInSchedule" value="true" />
-			<!-- allows to configure a service area per drt mode.Used with serviceArea Operational Scheme -->
-			 <param name="drtServiceAreaShapeFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-shp/berlin.shp" />
-<!--			<param name="drtServiceAreaShapeFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/shp-files/berlin-inside-a10.shp" />-->
 
+			<!-- allows to configure a service area per drt mode.Used with serviceArea Operational Scheme -->
+<!--			<param name="drtServiceAreaShapeFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-shp/berlin.shp" />-->
+			<param name="drtServiceAreaShapeFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/shp-files/S5/berlin-plus-500m-buffer.shp" />
 
 			<!-- Beeline distance factor for DRT. Used in analyis and in plans file. The default value is 1.3. -->
 			<param name="estimatedBeelineDistanceFactor" value="1.3" />
@@ -192,26 +203,16 @@
 			<!-- If true, the max travel and wait times of a submitted request are considered hard constraints (the request gets rejected if one of the constraints is violated). If false, the max travel and wait times are considered soft constraints (insertion of a request that violates one of the constraints is allowed, but its cost is increased by additional penalty to make it relatively less attractive). Penalisation of insertions can be customised by injecting a customised InsertionCostCalculator.PenaltyCalculator -->
 			<param name="rejectRequestIfMaxWaitOrTravelTimeViolated" value="false" />
 			<!-- Bus stop duration. Must be positive. -->
-			<param name="stopDuration" value="60.0" />
+			<param name="stopDuration" value="60.0"/>
 			<!-- Stop locations file (transit schedule format, but without lines) for DRT stops. Used only for the stopbased mode -->
-			<param name="transitStopFile" value="null" />
+			<param name="transitStopFile" value="null"/>
 			<!-- Limit the operation of vehicles to links (of the 'dvrp_routing' network) with 'allowedModes' containing this 'mode'. For backward compatibility, the value is set to false by default - this means that the vehicles are allowed to operate on all links of the 'dvrp_routing' network. The 'dvrp_routing' is defined by DvrpConfigGroup.networkModes) -->
-			<param name="useModeFilteredSubnetwork" value="false" />
+			<param name="useModeFilteredSubnetwork" value="false"/>
 			<!-- An XML file specifying the vehicle fleet. The file format according to dvrp_vehicles_v1.dtd -->
-			<param name="vehiclesFile" value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/berlin-drt-v5.5-10pct/input/drtVehicles/berlin-drt-v5.5.drt-inside-a10-by-rndLocations-1000vehicles-4seats.xml.gz" />
+			<param name="vehiclesFile"
+				   value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/avoev/berlin-drt-v5.5-10pct/input/berlin-drt-v5.5.drt-10000vehicles-4seats.xml.gz"/>
 			<!-- Writes out detailed DRT customer stats in each iteration. True by default. -->
-			<param name="writeDetailedCustomerStats" value="true" />
-			<parameterset type="minCostFlowRebalancing">
-				<!-- defaults from example at matsim-maas -->
-				<param name="targetAlpha" value="0"/>
-				<param name="targetBeta" value="1"/>
-				<param name="cellSize" value="2000"/>
-				<param name="interval" value="1800"/>
-				<param name="zonalDemandAggregatorType" value="EqualVehicleDensity"/>
-				<param name="rebalancingZonesGeneration" value="ShapeFile"/>
-				<param name="rebalancingZonesShapeFile"
-					   value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/avoev/shp-files/shp-berlin-bezirksregionen/berlin-bezirksregion_GK4_fixed.shp"/>
-			</parameterset>
+			<param name="writeDetailedCustomerStats" value="true"/>
 			<parameterset type="drtfare">
 				<!-- Basefare per Trip (fare = positive value) -->
 				<param name="basefare" value="0.0"/>
@@ -223,6 +224,12 @@
 				<param name="distanceFare_m" value="0.00035"/>
 				<!-- drt fare per hour (fee = positive value) -->
 				<param name="timeFare_h" value="0.0"/>
+			</parameterset>
+			<parameterset type="drtSpeedUp">
+				<param name="fractionOfIterationsSwitchOn" value="0.0"/>
+				<param name="fractionOfIterationsSwitchOff" value="0.99"/>
+				<param name="intervalDetailedIteration" value="2"/>
+				<param name="firstSimulatedDrtIterationToReplaceInitialDrtPerformanceParams" value="2"/>
 			</parameterset>
 		</parameterset>
 	</module>
@@ -255,7 +262,7 @@
 		<!-- KN comments: in principle, walk as alternative to drt will not work, since drt is always faster. Need to give the ASC to the router! However, with the reduced drt network we should be able to see differentiation.) -->
 		<!-- Possible values: CalcLeastCostModePerStop, RandomSelectOneModePerRoutingRequestAndDirection -->
 		<param name="intermodalAccessEgressModeSelection" value="CalcLeastCostModePerStop" />
-		<param name="useIntermodalAccessEgress" value="true" />
+		<param name="useIntermodalAccessEgress" value="false" />
 		<parameterset type="intermodalAccessEgress" >
 			<!-- Radius from the origin / destination coord in which transit stops are searched. Only if less than 2 transit stops are found the search radius is increased step-wise until the maximum search radius set in param radius is reached. -->
 			<param name="initialSearchRadius" value="1500.0" />

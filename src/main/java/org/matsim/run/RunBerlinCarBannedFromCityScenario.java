@@ -21,21 +21,19 @@
 package org.matsim.run;
 
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.matsim.accessEgress2CarByDRT.DRTAccessWalkEgress2CarModule;
 import org.matsim.accessEgress2CarByDRT.WalkAccessDRTEgress2CarModule;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.controler.OutputDirectoryHierarchy;
-import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.AnalysisMainModeIdentifier;
-import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.utils.collections.Tuple;
-import org.matsim.drtSpeedUp.MultiModeDrtSpeedUpModule;
 import org.matsim.optDRT.MultiModeOptDrtConfigGroup;
 import org.matsim.optDRT.OptDrt;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
@@ -43,18 +41,23 @@ import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
+import static org.matsim.utils.gis.shp2matsim.ShpGeometryUtils.loadPreparedGeometries;
+
+public class RunBerlinCarBannedFromCityScenario {
 
 
-    private static final Logger log = Logger.getLogger(RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp.class );
+    private static final Logger log = Logger.getLogger(RunBerlinCarBannedFromCityScenario.class );
 
     private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config.xml";
+//    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config.speedUp.xml";
 
 //    private static final String BERLIN_V5_5_CONFIG = "D:/bannedCarStudy/berlin-drt-v5.5-10pct.config_pave508.xml";
 
 //    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config_banCarTest.xml";
+//    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config_banCarTest_speedUp.xml";
 
 
     static final String WALK_ACCESS_DRT_EGRESS_MODE = "walkCarDrt";
@@ -80,16 +83,16 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
         Config config = RunDrtOpenBerlinScenario.prepareConfig(configArgs);
 
 //        config.plans().setInputFile("pave509.output_plans.xml.gz");
-//        config.controler().setOutputDirectory("D:/bannedCarStudy/output/pave509-outputAsInput-Test-Debug-deletedRoutes");
+//        config.controler().setOutputDirectory("D:/bannedCarStudy/output/test-speedUp-replacementRideOnlyServiceArea");
 //        config.controler().setLastIteration(1);
 //        config.controler().setWriteTripsInterval(1);
 //        config.controler().setWriteEventsInterval(1);
 
-//        config.plans().setInputFile("../berlin-v5.5-0.1pct-woRoutes.xml.gz");
+//        config.plans().setInputFile("D:/bannedCarStudy/berlin-v5.5-0.1pct-woRoutes.xml.gz");
 //        config.transit().setUseTransit(true);
 //        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
 
-        MultiModeDrtSpeedUpModule.addTeleportedDrtMode(config);
+//        MultiModeDrtSpeedUpModule.addTeleportedDrtMode(config);
 
         //this will throw an exception if more than one drt mode is configured... multiple drt operators are currently not supported with car banned scenario..
         DrtConfigGroup drtConfigGroup = DrtConfigGroup.getSingleModeDrtConfig(config);
@@ -103,12 +106,16 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 //        PopulationUtils.sampleDown(scenario.getPopulation(), 0.01);
 
 //        ban car from drt service area -- be aware that this will not create a transfer zone (where both car and drt are allowed)
-//        CarBannedScenarioPreparation.banCarFromDRTServiceArea(scenario, drtConfigGroup);
+//        replace ride trips inside service area with single-leg car trips (which will then be routed with fallback mode which triggers mode choice)
+//        CarBannedScenarioPreparation.banCarFromDRTServiceArea(scenario, drtConfigGroup, TransportMode.car);
 
         { //this is for open berlin scenario in pave context only!
             //we need a transfer zone because otherwise we might get rejections. we do this by having a service area slightly larger than berlin and then removing car from links within berlin
             RunDrtOpenBerlinScenario.addDRTmode(scenario, drtConfigGroup.getMode(), drtConfigGroup.getDrtServiceAreaShapeFile());
-            CarBannedScenarioPreparation.banCarFromLinkInsideBerlin(scenario.getNetwork());
+            CarBannedScenarioPreparation.banCarAndRideFromLinkInsideBerlin(scenario.getNetwork());
+//        replace ride trips inside service area with single-leg car trips (which will then be routed with fallback mode which triggers mode choice)
+            List<PreparedGeometry> serviceAreaGeoms = loadPreparedGeometries(drtConfigGroup.getDrtServiceAreaShapeFileURL(scenario.getConfig().getContext()));
+            CarBannedScenarioPreparation.replaceRideTripsWithinGeomsWithSingleLegTripsOfMode(scenario.getPopulation(), TransportMode.car, serviceAreaGeoms); //TODO what is the best replacement mode for ride?
         }
 
         //insert vehicles for new modes
@@ -116,7 +123,7 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
 
         //prepare controler
         Controler controler = RunDrtOpenBerlinScenario.prepareControler(scenario);
-        controler.addOverridingModule(new MultiModeDrtSpeedUpModule());
+//        controler.addOverridingModule(new MultiModeDrtSpeedUpModule());
         OptDrt.addAsOverridingModule(controler, ConfigUtils.addOrGetModule(scenario.getConfig(), MultiModeOptDrtConfigGroup.class));
 
         //configure intermodal routing modules for new modes
@@ -126,8 +133,8 @@ public class RunBerlinCarBannedFromCityScenarioWithDrtSpeedUp {
             public void install() {
                 install(new WalkAccessDRTEgress2CarModule(WALK_ACCESS_DRT_EGRESS_MODE, drtConfigGroup));
                 install(new DRTAccessWalkEgress2CarModule(DRT_ACCESS_DRT_WALK_MODE, drtConfigGroup));
-//                bind(MainModeIdentifier.class).to(OpenBerlinCarBannedFromCityAnalysisMainModeIdentifier.class);
-                bind(AnalysisMainModeIdentifier.class).to(OpenBerlinCarBannedFromCityAnalysisMainModeIdentifier.class);
+//                bind(MainModeIdentifier.class).to(OpenBerlinIntermodalMainModeIdentifier.class);
+                bind(AnalysisMainModeIdentifier.class).to(OpenBerlinIntermodalMainModeIdentifier.class);
             }
         });
 
