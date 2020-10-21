@@ -2,6 +2,8 @@ package org.matsim.drtBlockings;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.drt.passenger.DrtRequest;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.schedule.Tasks;
@@ -17,11 +19,23 @@ public class DrtBlockingRequest implements Request {
     private final double submissionTime;
     private final Id<Carrier> carrierId;
 
+    private final String mode;
+    private final Id<DvrpVehicle> vehicleId;
+
     private List<Task> tasks;
 
     //TODO maybe add CarrierVehId as well?
-    DrtBlockingRequest(final Id<Request> id, final Id<Carrier> carrierId, final double submissionTime, final double startTime, final double endTime, List<Task> dvrpVehicleTasks) {
+    DrtBlockingRequest(final Id<Request> id, final String mode, final Id<Carrier> carrierId,
+                       final double submissionTime, final double startTime, final double endTime,
+                       List<Task> dvrpVehicleTasks) {
+
+        Builder builder = new Builder();
+
         this.id = id;
+
+        this.mode = builder.mode;
+        this.vehicleId = builder.vehicleId;
+
         this.submissionTime = submissionTime;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -72,5 +86,27 @@ public class DrtBlockingRequest implements Request {
         return Tasks.getEndLink(this.tasks.get(0));
     }
 
+    public Link getEndLink() { return Tasks.getEndLink(this.tasks.get(tasks.size() - 1)); }
+
     public Id<Carrier> getCarrierId() { return carrierId; }
+
+    public String getMode() { return mode; }
+
+    public Id<DvrpVehicle> getVehicleId() { return vehicleId; }
+
+    public static final class Builder {
+
+        private String mode;
+        private Id<DvrpVehicle> vehicleId;
+
+        public  Builder mode(String val) {
+            mode = val;
+            return this;
+        }
+
+        public Builder vehicleId(Id<DvrpVehicle> val) {
+            vehicleId = val;
+            return this;
+        }
+    }
 }

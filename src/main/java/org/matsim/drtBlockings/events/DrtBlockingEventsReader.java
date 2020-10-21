@@ -37,6 +37,7 @@ public class DrtBlockingEventsReader {
         reader.addCustomEventMapper(DrtBlockingRequestRejectedEvent.EVENT_TYPE, DrtBlockingRequestRejectedEvent::convert);
         reader.addCustomEventMapper(DrtBlockingRequestScheduledEvent.EVENT_TYPE, DrtBlockingRequestScheduledEvent::convert);
         reader.addCustomEventMapper(DrtRequestSubmittedEvent.EVENT_TYPE, DrtRequestSubmittedEvent::convert);
+        reader.addCustomEventMapper(DrtBlockingRequestSubmittedEvent.EVENT_TYPE, DrtBlockingRequestSubmittedEvent::convert);
 
         Map<String, Task.TaskType> taskTypeMap = CUSTOM_TASK_TYPE_MAP;
         taskTypeMap.putAll(DrtEventsReaders.TASK_TYPE_MAP);

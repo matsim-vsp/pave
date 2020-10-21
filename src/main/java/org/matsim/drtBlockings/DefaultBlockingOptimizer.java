@@ -54,6 +54,7 @@ import org.matsim.core.utils.misc.OptionalTime;
 import org.matsim.drtBlockings.events.DrtBlockingEndedEvent;
 import org.matsim.drtBlockings.events.DrtBlockingRequestRejectedEvent;
 import org.matsim.drtBlockings.events.DrtBlockingRequestScheduledEvent;
+import org.matsim.drtBlockings.events.DrtBlockingRequestSubmittedEvent;
 import org.matsim.drtBlockings.tasks.FreightRetoolTask;
 
 class DefaultBlockingOptimizer implements BlockingOptimizer {
@@ -75,6 +76,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
     Random rnd;
 
     private final Map<DvrpVehicle, DrtBlockingRequest> blockedVehicles;
+    private final Map<DvrpVehicle, DrtBlockingRequest> allVehicles;
 
     private PriorityQueue<DrtBlockingRequest> blockingRequests;
 
@@ -95,12 +97,16 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 
         this.blockingRequests = new PriorityQueue<>(Comparator.comparing(DrtBlockingRequest::getSubmissionTime));
         this.blockedVehicles = new HashMap<>();
+        this.allVehicles = new HashMap<>();
     }
 
 
-    @Override
+//    @Override
     public void blockingRequestSubmitted(DrtBlockingRequest drtBlockingRequest) {
         this.blockingRequests.add(drtBlockingRequest);
+        new DrtBlockingRequestSubmittedEvent(timer.getTimeOfDay(), drtBlockingRequest.getVehicleId(), drtBlockingRequest.getMode(),
+                Id.create(drtBlockingRequest.getId(), DrtBlockingRequest.class),
+                drtBlockingRequest.getStartLink().getId(), drtBlockingRequest.getEndLink().getId());
     }
 
     @Override
@@ -123,6 +129,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
         if(scheduleInquiry.isIdle(vehicle)){ //TODO actually we could unblock the vehicle already when the last retooling has begun. What happens if we call eventsManager.processEvent(futureTime) ?
             //if the blocking request has started and the vehicle is idle then we can unblock the vehicle..
             this.blockedVehicles.remove(vehicle);
+            this.allVehicles.remove(vehicle);
             this.blockingManager.unblockVehicleAfterTime(vehicle, timer.getTimeOfDay());
             this.eventsManager.processEvent(
                     new DrtBlockingEndedEvent(timer.getTimeOfDay(), vehicle.getId(), Tasks.getEndLink(vehicle.getSchedule().getCurrentTask()).getId()));
