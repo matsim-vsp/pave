@@ -104,9 +104,9 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 //    @Override
     public void blockingRequestSubmitted(DrtBlockingRequest drtBlockingRequest) {
         this.blockingRequests.add(drtBlockingRequest);
-        new DrtBlockingRequestSubmittedEvent(timer.getTimeOfDay(), drtBlockingRequest.getVehicleId(), drtBlockingRequest.getMode(),
+        eventsManager.processEvent(new DrtBlockingRequestSubmittedEvent(timer.getTimeOfDay(), drtBlockingRequest.getVehicleId(), drtBlockingRequest.getMode(),
                 Id.create(drtBlockingRequest.getId(), DrtBlockingRequest.class),
-                drtBlockingRequest.getStartLink().getId(), drtBlockingRequest.getEndLink().getId());
+                drtBlockingRequest.getStartLink().getId(), drtBlockingRequest.getEndLink().getId()));
     }
 
     @Override

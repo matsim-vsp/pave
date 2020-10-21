@@ -9,9 +9,8 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.utils.io.IOUtils;
-import org.matsim.drtBlockings.events.DrtBlockingEventsReader;
-import org.matsim.drtBlockings.events.DrtBlockingRequestScheduledEvent;
-import org.matsim.drtBlockings.events.DrtBlockingRequestScheduledEventHandler;
+import org.matsim.drtBlockings.DrtBlockingRequest;
+import org.matsim.drtBlockings.events.*;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -20,11 +19,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NeverStartedToursAnalysis implements DrtRequestSubmittedEventHandler, DrtBlockingRequestScheduledEventHandler {
+public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEventHandler, DrtBlockingRequestScheduledEventHandler {
 
-    private Map<Id<Request>, Double> requestToTime = new HashMap<>();
-    private Map<Id<Request>, Id<DvrpVehicle>> requestToVehicleId = new HashMap<>();
-    private List<Id<Request>> neverScheduledTours = new ArrayList<>();
+    private Map<Id<DrtBlockingRequest>, Double> requestToTime = new HashMap<>();
+    private Map<Id<DrtBlockingRequest>, Id<DvrpVehicle>> requestToVehicleId = new HashMap<>();
+    private List<Id<DrtBlockingRequest>> neverScheduledTours = new ArrayList<>();
 
     public static void main(String[] args) {
         String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/drtBlocking/Analysis_test/";
@@ -49,7 +48,7 @@ public class NeverStartedToursAnalysis implements DrtRequestSubmittedEventHandle
             writer.newLine();
 
 //            for (i=0; i <= this.neverScheduledTours.size(); i++) {
-            for (Id<Request> requestId : this.neverScheduledTours) {
+            for (Id<DrtBlockingRequest> requestId : this.neverScheduledTours) {
 //                Id<Request> requestId = this.neverScheduledTours.get(i);
                 Double requestTime = this.requestToTime.get(requestId);
                 Id<DvrpVehicle> vehicleId = this.requestToVehicleId.get(requestId);
@@ -64,7 +63,7 @@ public class NeverStartedToursAnalysis implements DrtRequestSubmittedEventHandle
     }
 
     @Override
-    public void handleEvent(DrtRequestSubmittedEvent event) {
+    public void handleEvent(DrtBlockingRequestSubmittedEvent event) {
         this.neverScheduledTours.add(event.getRequestId());
         this.requestToTime.putIfAbsent(event.getRequestId(), event.getTime());
         System.out.println("test");
@@ -73,7 +72,7 @@ public class NeverStartedToursAnalysis implements DrtRequestSubmittedEventHandle
     @Override
     public void handleEvent(DrtBlockingRequestScheduledEvent event) {
 //        this.neverScheduledTours.remove(event.getRequestId());
-        this.requestToVehicleId.putIfAbsent(event.getRequestId(), event.getVehicleId());
+        this.requestToVehicleId.putIfAbsent(Id.create(event.getRequestId(), DrtBlockingRequest.class), event.getVehicleId());
         System.out.println(this.neverScheduledTours.remove(event.getRequestId()));
     }
 }

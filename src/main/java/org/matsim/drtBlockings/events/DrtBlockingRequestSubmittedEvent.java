@@ -8,7 +8,6 @@ import org.matsim.api.core.v01.events.Event;
 import org.matsim.api.core.v01.events.GenericEvent;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
-import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.drtBlockings.DrtBlockingRequest;
 
 public class DrtBlockingRequestSubmittedEvent extends Event {
@@ -50,6 +49,8 @@ public class DrtBlockingRequestSubmittedEvent extends Event {
     public final Id<Link> getToLinkId() {
         return toLinkId;
     }
+
+    public final Id<DrtBlockingRequest> getRequestId() { return requestId; }
 
     @Override
     public Map<String, String> getAttributes() {

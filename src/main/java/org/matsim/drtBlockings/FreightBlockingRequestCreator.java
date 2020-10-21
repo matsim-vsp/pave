@@ -93,10 +93,11 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
     private DrtBlockingRequest createRequest(Id<Carrier> carrierId, ScheduledTour scheduledTour, String tourID) {
         Id<Request> id = Id.create(tourID, Request.class);
+        String mode = this.mode;
         double blockingStart = determineStartOfBlocking(scheduledTour);
         List<Task> tourTasks = convertScheduledTour2DvrpTasks(scheduledTour, blockingStart);
         double blockingEnd = tourTasks.get(tourTasks.size() - 1).getEndTime();
-        return new DrtBlockingRequest(id, carrierId, Math.max(qSimStartTime, blockingStart - SUBMISSION_LOOK_AHEAD), blockingStart, blockingEnd, tourTasks);
+        return new DrtBlockingRequest(id, mode,carrierId, Math.max(qSimStartTime, blockingStart - SUBMISSION_LOOK_AHEAD), blockingStart, blockingEnd, tourTasks);
     }
 
 

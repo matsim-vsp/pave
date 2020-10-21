@@ -194,7 +194,7 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
     }
 
     private List<Link> findNearestDepots(Link requestLink, Stream<Link> depotLinks) {
-        StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(pfavConfigGroup.getNumberOfDepotsToConsider(), link1 -> link1, link2 -> link2);
+        StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(pfavConfigGroup.getNumberOfDepotsToConsider(), link1 -> link1.getCoord(), link2 -> link2.getCoord());
         return finder.findNearest(requestLink, depotLinks);
     }
 
