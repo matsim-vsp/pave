@@ -23,6 +23,7 @@ package org.matsim.drtBlockings;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.optimizer.DefaultDrtOptimizer;
+import org.matsim.contrib.drt.optimizer.DrtModeOptimizerQSimModule;
 import org.matsim.contrib.drt.optimizer.DrtOptimizer;
 import org.matsim.contrib.drt.optimizer.QSimScopeForkJoinPoolHolder;
 import org.matsim.contrib.drt.optimizer.VehicleData;
@@ -35,7 +36,6 @@ import org.matsim.contrib.drt.optimizer.insertion.UnplannedRequestInserter;
 import org.matsim.contrib.drt.optimizer.rebalancing.RebalancingStrategy;
 import org.matsim.contrib.drt.passenger.DrtRequestCreator;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
-import org.matsim.contrib.drt.run.DrtModeQSimModule;
 import org.matsim.contrib.drt.schedule.DrtTaskFactory;
 import org.matsim.contrib.drt.schedule.DrtTaskFactoryImpl;
 import org.matsim.contrib.drt.scheduler.DrtScheduleInquiry;
@@ -169,7 +169,7 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getModal(new TypeLiteral<DrtInsertionSearch<OneToManyPathSearch.PathData>>() {
                         }), getter.getModal(QSimScopeForkJoinPoolHolder.class).getPool()))).asEagerSingleton();
 
-        install(DrtModeQSimModule.getInsertionSearchQSimModule(drtCfg));
+        install(DrtModeOptimizerQSimModule.getInsertionSearchQSimModule(drtCfg));
 
 
         bindModal(InsertionCostCalculator.PenaltyCalculator.class).to(
