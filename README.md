@@ -1,6 +1,6 @@
 # PAVE Projekt Webseite
 
-This repo contains the interactive visualization website for PAVE, available at ***.
+This repo contains the interactive visualization website for PAVE, available at \*\*\*.
 
 This README details build instructions for the website itself.
 
