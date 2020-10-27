@@ -1,6 +1,6 @@
-# AVÖV Projekt Webseite
+# PAVE Projekt Webseite
 
-This repo contains the interactive visualization website for AVÖV/AVOEV, available at https://avoev-vsp.github.io.
+This repo contains the interactive visualization website for PAVE, available at ***.
 
 This README details build instructions for the website itself.
 

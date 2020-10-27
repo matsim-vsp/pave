@@ -28,7 +28,7 @@ en:
   tagLine: 'the model output browser and data visualizer from TU Berlin.'
 de:
   more-info: 'Für weitere Informationen:'
-  tagLine: 'Der Modellergebnis-Browser der TU Berlin.'
+  tagLine: 'Hier finden Sie Ergebnisse des PAVE-Projektes '
 </i18n>
 
 <script lang="ts">
