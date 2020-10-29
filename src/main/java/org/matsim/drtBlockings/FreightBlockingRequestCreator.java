@@ -103,8 +103,6 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         DrtBlockingRequest request = DrtBlockingRequest.newBuilder()
                 .id(Id.create(id, DrtBlockingRequest.class))
                 .mode(mode)
-                //TODO: vehicleId is carrierVehicleId but needs to be dvrpVehicle Id
-                .vehicleId(vehicleId)
                 .carrierId(carrierId)
                 .submissionTime(submissionTime)
                 .startTime(blockingStart)

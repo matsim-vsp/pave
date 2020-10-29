@@ -22,7 +22,7 @@ import java.util.Map;
 
 public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEventHandler, DrtBlockingRequestScheduledEventHandler {
 
-//    private Map<Id<DrtBlockingRequest>, Double> requestToTime = new HashMap<>();
+//    private Map<Id<Request>, Double> requestToTime = new HashMap<>();
 //    private Map<Id<DvrpVehicle>, DrtBlockingTourData> allTours = new HashMap<>();
     private List<DrtBlockingTourData> allTours = new ArrayList<>();
     private List<DrtBlockingTourData> scheduledTours = new ArrayList<>();
@@ -71,7 +71,8 @@ public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEve
     @Override
     public void handleEvent(DrtBlockingRequestSubmittedEvent event) {
 
-        Id<DvrpVehicle> vehId = event.getVehicleId();
+//        Id<DvrpVehicle> vehId = event.getVehicleId(); TODO: fix this
+        Id<DvrpVehicle> vehId = Id.create(event.getRequestId(), DvrpVehicle.class);
 
         DrtBlockingTourData data = new DrtBlockingTourData(vehId, event.getTime());
 //        this.allTours.put(vehId, data);
@@ -86,7 +87,7 @@ public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEve
 
         DrtBlockingTourData data = new DrtBlockingTourData(event.getVehicleId(), 0.);
 
-        data.requestId = Id.create(event.getRequestId(), DrtBlockingRequest.class);
+        data.requestId = Id.create(event.getRequestId(), Request.class);
         this.scheduledTours.add(data);
 //       this.neverScheduledTours.remove(event.getVehicleId());
     }
@@ -94,7 +95,7 @@ public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEve
     private class DrtBlockingTourData {
         private final Id<DvrpVehicle> veh;
         private double time;
-        private Id<DrtBlockingRequest> requestId;
+        private Id<Request> requestId;
 
         private DrtBlockingTourData(Id<DvrpVehicle> veh, double time) {
             this.veh = veh;

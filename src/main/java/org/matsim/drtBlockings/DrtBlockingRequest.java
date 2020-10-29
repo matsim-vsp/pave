@@ -20,7 +20,6 @@ public class DrtBlockingRequest implements Request {
     private final Id<Carrier> carrierId;
 
     private final String mode;
-    private final Id<DvrpVehicle> vehicleId;
 
     private List<Task> tasks;
 
@@ -36,7 +35,6 @@ public class DrtBlockingRequest implements Request {
         this.id = Id.create(builder.id, Request.class);
 
         this.mode = builder.mode;
-        this.vehicleId = builder.vehicleId;
 
         this.submissionTime = builder.submissionTime;
         this.startTime = builder.startTime;
@@ -52,7 +50,6 @@ public class DrtBlockingRequest implements Request {
         Builder builder = new Builder();
         builder.id = Id.create(copy.getId(), DrtBlockingRequest.class);
         builder.mode = copy.getMode();
-        builder.vehicleId = copy.getVehicleId();
         builder.carrierId = copy.getCarrierId();
         builder.submissionTime = copy.getSubmissionTime();
         builder.startTime = copy.getStartTime();
@@ -105,21 +102,18 @@ public class DrtBlockingRequest implements Request {
     }
 
     public Link getEndLink() {
-        System.out.println("SIZE: " + this.tasks.get(tasks.size()-3));
-        return Tasks.getEndLink(this.tasks.get(tasks.size() - 3));
+        System.out.println("SIZE: " + this.tasks);
+        return Tasks.getEndLink(this.tasks.get(tasks.size() - 1));
     }
 
     public Id<Carrier> getCarrierId() { return carrierId; }
 
     public String getMode() { return this.mode; }
 
-    public Id<DvrpVehicle> getVehicleId() { return this.vehicleId; }
-
     public static final class Builder {
 
         private Id<DrtBlockingRequest> id;
         private String mode;
-        private Id<DvrpVehicle> vehicleId;
         private Double submissionTime;
         private Double startTime;
         private Double endTime;
@@ -133,11 +127,6 @@ public class DrtBlockingRequest implements Request {
 
         public  Builder mode(String val) {
             mode = val;
-            return this;
-        }
-
-        public Builder vehicleId(Id<DvrpVehicle> val) {
-            vehicleId = val;
             return this;
         }
 
