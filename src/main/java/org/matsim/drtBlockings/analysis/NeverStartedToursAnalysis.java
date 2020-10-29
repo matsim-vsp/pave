@@ -1,5 +1,6 @@
 package org.matsim.drtBlockings.analysis;
 
+import com.google.common.base.Function;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.drt.passenger.events.DrtRequestSubmittedEvent;
 import org.matsim.contrib.drt.passenger.events.DrtRequestSubmittedEventHandler;
@@ -21,9 +22,11 @@ import java.util.Map;
 
 public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEventHandler, DrtBlockingRequestScheduledEventHandler {
 
-    private Map<Id<DrtBlockingRequest>, Double> requestToTime = new HashMap<>();
-    private Map<Id<DrtBlockingRequest>, Id<DvrpVehicle>> requestToVehicleId = new HashMap<>();
-    private List<Id<DrtBlockingRequest>> neverScheduledTours = new ArrayList<>();
+//    private Map<Id<DrtBlockingRequest>, Double> requestToTime = new HashMap<>();
+//    private Map<Id<DvrpVehicle>, DrtBlockingTourData> allTours = new HashMap<>();
+    private List<DrtBlockingTourData> allTours = new ArrayList<>();
+    private List<DrtBlockingTourData> scheduledTours = new ArrayList<>();
+
 
     public static void main(String[] args) {
         String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/drtBlocking/Analysis_test/";
@@ -48,12 +51,15 @@ public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEve
             writer.newLine();
 
 //            for (i=0; i <= this.neverScheduledTours.size(); i++) {
-            for (Id<DrtBlockingRequest> requestId : this.neverScheduledTours) {
-//                Id<Request> requestId = this.neverScheduledTours.get(i);
-                Double requestTime = this.requestToTime.get(requestId);
-                Id<DvrpVehicle> vehicleId = this.requestToVehicleId.get(requestId);
-                writer.write(i + ";" + requestId + ";" + requestTime + ";" + vehicleId);
-                writer.newLine();
+            for (DrtBlockingTourData data : this.allTours) {
+                if(!this.scheduledTours.contains(data.veh)) {
+
+                    writer.write(i + ";" + data.requestId + ";" + data.time + ";" + data.veh);
+                    writer.newLine();
+                }
+//                if(!this.allTours.contains(data.veh)) {
+//                    System.out.println("testoooooo");
+//                }
                 i++;
             }
             writer.close();
@@ -64,15 +70,36 @@ public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEve
 
     @Override
     public void handleEvent(DrtBlockingRequestSubmittedEvent event) {
-        this.neverScheduledTours.add(event.getRequestId());
-        this.requestToTime.putIfAbsent(event.getRequestId(), event.getTime());
-        System.out.println("test");
+
+        Id<DvrpVehicle> vehId = event.getVehicleId();
+
+        DrtBlockingTourData data = new DrtBlockingTourData(vehId, event.getTime());
+//        this.allTours.put(vehId, data);
+        data.requestId = event.getRequestId();
+        this.allTours.add(data);
+//        this.neverScheduledTours.putIfAbsent(vehId, data);
+//        System.out.println(event);
     }
 
     @Override
     public void handleEvent(DrtBlockingRequestScheduledEvent event) {
-//        this.neverScheduledTours.remove(event.getRequestId());
-        this.requestToVehicleId.putIfAbsent(Id.create(event.getRequestId(), DrtBlockingRequest.class), event.getVehicleId());
-        System.out.println(this.neverScheduledTours.remove(event.getRequestId()));
+
+        DrtBlockingTourData data = new DrtBlockingTourData(event.getVehicleId(), 0.);
+
+        data.requestId = Id.create(event.getRequestId(), DrtBlockingRequest.class);
+        this.scheduledTours.add(data);
+//       this.neverScheduledTours.remove(event.getVehicleId());
+    }
+
+    private class DrtBlockingTourData {
+        private final Id<DvrpVehicle> veh;
+        private double time;
+        private Id<DrtBlockingRequest> requestId;
+
+        private DrtBlockingTourData(Id<DvrpVehicle> veh, double time) {
+            this.veh = veh;
+            this.time = time;
+        }
+
     }
 }

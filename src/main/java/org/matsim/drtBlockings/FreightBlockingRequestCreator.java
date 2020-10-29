@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelDataImpl;
@@ -86,18 +87,33 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
                 vehCount = vehicleCount.get(tour.getVehicle().getId());
             }
             String tourID = carrier.getId() + "_" + tour.getVehicle().getId() + "_" + vehCount;
-            requests.add(createRequest(carrier.getId(), tour, tourID));
+            requests.add(createRequest(carrier.getId(), Id.create(tour.getVehicle().getId(), DvrpVehicle.class), tour, tourID));
         }
         return requests;
     }
 
-    private DrtBlockingRequest createRequest(Id<Carrier> carrierId, ScheduledTour scheduledTour, String tourID) {
+    private DrtBlockingRequest createRequest(Id<Carrier> carrierId, Id<DvrpVehicle> vehicleId, ScheduledTour scheduledTour, String tourID) {
         Id<Request> id = Id.create(tourID, Request.class);
         String mode = this.mode;
         double blockingStart = determineStartOfBlocking(scheduledTour);
+        double submissionTime = Math.max(qSimStartTime, blockingStart - SUBMISSION_LOOK_AHEAD);
         List<Task> tourTasks = convertScheduledTour2DvrpTasks(scheduledTour, blockingStart);
         double blockingEnd = tourTasks.get(tourTasks.size() - 1).getEndTime();
-        return new DrtBlockingRequest(id, mode,carrierId, Math.max(qSimStartTime, blockingStart - SUBMISSION_LOOK_AHEAD), blockingStart, blockingEnd, tourTasks);
+
+        DrtBlockingRequest request = DrtBlockingRequest.newBuilder()
+                .id(Id.create(id, DrtBlockingRequest.class))
+                .mode(mode)
+                //TODO: vehicleId is carrierVehicleId but needs to be dvrpVehicle Id
+                .vehicleId(vehicleId)
+                .carrierId(carrierId)
+                .submissionTime(submissionTime)
+                .startTime(blockingStart)
+                .endTime(blockingEnd)
+                .tasks(tourTasks)
+                .build();
+
+        return request;
+//        return new DrtBlockingRequest(id, mode,carrierId, Math.max(qSimStartTime, blockingStart - SUBMISSION_LOOK_AHEAD), blockingStart, blockingEnd, tourTasks);
     }
 
 

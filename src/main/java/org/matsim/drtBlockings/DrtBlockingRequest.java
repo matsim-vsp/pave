@@ -25,23 +25,41 @@ public class DrtBlockingRequest implements Request {
     private List<Task> tasks;
 
     //TODO maybe add CarrierVehId as well?
-    DrtBlockingRequest(final Id<Request> id, final String mode, final Id<Carrier> carrierId,
-                       final double submissionTime, final double startTime, final double endTime,
-                       List<Task> dvrpVehicleTasks) {
+//    DrtBlockingRequest(final Id<Request> id, final String mode, final Id<Carrier> carrierId,
+//                       final double submissionTime, final double startTime, final double endTime,
+//                       List<Task> dvrpVehicleTasks) {
 
-        Builder builder = new Builder();
+    DrtBlockingRequest(Builder builder) {
 
-        this.id = id;
+//        Builder builder = new Builder();
+
+        this.id = Id.create(builder.id, Request.class);
 
         this.mode = builder.mode;
         this.vehicleId = builder.vehicleId;
 
-        this.submissionTime = submissionTime;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.tasks = dvrpVehicleTasks;
+        this.submissionTime = builder.submissionTime;
+        this.startTime = builder.startTime;
+        this.endTime = builder.endTime;
+        this.tasks = builder.tasks;
         checkStartAndEndTimeConsistency();
-        this.carrierId = carrierId;
+        this.carrierId = builder.carrierId;
+    }
+
+    public static Builder newBuilder() { return new Builder(); }
+
+    public static Builder newBuilder(DrtBlockingRequest copy) {
+        Builder builder = new Builder();
+        builder.id = Id.create(copy.getId(), DrtBlockingRequest.class);
+        builder.mode = copy.getMode();
+        builder.vehicleId = copy.getVehicleId();
+        builder.carrierId = copy.getCarrierId();
+        builder.submissionTime = copy.getSubmissionTime();
+        builder.startTime = copy.getStartTime();
+        builder.endTime = copy.getEndTime();
+        builder.tasks = copy.getTasks();
+
+        return builder;
     }
 
     private void checkStartAndEndTimeConsistency() {
@@ -86,18 +104,32 @@ public class DrtBlockingRequest implements Request {
         return Tasks.getEndLink(this.tasks.get(0));
     }
 
-    public Link getEndLink() { return Tasks.getEndLink(this.tasks.get(tasks.size() - 1)); }
+    public Link getEndLink() {
+        System.out.println("SIZE: " + this.tasks.get(tasks.size()-3));
+        return Tasks.getEndLink(this.tasks.get(tasks.size() - 3));
+    }
 
     public Id<Carrier> getCarrierId() { return carrierId; }
 
-    public String getMode() { return mode; }
+    public String getMode() { return this.mode; }
 
-    public Id<DvrpVehicle> getVehicleId() { return vehicleId; }
+    public Id<DvrpVehicle> getVehicleId() { return this.vehicleId; }
 
     public static final class Builder {
 
+        private Id<DrtBlockingRequest> id;
         private String mode;
         private Id<DvrpVehicle> vehicleId;
+        private Double submissionTime;
+        private Double startTime;
+        private Double endTime;
+        private Id<Carrier> carrierId;
+        private List<Task> tasks;
+
+        public Builder id(Id<DrtBlockingRequest> val) {
+            id = val;
+            return this;
+        }
 
         public  Builder mode(String val) {
             mode = val;
@@ -107,6 +139,35 @@ public class DrtBlockingRequest implements Request {
         public Builder vehicleId(Id<DvrpVehicle> val) {
             vehicleId = val;
             return this;
+        }
+
+        public Builder submissionTime(Double val) {
+            submissionTime = val;
+            return this;
+        }
+
+        public Builder startTime(Double val) {
+            startTime = val;
+            return this;
+        }
+
+        public Builder endTime(Double val) {
+            endTime = val;
+            return this;
+        }
+
+        public Builder carrierId(Id<Carrier> val) {
+            carrierId = val;
+            return this;
+        }
+
+        public Builder tasks(List<Task> val) {
+            tasks = val;
+            return this;
+        }
+
+        public DrtBlockingRequest build() {
+            return new DrtBlockingRequest(this);
         }
     }
 }

@@ -20,12 +20,12 @@
 
 package org.matsim.drtBlockings;
 
+import java.util.Collection;
+
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.Schedules;
 import org.matsim.contrib.util.StraightLineKnnFinder;
-
-import java.util.Collection;
 
 class StraightLineKnnBlockingDispatcher implements DrtBlockingRequestDispatcher {
 
@@ -40,7 +40,8 @@ class StraightLineKnnBlockingDispatcher implements DrtBlockingRequestDispatcher 
     @Override
     public DvrpVehicle findDispatchForBlockingRequest(Collection<DvrpVehicle> availableVehicles, DrtBlockingRequest blockingRequest) {
         if(availableVehicles.isEmpty()) return null;
-        StraightLineKnnFinder<Link, DvrpVehicle> finder = new StraightLineKnnFinder<>(1, link1 -> link1.getCoord(), vehicle -> Schedules.getLastLinkInSchedule(vehicle).getCoord());
+        StraightLineKnnFinder<Link, DvrpVehicle> finder = new StraightLineKnnFinder<>(1, Link::getCoord,
+                vehicle -> Schedules.getLastLinkInSchedule(vehicle).getCoord());
         return finder.findNearest(blockingRequest.getStartLink(), availableVehicles.stream()).get(0);
     }
 

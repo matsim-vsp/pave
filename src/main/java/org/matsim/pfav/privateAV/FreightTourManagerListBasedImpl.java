@@ -51,7 +51,6 @@ import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.carrier.ScheduledTour;
 import org.matsim.contrib.taxi.schedule.TaxiEmptyDriveTask;
 import org.matsim.contrib.taxi.schedule.TaxiStayTask;
-import org.matsim.contrib.taxi.schedule.TaxiTaskType;
 import org.matsim.contrib.util.StraightLineKnnFinder;
 import org.matsim.contrib.util.distance.DistanceUtils;
 import org.matsim.core.config.Config;
@@ -63,8 +62,6 @@ import org.matsim.core.router.util.TravelTime;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-
-import static org.matsim.contrib.taxi.schedule.TaxiTaskBaseType.EMPTY_DRIVE;
 
 /**
  * @author tschlenther
@@ -194,7 +191,8 @@ class FreightTourManagerListBasedImpl implements FreightTourManagerListBased {
     }
 
     private List<Link> findNearestDepots(Link requestLink, Stream<Link> depotLinks) {
-        StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(pfavConfigGroup.getNumberOfDepotsToConsider(), link1 -> link1.getCoord(), link2 -> link2.getCoord());
+        StraightLineKnnFinder<Link, Link> finder = new StraightLineKnnFinder<>(
+                pfavConfigGroup.getNumberOfDepotsToConsider(), Link::getCoord, Link::getCoord);
         return finder.findNearest(requestLink, depotLinks);
     }
 

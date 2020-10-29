@@ -104,6 +104,7 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
 //    @Override
     public void blockingRequestSubmitted(DrtBlockingRequest drtBlockingRequest) {
         this.blockingRequests.add(drtBlockingRequest);
+        System.out.println("vehicleId: " + drtBlockingRequest.getVehicleId());
         eventsManager.processEvent(new DrtBlockingRequestSubmittedEvent(timer.getTimeOfDay(), drtBlockingRequest.getVehicleId(), drtBlockingRequest.getMode(),
                 Id.create(drtBlockingRequest.getId(), DrtBlockingRequest.class),
                 drtBlockingRequest.getStartLink().getId(), drtBlockingRequest.getEndLink().getId()));
@@ -179,7 +180,9 @@ class DefaultBlockingOptimizer implements BlockingOptimizer {
                         scheduleTasksForBlockedVehicle(drtBlockingRequest, vehicle);
                         this.blockedVehicles.put(vehicle, drtBlockingRequest);
                         blockingRequestsIterator.remove();
-                        eventsManager.processEvent(new DrtBlockingRequestScheduledEvent(timer.getTimeOfDay(), drtBlockingRequest.getId(), drtBlockingRequest.getCarrierId(), Id.create(drtBlockingRequest.getCarrierId(), CarrierVehicle.class), vehicle.getId()));
+                        eventsManager.processEvent(new DrtBlockingRequestScheduledEvent(timer.getTimeOfDay(),
+                                drtBlockingRequest.getId(), drtBlockingRequest.getCarrierId(),
+                                Id.create(drtBlockingRequest.getCarrierId(), CarrierVehicle.class), vehicle.getId()));
 
                     }
                 } else{
