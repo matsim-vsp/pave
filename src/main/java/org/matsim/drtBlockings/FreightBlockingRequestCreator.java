@@ -101,7 +101,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         double blockingEnd = tourTasks.get(tourTasks.size() - 1).getEndTime();
 
         DrtBlockingRequest request = DrtBlockingRequest.newBuilder()
-                .id(Id.create(id, DrtBlockingRequest.class))
+                .id(Id.create(id, Request.class))
                 .mode(mode)
                 .carrierId(carrierId)
                 .submissionTime(submissionTime)

@@ -48,7 +48,7 @@ public class DrtBlockingRequest implements Request {
 
     public static Builder newBuilder(DrtBlockingRequest copy) {
         Builder builder = new Builder();
-        builder.id = Id.create(copy.getId(), DrtBlockingRequest.class);
+        builder.id = Id.create(copy.getId(), Request.class);
         builder.mode = copy.getMode();
         builder.carrierId = copy.getCarrierId();
         builder.submissionTime = copy.getSubmissionTime();
@@ -112,7 +112,7 @@ public class DrtBlockingRequest implements Request {
 
     public static final class Builder {
 
-        private Id<DrtBlockingRequest> id;
+        private Id<Request> id;
         private String mode;
         private Double submissionTime;
         private Double startTime;
@@ -120,7 +120,7 @@ public class DrtBlockingRequest implements Request {
         private Id<Carrier> carrierId;
         private List<Task> tasks;
 
-        public Builder id(Id<DrtBlockingRequest> val) {
+        public Builder id(Id<Request> val) {
             id = val;
             return this;
         }
