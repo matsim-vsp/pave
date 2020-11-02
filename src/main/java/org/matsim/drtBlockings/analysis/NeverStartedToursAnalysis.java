@@ -22,10 +22,11 @@ import java.util.Map;
 
 public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEventHandler, DrtBlockingRequestScheduledEventHandler {
 
-//    private Map<Id<Request>, Double> requestToTime = new HashMap<>();
+    private Map<Id<Request>, Double> requestToTime = new HashMap<>();
 //    private Map<Id<DvrpVehicle>, DrtBlockingTourData> allTours = new HashMap<>();
+//    private Map<Id<Request>, DrtBlockingTourData> submittedTours = new HashMap<>();
     private List<DrtBlockingTourData> allTours = new ArrayList<>();
-    private List<DrtBlockingTourData> scheduledTours = new ArrayList<>();
+    private List<Id<Request>> scheduledTours = new ArrayList<>();
 
 
     public static void main(String[] args) {
@@ -46,22 +47,21 @@ public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEve
     private void writeStats(String file) {
         BufferedWriter writer = IOUtils.getBufferedWriter(file);
         try {
-            int i = 1;
-            writer.write("No;requestId;requestTime;vehicleId");
+            int i = 0;
+            writer.write("No;requestId;requestTime");
             writer.newLine();
 
 //            for (i=0; i <= this.neverScheduledTours.size(); i++) {
             for (DrtBlockingTourData data : this.allTours) {
-                if(!this.scheduledTours.contains(data.veh)) {
 
-                    writer.write(i + ";" + data.requestId + ";" + data.time + ";" + data.veh);
+                if(!this.scheduledTours.contains(data.requestId)) {
+
+                    writer.write(i + ";" + data.requestId + ";" + data.time);
                     writer.newLine();
                 }
-//                if(!this.allTours.contains(data.veh)) {
-//                    System.out.println("testoooooo");
-//                }
                 i++;
             }
+
             writer.close();
         } catch(IOException e) {
             e.printStackTrace();
@@ -72,33 +72,30 @@ public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEve
     public void handleEvent(DrtBlockingRequestSubmittedEvent event) {
 
 //        Id<DvrpVehicle> vehId = event.getVehicleId(); TODO: fix this
-        Id<DvrpVehicle> vehId = Id.create(event.getRequestId(), DvrpVehicle.class);
+        Id<Request> requestId = event.getRequestId();
 
-        DrtBlockingTourData data = new DrtBlockingTourData(vehId, event.getTime());
+        DrtBlockingTourData data = new DrtBlockingTourData(requestId, event.getTime());
+        this.requestToTime.putIfAbsent(requestId, event.getTime());
 //        this.allTours.put(vehId, data);
-        data.requestId = event.getRequestId();
         this.allTours.add(data);
-//        this.neverScheduledTours.putIfAbsent(vehId, data);
-//        System.out.println(event);
+
     }
 
     @Override
     public void handleEvent(DrtBlockingRequestScheduledEvent event) {
 
-        DrtBlockingTourData data = new DrtBlockingTourData(event.getVehicleId(), 0.);
+//        double submitTime = this.requestToTime.remove(event.getRequestId());
+//        DrtBlockingTourData data = new DrtBlockingTourData(event.getRequestId(), submitTime);
 
-        data.requestId = Id.create(event.getRequestId(), Request.class);
-        this.scheduledTours.add(data);
-//       this.neverScheduledTours.remove(event.getVehicleId());
+        this.scheduledTours.add(event.getRequestId());
     }
 
     private class DrtBlockingTourData {
-        private final Id<DvrpVehicle> veh;
         private double time;
         private Id<Request> requestId;
 
-        private DrtBlockingTourData(Id<DvrpVehicle> veh, double time) {
-            this.veh = veh;
+        private DrtBlockingTourData(Id<Request> requestId, double time) {
+            this.requestId = requestId;
             this.time = time;
         }
 
