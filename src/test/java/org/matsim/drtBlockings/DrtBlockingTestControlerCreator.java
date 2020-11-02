@@ -20,6 +20,11 @@
 
 package org.matsim.drtBlockings;
 
+import java.util.Collection;
+import java.util.concurrent.ExecutionException;
+
+import javax.management.InvalidAttributeValueException;
+
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -28,7 +33,6 @@ import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.PopulationFactory;
-import org.matsim.contrib.drt.optimizer.insertion.DrtInsertionSearchParams;
 import org.matsim.contrib.drt.optimizer.insertion.ExtensiveInsertionSearchParams;
 import org.matsim.contrib.drt.routing.DrtRoute;
 import org.matsim.contrib.drt.routing.DrtRouteFactory;
@@ -48,10 +52,6 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.events.handler.EventHandler;
 import org.matsim.core.scenario.ScenarioUtils;
-
-import javax.management.InvalidAttributeValueException;
-import java.util.Collection;
-import java.util.concurrent.ExecutionException;
 
 class DrtBlockingTestControlerCreator {
 
@@ -173,7 +173,6 @@ class DrtBlockingTestControlerCreator {
 		drtCfg.setMaxTravelTimeAlpha(1);
 		drtCfg.setMaxTravelTimeBeta(15 * 60);
 		drtCfg.setStopDuration(60);
-		drtCfg.setEstimatedDrtSpeed(10);
 		drtCfg.setVehiclesFile("drtBlockingVehicles.xml");
 		drtCfg.addParameterSet(new ExtensiveInsertionSearchParams());
 		config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
