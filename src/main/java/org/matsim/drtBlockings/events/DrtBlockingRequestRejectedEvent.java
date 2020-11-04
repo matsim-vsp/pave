@@ -61,6 +61,8 @@ public class DrtBlockingRequestRejectedEvent extends Event {
 
     public Id<Carrier> getCarrierId() { return carrierId; }
 
+    public Id<Request> getRequestId() { return requestId; }
+
     public static DrtBlockingRequestRejectedEvent convert(GenericEvent event) {
         Map<String, String> attributes = event.getAttributes();
         double time = Double.parseDouble(attributes.get(ATTRIBUTE_TIME));
