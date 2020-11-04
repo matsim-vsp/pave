@@ -11,6 +11,7 @@ import org.matsim.contrib.dvrp.vrpagent.TaskEndedEventHandler;
 import org.matsim.contrib.dvrp.vrpagent.TaskStartedEvent;
 import org.matsim.contrib.dvrp.vrpagent.TaskStartedEventHandler;
 import org.matsim.core.api.experimental.events.EventsManager;
+import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.network.NetworkUtils;
@@ -48,7 +49,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
     }
 
     public static void main(String[] args) {
-        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/drtBlocking/Analysis_test/";
+        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/Analysis_test/";
         String eventsFile = dir + "output_events.xml.gz";
 //        String carriersFile = dir + "";
         String inputNetwork = dir + "output_network.xml.gz";
@@ -60,7 +61,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         Network network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile(inputNetwork);
 
-        BasicTourStatsAnalysis handler = new BasicTourStatsAnalysis(network);
+            BasicTourStatsAnalysis handler = new BasicTourStatsAnalysis(network);
         manager.addHandler(handler);
 //        manager.addHandler((LinkEnterEventHandler) linkEnterEvent -> System.out.println("HEY"));
         manager.initProcessing();
@@ -70,8 +71,16 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         handler.writeStats(outputFile);
     }
 
-    private void writeStats(String file) {
+    public void notifyIterationEnd(IterationEndsEvent event) {
+        String dir = event.getServices().getConfig().controler().getOutputDirectory();
+        String outputFile = dir + "/testBasicTourStats.csv";
+//        writeStats(outputFile);
+    }
+
+    public void writeStats(String file) {
         BufferedWriter writer = IOUtils.getBufferedWriter(file);
+
+        System.out.println("WRITING!");
         try {
             int i =1;
             writer.write("no;vehId;totalDistance;accessLegDistance;departureTime;arrivalTime;tourDuration;accessLegDuration;requestId;numberOfTasks");
