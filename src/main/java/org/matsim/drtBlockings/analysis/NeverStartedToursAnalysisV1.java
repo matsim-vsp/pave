@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEventHandler, DrtBlockingRequestScheduledEventHandler {
+public class NeverStartedToursAnalysisV1 implements DrtBlockingRequestSubmittedEventHandler, DrtBlockingRequestScheduledEventHandler {
 
     private Map<Id<Request>, Double> requestToTime = new HashMap<>();
 //    private Map<Id<DvrpVehicle>, DrtBlockingTourData> allTours = new HashMap<>();
@@ -30,12 +30,13 @@ public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEve
 
 
     public static void main(String[] args) {
-        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/drtBlocking/Analysis_test/";
+        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/Analysis_test/";
         String eventsFile = dir + "output_events.xml.gz";
-        String outputFile = dir + "neverStartedTourStats.csv";
+//        String eventsFile = dir + "output_events_3.xml";
+        String outputFile = dir + "neverStartedTourStatsV1.csv";
 
         EventsManager manager = EventsUtils.createEventsManager();
-        NeverStartedToursAnalysis handler = new NeverStartedToursAnalysis();
+        NeverStartedToursAnalysisV1 handler = new NeverStartedToursAnalysisV1();
         manager.addHandler(handler);
         manager.initProcessing();
         MatsimEventsReader reader = DrtBlockingEventsReader.create(manager);
@@ -59,6 +60,8 @@ public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEve
                     writer.write(i + ";" + data.requestId + ";" + data.time);
                     writer.newLine();
                 }
+
+
                 i++;
             }
 
@@ -71,7 +74,6 @@ public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEve
     @Override
     public void handleEvent(DrtBlockingRequestSubmittedEvent event) {
 
-//        Id<DvrpVehicle> vehId = event.getVehicleId(); TODO: fix this
         Id<Request> requestId = event.getRequestId();
 
         DrtBlockingTourData data = new DrtBlockingTourData(requestId, event.getTime());
