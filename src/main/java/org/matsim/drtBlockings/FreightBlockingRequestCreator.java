@@ -79,6 +79,8 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         Set<DrtBlockingRequest> requests = new HashSet<>();
         Map<Id<CarrierVehicle>, Integer> vehicleCount = new HashMap<>();
 
+        int count = 0;
+
         for (ScheduledTour tour : carrier.getSelectedPlan().getScheduledTours()){
             int vehCount;
             if(vehicleCount.get(tour.getVehicle().getId()) == null){
@@ -86,8 +88,9 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
             } else{
                 vehCount = vehicleCount.get(tour.getVehicle().getId());
             }
-            String tourID = carrier.getId() + "_" + tour.getVehicle().getId() + "_" + vehCount;
+            String tourID = carrier.getId() + "_" + tour.getVehicle().getId() + "_" + vehCount + "_" + count;
             requests.add(createRequest(carrier.getId(), Id.create(tour.getVehicle().getId(), DvrpVehicle.class), tour, tourID));
+            count++;
         }
         return requests;
     }
