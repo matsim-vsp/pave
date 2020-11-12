@@ -98,6 +98,7 @@ public class DuringDayTourPlanner implements MobsimAfterSimStepListener, DrtBloc
 
         this.submittedTours.putIfAbsent(requestId, data);
     }
+    //TODO: This data class may be unnecessary, when I started coding the Planner I thought there will be many aspects of the carriers, requests etc we are using
     private class TourData {
         private final Id<Request> requestId;
         private List<Task> tasks;
