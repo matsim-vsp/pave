@@ -48,7 +48,9 @@ public class RunDrtBlockingBerlin {
 
 	//TODO
 //	private static final String CARRIERS_PLANS_PLANNED = "D:/svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin5.5_1pct_pave_drtBlockingcarriers_planned.xml";
-	private static final String CARRIERS_PLANS_PLANNED = "C:/Users/simon/tubCloud/MA/InputDRT/carriers_services_openBerlinNet_LichtenbergNord.xml";
+//	private static final String CARRIERS_PLANS_PLANNED = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/carriers_services_openBerlinNet_LichtenbergNord.xml";
+	private static final String CARRIERS_PLANS_PLANNED = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/carriers_services_openBerlinNet_LichtenbergNord_breitereServiceFenster.xml";
+//	private static final String CARRIERS_PLANS_PLANNED = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/carriers_services_openBerlinNet_LichtenbergNord_planned.xml";
 	private static final String CARRIERS_PLANS = "berlin-carriers.xml";
 	//TODO
 //	private static final String CARRIER_VEHICLE_TYPES = "D:/svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin-vehicleTypes.xml";
@@ -58,7 +60,8 @@ public class RunDrtBlockingBerlin {
 
 	//TODO
 //	private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/drtBlockingTest";
-	private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/drtBlockingTest111";
+//	private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/drtBlockingTest_30Blockings";
+	private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/drtBlockingTest_30Blockings_ServiceWidthIncr";
 
 	public static void main(String[] args) {
 
