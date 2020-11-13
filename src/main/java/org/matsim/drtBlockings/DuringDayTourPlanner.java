@@ -14,6 +14,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.mobsim.framework.events.MobsimAfterSimStepEvent;
 import org.matsim.core.mobsim.framework.listeners.MobsimAfterSimStepListener;
+import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.drtBlockings.events.DrtBlockingRequestScheduledEvent;
 import org.matsim.drtBlockings.events.DrtBlockingRequestScheduledEventHandler;
 import org.matsim.drtBlockings.events.DrtBlockingRequestSubmittedEvent;
@@ -42,8 +43,13 @@ public class DuringDayTourPlanner implements MobsimAfterSimStepListener, DrtBloc
     public void notifyMobsimAfterSimStep(MobsimAfterSimStepEvent event) {
         if (event.getSimulationTime() == tourPlanningTime) {
             //Here we need to insert the scenario from running Mobsim TODO:HOW?
-            Scenario scenario;
-            Config config = scenario.getConfig();
+//            Scenario scenario;
+
+            //THe following only serves as dummy so there are no errors
+            Config config = ConfigUtils.createConfig();
+            Scenario scenario = ScenarioUtils.loadScenario(config);
+
+//            Config config = scenario.getConfig();
             FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
             Carriers carriers = FreightUtils.getCarriers(scenario);
             Id<Carrier> test = Id.create(123, Carrier.class);
