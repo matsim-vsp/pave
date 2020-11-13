@@ -75,7 +75,8 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
 	private final DrtConfigGroup drtCfg;
 
 	//TODO configurable
-	private static int defaultMaxAmountOfBlockings = 1;
+//	private static int defaultMaxAmountOfBlockings = 1;
+    private static int defaultMaxAmountOfBlockings = 30;
 
 	DrtBlockingQSimModule(DrtConfigGroup drtConfigGroup) {
 		super(drtConfigGroup.getMode());
