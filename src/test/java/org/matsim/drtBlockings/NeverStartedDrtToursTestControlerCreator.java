@@ -153,7 +153,6 @@ public class NeverStartedDrtToursTestControlerCreator {
         drtCfg.setMaxTravelTimeAlpha(1);
         drtCfg.setMaxTravelTimeBeta(15 * 60);
         drtCfg.setStopDuration(60);
-        drtCfg.setEstimatedDrtSpeed(10);
         drtCfg.setVehiclesFile("drtBlockingRejectedVehicles.xml");
         drtCfg.addParameterSet(new ExtensiveInsertionSearchParams());
         config.qsim().setSimStarttimeInterpretation(QSimConfigGroup.StarttimeInterpretation.onlyUseStarttime);
