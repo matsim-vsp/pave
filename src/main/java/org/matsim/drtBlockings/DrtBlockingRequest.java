@@ -102,7 +102,6 @@ public class DrtBlockingRequest implements Request {
     }
 
     public Link getEndLink() {
-        System.out.println("SIZE: " + this.tasks);
         return Tasks.getEndLink(this.tasks.get(tasks.size() - 1));
     }
 
