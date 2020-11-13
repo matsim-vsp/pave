@@ -49,10 +49,13 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
     }
 
     public static void main(String[] args) {
-        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/Analysis_test/";
-        String eventsFile = dir + "output_events.xml.gz";
+//        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/Analysis_test/";
+        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-10pct/drtBlockingTest_30Blockings_ServiceWidthIncr/";
+//        String eventsFile = dir + "output_events.xml.gz";
+        String eventsFile = dir + "blckBase1.output_events.xml.gz";
 //        String carriersFile = dir + "";
-        String inputNetwork = dir + "output_network.xml.gz";
+//        String inputNetwork = dir + "output_network.xml.gz";
+        String inputNetwork = dir + "blckBase1.output_network.xml.gz";
         String outputFile = dir + "testBasicTourStats.csv";
 //        final Carriers carriers = new Carriers();
 //        new CarrierPlanXmlReader(carriers).readFile(carriersFile);
@@ -69,6 +72,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         reader.readFile(eventsFile);
         manager.finishProcessing();
         handler.writeStats(outputFile);
+        System.out.println("Writing of DrtBlocking TourStats to " + outputFile + " was successful!");
     }
 
     public void notifyIterationEnd(IterationEndsEvent event) {
@@ -79,9 +83,8 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
 
     public void writeStats(String file) {
         BufferedWriter writer = IOUtils.getBufferedWriter(file);
-
-        System.out.println("WRITING!");
         try {
+            System.out.println("WRITING!");
             int i =1;
             writer.write("no;vehId;totalDistance;accessLegDistance;departureTime;arrivalTime;tourDuration;accessLegDuration;requestId;numberOfTasks");
             writer.newLine();
@@ -175,7 +178,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
                 data.requestId = this.vehToRequest.remove(event.getVehicleId());
                 data.taskNo = this.vehToTaskNo.remove(event.getVehicleId());
 
-                System.out.println(event.getLinkId() + " END OF TOUR!");
+//                System.out.println(event.getLinkId() + " END OF TOUR!");
 
 //                this.vehToDuration.put(event.getVehicleId(), tourDuration);
             } else {

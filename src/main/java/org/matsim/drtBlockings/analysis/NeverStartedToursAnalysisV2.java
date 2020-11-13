@@ -26,8 +26,10 @@ public class NeverStartedToursAnalysisV2 implements DrtBlockingRequestRejectedEv
 
 
     public static void main(String[] args) {
-        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/Analysis_test/";
-        String eventsFile = dir + "output_events.xml.gz";
+//        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/Analysis_test/";
+        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-10pct/drtBlockingTest_30Blockings_ServiceWidthIncr/";
+//        String eventsFile = dir + "output_events.xml.gz";
+        String eventsFile = dir + "blckBase1.output_events.xml.gz";
 //        String eventsFile = dir + "output_events_3.xml";
         String outputFile = dir + "neverStartedTourStatsV2.csv";
 
@@ -39,11 +41,13 @@ public class NeverStartedToursAnalysisV2 implements DrtBlockingRequestRejectedEv
         reader.readFile(eventsFile);
         manager.finishProcessing();
         handler.writeStats(outputFile);
+        System.out.println("Writing of DrtBlocking TourStats to " + outputFile + " was successful!");
     }
 
     private void writeStats(String file) {
         BufferedWriter writer = IOUtils.getBufferedWriter(file);
         try {
+            System.out.println("WRITING!");
             int i = 0;
             writer.write("No;requestId;rejectionTime");
             writer.newLine();
