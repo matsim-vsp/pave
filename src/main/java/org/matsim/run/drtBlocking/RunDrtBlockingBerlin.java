@@ -24,12 +24,18 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
+import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.events.handler.EventHandler;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.TripStructureUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -41,15 +47,18 @@ public class RunDrtBlockingBerlin {
 	private static final String INPUT_DRT_PLANS = "blckBase1.output_plans_drtOnly_splitAgents.xml.gz";
 
 	//TODO
-	private static final String CARRIERS_PLANS_PLANNED = "D:/svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin5.5_1pct_pave_drtBlockingcarriers_planned.xml";
+//	private static final String CARRIERS_PLANS_PLANNED = "D:/svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin5.5_1pct_pave_drtBlockingcarriers_planned.xml";
+	private static final String CARRIERS_PLANS_PLANNED = "C:/Users/simon/tubCloud/MA/InputDRT/carriers_services_openBerlinNet_LichtenbergNord.xml";
 	private static final String CARRIERS_PLANS = "berlin-carriers.xml";
 	//TODO
-	private static final String CARRIER_VEHICLE_TYPES = "D:/svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin-vehicleTypes.xml";
+//	private static final String CARRIER_VEHICLE_TYPES = "D:/svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin-vehicleTypes.xml";
+	private static final String CARRIER_VEHICLE_TYPES = "C:/Users/simon/tubCloud/MA/InputDRT/carrier_vehicleTypes.xml";
 
 	private static final boolean RUN_TOURPLANNING = false;
 
 	//TODO
-	private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/drtBlockingTest";
+//	private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/drtBlockingTest";
+	private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/drtBlockingTest111";
 
 	public static void main(String[] args) {
 
@@ -58,12 +67,12 @@ public class RunDrtBlockingBerlin {
 
 		config.network().setChangeEventsInputFile(INPUT_NETWORK_CHANGE_EVENTS);
 		config.network().setTimeVariantNetwork(true);
+		config.controler().setOutputDirectory(OUTPUT_DIR);
+		config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
 
 		config.plans().setInputFile(INPUT_DRT_PLANS);
 
-		Scenario scenario = RunDrtBlocking.prepareScenario(config, false);
-		scenario.getConfig().controler().setOutputDirectory(OUTPUT_DIR);
-		scenario.getConfig().controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+		Scenario scenario = RunDrtBlocking.prepareScenario(config, true);
 
 //		makePeopleUseDRTForRandomLegs(scenario.getPopulation());
 		Controler controler = RunDrtBlocking.prepareControler(scenario);
