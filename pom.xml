@@ -65,6 +65,10 @@
 			<url>https://mvn.topobyte.de</url>
 		</repository>
 
+		<repository>
+			<id>SBB</id>
+			<url>https://schweizerischebundesbahnen.bintray.com/simba.mvn</url>
+		</repository>
 	</repositories>
 
 
