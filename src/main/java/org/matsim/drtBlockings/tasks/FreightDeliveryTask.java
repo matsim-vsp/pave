@@ -23,6 +23,7 @@ package org.matsim.drtBlockings.tasks;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.drt.schedule.DrtTaskType;
 import org.matsim.contrib.dvrp.schedule.StayTask;
+import org.matsim.contrib.freight.carrier.CarrierService;
 import org.matsim.contrib.freight.carrier.TimeWindow;
 import org.matsim.contrib.freight.carrier.Tour;
 
@@ -50,5 +51,10 @@ public class    FreightDeliveryTask extends StayTask {
 
     public double getDeliveryDuration(){
         return this.tourActivity.getDuration();
+    }
+
+    // TODO consider to change this class into a FreightServiceTask and only return the service (and not a more general Activity)
+    public Tour.TourActivity getTourActivity() {
+        return tourActivity;
     }
 }
