@@ -65,7 +65,7 @@ public class HomeTimeWindowAnalysis {
 
             for( PlanElement element: selectedPlan.getPlanElements()) {
                 if(element instanceof Activity) {
-                    if(((Activity) element).getType() == "home") {
+                    if(((Activity) element).getType().contains("home")) {
 
                         Id<Person> personId = selectedPlan.getPerson().getId();
                         OptionalTime startTime = ((Activity) element).getStartTime();
