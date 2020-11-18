@@ -1,6 +1,5 @@
 /* *********************************************************************** *
  * project: org.matsim.*
- * Controler.java
  *                                                                         *
  * *********************************************************************** *
  *                                                                         *
@@ -20,45 +19,9 @@
 
 package org.matsim.drtBlockings;
 
-import org.matsim.api.core.v01.Scenario;
-import org.matsim.contrib.dvrp.optimizer.Request;
-import org.matsim.contrib.freight.utils.FreightUtils;
-import org.matsim.core.mobsim.framework.events.MobsimAfterSimStepEvent;
-import org.matsim.core.mobsim.framework.events.MobsimInitializedEvent;
+import org.matsim.core.events.MobsimScopeEventHandler;
 import org.matsim.core.mobsim.framework.listeners.MobsimAfterSimStepListener;
 import org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener;
 
-import java.util.Comparator;
-import java.util.PriorityQueue;
-
-class BlockingRequestEngine implements MobsimInitializedListener, MobsimAfterSimStepListener {
-
-    private Scenario scenario;
-    private BlockingOptimizer optimizer;
-    private BlockingRequestCreator blockingRequestCreator;
-
-    BlockingRequestEngine(Scenario scenario, BlockingOptimizer optimizer, BlockingRequestCreator blockingRequestCreator) {
-        this.scenario = scenario;
-        this.optimizer = optimizer;
-        this.blockingRequestCreator = blockingRequestCreator;
-    }
-
-    private final PriorityQueue<DrtBlockingRequest> requests = new PriorityQueue<>(Comparator.comparing(Request::getSubmissionTime));
-
-    @Override
-    public void notifyMobsimInitialized(MobsimInitializedEvent event) {
-        this.requests.clear();
-        this.requests.addAll(blockingRequestCreator.createBlockingRequests(FreightUtils.getCarriers(scenario)));
-    }
-
-    @Override
-    public void notifyMobsimAfterSimStep(MobsimAfterSimStepEvent e) {
-        while (isReadyForSubmission(requests.peek(), e.getSimulationTime())) {
-            optimizer.blockingRequestSubmitted(requests.poll());
-        }
-    }
-
-    private boolean isReadyForSubmission(DrtBlockingRequest request, double currentTime) {
-        return request != null && request.getSubmissionTime() <= currentTime;
-    }
+public interface BlockingRequestEngine  extends MobsimInitializedListener, MobsimAfterSimStepListener, MobsimScopeEventHandler {
 }

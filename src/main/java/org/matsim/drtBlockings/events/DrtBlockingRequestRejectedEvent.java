@@ -52,4 +52,8 @@ public class DrtBlockingRequestRejectedEvent extends Event {
         attr.put(ATTRIBUTE_SUBMISSION_TIME, submissionTime + "");
         return attr;
     }
+
+    public Id<Request> getRequestId() {
+        return requestId;
+    }
 }

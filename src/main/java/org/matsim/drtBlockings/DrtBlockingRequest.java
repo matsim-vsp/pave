@@ -5,6 +5,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.schedule.Task;
 import org.matsim.contrib.dvrp.schedule.Tasks;
+import org.matsim.contrib.freight.carrier.Carrier;
 
 import java.util.List;
 
@@ -67,4 +68,9 @@ public class DrtBlockingRequest implements Request {
     public Link getStartLink() {
         return Tasks.getEndLink(this.tasks.get(0));
     }
+
+    public Id<Carrier> getCarrierId() {
+        return null;
+    }
+    
 }
