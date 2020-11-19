@@ -99,6 +99,7 @@ public class CreateSingleDRTLegAgents {
 
 
 		PopulationUtils.writePopulation(drtPop, OUTPUT_DRTPOP);
+		System.out.println("size of new population" + drtPop.getPersons().size());
 		System.out.println("New Drt only pop was written to " + OUTPUT_DRTPOP);
 	}
 
