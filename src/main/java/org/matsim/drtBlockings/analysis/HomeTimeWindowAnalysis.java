@@ -1,57 +1,32 @@
 package org.matsim.drtBlockings.analysis;
 
-import gnu.trove.map.TByteCharMap;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.events.ActivityEndEvent;
-import org.matsim.api.core.v01.events.ActivityStartEvent;
-import org.matsim.api.core.v01.events.handler.ActivityEndEventHandler;
-import org.matsim.api.core.v01.events.handler.ActivityStartEventHandler;
 import org.matsim.api.core.v01.population.*;
-import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.events.EventsUtils;
-import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
-import org.matsim.core.utils.misc.OptionalTime;
-import org.matsim.drtBlockings.events.DrtBlockingEventsReader;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.DoubleSupplier;
 
-public class HomeTimeWindowAnalysis implements ActivityStartEventHandler, ActivityEndEventHandler {
-
+public class HomeTimeWindowAnalysis {
+    String inputPath = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/scenarios/berlin-v5.5-10pct/input/drtBlocking/";
 //    String inputConfig = inputPath + "blckBase1.output_config.xml";
-//    String inputPlans = inputPath + "blckBase1.output_plans_drtOnly_splitAgents.xml.gz";
-//    Config config = ConfigUtils.loadConfig(inputConfig);
+    String inputConfig = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_config.xml";
+    String inputPlans = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_plans.xml.gz";
+    Config config = ConfigUtils.loadConfig(inputConfig);
 
-    private Map<Id<Person>, Double> startTimes = new HashMap<>();
-    private Map<Id<Person>, Double> endTimes = new HashMap<>();
-    private Map<Id<Person>, String> activities = new HashMap<>();
-    private List<Id<Person>> ids =  new ArrayList<>();
     private List<ActivityData> homeActivities = new ArrayList<>();
 
     public static void main(String[] args) {
-//        String inputPath = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/drtBlocking/";
-//        String inputPath = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-10pct/drtBlockingTest111/";
-        String eventsFile = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-10pct/drtBlockingTest111/blckBase1.output_events.xml.gz";
         String outputFile = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/homeActivities.csv";
 
-        EventsManager manager = EventsUtils.createEventsManager();
         HomeTimeWindowAnalysis analysis = new HomeTimeWindowAnalysis();
-        manager.addHandler(analysis);
-        manager.initProcessing();
-        MatsimEventsReader reader = DrtBlockingEventsReader.create(manager);
-        reader.readFile(eventsFile);
-        manager.finishProcessing();
-        analysis.fillData();
+        analysis.runAnalysis();
         analysis.writeStats(outputFile);
         System.out.println("Writing of Home Activities to " + outputFile + " was successful!");
 
@@ -64,109 +39,120 @@ public class HomeTimeWindowAnalysis implements ActivityStartEventHandler, Activi
             int i = 0;
             writer.write("No;personId;startTime;endTime;duration;type");
             writer.newLine();
-
             for (ActivityData data : this.homeActivities) {
 
-                writer.write(i + ";" + data.personId + ";" + data.startTime+ ";" + data.endTime + ";" + data.duration + ";" + data.type);
+                writer.write(i + ";" + data.personId + ";" + data.startTime+ ";" + data.endTime + ";" + data.getDuration() + ";" + data.type);
                 writer.newLine();
                 i++;
             }
-
             writer.close();
         } catch(IOException e) {
             e.printStackTrace();
         }
     }
 
-//    public void runAnalysis() {
-//        config.plans().setInputFile(inputPlans);
-//        Scenario scenario = ScenarioUtils.loadScenario(config);
-//
-//        Population pop = scenario.getPopulation();
-//
-//        for(Person person : pop.getPersons().values()) {
-//            Plan selectedPlan = person.getSelectedPlan();
-//
-//            for( PlanElement element: selectedPlan.getPlanElements()) {
-//                if(element instanceof Activity) {
-//                    if(((Activity) element).getType().contains("home")) {
-//
-//                        Id<Person> personId = selectedPlan.getPerson().getId();
-////                        double startTime = Double.parseDouble(((Activity) element).getStartTime().toString());
-//                        OptionalTime endTime = ((Activity) element).getEndTime();
-//                        String type = ((Activity) element).getType();
-//
-//                        ActivityData data = new ActivityData(personId, endTime);
-//
-//                        data.endTime = endTime;
-//                        data.type = type;
-//                        homeActivities.add(data);
-//
-//                    }
-//
-//                }
-//            }
-//        }
-//    }
-    public void fillData() {
+    public void runAnalysis() {
+        config.plans().setInputFile(inputPlans);
+        Scenario scenario = ScenarioUtils.loadScenario(config);
 
-        for(Id<Person> personId : this.ids) {
-            ActivityData data = new ActivityData(personId, this.activities.get(personId));
-            if(this.startTimes.containsKey(personId)) {
-                data.startTime = this.startTimes.get(personId);
-            } else {
-                data.startTime = 999999999.99;
+        Population pop = scenario.getPopulation();
+
+        for(Person person : pop.getPersons().values()) {
+            Plan selectedPlan = person.getSelectedPlan();
+
+            for( PlanElement element: selectedPlan.getPlanElements()) {
+                if(element instanceof Activity) {
+
+                    if(((Activity) element).getType().contains("home")) {
+                        int index = selectedPlan.getPlanElements().indexOf(element);
+
+                        double startTime = 0.0;
+//                        double endTime = PlanRouter.calcEndOfActivity(((Activity) element), selectedPlan, config);
+                        double endTime = 0.0;
+                        if(((Activity) element).getStartTime().isDefined()) {
+                            //if startTime is defined we can use it
+                            startTime = ((Activity) element).getStartTime().seconds();
+//                            endTime = 60 * 60.0 * 24;
+                        } else {
+                            //if startTime is not defined we need to calculate it from the earlier activities + legs
+                            if(index != 0) {
+                                PlanElement pe = selectedPlan.getPlanElements().get(index - 1);
+                                //here we double-check if the planElement before home is a leg, which should always be the case
+                                if(pe instanceof Leg) {
+                                    startTime = ((Leg) pe).getDepartureTime().seconds() + ((Leg) pe).getTravelTime().seconds();
+                                } else {
+                                    System.out.println(pe + " is not a leg!");
+                                }
+                            }
+                        }
+                        if(((Activity) element).getEndTime().isDefined()) {
+                            if(((Activity) element).getEndTime().seconds() >= startTime) {
+                                endTime = ((Activity) element).getEndTime().seconds();
+                            } else {
+                                PlanElement pe = selectedPlan.getPlanElements().get(index  + 1);
+                                //double check, see above
+                                if(pe instanceof Leg) {
+                                    endTime = ((Leg) pe).getDepartureTime().seconds() + 60.0;
+                                    startTime = endTime;
+                                } else {
+                                    System.out.println(pe + " is not a leg!");
+                                }
+                            }
+
+                        } else {
+                            if(index == selectedPlan.getPlanElements().size() - 1) {
+                                endTime = 60.0 * 60 * 100;
+                            } else {
+                                //TODO: Resolve why we get into this else-part while handling home-activites which
+                                // actually DO have a defined end-time when you print the plan's PlanElements but
+                                // when you print the endTime itself, it's undefined (see prints to console below)
+                                PlanElement pe = selectedPlan.getPlanElements().get(index  + 1);
+                                //double check, see above
+                                if(pe instanceof Leg) {
+                                    endTime = ((Leg) pe).getDepartureTime().seconds() + 60.0;
+                                } else {
+                                    System.out.println(pe + " is not a leg!");
+                                }
+
+
+//                                System.out.println(((Activity) element).getEndTime());
+//                                System.out.println(selectedPlan.getPlanElements());
+                            }
+                        }
+                        Id<Person> personId = selectedPlan.getPerson().getId();
+                        String type = ((Activity) element).getType();
+                        ActivityData data = new ActivityData(personId, type);
+                        if (startTime <= endTime) {
+                            data.startTime = startTime;
+                            data.endTime = endTime;
+                            homeActivities.add(data);
+//                            System.out.println("FINE!");
+                        } else {
+                            System.out.println("ID: " + personId);
+                            System.out.println("START: " + startTime);
+                            System.out.println("END: " + endTime);
+                            System.out.println("startTime and endTime for person " + personId + " is not time-consistent!/n It won't be written to the output-data!");
+                        }
+
+
+                    }
+
+                }
             }
-            if(this.endTimes.containsKey(personId)) {
-                data.endTime = this.endTimes.get(personId);
-            } else {
-                data.endTime = 999999999.99;
-            }
-            this.homeActivities.add(data);
         }
-
     }
-
-    @Override
-    public void handleEvent(ActivityStartEvent event) {
-        if(event.getActType().contains("home")) {
-            this.startTimes.putIfAbsent(event.getPersonId(), event.getTime());
-            this.activities.putIfAbsent(event.getPersonId(), event.getActType());
-            if(!this.ids.contains(event.getPersonId())) {
-                this.ids.add(event.getPersonId());
-            } else {
-                System.out.println("The list already contains person " + event.getPersonId());
-            }
-        }
-    }
-
-    @Override
-    public void handleEvent(ActivityEndEvent event) {
-        if(event.getActType().contains("home")) {
-            this.endTimes.putIfAbsent(event.getPersonId(), event.getTime());
-            this.activities.putIfAbsent(event.getPersonId(), event.getActType());
-            if(!this.ids.contains(event.getPersonId())) {
-                this.ids.add(event.getPersonId());
-            } else {
-                System.out.println("The list already contains person " + event.getPersonId());
-            }
-        }
-    }
-
     private class ActivityData {
 
         private Id<Person> personId;
         private double startTime;
         private double endTime;
         private String type;
-        private double duration = endTime - startTime;
-
-
-
 
         private ActivityData(Id<Person> personId, String type) {
             this.personId = personId;
             this.type = type;
         }
+
+        double getDuration() { return this.endTime - this.startTime; }
     }
 }
