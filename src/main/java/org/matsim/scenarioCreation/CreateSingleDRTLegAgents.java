@@ -34,9 +34,9 @@ public class CreateSingleDRTLegAgents {
 
 
 //	private static final String INPUT_POPULATION = "C:/Users/Tilmann/tubCloud/VSP_WiMi/MA-Meinhardt/berlin-v5.5-10pct/output/blckBase1.output_plans.xml.gz";
-	private static final String INPUT_POPULATION = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/berlin-v5.5-10pct/output/blckBase1.output_plans.xml.gz";
-	private static final String INPUT_CONFIG = "scenarios/berlin-v5.5-10pct/input/drtBlocking/blckBase1.output_config.xml";
-	private static final String OUTPUT_DRTPOP = "scenarios/berlin-v5.5-10pct/input/drtBlocking/blckBase1.output_plans_drtOnly_splitAgents_neu.xml.gz";
+	private static final String INPUT_POPULATION = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_plans.xml.gz";
+	private static final String INPUT_CONFIG = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_config.xml";
+	private static final String OUTPUT_DRTPOP = "scenarios/berlin-v5.5-1pct/input/drtBlocking/noIncDRT.output_plans_drtOnly_splitAgents_1pct.xml.gz";
 
 
 	public static void main(String[] args) {
