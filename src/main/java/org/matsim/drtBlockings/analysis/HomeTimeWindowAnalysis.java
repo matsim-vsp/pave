@@ -24,18 +24,20 @@ public class HomeTimeWindowAnalysis {
 
     public static void main(String[] args) {
         String outputFile = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/homeActivities.csv";
+        String outputFile2 = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/homeActivitiesAggregated.csv";
 
         HomeTimeWindowAnalysis analysis = new HomeTimeWindowAnalysis();
         analysis.runAnalysis();
         analysis.writeStats(outputFile);
-        System.out.println("Writing of Home Activities to " + outputFile + " was successful!");
+        analysis.writeTable(outputFile2);
+        System.out.println("Writing of Home Activities to " + outputFile + " and " + outputFile2 + " was successful!");
 
     }
 
     private void writeStats(String file) {
         BufferedWriter writer = IOUtils.getBufferedWriter(file);
         try {
-            System.out.println("WRITING!");
+            System.out.println("WRITING STATS!");
             int i = 0;
             writer.write("No;personId;startTime;endTime;duration;type");
             writer.newLine();
@@ -49,6 +51,68 @@ public class HomeTimeWindowAnalysis {
         } catch(IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void writeTable(String file) {
+        int[][] allTimes = createTableData();
+        int[] startTimes = allTimes[0];
+        int[] endTimes = allTimes[1];
+
+        BufferedWriter writer = IOUtils.getBufferedWriter(file);
+        try {
+            System.out.println("WRITING TABLE!");
+            int i = 0;
+            writer.write("Times;0:00 to 3:59;4:00 to 7:59;8:00 to 11:59;12:00 to 15:59;16:00 to 19:59;20:00 to 24:00+");
+            writer.newLine();
+            writer.write("startTimes" + ";" + startTimes[0] + ";" + startTimes[1] + ";" + startTimes[2] + ";" + startTimes[3] + ";" + startTimes[4] + ";" + startTimes[5]);
+            writer.newLine();
+            writer.write("endTimes" + ";" + endTimes[0] + ";" + endTimes[1] + ";" + endTimes[2] + ";" + endTimes[3] + ";" + endTimes[4] + ";" + endTimes[5]);
+            writer.close();
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int[][] createTableData() {
+
+        int[] startTimes = new int[6];
+        int[] endTimes = new int[6];
+        int[][] allTimes = new int[2][];
+
+        for(ActivityData data : this.homeActivities) {
+
+            if(data.startTime <= 14399.0) {
+                startTimes[0] = startTimes[0] + 1;
+            } else if(data.startTime > 14399.0 && data.startTime <=28799.0) {
+                startTimes[1] = startTimes[1] + 1;
+            } else if(data.startTime > 28799.0 && data.startTime <=43199.0) {
+                startTimes[2] = startTimes[2] + 1;
+            } else if(data.startTime > 43199.0 && data.startTime <=57599.0) {
+                startTimes[3] = startTimes[3] + 1;
+            } else if(data.startTime > 57599.0 && data.startTime <=71999.0) {
+                startTimes[4] = startTimes[4] + 1;
+            } else if(data.startTime > 71999.0) {
+                startTimes[5] = startTimes[5] + 1;
+            }
+
+            if(data.endTime <= 14399.0) {
+                endTimes[0] = endTimes[0] + 1;
+            } else if(data.endTime > 14399.1 && data.endTime <=28799.0) {
+                endTimes[1] = endTimes[1] + 1;
+            } else if(data.endTime > 28799.0 && data.endTime <=43199.0) {
+                endTimes[2] = endTimes[2] + 1;
+            } else if(data.endTime > 43199.0 && data.endTime <=57599.0) {
+                endTimes[3] = endTimes[3] + 1;
+            } else if(data.endTime > 57599.0 && data.endTime <=71999.0) {
+                endTimes[4] = endTimes[4] + 1;
+            } else if(data.endTime > 71999.0) {
+                endTimes[5] = endTimes[5] + 1;
+            }
+        }
+        allTimes[0] = startTimes;
+        allTimes[1] = endTimes;
+
+        return allTimes;
     }
 
     public void runAnalysis() {
@@ -125,7 +189,7 @@ public class HomeTimeWindowAnalysis {
                         if (startTime <= endTime) {
                             data.startTime = startTime;
                             data.endTime = endTime;
-                            homeActivities.add(data);
+                            this.homeActivities.add(data);
 //                            System.out.println("FINE!");
                         } else {
                             System.out.println("ID: " + personId);
@@ -133,10 +197,7 @@ public class HomeTimeWindowAnalysis {
                             System.out.println("END: " + endTime);
                             System.out.println("startTime and endTime for person " + personId + " is not time-consistent!/n It won't be written to the output-data!");
                         }
-
-
                     }
-
                 }
             }
         }
