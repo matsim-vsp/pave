@@ -63,8 +63,8 @@ public class CreateCarrierServiceTimeBins {
 //                System.out.println(service.getServiceStartTimeWindow());
                 //TODO Service time window setter is inside of Builder method, is not reachable
                 //Waiting for an answer from KMT, until then we have to work with building a copy
-                double start = 0.;
-                double end = 0.;
+                double start;
+                double end;
 
                 double rndDouble = rnd.nextDouble();
 
@@ -106,12 +106,12 @@ public class CreateCarrierServiceTimeBins {
 
         Carrier carrierCopy = CarrierUtils.createCarrier(carrier.getId());
 
-        carrierCopy.setCarrierCapabilities(createCarrierVehicleCopyAndReplace(cap));
+        carrierCopy.setCarrierCapabilities(createCarrierVehicleCopyAndReplace(cap, scenario));
 
         return carrierCopy;
     }
 
-    private static CarrierCapabilities createCarrierVehicleCopyAndReplace(CarrierCapabilities cap) {
+    private static CarrierCapabilities createCarrierVehicleCopyAndReplace(CarrierCapabilities cap, Scenario scenario) {
         Collection<CarrierVehicle> carrierVehicles = cap.getCarrierVehicles().values();
 
         for(CarrierVehicle veh : carrierVehicles) {
