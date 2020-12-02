@@ -50,13 +50,13 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
 
     public static void main(String[] args) {
 //        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/Analysis_test/";
-        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-10pct/drtBlockingTest_30Blockings_ServiceWidthIncr/";
+        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-1pct/drtBlockingTest_30Blockings_realisticServiceTimeWindows/";
 //        String eventsFile = dir + "output_events.xml.gz";
-        String eventsFile = dir + "blckBase1.output_events.xml.gz";
+        String eventsFile = dir + "noIncDRT.output_events.xml.gz";
 //        String carriersFile = dir + "";
 //        String inputNetwork = dir + "output_network.xml.gz";
-        String inputNetwork = dir + "blckBase1.output_network.xml.gz";
-        String outputFile = dir + "testBasicTourStats.csv";
+        String inputNetwork = dir + "noIncDRT.output_network.xml.gz";
+        String outputFile = dir + "BasicTourStats.csv";
 //        final Carriers carriers = new Carriers();
 //        new CarrierPlanXmlReader(carriers).readFile(carriersFile);
 
@@ -86,7 +86,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         try {
             System.out.println("WRITING!");
             int i =1;
-            writer.write("no;vehId;totalDistance;accessLegDistance;departureTime;arrivalTime;tourDuration;accessLegDuration;requestId;numberOfTasks");
+            writer.write("no;vehId;totalDistance [m];accessLegDistance [m];departureTime [s];arrivalTime [s];tourDuration [s];accessLegDuration [s];requestId;numberOfTasks");
             writer.newLine();
 
             for (DrtBlockingTourData data  : this.finishedTours) {
@@ -142,6 +142,11 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
 
             if (event.getTaskType().equals(FreightRetoolTask.RETOOL_TASK_TYPE)) {
                 this.vehToAccessDistance.putIfAbsent(dvrpVehicleId, this.vehToDistance.get(dvrpVehicleId));
+
+                //Before computing the accessDuration we need to check if the vehicle drove at all = had an LinkEnterEvent
+                if(!this.vehToDeparture.containsKey(dvrpVehicleId)) {
+                    this.vehToDeparture.put(dvrpVehicleId, event.getTime());
+                }
                 Double accessDuration = event.getTime() - this.vehToDeparture.get(dvrpVehicleId);
                 if (accessDuration >= 0) {
                     this.vehToAccessDuration.putIfAbsent(dvrpVehicleId, accessDuration);
