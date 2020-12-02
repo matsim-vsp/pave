@@ -18,6 +18,7 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.drtBlockings.events.*;
+import org.matsim.drtBlockings.tasks.FreightDeliveryTask;
 import org.matsim.drtBlockings.tasks.FreightRetoolTask;
 
 import java.io.BufferedWriter;
@@ -41,6 +42,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
     private Map<Id<DvrpVehicle>, Double> vehToAccessDuration = new HashMap<>();
     private Map<Id<DvrpVehicle>, Id<Request>> vehToRequest = new HashMap<>();
     private Map<Id<DvrpVehicle>, Integer> vehToTaskNo = new HashMap<>();
+    private Map<Id<DvrpVehicle>, Integer> vehToServiceNo = new HashMap<>();
 
     private List<DrtBlockingTourData> finishedTours = new ArrayList<>();
 
@@ -87,12 +89,13 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         try {
             System.out.println("WRITING!");
             int i =1;
-            writer.write("no;vehId;totalDistance [m];accessLegDistance [m];departureTime [s];arrivalTime [s];tourDuration [s];accessLegDuration [s];requestId;numberOfTasks");
+            writer.write("no;vehId;totalDistance [m];accessLegDistance [m];departureTime [s];arrivalTime [s];tourDuration [s];accessLegDuration [s];requestId;numberOfServices;numberOfTasks");
             writer.newLine();
 
             for (DrtBlockingTourData data  : this.finishedTours) {
                 writer.write(i + ";" + data.veh + ";" + data.tourDistance + ";" + data.accessDistance + ";"
-                + data.departure + ";" + data.arrival + ";" + data.tourDuration + ";" + data.accessDuration + ";" + data.requestId + ";" + data.taskNo);
+                + data.departure + ";" + data.arrival + ";" + data.tourDuration + ";" + data.accessDuration + ";"
+                        + data.requestId + ";" + data.serviceNo + ";" + data.taskNo);
                 writer.newLine();
                 i++;
             }
@@ -135,7 +138,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         if (this.currentTours.containsKey(dvrpVehicleId)) {
 
             if (!this.vehToTaskNo.containsKey(dvrpVehicleId)) {
-                this.vehToTaskNo.put(dvrpVehicleId, 0);
+                this.vehToTaskNo.put(dvrpVehicleId, 1);
             } else {
                 this.vehToTaskNo.replace(dvrpVehicleId, this.vehToTaskNo.get(dvrpVehicleId),
                         this.vehToTaskNo.get(dvrpVehicleId) + 1);
@@ -154,6 +157,16 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
                 } else {
                     System.out.println("Access leg duration for vehicle " + dvrpVehicleId + " is " + accessDuration + " (< 0!");
                 }
+            }
+
+            if(event.getTaskType().equals(FreightDeliveryTask.FREIGHT_DELIVERY_TASK_TYPE)) {
+                if(!this.vehToServiceNo.containsKey(dvrpVehicleId)) {
+                    this.vehToServiceNo.put(dvrpVehicleId, 1);
+                } else {
+                    this.vehToServiceNo.replace(dvrpVehicleId, this.vehToServiceNo.get(dvrpVehicleId),
+                            this.vehToServiceNo.get(dvrpVehicleId) + 1);
+                }
+
             }
         }
     }
@@ -183,6 +196,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
                 data.arrival = this.vehToArrival.remove(event.getVehicleId());
                 data.requestId = this.vehToRequest.remove(event.getVehicleId());
                 data.taskNo = this.vehToTaskNo.remove(event.getVehicleId());
+                data.serviceNo = this.vehToServiceNo.remove(event.getVehicleId());
 
 //                System.out.println(event.getLinkId() + " END OF TOUR!");
 
@@ -216,6 +230,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         private double accessDistance = 0.;
         private Id<Request> requestId;
         private int taskNo;
+        private int serviceNo;
 
         private DrtBlockingTourData(Id<DvrpVehicle> veh, double departure) {
             this.veh = veh;
