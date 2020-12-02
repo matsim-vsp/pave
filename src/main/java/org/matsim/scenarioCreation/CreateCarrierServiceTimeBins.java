@@ -61,30 +61,84 @@ public class CreateCarrierServiceTimeBins {
 
             for (CarrierService service : carrier.getServices().values()) {
 //                System.out.println(service.getServiceStartTimeWindow());
-                //TODO Service time window setter is inside of Builder method, is not reachable
-                //Waiting for an answer from KMT, until then we have to work with building a copy
+                //Service time window setter is inside of Builder method, is not reachable
+                //we have to work with building a copy
                 double start;
                 double end;
 
                 double rndDouble = rnd.nextDouble();
 
-                if(rndDouble <= 0.17) {
-                    //08:00 to 11:59; 0.17
+//                //TimeWindow 8-24+ without 0-8 activities
+//                if(rndDouble <= 0.17) {
+//                    //08:00 to 11:59; 0.17
+//                    start = 28800.;
+//                    end = 43199.;
+//                } else if(rndDouble > 0.17 && rndDouble <= 0.44) {
+//                    //12:00 to 15:59; 0.27
+//                    start = 43200.;
+//                    end = 57599.;
+//                }  else if(rndDouble > 0.44 && rndDouble <= 0.84) {
+//                    //16:00 to 15:59; 0.4
+//                    start = 57600.;
+//                    end = 71999.;
+//                } else if(rndDouble > 0.84) {
+//                    //20:00 to 24:00+; 0.16
+//                    start = 72000.;
+//                    end = scenario.getConfig().qsim().getEndTime().seconds();
+//                } else {
+//                    throw new RuntimeException("Random double " + rndDouble + " does not fit into the time windows, this should not happen!");
+//                }
+
+//                //TimeWindow 8-24+ with 0-8 activities added to 8-12 bin
+//                //0,56; 0,15; 0,21; 0,08
+//                if(rndDouble <= 0.56) {
+//                    //08:00 to 11:59; 0.56
+//                    start = 28800.;
+//                    end = 43199.;
+//                } else if(rndDouble > 0.56 && rndDouble <= 0.71) {
+//                    //12:00 to 15:59; 0.15
+//                    start = 43200.;
+//                    end = 57599.;
+//                }  else if(rndDouble > 0.71 && rndDouble <= 0.92) {
+//                    //16:00 to 15:59; 0.21
+//                    start = 57600.;
+//                    end = 71999.;
+//                } else if(rndDouble > 0.92) {
+//                    //20:00 to 24:00+; 0.08
+//                    start = 72000.;
+//                    end = scenario.getConfig().qsim().getEndTime().seconds();
+//                } else {
+//                    throw new RuntimeException("Random double " + rndDouble + " does not fit into the time windows, this should not happen!");
+//                }
+
+                //TimeWindow 0-24+
+                //0,44; 0,02; 0,09; 0,15; 0,22; 0,08
+                if(rndDouble <= 0.44) {
+                    //00:00 to 03:59; 0.44
+                    start = 0.;
+                    end = 14399.;
+                } else if(rndDouble > 0.44 && rndDouble <= 0.46) {
+                    //04:00 to 07:59; 0.02
+                    start = 14400.;
+                    end = 28799.;
+                }  else if(rndDouble > 0.46 && rndDouble <= 0.55) {
+                    //08:00 to 11:59; 0.09
                     start = 28800.;
                     end = 43199.;
-                } else if(rndDouble > 0.17 && rndDouble <= 0.44) {
-                    //12:00 to 15:59; 0.27
+                } else if(rndDouble > 0.55 && rndDouble <= 0.70) {
+                    //12:00 to 15:59; 0.15
                     start = 43200.;
                     end = 57599.;
-                }  else if(rndDouble > 0.44 && rndDouble <= 0.84) {
-                    //16:00 to 15:59; 0.4
+                } else if(rndDouble > 0.70 && rndDouble <= 0.92) {
+                    //16:00 to 19:59; 0.22
                     start = 57600.;
                     end = 71999.;
-                } else if(rndDouble > 0.84) {
-                    //20:00 to 24:00+; 0.16
+                } else if(rndDouble > 0.92) {
+                    //20:00 to 24+; 0.08
                     start = 72000.;
                     end = scenario.getConfig().qsim().getEndTime().seconds();
-                } else {
+                }
+                else {
                     throw new RuntimeException("Random double " + rndDouble + " does not fit into the time windows, this should not happen!");
                 }
                 TimeWindow timeWindow = TimeWindow.newInstance(start, end);
