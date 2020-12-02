@@ -21,7 +21,7 @@ public class CreateCarrierServiceTimeBins {
     private static final String INPUT_PLANS = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_plans.xml.gz";
     private static final String INPUT_CARRIERS = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/carriers_services_openBerlinNet_LichtenbergNord.xml";
     private static final String INPUT_CARRIER_VEHICLE_TYPES = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/carrier_vehicleTypes.xml";
-    private static final String OUTPUT_CARRIERS = "C:/Users/simon/Desktop/carriers_newServices_openBerlinNet_LichtenbergNord.xml";
+    private static final String OUTPUT_CARRIERS = "C:/Users/simon/Desktop/carriers_realisticServiceTimeWindows_openBerlinNet_LichtenbergNord.xml";
 
     public static void main(String[] args) { run(); }
 
@@ -91,7 +91,7 @@ public class CreateCarrierServiceTimeBins {
 
                 CarrierService serviceDummy = createServiceCopyWithNewTimeWindow(service, timeWindow);
                 CarrierUtils.addService(carrierCopy, serviceDummy);
-                System.out.println(serviceDummy.getServiceStartTimeWindow());
+//                System.out.println(serviceDummy.getServiceStartTimeWindow());
 
             }
 //            newCarriers.add(carrierCopy);
