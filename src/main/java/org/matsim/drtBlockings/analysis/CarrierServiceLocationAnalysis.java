@@ -17,7 +17,9 @@ import org.matsim.core.utils.io.IOUtils;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CarrierServiceLocationAnalysis {
 
@@ -25,13 +27,18 @@ public class CarrierServiceLocationAnalysis {
     private static final String INPUT_PLANS = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_plans.xml.gz";
     private static final String INPUT_CARRIERS = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/carriers_services_openBerlinNet_LichtenbergNord.xml";
     private static final String INPUT_CARRIER_VEHICLE_TYPES = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/carrier_vehicleTypes.xml";
-    private static final String OUTPUT_FILE = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/carrierServiceStats.csv";
+    private static final String OUTPUT_STATS_FILE = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/carrierServiceStats.csv";
+    private static final String OUTPUT_COUNTS_FILE = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/carrierServicePackageCount.csv";
 
     private List<CarrierServiceData> services = new ArrayList<>();
+    private Map<Id<Link>, Integer> packagesOnLinks = new HashMap<>();
 
-    public static void main(String[] args) { run(); }
+    public static void main(String[] args) {
+        CarrierServiceLocationAnalysis analysis = new CarrierServiceLocationAnalysis();
+        analysis.run();
+    }
 
-    private static void run() {
+    private void run() {
         Config config = ConfigUtils.loadConfig(INPUT_CONFIG);
         config.plans().setInputFile(INPUT_PLANS);
         FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
@@ -46,10 +53,10 @@ public class CarrierServiceLocationAnalysis {
         Carriers carriers = FreightUtils.getCarriers(scenario);
         CarrierServiceLocationAnalysis analysis = new CarrierServiceLocationAnalysis();
         analysis.analyzeCarrierServices(carriers, network);
-        analysis.writeStats(OUTPUT_FILE);
-        System.out.println("Writing of carrier service stats to " + OUTPUT_FILE + " was successful!");
-
-
+        analysis.countPackagesOnLinks();
+        analysis.writeStats(OUTPUT_STATS_FILE, OUTPUT_COUNTS_FILE);
+        System.out.println("Writing of carrier service stats to " + OUTPUT_STATS_FILE + " was successful!");
+        System.out.println("Writing of carrier service package count to " + OUTPUT_COUNTS_FILE + " was successful!");
     }
 
     public void analyzeCarrierServices(Carriers carriers, Network network) {
@@ -72,22 +79,53 @@ public class CarrierServiceLocationAnalysis {
         }
     }
 
-    public void writeStats(String file) {
-        BufferedWriter writer = IOUtils.getBufferedWriter(file);
+    public void countPackagesOnLinks() {
+
+        for(CarrierServiceData data : this.services) {
+            Id<Link> linkId = data.linkId;
+            int packages = data.packages;
+            if(!this.packagesOnLinks.containsKey(linkId)) {
+                this.packagesOnLinks.put(linkId, packages);
+            } else {
+                this.packagesOnLinks.replace(linkId, this.packagesOnLinks.get(linkId),
+                        this.packagesOnLinks.get(linkId) + packages);
+            }
+        }
+    }
+
+    public void writeStats(String file, String file2) {
+        BufferedWriter statsWriter = IOUtils.getBufferedWriter(file);
         try {
-            System.out.println("WRITING!");
+            System.out.println("WRITING STATS!");
             int i =1;
-            writer.write("no;serviceId;xCoord;yCoord;linkId;carrierId;earliestStart [s];lastStart [s];duration [s];numberOfPackages");
-            writer.newLine();
+            statsWriter.write("no;serviceId;xCoord;yCoord;linkId;carrierId;earliestStart [s];lastStart [s];duration [s];numberOfPackages");
+            statsWriter.newLine();
 
             for (CarrierServiceData data  : this.services) {
-                writer.write(i + ";" + data.serviceId + ";" + data.xCoord + ";" + data.yCoord + ";"
+                statsWriter.write(i + ";" + data.serviceId + ";" + data.xCoord + ";" + data.yCoord + ";"
                         + data.linkId + ";" + data.carrierId + ";" + data.earliestStartTime + ";" + data.lastStartTime + ";"
                         + data.serviceDuration + ";" + data.packages);
-                writer.newLine();
+                statsWriter.newLine();
                 i++;
             }
-            writer.close();
+            statsWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        BufferedWriter countWriter = IOUtils.getBufferedWriter(file2);
+        try {
+            System.out.println("WRITING COUNT!");
+            int j =1;
+            countWriter.write("no;linkId;numberOfPackages");
+            countWriter.newLine();
+
+            for (Id<Link> linkId  : this.packagesOnLinks.keySet()) {
+                countWriter.write(j + ";" + linkId + ";" + this.packagesOnLinks.get(linkId));
+                countWriter.newLine();
+                j++;
+            }
+            countWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
