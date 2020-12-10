@@ -58,6 +58,7 @@ import org.matsim.contrib.dvrp.vrpagent.VrpAgentLogic;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentSourceQSimModule;
 import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
+import org.matsim.core.config.Config;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.TravelDisutility;
@@ -89,7 +90,8 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
         install(new PassengerEngineQSimModule(getMode()));
 
         addModalComponent(DrtOptimizer.class, modalProvider(
-                getter -> new DefaultBlockingOptimizer(getter.getModal(DefaultDrtOptimizer.class),
+//                getter -> new DefaultBlockingOptimizer(getter.getModal(DefaultDrtOptimizer.class),
+                getter -> new AdaptiveBlockingOptimizer(getter.getModal(DefaultDrtOptimizer.class),
                         getter.getModal(Fleet.class),
                         getter.getModal(DrtScheduleInquiry.class),
                         getter.getModal(DrtBlockingManager.class),
@@ -97,7 +99,8 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getNamed(TravelTime.class, DvrpTravelTimeModule.DVRP_ESTIMATED),
                         getter.get(EventsManager.class),
                         getter.getModal(Network.class),
-                        getter.get(MobsimTimer.class)) {
+                        getter.get(MobsimTimer.class),
+                        getter.get(Config.class)) {
         }));
 
         bindModal(DefaultDrtOptimizer.class).toProvider(modalProvider(

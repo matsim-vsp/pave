@@ -15,7 +15,7 @@ public class DrtBlockingRequest implements Request {
 
     private final Id<Request> id;
     private double endTime;
-    private final double startTime;
+    private double startTime;
     private final double submissionTime;
     private final Id<Carrier> carrierId;
 
@@ -89,6 +89,8 @@ public class DrtBlockingRequest implements Request {
         return this.startTime;
     }
 
+    double getBlockingDuration() { return this.endTime - this.startTime; }
+
     List<Task> getTasks() {
         return this.tasks;
     }
@@ -96,6 +98,8 @@ public class DrtBlockingRequest implements Request {
     void setEndTime(double endTime) {
         this.endTime = endTime;
     }
+
+    void setStartTime(double startTime) { this.startTime = startTime; }
 
     public Link getStartLink() {
         return Tasks.getEndLink(this.tasks.get(0));
