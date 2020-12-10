@@ -49,19 +49,19 @@ public class RunDrtBlockingBerlin {
 	//TODO
 //	private static final String CARRIERS_PLANS_PLANNED = "D:/svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin5.5_1pct_pave_drtBlockingcarriers_planned.xml";
 //	private static final String CARRIERS_PLANS_PLANNED = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/carriers_services_openBerlinNet_LichtenbergNord.xml";
-	private static final String CARRIERS_PLANS_PLANNED = "carriers_realisticServiceTimeWindows_1vehiclePerTimeWindow_openBerlinNet_LichtenbergNord.xml";
-//	private static final String CARRIERS_PLANS_PLANNED = "drtBlockingTest_30Blockings_realisticServiceTimeWindowscarriers_planned.xml";
+//	private static final String CARRIERS_PLANS_PLANNED = "carriers_realisticServiceTimeWindows_0-24+_openBerlinNet_LichtenbergNord.xml";
+	private static final String CARRIERS_PLANS_PLANNED = "drtBlockingTest_30Blockings_realisticServiceTimeWindowscarriers_planned.xml";
 	private static final String CARRIERS_PLANS = "berlin-carriers.xml";
 	//TODO
 //	private static final String CARRIER_VEHICLE_TYPES = "D:/svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin-vehicleTypes.xml";
 	private static final String CARRIER_VEHICLE_TYPES = "carrier_vehicleTypes.xml";
 
-	private static final boolean RUN_TOURPLANNING = true;
+	private static final boolean RUN_TOURPLANNING = false;
 
 	//TODO
 //	private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/drtBlockingTest";
 //	private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/drtBlockingTest_30Blockings";
-	private static final String OUTPUT_DIR = "./output/berlin-v5.5-1pct/drtBlockingTest_30Blockings_realisticServiceTimeWindows_1vehiclePerTimeWindow";
+	private static final String OUTPUT_DIR = "./output/berlin-v5.5-1pct/drtBlockingTest_30Blockings_realisticServiceTimeWindows_adaptiveBlocking";
 
 	public static void main(String[] args) {
 
@@ -76,7 +76,7 @@ public class RunDrtBlockingBerlin {
 		config.plans().setInputFile(INPUT_DRT_PLANS);
 		config.qsim().setFlowCapFactor(100.);
 
-		Scenario scenario = RunDrtBlocking.prepareScenario(config, true);
+		Scenario scenario = RunDrtBlocking.prepareScenario(config, RUN_TOURPLANNING);
 
 //		makePeopleUseDRTForRandomLegs(scenario.getPopulation());
 		Controler controler = RunDrtBlocking.prepareControler(scenario);

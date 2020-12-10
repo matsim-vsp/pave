@@ -32,7 +32,7 @@ public class NeverStartedToursAnalysisV1 implements DrtBlockingRequestSubmittedE
     public static void main(String[] args) {
 //        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/Analysis_test/";
 //        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-1pct/drtBlockingTest_30Blockings_realisticServiceTimeWindows/";
-        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-1pct/drtBlockingTest_30Blockings_realisticServiceTimeWindows_1vehiclePerTimeWindow/";
+        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-1pct/drtBlockingTest_30Blockings_realisticServiceTimeWindows_0-24/";
 //        String eventsFile = dir + "output_events.xml.gz";
         String eventsFile = dir + "noIncDRT.output_events.xml.gz";
 //        String eventsFile = dir + "output_events_3.xml";
