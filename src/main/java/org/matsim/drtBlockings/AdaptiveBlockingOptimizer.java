@@ -171,7 +171,7 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
             //TODO what if the 1st tour of the queue is very long and can never be assigned? Every other tour will be prevented from assigning
             // maybe some kind of blockingAttempts counter would help in that case
             if(timer.getTimeOfDay() >= LATEST_BLOCKING_SCHEDULING_TIME){
-                rejectAllRemainingBlockingRequests(blockingRequestsIterator);
+                rejectAllRemainingBlockingRequests();
                 return;
             }
 
@@ -230,7 +230,7 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
         }
     }
 
-    private void rejectAllRemainingBlockingRequests(Iterator<DrtBlockingRequest> blockingRequestsIterator) {
+    private void rejectAllRemainingBlockingRequests() {
         //If a BlockingRequest could not be assigned to a vehicle in time, we need to reject it
         for(DrtBlockingRequest drtBlockingRequest : this.blockingRequests) {
             log.warn("drt blocking request " + drtBlockingRequest + " could not be assigned in time. It is rejected.");
