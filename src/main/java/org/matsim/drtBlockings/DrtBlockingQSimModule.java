@@ -117,7 +117,7 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                 .in(Singleton.class);
 
         bindModal(VehicleData.EntryFactory.class).toProvider(modalProvider(
-                getter -> new BlockingVehicleDataEntryFactory(drtCfg, getter.getModal(DrtBlockingManager.class))))
+                getter -> new AdaptiveBlockingVehicleDataEntryFactory(drtCfg, getter.getModal(AdaptiveBlockingOptimizer.class))))
                 .in(Singleton.class);
 
 
