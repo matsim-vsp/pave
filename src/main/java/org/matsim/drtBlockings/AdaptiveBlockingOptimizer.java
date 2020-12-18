@@ -180,10 +180,7 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
                 double currentIdleVehicleRatio = idleVehiclesNo / allVehiclesNo;
 
                 if (currentIdleVehicleRatio >= this.minIdleVehicleRatio) {
-                    int nrOfAvailableVehicles = (int) (idleVehicles.size() - minIdleVehicleRatio * fleet.getVehicles().size());
-
-                    //BlockingStartTime and endTime have to be reset because otherwise there might occur some logical issues
-                    //when providing starts and ends which are already in the past (because the tours got planned on the morning)
+                    int nrOfAvailableVehicles = (int) (idleVehicles.size() - minIdleVehicleRatio * allVehiclesNo);
 
 //                for(int i = 0 ; i < nrOfAvailableVehicles; i++){
                     if (nrOfAvailableVehicles > 0) {
@@ -192,6 +189,8 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
                         if (!idleVehicles.isEmpty()) {
                             DvrpVehicle vehicle;
 
+                            //BlockingStartTime and endTime have to be reset because otherwise there might occur some logical issues
+                            //when providing starts and ends which are already in the past (because the tours got planned on the morning)
                             rescheduleBlockingStartAndEnd(drtBlockingRequest);
 
                             List<DvrpVehicle> availableVehicles = idleVehicles.stream()
