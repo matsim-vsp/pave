@@ -45,7 +45,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
     //TODO make this configurable
     static final double RETOOL_DURATION = 5*60;
-    static final double SUBMISSION_LOOK_AHEAD = 15*60;
+    static final double GLOBAL_SUBMISSION_TIME = 8 * 3600;
 
     private final Network network;
     private final String mode;
@@ -99,7 +99,8 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         Id<Request> id = Id.create(tourID, Request.class);
         String mode = this.mode;
         double blockingStart = determineStartOfBlocking(scheduledTour);
-        double submissionTime = Math.max(qSimStartTime, blockingStart - SUBMISSION_LOOK_AHEAD);
+        double submissionTime = GLOBAL_SUBMISSION_TIME;
+
         List<Task> tourTasks = convertScheduledTour2DvrpTasks(scheduledTour, blockingStart);
         double blockingEnd = tourTasks.get(tourTasks.size() - 1).getEndTime();
 
@@ -108,13 +109,11 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
                 .mode(mode)
                 .carrierId(carrierId)
                 .submissionTime(submissionTime)
-                .startTime(blockingStart)
-                .endTime(blockingEnd)
+                .duration(blockingEnd - blockingStart)
                 .tasks(tourTasks)
                 .build();
 
         return request;
-//        return new DrtBlockingRequest(id, mode,carrierId, Math.max(qSimStartTime, blockingStart - SUBMISSION_LOOK_AHEAD), blockingStart, blockingEnd, tourTasks);
     }
 
 

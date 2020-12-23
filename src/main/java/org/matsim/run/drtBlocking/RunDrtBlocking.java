@@ -21,13 +21,7 @@
 package org.matsim.run.drtBlocking;
 
 import ch.sbb.matsim.config.SwissRailRaptorConfigGroup;
-import ch.sbb.matsim.routing.pt.raptor.RaptorIntermodalAccessEgress;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.population.Leg;
-import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.Population;
-import org.matsim.contrib.av.robotaxi.fares.drt.DrtFareModule;
 import org.matsim.contrib.drt.analysis.DrtModeAnalysisModule;
 import org.matsim.contrib.drt.routing.MultiModeDrtMainModeIdentifier;
 import org.matsim.contrib.drt.run.*;
@@ -39,11 +33,8 @@ import org.matsim.contrib.freight.carrier.CarrierUtils;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.controler.OutputDirectoryHierarchy;
-import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.AnalysisMainModeIdentifier;
 import org.matsim.core.router.MainModeIdentifier;
 import org.matsim.core.router.TripStructureUtils;
@@ -55,12 +46,8 @@ import org.matsim.run.drt.RunDrtOpenBerlinScenario;
 import org.matsim.run.drt.intermodalTripFareCompensator.IntermodalTripFareCompensatorsModule;
 import org.matsim.run.drt.ptRoutingModes.PtIntermodalRoutingModesModule;
 
-import javax.management.InvalidAttributeValueException;
 import java.io.File;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 public class RunDrtBlocking {
 
@@ -163,7 +150,8 @@ public class RunDrtBlocking {
 	}
 
 	private static void configureDRT(Scenario scenario, Controler controler) {
-		MultiModeDrtConfigGroup multiModeDrtCfg = MultiModeDrtConfigGroup.get(scenario.getConfig());
+
+//		MultiModeDrtConfigGroup multiModeDrtCfg = MultiModeDrtConfigGroup.get(scenario.getConfig());
 		DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(scenario.getConfig());
 
 		// at the moment, we only configure our 1 drt mode!
@@ -172,16 +160,11 @@ public class RunDrtBlocking {
 			@Override
 			public void install() {
 				install(new DvrpModule());
-				install(new DrtModeModule(drtCfg));
-				install(new DrtModeAnalysisModule(drtCfg));
-				install(new DrtBlockingModule(drtCfg));
-				bind(MainModeIdentifier.class).toInstance(new MultiModeDrtMainModeIdentifier(multiModeDrtCfg));
+				controler.addOverridingModule( new DvrpModule() ) ;
+				controler.addOverridingModule( new DrtBlockingModule(drtCfg));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateAllModes(MultiModeDrtConfigGroup.get(controler.getConfig())));
-
-		// Add drt-specific fare module
-		controler.addOverridingModule(new DrtFareModule());
 	}
 
 

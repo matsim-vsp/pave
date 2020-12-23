@@ -14,11 +14,9 @@ import java.util.List;
 public class DrtBlockingRequest implements Request {
 
     private final Id<Request> id;
-    private double endTime;
-    private double startTime;
     private final double submissionTime;
     private final Id<Carrier> carrierId;
-
+    private final double duration;
     private final String mode;
 
     private List<Task> tasks;
@@ -29,19 +27,12 @@ public class DrtBlockingRequest implements Request {
 //                       List<Task> dvrpVehicleTasks) {
 
     DrtBlockingRequest(Builder builder) {
-
-//        Builder builder = new Builder();
-
         this.id = Id.create(builder.id, Request.class);
-
         this.mode = builder.mode;
-
         this.submissionTime = builder.submissionTime;
-        this.startTime = builder.startTime;
-        this.endTime = builder.endTime;
         this.tasks = builder.tasks;
-        checkStartAndEndTimeConsistency();
         this.carrierId = builder.carrierId;
+        this.duration = builder.duration;
     }
 
     public static Builder newBuilder() { return new Builder(); }
@@ -52,23 +43,10 @@ public class DrtBlockingRequest implements Request {
         builder.mode = copy.getMode();
         builder.carrierId = copy.getCarrierId();
         builder.submissionTime = copy.getSubmissionTime();
-        builder.startTime = copy.getStartTime();
-        builder.endTime = copy.getEndTime();
         builder.tasks = copy.getTasks();
+        builder.duration = copy.duration;
 
         return builder;
-    }
-
-    private void checkStartAndEndTimeConsistency() {
-        if(this.startTime > this.tasks.get(0).getBeginTime()){
-            throw new IllegalArgumentException("start time of the blocking should be less than or equal to the begin time of the first corresponding task");
-        }
-        if(this.endTime < this.tasks.get(this.tasks.size() -1).getEndTime()){
-            throw new IllegalArgumentException("end time of the blocking should be greater than or equal to the end time of the last corresponding task");
-        }
-        if(this.submissionTime > this.startTime){
-            throw new IllegalArgumentException("submission time should be less than or equal to startTime");
-        }
     }
 
     @Override
@@ -81,25 +59,11 @@ public class DrtBlockingRequest implements Request {
         return this.submissionTime;
     }
 
-    double getEndTime() {
-        return this.endTime;
-    }
-
-    double getStartTime() {
-        return this.startTime;
-    }
-
-    double getBlockingDuration() { return this.endTime - this.startTime; }
+    double getPlannedBlockingDuration() { return this.duration; }
 
     List<Task> getTasks() {
         return this.tasks;
     }
-
-    void setEndTime(double endTime) {
-        this.endTime = endTime;
-    }
-
-    void setStartTime(double startTime) { this.startTime = startTime; }
 
     public Link getStartLink() {
         return Tasks.getEndLink(this.tasks.get(0));
@@ -118,8 +82,7 @@ public class DrtBlockingRequest implements Request {
         private Id<Request> id;
         private String mode;
         private Double submissionTime;
-        private Double startTime;
-        private Double endTime;
+        private Double duration;
         private Id<Carrier> carrierId;
         private List<Task> tasks;
 
@@ -138,13 +101,8 @@ public class DrtBlockingRequest implements Request {
             return this;
         }
 
-        public Builder startTime(Double val) {
-            startTime = val;
-            return this;
-        }
-
-        public Builder endTime(Double val) {
-            endTime = val;
+        public Builder duration(Double val) {
+            duration = val;
             return this;
         }
 

@@ -22,11 +22,7 @@ package org.matsim.drtBlockings;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.contrib.drt.optimizer.DefaultDrtOptimizer;
-import org.matsim.contrib.drt.optimizer.DrtModeOptimizerQSimModule;
-import org.matsim.contrib.drt.optimizer.DrtOptimizer;
-import org.matsim.contrib.drt.optimizer.QSimScopeForkJoinPoolHolder;
-import org.matsim.contrib.drt.optimizer.VehicleData;
+import org.matsim.contrib.drt.optimizer.*;
 import org.matsim.contrib.drt.optimizer.depot.DepotFinder;
 import org.matsim.contrib.drt.optimizer.depot.NearestStartLinkAsDepot;
 import org.matsim.contrib.drt.optimizer.insertion.DefaultUnplannedRequestInserter;
@@ -71,30 +67,21 @@ import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 
-class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
+class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
 
 	private final DrtConfigGroup drtCfg;
 
-	//TODO configurable
-//	private static int defaultMaxAmountOfBlockings = 1;
-    private static int defaultMaxAmountOfBlockings = 30;
-
-	DrtBlockingQSimModule(DrtConfigGroup drtConfigGroup) {
+	DrtBlockingOptimizerQSimModule(DrtConfigGroup drtConfigGroup) {
 		super(drtConfigGroup.getMode());
         this.drtCfg = drtConfigGroup;
     }
 
     @Override
     protected void configureQSim() {
-        install(new VrpAgentSourceQSimModule(getMode()));
-        install(new PassengerEngineQSimModule(getMode()));
-
         addModalComponent(DrtOptimizer.class, modalProvider(
-//                getter -> new DefaultBlockingOptimizer(getter.getModal(DefaultDrtOptimizer.class),
                 getter -> new AdaptiveBlockingOptimizer(getter.getModal(DefaultDrtOptimizer.class),
                         getter.getModal(Fleet.class),
                         getter.getModal(DrtScheduleInquiry.class),
-                        getter.getModal(DrtBlockingManager.class),
                         getter.getModal(DrtBlockingRequestDispatcher.class),
                         getter.getNamed(TravelTime.class, DvrpTravelTimeModule.DVRP_ESTIMATED),
                         getter.get(EventsManager.class),
@@ -110,16 +97,9 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getModal(EmptyVehicleRelocator.class), getter.getModal(UnplannedRequestInserter.class))))
                 .in(Singleton.class);
 
-        bindModal(DrtBlockingManager.class).toProvider(modalProvider(
-                getter -> new SlotBasedDrtBlockingManager(getConfig(),
-                        defaultMaxAmountOfBlockings,
-                        getter.get(MobsimTimer.class))))
-                .in(Singleton.class);
-
-        bindModal(VehicleData.EntryFactory.class).toProvider(modalProvider(
-                getter -> new AdaptiveBlockingVehicleDataEntryFactory(drtCfg, getter.getModal(AdaptiveBlockingOptimizer.class))))
-                .in(Singleton.class);
-
+//        bindModal(VehicleData.EntryFactory.class).toProvider(modalProvider(
+//                getter -> new AdaptiveBlockingVehicleDataEntryFactory(drtCfg, getter.getModal(DrtOptimizer.class))))
+//                .in(Singleton.class);
 
         addModalComponent(BlockingRequestEngine.class, new ModalProviders.AbstractProvider<>(drtCfg.getMode()) {
             @Inject
@@ -131,7 +111,7 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
             }
         });
 
-        bindModal(BlockingRequestCreator.class).toProvider(new ModalProviders.AbstractProvider<BlockingRequestCreator>(getMode()) {
+        bindModal(BlockingRequestCreator.class).toProvider(new ModalProviders.AbstractProvider<>(getMode()) {
             @Inject
             @Named(DvrpTravelTimeModule.DVRP_ESTIMATED)
             private TravelTime travelTime;
@@ -212,17 +192,17 @@ class DrtBlockingQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getModal(ScheduleTimingUpdater.class), getter.getModal(DrtTaskFactory.class))))
                 .asEagerSingleton();
 
-        bindModal(PassengerRequestCreator.class).toProvider(new Provider<DrtRequestCreator>() {
-            @Inject
-            private EventsManager events;
-            @Inject
-            private MobsimTimer timer;
-
-            @Override
-            public DrtRequestCreator get() {
-                return new DrtRequestCreator(getMode(), events, timer);
-            }
-        }).asEagerSingleton();
+//        bindModal(PassengerRequestCreator.class).toProvider(new Provider<DrtRequestCreator>() {
+//            @Inject
+//            private EventsManager events;
+//            @Inject
+//            private MobsimTimer timer;
+//
+//            @Override
+//            public DrtRequestCreator get() {
+//                return new DrtRequestCreator(getMode(), events, timer);
+//            }
+//        }).asEagerSingleton();
 
         bindModal(VrpOptimizer.class).to(modalKey(DrtOptimizer.class));
     }
