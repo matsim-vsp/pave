@@ -21,7 +21,10 @@
 package org.matsim.drtBlockings;
 
 import com.google.inject.Singleton;
+import org.matsim.contrib.drt.analysis.DrtModeAnalysisModule;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
+import org.matsim.contrib.drt.run.DrtModeModule;
+import org.matsim.contrib.drt.run.DrtModeQSimModule;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.drtBlockings.analysis.PassengerRequestRejectionListener;
 
@@ -35,8 +38,9 @@ public class DrtBlockingModule extends AbstractModule {
 
     @Override
     public void install() {
-
-        installQSimModule( new DrtBlockingQSimModule(drtConfigGroup));
+        install( new DrtModeModule(drtConfigGroup)) ;
+        install(new DrtModeAnalysisModule(drtConfigGroup));
+        installQSimModule( new DrtModeQSimModule(drtConfigGroup, new DrtBlockingOptimizerQSimModule(drtConfigGroup)));
 
         install(new AbstractModule() {
             @Override

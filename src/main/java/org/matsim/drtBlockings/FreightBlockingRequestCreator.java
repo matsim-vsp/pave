@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelData;
 import org.matsim.contrib.dvrp.path.VrpPathWithTravelDataImpl;
@@ -44,7 +45,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
     //TODO make this configurable
     static final double RETOOL_DURATION = 5*60;
-    static final double SUBMISSION_LOOK_AHEAD = 15*60;
+    static final double GLOBAL_SUBMISSION_TIME = 8 * 3600;
 
     private final Network network;
     private final String mode;
@@ -76,8 +77,9 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
     private Set<DrtBlockingRequest> createBlockingRequestsForCarrier(Carrier carrier){
         Set<DrtBlockingRequest> requests = new HashSet<>();
-
         Map<Id<CarrierVehicle>, Integer> vehicleCount = new HashMap<>();
+
+        int count = 0;
 
         for (ScheduledTour tour : carrier.getSelectedPlan().getScheduledTours()){
             int vehCount;
@@ -86,18 +88,32 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
             } else{
                 vehCount = vehicleCount.get(tour.getVehicle().getId());
             }
-            String tourID = carrier.getId() + "_" + tour.getVehicle().getId() + "_" + vehCount;
-            requests.add(createRequest(tour, tourID));
+            String tourID = carrier.getId() + "_" + tour.getVehicle().getId() + "_" + vehCount + "_" + count;
+            requests.add(createRequest(carrier.getId(), Id.create(tour.getVehicle().getId(), DvrpVehicle.class), tour, tourID));
+            count++;
         }
         return requests;
     }
 
-    private DrtBlockingRequest createRequest(ScheduledTour scheduledTour, String tourID) {
+    private DrtBlockingRequest createRequest(Id<Carrier> carrierId, Id<DvrpVehicle> vehicleId, ScheduledTour scheduledTour, String tourID) {
         Id<Request> id = Id.create(tourID, Request.class);
+        String mode = this.mode;
         double blockingStart = determineStartOfBlocking(scheduledTour);
+        double submissionTime = GLOBAL_SUBMISSION_TIME;
+
         List<Task> tourTasks = convertScheduledTour2DvrpTasks(scheduledTour, blockingStart);
         double blockingEnd = tourTasks.get(tourTasks.size() - 1).getEndTime();
-        return new DrtBlockingRequest(id, Math.max(qSimStartTime, blockingStart - SUBMISSION_LOOK_AHEAD), blockingStart, blockingEnd, tourTasks);
+
+        DrtBlockingRequest request = DrtBlockingRequest.newBuilder()
+                .id(Id.create(id, Request.class))
+                .mode(mode)
+                .carrierId(carrierId)
+                .submissionTime(submissionTime)
+                .duration(blockingEnd - blockingStart)
+                .tasks(tourTasks)
+                .build();
+
+        return request;
     }
 
 

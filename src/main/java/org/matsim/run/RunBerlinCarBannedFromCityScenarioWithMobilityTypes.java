@@ -106,7 +106,7 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypes {
 
         { //this is for open berlin scenario in pave context only!
             //we need a transfer zone because otherwise we might get rejections. we do this by having a service area slightly larger than berlin and then removing car from links within berlin
-            RunDrtOpenBerlinScenario.addDRTmode(scenario, drtConfigGroup.getMode(), drtConfigGroup.getDrtServiceAreaShapeFile());
+            RunDrtOpenBerlinScenario.addDRTmode(scenario, drtConfigGroup.getMode(), drtConfigGroup.getDrtServiceAreaShapeFile(), 0);
             CarBannedScenarioPreparation.banCarAndRideFromLinkInsideBerlin(scenario.getNetwork());
 //        replace ride trips inside service area with single-leg car trips (which will then be routed with fallback mode which triggers mode choice)
             List<PreparedGeometry> serviceAreaGeoms = loadPreparedGeometries(drtConfigGroup.getDrtServiceAreaShapeFileURL(scenario.getConfig().getContext()));

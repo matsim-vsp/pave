@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<vehicleTypes>
+
+    <vehicleType id="drtFreight">
+        
+        <description>Mercedes 313 CDi in BVWP</description>
+
+        <allowableWeight weight="3.5"/>
+
+		<!-- this comes from table 8-37 in FE-Bericht zum BVWP-->
+		<!-- gasConsumption in liter per meter -->
+        <engineInformation fuelType="diesel" gasConsumption="0.000064"/>
+		<!-- time cost only consist of salary here, because depreciation is also adressed in fix costs -->
+        <costInformation fix="30.35" perMeter="0.0002522" perSecond="0.0049"/> 
+
+		<!-- this comes from Zhang et al-->
+        <capacity>230</capacity>
+
+        <!-- i need some input source here-->
+        <maxVelocity>50</maxVelocity>
+
+    </vehicleType>
+	
+	<vehicleType id="Transporter">
+        
+        <description>Mercedes 313 CDi in BVWP</description>
+
+       <allowableWeight weight="3.5"/>
+
+		<!-- this comes from table 8-37 in FE-Bericht zum BVWP-->
+		<!-- gasConsumption in liter per meter -->
+        <engineInformation fuelType="diesel" gasConsumption="0.000064"/>
+		<!-- time cost only consist of salary here which is 0, because we don't have a driver anymore -->
+        <costInformation fix="30.35" perMeter="0.0002522" perSecond="0.0"/> 
+
+		<!-- this comes from Zhang et al-->
+        <capacity>230</capacity>
+
+        <!-- i need some input source here-->
+        <maxVelocity>50</maxVelocity>
+
+    </vehicleType>
+	
+	<vehicleType id="Pkw">
+        
+       <description>BMW 525d in BVWP</description>
+
+       <allowableWeight weight="2.255"/>
+
+		<!-- this comes from table 8-32 in FE-Bericht zum BVWP-->
+		<!-- gasConsumption in liter per meter -->
+        <engineInformation fuelType="diesel" gasConsumption="0.00004"/>
+		<!-- time cost only consist of salary here which is 0, because we don't have a driver anymore -->
+        <costInformation fix="10.85" perMeter="0.0003051" perSecond="0.0"/> 
+
+		<!-- this comes from Zhang et al-->
+        <capacity>115</capacity>
+
+        <!-- i need some input source here-->
+        <maxVelocity>50</maxVelocity>
+
+    </vehicleType>
+	
+	
+
+
+</vehicleTypes>

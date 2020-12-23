@@ -33,11 +33,13 @@ import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.PopulationFactory;
+import org.matsim.contrib.drt.analysis.DrtModeAnalysisModule;
 import org.matsim.contrib.drt.optimizer.insertion.ExtensiveInsertionSearchParams;
 import org.matsim.contrib.drt.routing.DrtRoute;
 import org.matsim.contrib.drt.routing.DrtRouteFactory;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.DrtModeModule;
+import org.matsim.contrib.drt.run.DrtModeQSimModule;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpModule;
@@ -93,7 +95,6 @@ class DrtBlockingTestControlerCreator {
 
 	private static void configureControler(DrtConfigGroup drtCfg, Controler controler, Collection<EventHandler> eventHandlers) {
 		controler.addOverridingModule( new DvrpModule() ) ;
-		controler.addOverridingModule( new DrtModeModule(drtCfg) ) ;
 		controler.addOverridingModule( new DrtBlockingModule(drtCfg));
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
@@ -101,7 +102,7 @@ class DrtBlockingTestControlerCreator {
 				eventHandlers.forEach(eventHandler -> addEventHandlerBinding().toInstance(eventHandler));
 			}
 		});
-		controler.configureQSimComponents( DvrpQSimComponents.activateModes( TransportMode.drt ) ) ;
+		controler.configureQSimComponents( DvrpQSimComponents.activateModes( drtCfg.getMode() ) ) ;
 	}
 
 	private static void setupPopulation(Scenario scenario) {

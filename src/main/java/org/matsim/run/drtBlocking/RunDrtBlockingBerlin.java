@@ -24,34 +24,59 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
+import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.events.handler.EventHandler;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.TripStructureUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 public class RunDrtBlockingBerlin {
 
-	private static final String INPUT_CONFIG = "../../svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin-drt-v5.5-1pct.config.xml";
-	private static final String CARRIERS_PLANS_PLANNED = "berlin5.5_1pct_pave_drtBlockingcarriers_planned.xml";
+	private static final String INPUT_CONFIG = "scenarios/berlin-v5.5-1pct/input/drtBlocking/noIncDRT.output_config.xml";
+	private static final String INPUT_NETWORK_CHANGE_EVENTS = "noIncDRT.networkChangeEvents_1pct.xml.gz";
+	private static final String INPUT_DRT_PLANS = "noIncDRT.output_plans_drtOnly_splitAgents_1pct.xml.gz";
+
+	//TODO
+//	private static final String CARRIERS_PLANS_PLANNED = "D:/svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin5.5_1pct_pave_drtBlockingcarriers_planned.xml";
+//	private static final String CARRIERS_PLANS_PLANNED = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/carriers_services_openBerlinNet_LichtenbergNord.xml";
+//	private static final String CARRIERS_PLANS_PLANNED = "carriers_realisticServiceTimeWindows_0-24+_openBerlinNet_LichtenbergNord.xml";
+	private static final String CARRIERS_PLANS_PLANNED = "drtBlockingTest_30Blockings_realisticServiceTimeWindowscarriers_planned.xml";
 	private static final String CARRIERS_PLANS = "berlin-carriers.xml";
-	private static final String CARRIER_VEHICLE_TYPES = "berlin-vehicleTypes.xml";
+	//TODO
+//	private static final String CARRIER_VEHICLE_TYPES = "D:/svn/shared-svn/projects/pave/matsim-input-files/S7_fleetMultiUse/berlin-vehicleTypes.xml";
+	private static final String CARRIER_VEHICLE_TYPES = "carrier_vehicleTypes.xml";
+
 	private static final boolean RUN_TOURPLANNING = false;
 
-	private static final String OUTPUT_DIR = "./output/berlin-v5.5-1pct/drtBlockingTest";
+	//TODO
+//	private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/drtBlockingTest";
+//	private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/drtBlockingTest_30Blockings";
+	private static final String OUTPUT_DIR = "./output/berlin-v5.5-1pct/drtBlockingTest_30Blockings_realisticServiceTimeWindows_adaptiveBlocking";
 
 	public static void main(String[] args) {
 
 
 		Config config = RunDrtBlocking.prepareConfig(INPUT_CONFIG, CARRIERS_PLANS_PLANNED, CARRIER_VEHICLE_TYPES);
 
-		Scenario scenario = RunDrtBlocking.prepareScenario(config, false);
-		scenario.getConfig().controler().setOutputDirectory(OUTPUT_DIR);
-		scenario.getConfig().controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+		config.network().setChangeEventsInputFile(INPUT_NETWORK_CHANGE_EVENTS);
+		config.network().setTimeVariantNetwork(true);
+		config.controler().setOutputDirectory(OUTPUT_DIR);
+		config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+
+		config.plans().setInputFile(INPUT_DRT_PLANS);
+		config.qsim().setFlowCapFactor(100.);
+
+		Scenario scenario = RunDrtBlocking.prepareScenario(config, RUN_TOURPLANNING);
 
 //		makePeopleUseDRTForRandomLegs(scenario.getPopulation());
 		Controler controler = RunDrtBlocking.prepareControler(scenario);

@@ -25,7 +25,6 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
-import org.matsim.drtSpeedUp.MultiModeDrtSpeedUpModule;
 import org.matsim.optDRT.MultiModeOptDrtConfigGroup;
 import org.matsim.optDRT.OptDrt;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
@@ -62,7 +61,7 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
         }
 
         Config config = RunDrtOpenBerlinScenario.prepareConfig(configArgs);
-        MultiModeDrtSpeedUpModule.addTeleportedDrtMode(config);
+//        MultiModeDrtSpeedUpModule.addTeleportedDrtMode(config);
 
         PAVEMobilityTypesForBerlin.configureMobilityTypeSubPopulations(config, sensitivityFactor);
 
@@ -83,7 +82,7 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
 //        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 
         Controler controler = RunDrtOpenBerlinScenario.prepareControler(scenario);
-        controler.addOverridingModule(new MultiModeDrtSpeedUpModule());
+//        controler.addOverridingModule(new MultiModeDrtSpeedUpModule());
         OptDrt.addAsOverridingModule(controler, ConfigUtils.addOrGetModule(scenario.getConfig(), MultiModeOptDrtConfigGroup.class));
 
         controler.run();

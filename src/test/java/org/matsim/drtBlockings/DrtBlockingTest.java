@@ -47,7 +47,7 @@ import java.util.logging.Logger;
  *
  * (2) testDrtBlockingTime
  * tests whether the times and/or the chronology of actions performed while blockings are correct.
- * For instance, blockings should end in the same second the second retool activity of the tour has ended.
+ * For instance, blockings should end in the same second the last task of the associated tour has ended.
  * Delivery time window enforcement is tested...
  *
  */
