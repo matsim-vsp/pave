@@ -12,21 +12,19 @@ import org.matsim.core.config.Config;
 
 import javax.inject.Inject;
 
-class AdaptiveBlockingVehicleDataEntryFactory implements VehicleData.EntryFactory {
+public class AdaptiveBlockingVehicleDataEntryFactory implements VehicleData.EntryFactory {
 
    private final VehicleDataEntryFactoryImpl delegate;
-   DrtOptimizer optimizer;
+   private final BlockingOptimizer optimizer;
 
-   AdaptiveBlockingVehicleDataEntryFactory(DrtConfigGroup drtCfg, DrtOptimizer optimizer) {
+   AdaptiveBlockingVehicleDataEntryFactory(DrtConfigGroup drtCfg, BlockingOptimizer optimizer) {
        this.delegate = new VehicleDataEntryFactoryImpl(drtCfg);
        this.optimizer = optimizer;
    }
 
    @Override
    public VehicleData.Entry create(DvrpVehicle vehicle, double currentTime) {
-//       if(! (optimizer instanceof BlockingOptimizer))
-//           throw new IllegalArgumentException("this class only works with BlockingOptimizer class. Provided optimizer class is: " + optimizer.getClass());
-       if(! ((BlockingOptimizer) optimizer).isVehicleBlocked(vehicle)){
+       if(!  optimizer.isVehicleBlocked(vehicle)){
            //can not touch vehicles out of order
            if(vehicle.getSchedule().getStatus() == Schedule.ScheduleStatus.STARTED){
                //do some consistency checks

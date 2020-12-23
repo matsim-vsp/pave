@@ -78,7 +78,7 @@ class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
 
     @Override
     protected void configureQSim() {
-        addModalComponent(DrtOptimizer.class, modalProvider(
+        addModalComponent(BlockingOptimizer.class, modalProvider(
                 getter -> new AdaptiveBlockingOptimizer(getter.getModal(DefaultDrtOptimizer.class),
                         getter.getModal(Fleet.class),
                         getter.getModal(DrtScheduleInquiry.class),
@@ -90,6 +90,8 @@ class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
                         getter.get(Config.class)) {
         }));
 
+		bindModal(DrtOptimizer.class).to(modalKey(BlockingOptimizer.class));
+
         bindModal(DefaultDrtOptimizer.class).toProvider(modalProvider(
                 getter -> new DefaultDrtOptimizer(drtCfg, getter.getModal(Fleet.class), getter.get(MobsimTimer.class),
                         getter.getModal(DepotFinder.class), getter.getModal(RebalancingStrategy.class),
@@ -97,9 +99,9 @@ class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getModal(EmptyVehicleRelocator.class), getter.getModal(UnplannedRequestInserter.class))))
                 .in(Singleton.class);
 
-//        bindModal(VehicleData.EntryFactory.class).toProvider(modalProvider(
-//                getter -> new AdaptiveBlockingVehicleDataEntryFactory(drtCfg, getter.getModal(DrtOptimizer.class))))
-//                .in(Singleton.class);
+        bindModal(VehicleData.EntryFactory.class).toProvider(modalProvider(
+                getter -> new AdaptiveBlockingVehicleDataEntryFactory(drtCfg, getter.getModal(BlockingOptimizer.class))))
+                .in(Singleton.class);
 
         addModalComponent(BlockingRequestEngine.class, new ModalProviders.AbstractProvider<>(drtCfg.getMode()) {
             @Inject
