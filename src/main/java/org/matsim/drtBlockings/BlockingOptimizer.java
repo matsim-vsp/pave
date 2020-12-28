@@ -11,12 +11,4 @@ interface BlockingOptimizer extends DrtOptimizer {
      */
     void blockingRequestSubmitted(DrtBlockingRequest drtBlockingRequest);
 
-    /**
-     *
-     * determines whether {@code vehicle} is available for passenger transport.
-     * @param vehicle
-     * @return true, if {@code vehicle} is <i>not</i> available for passenger transport
-     *
-     */
-    boolean isVehicleBlocked(DvrpVehicle vehicle);
 }

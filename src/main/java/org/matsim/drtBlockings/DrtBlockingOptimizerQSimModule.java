@@ -82,6 +82,7 @@ class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
                 getter -> new AdaptiveBlockingOptimizer(getter.getModal(DefaultDrtOptimizer.class),
                         getter.getModal(Fleet.class),
                         getter.getModal(DrtScheduleInquiry.class),
+                        getter.getModal(DrtBlockingManager.class),
                         getter.getModal(DrtBlockingRequestDispatcher.class),
                         getter.getNamed(TravelTime.class, DvrpTravelTimeModule.DVRP_ESTIMATED),
                         getter.get(EventsManager.class),
@@ -100,8 +101,10 @@ class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
                 .in(Singleton.class);
 
         bindModal(VehicleData.EntryFactory.class).toProvider(modalProvider(
-                getter -> new AdaptiveBlockingVehicleDataEntryFactory(drtCfg, getter.getModal(BlockingOptimizer.class))))
+                getter -> new BlockingVehicleDataEntryFactory(drtCfg, getter.getModal(DrtBlockingManager.class))))
                 .in(Singleton.class);
+
+        bindModal(DrtBlockingManager.class).toInstance(new SimpleBlockingManager());
 
         addModalComponent(BlockingRequestEngine.class, new ModalProviders.AbstractProvider<>(drtCfg.getMode()) {
             @Inject
@@ -193,18 +196,6 @@ class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getNamed(TravelTime.class, DvrpTravelTimeModule.DVRP_ESTIMATED),
                         getter.getModal(ScheduleTimingUpdater.class), getter.getModal(DrtTaskFactory.class))))
                 .asEagerSingleton();
-
-//        bindModal(PassengerRequestCreator.class).toProvider(new Provider<DrtRequestCreator>() {
-//            @Inject
-//            private EventsManager events;
-//            @Inject
-//            private MobsimTimer timer;
-//
-//            @Override
-//            public DrtRequestCreator get() {
-//                return new DrtRequestCreator(getMode(), events, timer);
-//            }
-//        }).asEagerSingleton();
 
         bindModal(VrpOptimizer.class).to(modalKey(DrtOptimizer.class));
     }
