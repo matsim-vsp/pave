@@ -79,8 +79,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         Set<DrtBlockingRequest> requests = new HashSet<>();
         Map<Id<CarrierVehicle>, Integer> vehicleCount = new HashMap<>();
 
-        int count = 0;
-
+//        int count = 0;
         for (ScheduledTour tour : carrier.getSelectedPlan().getScheduledTours()){
             int vehCount;
             if(vehicleCount.get(tour.getVehicle().getId()) == null){
@@ -88,9 +87,9 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
             } else{
                 vehCount = vehicleCount.get(tour.getVehicle().getId());
             }
-            String tourID = carrier.getId() + "_" + tour.getVehicle().getId() + "_" + vehCount + "_" + count;
+            String tourID = carrier.getId() + "_" + tour.getVehicle().getId() + "_" + vehCount; /* + "_" + count;*/
             requests.add(createRequest(carrier.getId(), Id.create(tour.getVehicle().getId(), DvrpVehicle.class), tour, tourID));
-            count++;
+//            count++;
         }
         return requests;
     }
@@ -133,7 +132,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         double tourStart = scheduledTour.getDeparture();
         double calculatedStart;
 //        double bufferFactor = config.plansCalcRoute().getTeleportedModeFreespeedFactors().get(TransportMode.ride); //TODO
-        double bufferFactor = 1.5;
+        double bufferFactor = 1.;
 
         //if jsprit scheduled the tour start way too early, just account for the ttDepot2FirstDelivery * 1.5 and ignore the original start time
         if(tourStart + ttDepot2FirstDelivery * bufferFactor <= firstDeliveryEarliestStart){

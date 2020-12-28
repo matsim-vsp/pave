@@ -171,7 +171,10 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
                 rejectBlockingRequest(drtBlockingRequest);
                 blockingRequestsIterator.remove();
             } else {
-                double currentIdleVehicleRatio = idleVehicles.size() / fleet.getVehicles().size();;
+                double idleVehiclesNo = idleVehicles.size();
+                double allVehiclesNo = fleet.getVehicles().size();
+                double currentIdleVehicleRatio = idleVehiclesNo / allVehiclesNo;
+
                 if (currentIdleVehicleRatio > this.minIdleVehicleRatio) {
                     //TODO does current blocking request fit (based on historic fleet occupancy data?)
 
@@ -198,6 +201,8 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
                                 drtBlockingRequest.getId(), drtBlockingRequest.getCarrierId(),
                                 Id.create(drtBlockingRequest.getCarrierId(), CarrierVehicle.class), vehicle.getId()));
                         }
+                } else {
+                    return;
                 }
             }
         }
