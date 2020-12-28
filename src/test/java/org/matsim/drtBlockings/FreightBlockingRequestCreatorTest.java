@@ -118,18 +118,31 @@ public class FreightBlockingRequestCreatorTest {
 
 //            drive to depot, retool, drive to service, service, drive to depot
             Assert.assertEquals(5 ,request.getTasks().size());
+            Assert.assertEquals(6*3600, request.getTasks().get(0).getBeginTime(), MatsimTestUtils.EPSILON);
         }
         {
-            DrtBlockingRequest request = requests.get(Id.create("testCarrierUno_lateVehicle_1", Request.class)); //this will be the request with a service time window starting at 6 a.m.
+            DrtBlockingRequest request = requests.get(Id.create("testCarrierUno_lateVehicle_1", Request.class)); //this will be the request with a service time window starting at 10 a.m.
             Assert.assertNotNull(request);
 
             double submissionTime = FreightBlockingRequestCreator.GLOBAL_SUBMISSION_TIME;
+
+            //            the vehicle needs to travel 1 link on the way to the depot, 1 complete link on the way to the service and 7 complete links on the way back to the depot (each link takes 100 seconds)
+//            plus an additional second for each start links.
+//            plus retool duration and service duration (5 minutes)
+            double duration =  FreightBlockingRequestCreator.RETOOL_DURATION * 2 + 5*60 + 8 * 100 + 1 + 1;
+            Assert.assertEquals(duration, request.getPlannedBlockingDuration(), MatsimTestUtils.EPSILON);
 
             Assert.assertEquals(submissionTime, request.getSubmissionTime(), MatsimTestUtils.EPSILON);
             Assert.assertEquals(Id.createLinkId(2), request.getStartLink().getId());
 
 //            drive to depot, retool, drive to service, service, drive to depot
             Assert.assertEquals(5 ,request.getTasks().size());
+
+
+            //jsprit calculates with vehicle departure = 9.00 a.m. and a travel time of 100s to the service
+            //but the services' earliest start is 10 a.m.
+            //so we set the tour start to 10 a.m. - 100s - RETOOL-Duration
+            Assert.assertEquals(10*3600 - 100 - FreightBlockingRequestCreator.RETOOL_DURATION, request.getTasks().get(0).getBeginTime(), MatsimTestUtils.EPSILON);
         }
     }
 }

@@ -5,4 +5,6 @@
 	<vehicle id="drt_veh_1" start_link="5" t_0="0" t_1="104400" capacity="1"/>
 	<vehicle id="drt_veh_2" start_link="5" t_0="0" t_1="104400" capacity="1"/>
 	<vehicle id="drt_veh_3" start_link="5" t_0="0" t_1="104400" capacity="1"/>
+	<vehicle id="drt_veh_4" start_link="5" t_0="0" t_1="104400" capacity="1"/>
+	<vehicle id="drt_veh_5" start_link="5" t_0="0" t_1="104400" capacity="1"/>
 </vehicles>

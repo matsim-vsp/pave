@@ -125,14 +125,27 @@ class DrtBlockingTestControlerCreator {
 			}
 		}
 
-		{ //there will be only verticalTravellers that travel from firstLink to secondLink, not vice-versa
-			Id<Link> firstLink = Id.createLinkId(12);
-			Id<Link> secondLink = Id.createLinkId(9);
-			for (int i = 18; i <= 72; i+=18) { //18,36,54,72  => 7.00h ; 10.00h, 13.00h, 16.00h
-				Person person = createPersons(firstLink, secondLink, popFactory, "verticalTraveller_", i);
-				scenario.getPopulation().addPerson(person);
-			}
-		}
+//		{ //there will be only verticalTravellers that travel from firstLink to secondLink, not vice-versa
+//			Id<Link> firstLink = Id.createLinkId(12);
+//			Id<Link> secondLink = Id.createLinkId(1);
+//			{
+//				Person person = createPersons(firstLink, secondLink, popFactory, "verticalTraveller_", 30); //dep 9h
+//				scenario.getPopulation().addPerson(person);
+//			}
+//			{
+//				Person person = createPersons(firstLink, secondLink, popFactory, "verticalTraveller_", 34); //dep 9.40h
+//				scenario.getPopulation().addPerson(person);
+//			}
+//			{
+//				Person person = createPersons(firstLink, secondLink, popFactory, "verticalTraveller_", 38); //dep 10.20h
+//				scenario.getPopulation().addPerson(person);
+//			}
+//			{
+//				Person person = createPersons(firstLink, secondLink, popFactory, "verticalTraveller_", 48); //dep 12.00h
+//				scenario.getPopulation().addPerson(person);
+//			}
+//
+//		}
 
 	}
 
