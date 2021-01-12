@@ -59,7 +59,6 @@ class CarBannedScenarioPreparation {
 	//this file contains some link ids of the A10 Berliner Ring that still should remain car links...
 	//the A100 (Stadtautobahn) is explicitly supposed to be turned into non car links though (will be usable for drt)
 	private static final String INPUT_HIGHWAYLINKSINBERLIN = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/highwayLinksInsideBerlinShpWith500mBuffer.txt";
-	private static final String BERLIN_SHP = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-shp/berlin.shp";
 
 
 	static final void replaceRideTripsWithinGeomsWithSingleLegTripsOfMode(Population population, String modeToReplaceRideTrips, List<PreparedGeometry> geoms){
@@ -82,9 +81,9 @@ class CarBannedScenarioPreparation {
 				});
 	}
 
-	static final void banCarAndRideFromLinkInsideBerlin(Network network){
+	static final void banCarAndRideFromArea(Network network, String carFreeZoneShape){
 		Set<Id<Link>> highwayLinks = parseHighwayLinksInBerlin();
-		List<Geometry> berlinGeom = ShpGeometryUtils.loadGeometries(IOUtils.resolveFileOrResource(BERLIN_SHP));
+		List<Geometry> berlinGeom = ShpGeometryUtils.loadGeometries(IOUtils.resolveFileOrResource(carFreeZoneShape));
 		network.getLinks().values().parallelStream()
 				.filter(l -> l.getAllowedModes().contains(TransportMode.car))
 				.filter(l -> ShpGeometryUtils.isCoordInGeometries(l.getToNode().getCoord(), berlinGeom)
