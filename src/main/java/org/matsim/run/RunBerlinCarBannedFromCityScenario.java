@@ -20,6 +20,7 @@
 
 package org.matsim.run;
 
+import com.google.inject.Singleton;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.matsim.accessEgress2CarByDRT.DRTAccessWalkEgress2CarModule;
@@ -32,7 +33,6 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.AnalysisMainModeIdentifier;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.optDRT.MultiModeOptDrtConfigGroup;
@@ -73,11 +73,10 @@ public class RunBerlinCarBannedFromCityScenario {
         String carFreeZoneShape;
         double buffer;
         if ( args.length==0 ) {
-
-            //careful if you change this: further down, we set service area to hundekopf
+            //careful if you change this: further down, we set service area (and drt vehicles file) to hundekopf
             carFreeZoneShape = BERLIN_HUNDEKOPF_SHP_MINUS_100m_BUFFER;
             buffer = 100;
-            configArgs = new String[]{BERLIN_V5_5_CONFIG ,"--config:controler.outputDirectory", "output/berlin5.5_1pct/bannedCarFromCity/pave508-trial"};
+            configArgs = new String[]{BERLIN_V5_5_CONFIG ,"--config:controler.outputDirectory", "output/berlin5.5_1pct/bannedCar/hundekopf"};
         } else {
             carFreeZoneShape = args[0];
             buffer = Double.parseDouble(args[1]);
@@ -93,6 +92,7 @@ public class RunBerlinCarBannedFromCityScenario {
         //this will throw an exception if more than one drt mode is configured... multiple drt operators are currently not supported with car banned scenario..
         DrtConfigGroup drtConfigGroup = DrtConfigGroup.getSingleModeDrtConfig(config);
         drtConfigGroup.setDrtServiceAreaShapeFile("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/shp-files/berlin-planungsraum-hundekopf/berlin-hundekopf-based-on-planungsraum.shp");
+        drtConfigGroup.setVehiclesFile("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/berlin-drt-v5.5-10pct/input/drtVehicles/berlin-hundekopf-drt-v5.5.drt-by-rndLocations-1000vehicles-4seats.xml.gz");
 
         //prepare car banned specific parameter settings
         CarBannedScenarioPreparation.prepareConfig(config,drtConfigGroup, new Tuple<>(WALK_ACCESS_DRT_EGRESS_MODE, DRT_ACCESS_DRT_WALK_MODE));
@@ -134,6 +134,9 @@ public class RunBerlinCarBannedFromCityScenario {
                 install(new DRTAccessWalkEgress2CarModule(DRT_ACCESS_DRT_WALK_MODE, drtConfigGroup));
 //                bind(MainModeIdentifier.class).to(OpenBerlinIntermodalMainModeIdentifier.class);
                 bind(AnalysisMainModeIdentifier.class).to(OpenBerlinIntermodalMainModeIdentifier.class);
+
+                bind(TuneModeChoice.class).in(Singleton.class);
+                addControlerListenerBinding().to(TuneModeChoice.class);
             }
         });
 

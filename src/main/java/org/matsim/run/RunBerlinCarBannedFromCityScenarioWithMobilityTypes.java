@@ -20,6 +20,7 @@
 
 package org.matsim.run;
 
+import com.google.inject.Singleton;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.matsim.accessEgress2CarByDRT.DRTAccessWalkEgress2CarModule;
@@ -142,6 +143,9 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypes {
                 install(new DRTAccessWalkEgress2CarModule(DRT_ACCESS_DRT_WALK_MODE, drtConfigGroup));
 //                bind(MainModeIdentifier.class).to(OpenBerlinIntermodalMainModeIdentifier.class);
                 bind(AnalysisMainModeIdentifier.class).to(OpenBerlinIntermodalMainModeIdentifier.class);
+
+                bind(TuneModeChoice.class).in(Singleton.class);
+                addControlerListenerBinding().to(TuneModeChoice.class);
             }
         });
 
