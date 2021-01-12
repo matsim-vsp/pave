@@ -21,6 +21,7 @@ hs_err_pid*
 /tourEvaluation/
 /OutputKMT/
 /bin/
+/lsp/
 
 /.idea/
 *.iml

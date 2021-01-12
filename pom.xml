@@ -17,9 +17,8 @@
 <!--		<matsim.version>13.0-SNAPSHOT</matsim.version>-->
 
 		<!--weekly "release":-->
-<!--		week 51 is consistent with matsim version in matsim-berlin-v5.5-->
-		<matsim.version>13.0-2020w51-SNAPSHOT</matsim.version>
-
+<!--		week 02 is consistent with matsim version in matsim-berlin-v5.5.1-->
+		<matsim.version>13.0-2021w02-SNAPSHOT</matsim.version>
 
 	</properties>
 
@@ -140,9 +139,9 @@
 		<dependency>
 			<groupId>com.github.matsim-scenarios</groupId>
 			<artifactId>matsim-berlin</artifactId>
-<!--			<version>5.5</version>-->
+			<version>5.5.1</version>
 <!--			<version>5.5.x-a2e8cbe3de-1</version>-->
-			<version>5.5.x-SNAPSHOT</version>
+<!--			<version>5.5.x-SNAPSHOT</version>-->
 		</dependency>
 
 		<dependency>
