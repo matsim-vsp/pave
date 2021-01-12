@@ -33,7 +33,7 @@ public class RunBerlinScenarioWithMobilityTypes {
     private static final Logger log = Logger.getLogger(RunBerlinScenarioWithMobilityTypes.class );
 
 //    private static final String BERLIN_V5_5_CONFIG = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-10pct.config.xml";
-    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-10pct/input/pave-berlin-v5.5-10pct.config.xml";
+    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-10pct/input/berlin-v5.5-10pct.config.xml";
 
 
     /**
@@ -66,7 +66,7 @@ public class RunBerlinScenarioWithMobilityTypes {
          * the default input population contains persons that are already assigned to mobility types.
          * if you want to run another scenario, uncomment the following line
          */
-//        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
+        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 
         Controler controler = RunBerlinScenario.prepareControler(scenario);
 

@@ -51,7 +51,7 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypes {
 
     private static final Logger log = Logger.getLogger(RunBerlinCarBannedFromCityScenarioWithMobilityTypes.class );
 
-    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config_banCarTest.xml";
+    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config.xml";
 
     static final String WALK_ACCESS_DRT_EGRESS_MODE = "walkCarDrt";
     static final String DRT_ACCESS_DRT_WALK_MODE = "drtCarWalk";
@@ -109,7 +109,7 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypes {
          * the default input population contains persons that are already assigned to mobility types.
          * if you want to run another population but with mobility types, uncomment the following line
          */
-//        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
+        PAVEMobilityTypesForBerlin.randomlyAssignMobilityTypes(scenario.getPopulation(), PAVEMobilityTypesForBerlin.getMobilityTypesWithDefaulWeights());
 
         /* ban car from drt service area -- be aware that this will not create a transfer zone (where both car and drt are allowed)
          * replace ride trips inside service area with single-leg car trips (which will then be routed with fallback mode which triggers mode choice)

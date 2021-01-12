@@ -22,6 +22,9 @@ package org.matsim.run;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.drt.run.DrtConfigGroup;
+import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
+import org.matsim.contrib.drt.speedup.DrtSpeedUpParams;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
@@ -34,7 +37,7 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
 
     private static final Logger log = Logger.getLogger(RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp.class );
 
-    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/pave-berlin-drt-v5.5-1pct.config-transsims.xml";
+    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/pave-berlin-drt-v5.5-1pct.config.xml";
 
 
     private static final boolean BAN_CAR_FROM_DRT_SERVICE_AREA = true;
@@ -62,6 +65,12 @@ public class RunBerlinScenarioWithMobilityTypesAndDrtSpeedUp {
 
         Config config = RunDrtOpenBerlinScenario.prepareConfig(configArgs);
 //        MultiModeDrtSpeedUpModule.addTeleportedDrtMode(config);
+
+        for (DrtConfigGroup drtCfg : MultiModeDrtConfigGroup.get(config).getModalElements()) {
+            if (drtCfg.getDrtSpeedUpParams().isEmpty()) {
+                drtCfg.addParameterSet(new DrtSpeedUpParams());
+            }
+        }
 
         PAVEMobilityTypesForBerlin.configureMobilityTypeSubPopulations(config, sensitivityFactor);
 

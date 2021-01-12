@@ -53,16 +53,9 @@ public class RunBerlinCarBannedFromCityScenario {
     private static final Logger log = Logger.getLogger(RunBerlinCarBannedFromCityScenario.class );
 
     private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config.xml";
-//    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config.speedUp.xml";
-
-//    private static final String BERLIN_V5_5_CONFIG = "D:/bannedCarStudy/berlin-drt-v5.5-10pct.config_pave508.xml";
-
-//    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config_banCarTest.xml";
-//    private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config_banCarTest_speedUp.xml";
 
     static final String BERLIN_SHP_MINUS_500m_BUFFER = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/shp-files/S5/berlin-minus-500m-buffer.shp";
     static final String BERLIN_HUNDEKOPF_SHP_MINUS_100m_BUFFER = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/shp-files/S5/berlin-hundekopf-minus-100m.shp";
-
 
     static final String WALK_ACCESS_DRT_EGRESS_MODE = "walkCarDrt";
     static final String DRT_ACCESS_DRT_WALK_MODE = "drtCarWalk";
@@ -97,18 +90,6 @@ public class RunBerlinCarBannedFromCityScenario {
         //prepare config
         Config config = RunDrtOpenBerlinScenario.prepareConfig(configArgs);
 
-//        config.plans().setInputFile("pave509.output_plans.xml.gz");
-//        config.controler().setOutputDirectory("D:/bannedCarStudy/output/test-speedUp-replacementRideOnlyServiceArea");
-//        config.controler().setLastIteration(1);
-//        config.controler().setWriteTripsInterval(1);
-//        config.controler().setWriteEventsInterval(1);
-
-//        config.plans().setInputFile("D:/bannedCarStudy/berlin-v5.5-0.1pct-woRoutes.xml.gz");
-//        config.transit().setUseTransit(true);
-//        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles);
-
-//        MultiModeDrtSpeedUpModule.addTeleportedDrtMode(config);
-
         //this will throw an exception if more than one drt mode is configured... multiple drt operators are currently not supported with car banned scenario..
         DrtConfigGroup drtConfigGroup = DrtConfigGroup.getSingleModeDrtConfig(config);
         drtConfigGroup.setDrtServiceAreaShapeFile("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/shp-files/berlin-planungsraum-hundekopf/berlin-hundekopf-based-on-planungsraum.shp");
@@ -136,8 +117,6 @@ public class RunBerlinCarBannedFromCityScenario {
             CarBannedScenarioPreparation.replaceRideTripsWithinGeomsWithSingleLegTripsOfMode(scenario.getPopulation(), TransportMode.car, serviceAreaGeoms); //TODO what is the best replacement mode for ride?
         }
 
-
-
         //insert vehicles for new modes
         configureVehicleIdsForNewModes(scenario);
 
@@ -162,7 +141,7 @@ public class RunBerlinCarBannedFromCityScenario {
         controler.run();
 
         //run analysis
-//        RunBerlinScenario.runAnalysis(controler);
+        RunBerlinScenario.runAnalysis(controler);
     }
 
     private static void configureVehicleIdsForNewModes(Scenario scenario) {
