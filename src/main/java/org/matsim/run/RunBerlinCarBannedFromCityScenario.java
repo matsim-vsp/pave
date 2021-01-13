@@ -81,8 +81,8 @@ public class RunBerlinCarBannedFromCityScenario {
             carFreeZoneShape = args[0];
             buffer = Double.parseDouble(args[1]);
             configArgs = new String[args.length-2];
-            for(int i = 1; i < args.length; i++){
-                configArgs[i-1] = args[i];
+            for(int i = 2; i < args.length; i++){
+                configArgs[i-2] = args[i];
             }
         }
 

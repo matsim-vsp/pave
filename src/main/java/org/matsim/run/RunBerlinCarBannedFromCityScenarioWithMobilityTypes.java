@@ -79,8 +79,8 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypes {
             carFreeZoneShape = args[1];
             buffer = Double.parseDouble(args[2]);
             configArgs = new String[args.length-3];
-            for(int i = 1; i < args.length; i++){
-                configArgs[i-1] = args[i];
+            for(int i = 3; i < args.length; i++){
+                configArgs[i-3] = args[i];
             }
         }
 
