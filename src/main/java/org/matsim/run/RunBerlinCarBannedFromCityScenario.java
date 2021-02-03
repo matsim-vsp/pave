@@ -33,6 +33,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.AnalysisMainModeIdentifier;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.optDRT.MultiModeOptDrtConfigGroup;
@@ -55,7 +56,7 @@ public class RunBerlinCarBannedFromCityScenario {
     private static final String BERLIN_V5_5_CONFIG = "scenarios/berlin-v5.5-1pct/input/drt/berlin-drt-v5.5-1pct.config.xml";
 
     static final String BERLIN_SHP_MINUS_500m_BUFFER = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/shp-files/S5/berlin-minus-500m-buffer.shp";
-    static final String BERLIN_HUNDEKOPF_SHP_MINUS_100m_BUFFER = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/shp-files/S5/berlin-hundekopf-minus-100m.shp";
+    static final String BERLIN_HUNDEKOPF_SHP_MINUS_100m_BUFFER = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/shp-files/S5/berlin-hundekopf-minus-100m-corrected.shp";
 
     static final String WALK_ACCESS_DRT_EGRESS_MODE = "walkCarDrt";
     static final String DRT_ACCESS_DRT_WALK_MODE = "drtCarWalk";
@@ -73,9 +74,9 @@ public class RunBerlinCarBannedFromCityScenario {
         String carFreeZoneShape;
         double buffer;
         if ( args.length==0 ) {
-            //careful if you change this: further down, we set service area (and drt vehicles file) to hundekopf
+            //careful if you change this: you would probably want to adjust the drt service area as well!
             carFreeZoneShape = BERLIN_HUNDEKOPF_SHP_MINUS_100m_BUFFER;
-            buffer = 100;
+            buffer = 500;
             configArgs = new String[]{BERLIN_V5_5_CONFIG ,"--config:controler.outputDirectory", "output/berlin5.5_1pct/bannedCar/hundekopf"};
         } else {
             carFreeZoneShape = args[0];
@@ -109,7 +110,7 @@ public class RunBerlinCarBannedFromCityScenario {
 //        CarBannedScenarioPreparation.banCarFromDRTServiceArea(scenario, drtConfigGroup, TransportMode.car);
 
         { //this is for open berlin scenario in pave context only!
-            CarBannedScenarioPreparation.banCarAndRideFromArea(scenario.getNetwork(), carFreeZoneShape);
+            CarBannedScenarioPreparation.banCarAndRideFromArea(scenario, carFreeZoneShape);
 //        replace ride trips inside service area with single-leg car trips (which will then be routed with fallback mode which triggers mode choice)
             List<PreparedGeometry> serviceAreaGeoms = loadPreparedGeometries(drtConfigGroup.getDrtServiceAreaShapeFileURL(scenario.getConfig().getContext()));
             CarBannedScenarioPreparation.replaceRideTripsWithinGeomsWithSingleLegTripsOfMode(scenario.getPopulation(), TransportMode.car, serviceAreaGeoms); //TODO what is the best replacement mode for ride?
