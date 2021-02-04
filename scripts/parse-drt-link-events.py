@@ -1,26 +1,20 @@
 # Parse the event file containing activity start/end times and infection events.
-# - Link events are not needed -- people float between activities.
+# - Link events are used so paths are correct
 # - Time between actend and actstart is travel time for the trip
-#
-# Produces 3js.json, format:
-# [
-#    { id: string,                   # person_id
-#      time: [number...],            # array of trip time points, in seconds
-#      points: [ (x,y)...],          # array of (x,y) coordinates for time points
-#      disease_time: [number...],    # array of disease event time points
-#      disease: [code...]            # array of disease status codes, see below
-#    }
-# ]
 
 try:
-    import ndjson
     import sys
+    import ndjson
     import matsim
     from dfply import *
     from pyproj import Transformer
-except:
+except Exception as e:
     print("OOPS! Error importing required libraries.")
     print('try "pip3 install matsim-tools ndjson dfply pyproj"')
+    print('older ubuntu version may require "pip3 install pyproj==2.6.1"')
+    print('===exception===')
+    print(e)
+    sys.exit(1)
 
 if len(sys.argv) != 4:
     print(

@@ -85,7 +85,7 @@ import AnimationView from '@/plugins/agent-animation/AnimationView.vue'
 import CollapsiblePanel from '@/components/CollapsiblePanel.vue'
 import LegendColors from '@/components/LegendColors'
 import ModalMarkdownDialog from '@/components/ModalMarkdownDialog.vue'
-import PlaybackControls from './PlaybackControls.vue'
+import PlaybackControls from '@/components/PlaybackControls.vue'
 import SettingsPanel from '@/components/SettingsPanel.vue'
 
 import {
