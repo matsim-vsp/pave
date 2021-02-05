@@ -44,7 +44,9 @@ import java.util.*;
 class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
     //TODO make this configurable
-    static final double RETOOL_DURATION = 5*60;
+    //this duration was previously used, now we got an opinion from an U-Shift researcher
+    //static final double RETOOL_DURATION = 5*60;
+    static final double RETOOL_DURATION = 1.5*60;
     static final double GLOBAL_SUBMISSION_TIME = 8 * 3600;
 
     private final Network network;
