@@ -20,7 +20,7 @@
 <!--		week 02 is consistent with matsim version in matsim-berlin-v5.5.1-->
 <!--		<matsim.version>13.0-2021w03-SNAPSHOT</matsim.version>-->
 
-		<!--		2020w51 is consistent with matsim version in matsim-berlin-v5.5-->
+		<!--		2020w51 is consistent with matsim version in matsim-berlin-v5.5.2-->
 		<matsim.version>13.0-2020w51-SNAPSHOT</matsim.version>
 	</properties>
 
@@ -141,15 +141,14 @@
 		<dependency>
 			<groupId>com.github.matsim-scenarios</groupId>
 			<artifactId>matsim-berlin</artifactId>
-			<version>5.5</version>
-<!--			<version>5.5.x-a2e8cbe3de-1</version>-->
-<!--			<version>5.5.x-SNAPSHOT</version>-->
+			<version>5.5.2</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.github.matsim-vsp</groupId>
 			<artifactId>opt-drt</artifactId>
-			<version>4c06b135f3</version>
+			<!-- e955606ea4 is consistent with version in matsim-berlin-v5.5.2-->
+			<version>e955606ea4</version>
 		</dependency>
 
 		<dependency>
