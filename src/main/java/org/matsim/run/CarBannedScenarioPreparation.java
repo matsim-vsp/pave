@@ -32,17 +32,18 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationFactory;
+import org.matsim.api.core.v01.population.Route;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.algorithms.MultimodalNetworkCleaner;
+import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.TripRouter;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.io.IOUtils;
-import org.matsim.run.drt.BerlinShpUtils;
 import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 
 import java.io.BufferedReader;
@@ -59,7 +60,6 @@ class CarBannedScenarioPreparation {
 	//this file contains some link ids of the A10 Berliner Ring that still should remain car links...
 	//the A100 (Stadtautobahn) is explicitly supposed to be turned into non car links though (will be usable for drt)
 	private static final String INPUT_HIGHWAYLINKSINBERLIN = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/highwayLinksInsideBerlinShpWith500mBuffer.txt";
-	private static final String BERLIN_SHP = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-shp/berlin.shp";
 
 
 	static final void replaceRideTripsWithinGeomsWithSingleLegTripsOfMode(Population population, String modeToReplaceRideTrips, List<PreparedGeometry> geoms){
@@ -82,23 +82,29 @@ class CarBannedScenarioPreparation {
 				});
 	}
 
-	static final void banCarAndRideFromLinkInsideBerlin(Network network){
+	static final void banCarAndRideFromArea(Scenario scenario, String carFreeZoneShape){
 		Set<Id<Link>> highwayLinks = parseHighwayLinksInBerlin();
-		List<Geometry> berlinGeom = ShpGeometryUtils.loadGeometries(IOUtils.resolveFileOrResource(BERLIN_SHP));
-		network.getLinks().values().parallelStream()
+		List<Geometry> carFreeGeoms = ShpGeometryUtils.loadGeometries(IOUtils.resolveFileOrResource(carFreeZoneShape));
+		Set<Id<Link>> forbiddenLinks = scenario.getNetwork().getLinks().values().parallelStream()
 				.filter(l -> l.getAllowedModes().contains(TransportMode.car))
-				.filter(l -> ShpGeometryUtils.isCoordInGeometries(l.getToNode().getCoord(), berlinGeom)
-								&& ! highwayLinks.contains(l.getId()) ) //we do not want to convert some highway links into drt links (A10 Berliner Ring)
-				.forEach(l -> {
+				.filter(l -> ShpGeometryUtils.isCoordInGeometries(l.getToNode().getCoord(), carFreeGeoms)
+						&& !highwayLinks.contains(l.getId())) //we do not want to convert some highway links into drt links (A10 Berliner Ring)
+				.map(l -> l.getId())
+				.collect(Collectors.toSet());
+
+		forbiddenLinks.forEach(id -> {
+					Link l = scenario.getNetwork().getLinks().get(id);
 					Set<String> allowedModes = new HashSet<>(l.getAllowedModes());
 					allowedModes.remove(TransportMode.car);
 					allowedModes.remove(TransportMode.ride);
 					l.setAllowedModes(allowedModes);
 				});
 		log.info("clean car network");
-		cleanModalNetwork(network,TransportMode.car);
+		cleanModalNetwork(scenario.getNetwork(),TransportMode.car);
 		log.info("clean ride network");
-		cleanModalNetwork(network,TransportMode.ride);
+		cleanModalNetwork(scenario.getNetwork(),TransportMode.ride);
+
+		deleteCarRoutesThatHaveForbiddenLinks(scenario.getPopulation(), forbiddenLinks);
 	}
 
 
@@ -118,8 +124,6 @@ class CarBannedScenarioPreparation {
 
 		log.info("Read service area shape file.");
 		List<PreparedGeometry> serviceAreaGeoms = loadPreparedGeometries(drtConfigGroup.getDrtServiceAreaShapeFileURL(scenario.getConfig().getContext()));
-
-		replaceRideTripsWithinGeomsWithSingleLegTripsOfMode(scenario.getPopulation(), modeToReplaceRideInsideServiceArea, serviceAreaGeoms);
 
 		log.info("collect car links in service area");
 		Set<Id<Link>> serviceAreaLinks = scenario.getNetwork().getLinks().values()
@@ -159,6 +163,9 @@ class CarBannedScenarioPreparation {
 		cleanModalNetwork(scenario.getNetwork(),TransportMode.car);
 		log.info("clean ride network");
 		cleanModalNetwork(scenario.getNetwork(),TransportMode.ride);
+
+		replaceRideTripsWithinGeomsWithSingleLegTripsOfMode(scenario.getPopulation(), modeToReplaceRideInsideServiceArea, serviceAreaGeoms);
+		deleteCarRoutesThatHaveForbiddenLinks(scenario.getPopulation(), serviceAreaLinks);
 	}
 
 	static void cleanModalNetwork(Network network, String mode) {
@@ -285,5 +292,23 @@ class CarBannedScenarioPreparation {
 		toModeParams.setMonetaryDistanceRate(fromModeParams.getMonetaryDistanceRate());
 	}
 
+	static void deleteCarRoutesThatHaveForbiddenLinks(Population population, Set<Id<Link>> forbiddenLinks) {
+		log.info("start deleting every car route that travels one or more links within car-free-zone");
+
+		population.getPersons().values().stream()
+				.forEach(person -> person.getPlans().stream().flatMap(plan ->
+						TripStructureUtils.getLegs(plan).stream())
+						.forEach(leg -> {
+							if(leg.getMode().equals(TransportMode.car)){
+								Route route = leg.getRoute();
+								boolean routeTouchesZone = (route instanceof NetworkRoute && ((NetworkRoute) route).getLinkIds().stream().filter(l -> forbiddenLinks.contains(l)).findAny().isPresent() );
+								if(routeTouchesZone || forbiddenLinks.contains(route.getStartLinkId()) || forbiddenLinks.contains(route.getEndLinkId()) ){
+									leg.setRoute(null);
+								}
+							}
+						}));
+
+		log.info(".... finished deleting every car route that travels one or more links within car-free-zone");
+	}
 }
 
