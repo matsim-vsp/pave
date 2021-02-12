@@ -95,7 +95,7 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
         this.router = new FastAStarEuclideanFactory().createPathCalculator(modalNetwork, new TimeAsTravelDisutility(travelTime),
                 travelTime);
 
-        this.blockingRequests = new PriorityQueue<>(Comparator.comparing((DrtBlockingRequest::getPlannedBlockingDuration)).reversed());
+        this.blockingRequests = new PriorityQueue<>(Comparator.comparing((DrtBlockingRequest::getSubmissionTime)).reversed());
         this.minIdleVehicleRatio = 0.50;
         this.config = config;
     }
@@ -207,7 +207,6 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
             }
         }
     }
-
 
     private void rejectBlockingRequest(DrtBlockingRequest drtBlockingRequest) {
         //If a BlockingRequest could not be assigned to a vehicle in time, we need to reject it
