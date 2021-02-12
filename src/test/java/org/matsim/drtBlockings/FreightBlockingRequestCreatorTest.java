@@ -123,7 +123,8 @@ public class FreightBlockingRequestCreatorTest {
             DrtBlockingRequest request = requests.get(Id.create("testCarrierUno_lateVehicle_1", Request.class)); //this will be the request with a service time window starting at 10 a.m.
             Assert.assertNotNull(request);
 
-            double submissionTime = 10 * 3600 - FreightBlockingRequestCreator.SUBMISSION_LOOK_AHEAD;
+//      service time window starts at 10 a.m., travel time from depot to service = 100s which is multiplied by a bufferFactor of 1.25 (this is done because jsprit calculates with waiting at the first service which we want to avoid)
+            double submissionTime = 10*3600 - FreightBlockingRequestCreator.SUBMISSION_LOOK_AHEAD - FreightBlockingRequestCreator.RETOOL_DURATION - 125;
 
             //            the vehicle needs to travel 1 link on the way to the depot, 1 complete link on the way to the service and 7 complete links on the way back to the depot (each link takes 100 seconds)
 //            plus an additional second for each start links.
@@ -140,8 +141,9 @@ public class FreightBlockingRequestCreatorTest {
 
             //jsprit calculates with vehicle departure = 9.00 a.m. and a travel time of 100s to the service
             //but the services' earliest start is 10 a.m.
-            //so we set the tour start to 10 a.m. - 100s - RETOOL-Duration
-            Assert.assertEquals(10*3600 - 100 - FreightBlockingRequestCreator.RETOOL_DURATION, request.getTasks().get(0).getBeginTime(), MatsimTestUtils.EPSILON);
+            //so we set the tour start to 10 a.m. - 100s  * bufferfactor - RETOOL-Duration
+
+            Assert.assertEquals(10*3600 - 100 * 1.25 - FreightBlockingRequestCreator.RETOOL_DURATION, request.getTasks().get(0).getBeginTime(), MatsimTestUtils.EPSILON);
         }
     }
 }
