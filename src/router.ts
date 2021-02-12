@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter, { Route, RouteConfig } from 'vue-router'
 import HomeIndex from '@/views/HomeIndex.vue'
 import FolderBrowser from '@/views/FolderBrowser.vue'
+import RunFinder from '@/views/RunFinder.vue'
 
 import globalStore from '@/store'
 
@@ -27,13 +28,13 @@ function projects(): any[] {
     projectRoutes.push({
       path: '/' + source.url,
       name: source.url,
-      component: FolderBrowser,
+      component: RunFinder,
     })
     // run folder pages
     projectRoutes.push({
       path: '/' + source.url + '/*',
       name: source.url,
-      component: FolderBrowser,
+      component: RunFinder,
     })
   }
 

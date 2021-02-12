@@ -280,21 +280,19 @@ a:hover {
 }
 
 .footer {
+  margin-top: 2rem;
   grid-column: 1 / 2;
   grid-row: 3 / 4;
   text-align: center;
   font-size: 0.8rem;
-  margin: 0 0 0 0;
   padding: 5rem 1rem;
-  color: #ccc;
 }
 
 #main-app .footer {
   color: var(--text);
-  background-color: var(--bgBold);
+  background-color: $steelGray; // #18181b;
   text-align: center;
   padding: 2rem 0.5rem 3rem 0.5rem;
-  // background-color: #648cb4;
 }
 
 .footer a {
@@ -304,6 +302,10 @@ a:hover {
 .footer img {
   margin: 1rem auto;
   padding: 0 1rem;
+}
+
+.footer p {
+  color: #eee;
 }
 
 .medium-zoom-overlay {
