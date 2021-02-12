@@ -38,7 +38,7 @@ class RunTourPlanning {
         Network network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile(networkFile);
 
-        FreightTourPlanning.runTourPlanningForCarriers(carriers, vehicleTypes, network, null, 1800, 300);
+        FreightTourPlanning.runTourPlanningForCarriers(carriers, vehicleTypes, network, null, 1800, 100);
 
         new CarrierPlanXmlWriterV2(carriers).write(inputDir + carriersOutput);
     }

@@ -44,10 +44,8 @@ import java.util.*;
 class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
     //TODO make this configurable
-    //this duration was previously used, now we got an opinion from an U-Shift researcher
-    //static final double RETOOL_DURATION = 5*60;
-    static final double RETOOL_DURATION = 1.5*60;
-    static final double GLOBAL_SUBMISSION_TIME = 8 * 3600;
+    static final double RETOOL_DURATION = 5*60;
+    static final double SUBMISSION_LOOK_AHEAD = 15 * 60;
 
     private final Network network;
     private final String mode;
@@ -100,7 +98,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         Id<Request> id = Id.create(tourID, Request.class);
         String mode = this.mode;
         double blockingStart = determineStartOfBlocking(scheduledTour);
-        double submissionTime = GLOBAL_SUBMISSION_TIME;
+        double submissionTime = blockingStart - SUBMISSION_LOOK_AHEAD;
 
         List<Task> tourTasks = convertScheduledTour2DvrpTasks(scheduledTour, blockingStart);
         double blockingEnd = tourTasks.get(tourTasks.size() - 1).getEndTime();
@@ -134,7 +132,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         double tourStart = scheduledTour.getDeparture();
         double calculatedStart;
 //        double bufferFactor = config.plansCalcRoute().getTeleportedModeFreespeedFactors().get(TransportMode.ride); //TODO
-        double bufferFactor = 1.;
+        double bufferFactor = 1.25;
 
         //if jsprit scheduled the tour start way too early, just account for the ttDepot2FirstDelivery * 1.5 and ignore the original start time
         if(tourStart + ttDepot2FirstDelivery * bufferFactor <= firstDeliveryEarliestStart){
