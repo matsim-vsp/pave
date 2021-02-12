@@ -14,22 +14,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomeTimeWindowAnalysis {
-    String inputPath = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/scenarios/berlin-v5.5-10pct/input/drtBlocking/";
-//    String inputConfig = inputPath + "blckBase1.output_config.xml";
-    String inputConfig = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_config.xml";
-    String inputPlans = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_plans.xml.gz";
+//    String inputConfig = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_config.xml";
+    String inputConfig = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/CarrierCreationInput/HomeTimeWindowAnalysis/berlin-v5.5-10pct.config.xml";
+//    String inputPlans = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_plans.xml.gz";
     Config config = ConfigUtils.loadConfig(inputConfig);
+    String inputPlans = config.plans().getInputFile();
 
     private List<ActivityData> homeActivities = new ArrayList<>();
 
     public static void main(String[] args) {
-        String outputFile = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/homeActivities.csv";
-        String outputFile2 = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/homeActivitiesAggregated.csv";
+        String outputFile = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/CarrierCreationInput/HomeTimeWindowAnalysis/homeActivities.csv";
+        String outputFile2 = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/CarrierCreationInput/HomeTimeWindowAnalysis/homeActivitiesAggregated4hBins.csv";
+        String outputFile3 = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/CarrierCreationInput/HomeTimeWindowAnalysis/homeActivitiesAggregated2hBins.csv";
 
         HomeTimeWindowAnalysis analysis = new HomeTimeWindowAnalysis();
         analysis.runAnalysis();
         analysis.writeStats(outputFile);
-        analysis.writeTable(outputFile2);
+        analysis.writeTable4h(outputFile2);
+        analysis.writeTable2h(outputFile3);
         System.out.println("Writing of Home Activities to " + outputFile + " and " + outputFile2 + " was successful!");
 
     }
@@ -53,66 +55,152 @@ public class HomeTimeWindowAnalysis {
         }
     }
 
-    private void writeTable(String file) {
-        int[][] allTimes = createTableData();
-        int[] startTimes = allTimes[0];
-        int[] endTimes = allTimes[1];
+    private void writeTable4h(String file) {
+        int[][] allTimes4h = createTableData4h();
+        int[] startTimes4h = allTimes4h[0];
+        int[] endTimes4h = allTimes4h[1];
 
         BufferedWriter writer = IOUtils.getBufferedWriter(file);
         try {
-            System.out.println("WRITING TABLE!");
+            System.out.println("WRITING TABLE FOR 4H BINS!");
             int i = 0;
             writer.write("Times;0:00 to 3:59;4:00 to 7:59;8:00 to 11:59;12:00 to 15:59;16:00 to 19:59;20:00 to 24:00+");
             writer.newLine();
-            writer.write("startTimes" + ";" + startTimes[0] + ";" + startTimes[1] + ";" + startTimes[2] + ";" + startTimes[3] + ";" + startTimes[4] + ";" + startTimes[5]);
+            writer.write("startTimes" + ";" + startTimes4h[0] + ";" + startTimes4h[1] + ";" + startTimes4h[2] + ";" + startTimes4h[3] + ";" + startTimes4h[4] + ";" + startTimes4h[5]);
             writer.newLine();
-            writer.write("endTimes" + ";" + endTimes[0] + ";" + endTimes[1] + ";" + endTimes[2] + ";" + endTimes[3] + ";" + endTimes[4] + ";" + endTimes[5]);
+            writer.write("endTimes" + ";" + endTimes4h[0] + ";" + endTimes4h[1] + ";" + endTimes4h[2] + ";" + endTimes4h[3] + ";" + endTimes4h[4] + ";" + endTimes4h[5]);
             writer.close();
         } catch(IOException e) {
             e.printStackTrace();
         }
     }
 
-    public int[][] createTableData() {
+    private void writeTable2h(String file) {
+        int[][] allTimes2h = createTableData2h();
+        int[] startTimes2h = allTimes2h[0];
+        int[] endTimes2h = allTimes2h[1];
 
-        int[] startTimes = new int[6];
-        int[] endTimes = new int[6];
-        int[][] allTimes = new int[2][];
+        BufferedWriter writer = IOUtils.getBufferedWriter(file);
+        try {
+            System.out.println("WRITING TABLE FOR 2H BINS!");
+            int i = 0;
+            writer.write("Times;0:00 to 1:59;2:00 to 3:59;4:00 to 5:59;6:00 to 7:59;8:00 to 9:59;10:00 to 11:59;12:00 to 13:59;14:00 to 15:59;16:00 to 17:59;18:00 to 19:59;20:00 to 21:59;22:00 to 24:00+");
+            writer.newLine();
+            writer.write("startTimes" + ";" + startTimes2h[0] + ";" + startTimes2h[1] + ";" + startTimes2h[2] + ";" + startTimes2h[3] + ";" + startTimes2h[4] + ";" + startTimes2h[5] + ";" + startTimes2h[6] + ";" + startTimes2h[7] + ";" + startTimes2h[8] + ";" + startTimes2h[9] + ";" + startTimes2h[10] + ";" + startTimes2h[11]);
+            writer.newLine();
+            writer.write("endTimes" + ";" + endTimes2h[0] + ";" + endTimes2h[1] + ";" + endTimes2h[2] + ";" + endTimes2h[3] + ";" + endTimes2h[4] + ";" + endTimes2h[5] + ";" + endTimes2h[6] + ";" + endTimes2h[7] + ";" + endTimes2h[8] + ";" + endTimes2h[9] + ";" + endTimes2h[10] + ";" + endTimes2h[11]);
+            writer.close();
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int[][] createTableData4h() {
+
+        int[] startTimes4h = new int[6];
+        int[] endTimes4h = new int[6];
+        int[][] allTimes4h = new int[2][];
 
         for(ActivityData data : this.homeActivities) {
 
             if(data.startTime <= 14399.0) {
-                startTimes[0] = startTimes[0] + 1;
+                startTimes4h[0] = startTimes4h[0] + 1;
             } else if(data.startTime > 14399.0 && data.startTime <=28799.0) {
-                startTimes[1] = startTimes[1] + 1;
+                startTimes4h[1] = startTimes4h[1] + 1;
             } else if(data.startTime > 28799.0 && data.startTime <=43199.0) {
-                startTimes[2] = startTimes[2] + 1;
+                startTimes4h[2] = startTimes4h[2] + 1;
             } else if(data.startTime > 43199.0 && data.startTime <=57599.0) {
-                startTimes[3] = startTimes[3] + 1;
+                startTimes4h[3] = startTimes4h[3] + 1;
             } else if(data.startTime > 57599.0 && data.startTime <=71999.0) {
-                startTimes[4] = startTimes[4] + 1;
+                startTimes4h[4] = startTimes4h[4] + 1;
             } else if(data.startTime > 71999.0) {
-                startTimes[5] = startTimes[5] + 1;
+                startTimes4h[5] = startTimes4h[5] + 1;
             }
 
             if(data.endTime <= 14399.0) {
-                endTimes[0] = endTimes[0] + 1;
+                endTimes4h[0] = endTimes4h[0] + 1;
             } else if(data.endTime > 14399.1 && data.endTime <=28799.0) {
-                endTimes[1] = endTimes[1] + 1;
+                endTimes4h[1] = endTimes4h[1] + 1;
             } else if(data.endTime > 28799.0 && data.endTime <=43199.0) {
-                endTimes[2] = endTimes[2] + 1;
+                endTimes4h[2] = endTimes4h[2] + 1;
             } else if(data.endTime > 43199.0 && data.endTime <=57599.0) {
-                endTimes[3] = endTimes[3] + 1;
+                endTimes4h[3] = endTimes4h[3] + 1;
             } else if(data.endTime > 57599.0 && data.endTime <=71999.0) {
-                endTimes[4] = endTimes[4] + 1;
+                endTimes4h[4] = endTimes4h[4] + 1;
             } else if(data.endTime > 71999.0) {
-                endTimes[5] = endTimes[5] + 1;
+                endTimes4h[5] = endTimes4h[5] + 1;
             }
         }
-        allTimes[0] = startTimes;
-        allTimes[1] = endTimes;
+        allTimes4h[0] = startTimes4h;
+        allTimes4h[1] = endTimes4h;
 
-        return allTimes;
+        return allTimes4h;
+    }
+
+    public int[][] createTableData2h() {
+
+        int[] startTimes2h = new int[12];
+        int[] endTimes2h = new int[12];
+        int[][] allTimes2h = new int[2][];
+
+        for(ActivityData data : this.homeActivities) {
+
+            if(data.startTime <= 7199.0) {
+                startTimes2h[0] = startTimes2h[0] + 1;
+            } else if(data.startTime > 7199.0 && data.startTime <=14399.0) {
+                startTimes2h[1] = startTimes2h[1] + 1;
+            } else if(data.startTime > 14399.0 && data.startTime <=21599.0) {
+                startTimes2h[2] = startTimes2h[2] + 1;
+            } else if(data.startTime > 21599.0 && data.startTime <=28799.0) {
+                startTimes2h[3] = startTimes2h[3] + 1;
+            } else if(data.startTime > 28799.0 && data.startTime <=35999.0) {
+                startTimes2h[4] = startTimes2h[4] + 1;
+            } else if(data.startTime > 35999.0 && data.startTime <=43199.0) {
+                startTimes2h[5] = startTimes2h[5] + 1;
+            } else if(data.startTime > 43199.0 && data.startTime <=50399.0) {
+                startTimes2h[6] = startTimes2h[6] + 1;
+            } else if(data.startTime > 50399.0 && data.startTime <=57599.0) {
+                startTimes2h[7] = startTimes2h[7] + 1;
+            } else if(data.startTime > 57599.0 && data.startTime <=64799.0) {
+                startTimes2h[8] = startTimes2h[8] + 1;
+            } else if(data.startTime > 64799.0 && data.startTime <=71999.0) {
+                startTimes2h[9] = startTimes2h[9] + 1;
+            } else if(data.startTime > 71999.0 && data.startTime <=79199.0) {
+                startTimes2h[10] = startTimes2h[10] + 1;
+            } else if(data.startTime > 79199.0) {
+                startTimes2h[11] = startTimes2h[11] + 1;
+            }
+
+            if(data.endTime <= 7199.0) {
+                endTimes2h[0] = endTimes2h[0] + 1;
+            } else if(data.endTime > 7199.0 && data.endTime <=14399.0) {
+                endTimes2h[1] = endTimes2h[1] + 1;
+            } else if(data.endTime > 14399.0 && data.endTime <=21599.0) {
+                endTimes2h[2] = endTimes2h[2] + 1;
+            } else if(data.endTime > 21599.0 && data.endTime <=28799.0) {
+                endTimes2h[3] = endTimes2h[3] + 1;
+            } else if(data.endTime > 28799.0 && data.endTime <=35999.0) {
+                endTimes2h[4] = endTimes2h[4] + 1;
+            } else if(data.endTime > 35999.0 && data.endTime <=43199.0) {
+                endTimes2h[5] = endTimes2h[5] + 1;
+            } else if(data.endTime > 43199.0 && data.endTime <=50399.0) {
+                endTimes2h[6] = endTimes2h[6] + 1;
+            } else if(data.endTime > 50399.0 && data.endTime <=57599.0) {
+                endTimes2h[7] = endTimes2h[7] + 1;
+            } else if(data.endTime > 57599.0 && data.endTime <=64799.0) {
+                endTimes2h[8] = endTimes2h[8] + 1;
+            } else if(data.endTime > 64799.0 && data.endTime <=71999.0) {
+                endTimes2h[9] = endTimes2h[9] + 1;
+            } else if(data.endTime > 71999.0 && data.endTime <=79199.0) {
+                endTimes2h[10] = endTimes2h[10] + 1;
+            } else if(data.endTime > 79199.0) {
+                endTimes2h[11] = endTimes2h[11] + 1;
+            }
+        }
+        allTimes2h[0] = startTimes2h;
+        allTimes2h[1] = endTimes2h;
+
+        return allTimes2h;
     }
 
     public void runAnalysis() {
