@@ -2,7 +2,6 @@ package org.matsim.drtBlockings;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -105,7 +104,7 @@ public class FreightBlockingRequestCreatorTest {
             DrtBlockingRequest request = requests.get(Id.create("testCarrierUno_earlyVehicle_1", Request.class)); //this will be the request with a service time window starting at 6 a.m.
             Assert.assertNotNull(request);
 
-            double submissionTime = FreightBlockingRequestCreator.GLOBAL_SUBMISSION_TIME;
+            double submissionTime = 6 * 3600 - FreightBlockingRequestCreator.SUBMISSION_LOOK_AHEAD;
 
             Assert.assertEquals(submissionTime, request.getSubmissionTime(), MatsimTestUtils.EPSILON);
             Assert.assertEquals("the depot is on link 2. this is where the start link of the blocking request should point to.", Id.createLinkId(2), request.getStartLink().getId());
@@ -124,7 +123,7 @@ public class FreightBlockingRequestCreatorTest {
             DrtBlockingRequest request = requests.get(Id.create("testCarrierUno_lateVehicle_1", Request.class)); //this will be the request with a service time window starting at 10 a.m.
             Assert.assertNotNull(request);
 
-            double submissionTime = FreightBlockingRequestCreator.GLOBAL_SUBMISSION_TIME;
+            double submissionTime = 10 * 3600 - FreightBlockingRequestCreator.SUBMISSION_LOOK_AHEAD;
 
             //            the vehicle needs to travel 1 link on the way to the depot, 1 complete link on the way to the service and 7 complete links on the way back to the depot (each link takes 100 seconds)
 //            plus an additional second for each start links.
