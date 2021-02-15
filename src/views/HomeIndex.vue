@@ -5,7 +5,7 @@
     h3 VSP / Technische Universität Berlin
 
   .tu-logo
-    img.img-logo(src="/tu-logo-circle.png")
+    img.img-logo(src="@/assets/images/tu-logo.png")
 
   .page-area
     .content

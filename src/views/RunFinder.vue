@@ -7,7 +7,7 @@
           h2 {{ globalState.breadcrumbs[globalState.breadcrumbs.length -1].label }}
           p {{ myState.svnProject.name }}
         .logo
-          img(width=100 src="/tu-logo.png")
+          img(width=100 src="@/assets/images/tu-logo.png")
 
   //- show network errors
   .stripe.white(v-if="myState.errorStatus")

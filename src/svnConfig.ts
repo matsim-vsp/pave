@@ -25,7 +25,7 @@ const config: any = {
       svn:
         'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website',
       need_password: false,
-      thumbnail: '/thumb-chart.jpg',
+      thumbnail: 'thumb-chart.jpg',
     },
     {
       name: 'Local Files',
@@ -33,7 +33,7 @@ const config: any = {
       description: 'Run scripts/serve.py to browse local files on your PC',
       svn: 'http://localhost:8000/data',
       need_password: false,
-      thumbnail: '/thumb-localfiles.jpg',
+      thumbnail: 'thumb-localfiles.jpg',
     },
   ],
 }
