@@ -7,7 +7,8 @@
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint",
-    "release": "standard-version"
+    "release": "standard-version",
+    "deploy": "bash scripts/deploy-ghpages.sh"
   },
   "dependencies": {
     "@aftersim/pako": "^1.0.11-3",
