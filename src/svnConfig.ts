@@ -20,7 +20,7 @@ const config: any = {
     //    },
     {
       name: 'PAVE',
-      url: 'pave',
+      url: 'runs',
       description: 'Simulation results',
       svn:
         'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website',
