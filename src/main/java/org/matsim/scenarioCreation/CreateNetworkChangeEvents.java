@@ -45,9 +45,9 @@ public class CreateNetworkChangeEvents {
 
 		private static final int ENDTIME = 36 * 3600;
 		private static final int TIMESTEP = 15 * 60;
-		private static final String NETWORKFILE = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_network.xml.gz";
-		private static final String SIMULATION_EVENTS_FILE = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_events.xml.gz";
-		private static final String CHANGE_EVENTS_FILE = "scenarios/berlin-v5.5-1pct/input/drtBlocking/noIncDRT.networkChangeEvents_1pct.xml.gz";
+		private static final String NETWORKFILE = "D:/pave_runs/output-p2-23/p2-23.output_network.xml.gz";
+		private static final String SIMULATION_EVENTS_FILE = "D:/pave_runs/output-p2-23/p2-23.output_events.xml.gz";
+		private static final String CHANGE_EVENTS_FILE = "D:/pave_runs/output-p2-23/p2-23.networkChangeEvents.xml.gz";
 		private static final double MINIMUMFREESPEED = 3;
 
 		public static void main(String[] args) {
