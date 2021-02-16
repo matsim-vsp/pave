@@ -274,9 +274,10 @@ class CarBannedScenarioPreparation {
 		}
 	}
 
+	//these mode params actually are not relevant at all, as long as the the new mode consists of already configured ones. This is because scoring is computed on the leg level and our mode is just a routing mode that plugs several legs together.
 	private static final void configureScoringForMode(Config config, PlanCalcScoreConfigGroup.ScoringParameterSet scoringParameterSet, PlanCalcScoreConfigGroup.ModeParams carParams, String newMode) {
 		PlanCalcScoreConfigGroup.ModeParams pp = new PlanCalcScoreConfigGroup.ModeParams(newMode);
-		copyModeParams(carParams, pp);
+//		copyModeParams(carParams, pp);
 		scoringParameterSet.addModeParams(pp);
 		//add scoring params for stage activity
 		scoringParameterSet.addActivityParams(new PlanCalcScoreConfigGroup.ActivityParams(PlanCalcScoreConfigGroup.createStageActivityType(newMode))

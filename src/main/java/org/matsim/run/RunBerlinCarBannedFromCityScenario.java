@@ -125,7 +125,7 @@ public class RunBerlinCarBannedFromCityScenario {
         OptDrt.addAsOverridingModule(controler, ConfigUtils.addOrGetModule(scenario.getConfig(), MultiModeOptDrtConfigGroup.class));
 
         //configure intermodal routing modules for new modes
-        //and bind custom main mode indentifier that can handle new modes
+        //and bind custom analysis main mode indentifier that can handle new modes
         controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {

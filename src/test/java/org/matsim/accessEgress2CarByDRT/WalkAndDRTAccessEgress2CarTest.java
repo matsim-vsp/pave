@@ -40,8 +40,8 @@ public class WalkAndDRTAccessEgress2CarTest {
 
 	@Test
 	public void testNumberOfModeDepartures() {
-
-		Controler controler = setupControler();
+		URL configUrl = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("gridCarRestrictedInCenter"), "gridCarRestrictedInCenter_config.xml");
+		Controler controler = setupControler(configUrl, utils.getOutputDirectory());
 		controler.addOverridingModule(new AbstractModule() {
 			@Override
 			public void install() {
@@ -51,8 +51,42 @@ public class WalkAndDRTAccessEgress2CarTest {
 		controler.run();
 	}
 
-	private Controler setupControler() {
-		URL configUrl = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("gridCarRestrictedInCenter"), "gridCarRestrictedInCenter_config.xml");
+	static Controler setupControler(URL configURL, String outputDir) {
+		Config config = prepareConfig(configURL, outputDir);
+		Scenario scenario = prepareScenario(config);
+		Controler controler = prepareControler(scenario);
+		return controler;
+	}
+
+	static Controler prepareControler(Scenario scenario) {
+		MultiModeDrtConfigGroup multiModeDrtConfig = MultiModeDrtConfigGroup.get(scenario.getConfig());
+		DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(scenario.getConfig());
+		Controler controler = new Controler(scenario);
+		controler.addOverridingModule(new DvrpModule());
+		controler.addOverridingModule(new MultiModeDrtModule());
+		controler.configureQSimComponents(DvrpQSimComponents.activateAllModes(multiModeDrtConfig));
+
+		controler.addOverridingModule(new WalkAccessDRTEgress2CarModule("walkCarDrt", drtCfg));
+		controler.addOverridingModule(new DRTAccessWalkEgress2CarModule("drtCarWalk", drtCfg));
+		return controler;
+	}
+
+	static Scenario prepareScenario(Config config) {
+		Scenario scenario = DrtControlerCreator.createScenarioWithDrtRouteFactory(config);
+		{ //add mode vehicle id's
+			scenario.getPopulation().getPersons().values().parallelStream().forEach(person -> {
+				Map<String, Id<Vehicle>> vehicleIdMap = new HashMap<>();
+				Id<Vehicle> vehicleId = Id.createVehicleId(person.getId().toString());
+				vehicleIdMap.put("walkCarDrt", vehicleId);
+				vehicleIdMap.put("drtCarWalk", vehicleId);
+				VehicleUtils.insertVehicleIdsIntoAttributes(person, vehicleIdMap);
+			});
+		}
+		ScenarioUtils.loadScenario(scenario);
+		return scenario;
+	}
+
+	static Config prepareConfig(URL configUrl, String outputDir) {
 		Config config = ConfigUtils.loadConfig(configUrl, new MultiModeDrtConfigGroup(), new DvrpConfigGroup(),
 				new OTFVisConfigGroup());
 
@@ -72,9 +106,11 @@ public class WalkAndDRTAccessEgress2CarTest {
 		config.controler().setLastIteration(0);
 		config.qsim().setStartTime(0.);
 		config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
-		config.controler().setOutputDirectory(utils.getOutputDirectory());
+		config.controler().setOutputDirectory(outputDir);
 
 		{ //add scoring parameters for new modes
+			config.planCalcScore().getOrCreateModeParams(TransportMode.car).setDailyMonetaryConstant(-10);
+			config.planCalcScore().getOrCreateModeParams(TransportMode.drt).setDailyMonetaryConstant(-5);
 			config.planCalcScore().addModeParams(new PlanCalcScoreConfigGroup.ModeParams("walkCarDrt"));
 			config.planCalcScore().addModeParams(new PlanCalcScoreConfigGroup.ModeParams("drtCarWalk"));
 			config.planCalcScore().addActivityParams(new PlanCalcScoreConfigGroup.ActivityParams(PlanCalcScoreConfigGroup.createStageActivityType("walkCarDrt"))
@@ -82,30 +118,9 @@ public class WalkAndDRTAccessEgress2CarTest {
 			config.planCalcScore().addActivityParams(new PlanCalcScoreConfigGroup.ActivityParams(PlanCalcScoreConfigGroup.createStageActivityType("drtCarWalk"))
 					.setScoringThisActivityAtAll(false));
 		}
-
 		MultiModeDrtConfigGroup multiModeDrtConfig = MultiModeDrtConfigGroup.get(config);
 		DrtConfigs.adjustMultiModeDrtConfig(multiModeDrtConfig, config.planCalcScore(), config.plansCalcRoute());
-
-		Scenario scenario = DrtControlerCreator.createScenarioWithDrtRouteFactory(config);
-		{ //add mode vehicle id's
-			scenario.getPopulation().getPersons().values().parallelStream().forEach(person -> {
-				Map<String, Id<Vehicle>> vehicleIdMap = new HashMap<>();
-				Id<Vehicle> vehicleId = Id.createVehicleId(person.getId().toString());
-				vehicleIdMap.put("walkCarDrt", vehicleId);
-				vehicleIdMap.put("drtCarWalk", vehicleId);
-				VehicleUtils.insertVehicleIdsIntoAttributes(person, vehicleIdMap);
-			});
-		}
-		ScenarioUtils.loadScenario(scenario);
-
-		Controler controler = new Controler(scenario);
-		controler.addOverridingModule(new DvrpModule());
-		controler.addOverridingModule(new MultiModeDrtModule());
-		controler.configureQSimComponents(DvrpQSimComponents.activateAllModes(multiModeDrtConfig));
-
-		controler.addOverridingModule(new WalkAccessDRTEgress2CarModule("walkCarDrt", drtCfg));
-		controler.addOverridingModule(new DRTAccessWalkEgress2CarModule("drtCarWalk", drtCfg));
-		return controler;
+		return config;
 	}
 }
 
@@ -132,15 +147,15 @@ class WalkAndDRTAccessEgress2CarTestHandler implements IterationEndsListener{
 
 		// if you go through the comment above:
 		// 3 + 3*2 + 2 + 2*1 + 3 + 2*1 + 3 + 2*1 = 23
-		Assert.assertEquals("the should be 23 walk legs", 23, getSumOfArrayEntries(histogram.getDepartures(TransportMode.walk)));
+		Assert.assertEquals("there should be 23 walk legs", 23, getSumOfArrayEntries(histogram.getDepartures(TransportMode.walk)));
 
 		// if you go through the comment above:
 		// 0 + 3 + 0 + 1 + 1 = 3
-		Assert.assertEquals("the should be 5 car legs", 5, getSumOfArrayEntries(histogram.getDepartures(TransportMode.car)));
+		Assert.assertEquals("there should be 5 car legs", 5, getSumOfArrayEntries(histogram.getDepartures(TransportMode.car)));
 
 		// if you go through the comment above:
 		// 0 + 0 + 1 + 1 + 1 = 3
-		Assert.assertEquals("the should be 3 drt legs", 3, getSumOfArrayEntries(histogram.getDepartures(TransportMode.drt)));
+		Assert.assertEquals("there should be 3 drt legs", 3, getSumOfArrayEntries(histogram.getDepartures(TransportMode.drt)));
 
 	}
 
