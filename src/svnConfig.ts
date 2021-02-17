@@ -54,15 +54,6 @@ const config: any = {
       need_password: false,
       thumbnail: 'thumb-robots.jpg',
     },
-    {
-      name: '5. Multi-use',
-      url: '5-multi-use',
-      description: 'Multiple use vehicles',
-      svn:
-        'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/5-multi-use',
-      need_password: false,
-      thumbnail: 'thumb-robots.jpg',
-    },
   ],
 }
 

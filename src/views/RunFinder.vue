@@ -244,6 +244,7 @@ export default class VueComponent extends Vue {
       header: true,
       dynamicTyping: true,
       skipEmptyLines: true,
+      delimiter: ';',
     })
 
     const allRuns = runLog.data as any[]
