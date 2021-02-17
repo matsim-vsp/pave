@@ -244,7 +244,7 @@ export default class VueComponent extends Vue {
       header: true,
       dynamicTyping: true,
       skipEmptyLines: true,
-      delimiter: ';',
+      // delimiter: ';',
     })
 
     const allRuns = runLog.data as any[]
@@ -253,7 +253,7 @@ export default class VueComponent extends Vue {
     allRuns.forEach(run => {
       let uniqueId = ''
       Object.values(run)
-        .slice(8)
+        .slice(10)
         .forEach(value => {
           if (value) uniqueId += `-${value}`
         })
