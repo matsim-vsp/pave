@@ -12,7 +12,7 @@
             @click.ctrl="openNewTab(crumb.url)"
             @click.meta="openNewTab(crumb.url)"
             )
-              p {{ i === 0 ? 'aftersim' : crumb.label }}
+              p {{ i === 0 ? 'PAVE' : crumb.label }}
 
     .locale(@click="toggleTheme")
       i.fa.fa-1x.fa-adjust

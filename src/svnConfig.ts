@@ -19,7 +19,7 @@ const config: any = {
     //      thumbnail: '/thumb-gladbeck.jpg',
     //    },
     {
-      name: 'PAVE',
+      name: 'Simulations',
       url: 'runs',
       description: 'Simulation results',
       svn:

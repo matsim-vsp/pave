@@ -16,80 +16,84 @@
 
   //- run selector
   .stripe.white
-   .vessel
-      .dimensions(v-if="dimensions.length")
-        .dimension(v-for="d in dimensions" :key="d.heading")
-          h4 {{ d.heading }}
-          p {{ d.subheading }}
-
-          .buttons
-            button.button(
-              v-for="option in d.options"
-              :key="`${option.title}/${option.value}`"
-              :class="{'is-link': activeButtons[d.heading] === option.value }"
-              @click="clickedCollectionButton(d.heading, option.value)"
-            ) {{ option.title }}
-
-      //- this is the content of readme.md, if it exists
-      .readme-header
-        .curate-content.markdown(
-          v-if="myState.readme"
-          v-html="myState.readme"
+   .vessel.twocolumn
+      .col1
+        filter-maker(v-if="myState.subfolder && myState.svnRoot"
+          :svnRoot="myState.svnRoot"
+          :subfolder="myState.subfolder"
+          :selectedRun="selectedRun"
+          @selectNewRun="selectNewRun"
+          @filteredFolders="activateFilteredFolders"
         )
+      .col2
 
-  //- selected run
-  .stripe.cream(v-if="selectedRun")
-    .vessel
-      h3.curate-heading(v-if="selectedRun") Run ID: {{ selectedRun }}
-      p(v-if="selectedRun && !myState.vizes.length") Nothing to show. Select a different service combination.
-      h4(v-else): i table of stuff here, and a map&nbsp;
-        i.fa.fa-arrow-right
-        i.fa.fa-arrow-right
+        h3 Runs
+        .filtered-folder-buttons
+          .filter-folder(v-for="run in filteredFolders" :key="run.folder")
+            .scenario-button(
+              :class="{'selected': run.folder === selectedRun }"
+              @click="selectNewRun(run.folder)"
+            )
+             p: b {{ run.folder }}
+             .detail-line(v-for="f in Object.keys(run)")
+               .item1(v-if="f !== 'folder'") {{ f }}:
+               .item2(v-if="f !== 'folder'") {{ run[f] }}
 
-  //- selected run
-  .stripe.cream
-   .vessel
-      //- file system folders
-      h3.curate-heading(v-if="!selectedRun && myState.folders.length")  {{ $t('Folders') }}
+        //- this is the content of readme.md, if it exists
+        .readme-header
+          .curate-content.markdown(
+            v-if="myState.readme"
+            v-html="myState.readme"
+          )
 
-      .curate-content(v-if="!selectedRun && myState.folders.length")
-        .folder-table
-          .folder(:class="{fade: myState.isLoading}"
-                  :key="folder.name"
-                  v-for="folder in myState.folders"
-                  @click="openOutputFolder(folder)")
-            p
-              i.fa.fa-folder-open
-              | &nbsp;{{ folder }}
+        p(v-if="selectedRun && !myState.vizes.length") Nothing to show. Select a different service combination.
+        h4(v-else): i table of stuff here, and a map&nbsp;
+          i.fa.fa-arrow-right
+          i.fa.fa-arrow-right
 
-      //- thumbnails of each viz and image in this folder
-      h3.curate-heading(v-if="myState.vizes.length") {{ $t('Analysis')}}
+        //- file system folders
+        .hide(v-if="!filteredFolders.length")
+          h3.curate-heading(v-if="!selectedRun && myState.folders.length")  {{ $t('Folders') }}
 
-      .curate-content(v-if="myState.vizes.length")
-        .viz-table
-          .viz-grid-item(v-for="viz,index in myState.vizes"
-                    :key="viz.config"
-                    @click="clickedVisualization(index)")
+          .curate-content(v-if="!selectedRun && myState.folders.length")
+            .folder-table
+              .folder(:class="{fade: myState.isLoading}"
+                      :key="folder.name"
+                      v-for="folder in myState.folders"
+                      @click="openOutputFolder(folder)")
+                p
+                  i.fa.fa-folder-open
+                  | &nbsp;{{ folder }}
 
-            .viz-frame
-              component.viz-frame-component(
-                    :is="viz.component"
-                    :yamlConfig="viz.config"
-                    :fileApi="myState.svnRoot"
-                    :subfolder="`${myState.subfolder}/${selectedRun}`"
-                    :thumbnail="true"
-                    :style="{'pointer-events': viz.component==='image-view' ? 'auto' : 'none'}"
-                    @title="updateTitle(index, $event)")
-              p {{ viz.title }}
+        //- thumbnails of each viz and image in this folder
+        h3.curate-heading(v-if="myState.vizes.length") {{ $t('Analysis')}}
 
-      // individual links to files in this folder
-      h3.curate-heading(v-if="myState.files.length") {{$t('Files')}}
+        .curate-content(v-if="myState.vizes.length")
+          .viz-table
+            .viz-grid-item(v-for="viz,index in myState.vizes"
+                      :key="viz.config"
+                      @click="clickedVisualization(index)")
 
-      .curate-content(v-if="myState.files.length")
-        .file-table
-          .file(:class="{fade: myState.isLoading}"
-                v-for="file in myState.files" :key="file")
-            a(:href="`${myState.svnProject.svn}/${myState.subfolder}/${file}`") {{ file }}
+              .viz-frame
+                component.viz-frame-component(
+                      :is="viz.component"
+                      :yamlConfig="viz.config"
+                      :fileApi="myState.svnRoot"
+                      :subfolder="`${myState.subfolder}/${selectedRun}`"
+                      :thumbnail="true"
+                      :style="{'pointer-events': viz.component==='image-view' ? 'auto' : 'none'}"
+                      @title="updateTitle(index, $event)")
+                p {{ viz.title }}
+
+        // individual links to files in this folder
+        .hide(v-if="!filteredFolders.length")
+          h3.curate-heading(v-if="myState.files.length") {{$t('Files')}}
+
+          .curate-content(v-if="myState.files.length")
+            .file-table
+              .file(:class="{fade: myState.isLoading}"
+                    v-for="file in myState.files" :key="file")
+                a(:href="`${myState.svnProject.svn}/${myState.subfolder}/${file}`") {{ file }}
 
 </template>
 
@@ -114,10 +118,12 @@ import markdown from 'markdown-it'
 import mediumZoom from 'medium-zoom'
 import micromatch from 'micromatch'
 import yaml from 'yaml'
+
+import { BreadCrumb, VisualizationPlugin, SVNProject } from '../Globals'
 import globalStore from '@/store.ts'
 import plugins from '@/plugins/pluginRegistry'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
-import { BreadCrumb, VisualizationPlugin, SVNProject } from '../Globals'
+import FilterMaker from '@/views/FilterMaker.vue'
 
 interface VizEntry {
   component: string
@@ -150,7 +156,7 @@ interface RunFinder {
 }
 
 @Component({
-  components: plugins,
+  components: Object.assign({ FilterMaker }, plugins),
   props: {},
   i18n,
 })
@@ -160,6 +166,8 @@ export default class VueComponent extends Vue {
   private mdRenderer = new markdown()
 
   private activeButtons: { [heading: string]: string } = {}
+
+  private filteredFolders: { folder: string }[] = []
 
   private myState: IMyState = {
     errorStatus: '',
@@ -222,56 +230,23 @@ export default class VueComponent extends Vue {
     this.updateRoute()
   }
 
-  private get dimensions() {
-    const d = []
-    if (this.myState.runFinder.dimensions) return this.myState.runFinder.dimensions
-  }
-
-  private async buildRunFinder() {
-    if (!this.myState.svnRoot) return
-
-    const pattern = 'run-lookup.y?(a)ml'
-    const collectionFiles: string[] = micromatch(this.myState.files, pattern)
-
-    if (!collectionFiles.length) {
-      this.myState.runFinder = { dimensions: [] }
-      return
-    }
-
-    const runYaml = yaml.parse(
-      await this.myState.svnRoot.getFileText(this.myState.subfolder + '/' + collectionFiles[0])
-    )
-
-    this.myState.runFinder = runYaml
-    this.buildRunSelectionButtons()
-    this.buildRunIdFromButtonSelections()
-    this.fetchFolderContents()
-  }
-
-  private buildRunSelectionButtons() {
-    for (const dimension of this.myState.runFinder.dimensions) {
-      Vue.set(this.activeButtons, dimension.heading, dimension.options[0].value)
-    }
-  }
-
-  private clickedCollectionButton(heading: string, option: string) {
-    if (option === this.activeButtons[heading]) return
-
-    this.activeButtons[heading] = option
-    this.buildRunIdFromButtonSelections()
-    this.fetchFolderContents()
-  }
-
   private selectedRun: string = ''
-  private buildRunIdFromButtonSelections() {
-    const run = this.myState.runFinder.dimensions
-      .map(d => {
-        return this.activeButtons[d.heading]
-      })
-      .join('-')
 
-    console.log(run)
-    this.selectedRun = run
+  private selectNewRun(folderName: string) {
+    if (folderName === this.selectedRun) return
+
+    this.selectedRun = folderName
+    this.fetchFolderContents()
+  }
+
+  private activateFilteredFolders(folders: { folder: string }[]) {
+    console.log(folders)
+    this.filteredFolders = folders
+
+    if (!folders.length) {
+      this.selectedRun = ''
+      this.myState.files = []
+    }
   }
 
   private clickedVisualization(vizNumber: number) {
@@ -322,7 +297,7 @@ export default class VueComponent extends Vue {
   }
 
   @Watch('myState.files') async filesChanged() {
-    if (!this.selectedRun) await this.buildRunFinder()
+    // if (!this.selectedRun) await this.buildRunFinder()
 
     // clear visualizations
     this.myState.vizes = []
@@ -505,6 +480,16 @@ export default class VueComponent extends Vue {
   max-width: $sizeVessel;
 }
 
+.twocolumn {
+  display: flex;
+  flex-direction: row;
+}
+
+.col2 {
+  flex: 1;
+  margin-left: 3rem;
+}
+
 .white {
   background-color: var(--bgBold);
 }
@@ -587,6 +572,13 @@ h2 {
 
 .logo {
   margin-left: auto;
+}
+
+.filtered-folder-buttons {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1.5rem;
 }
 
 .folder-table {
@@ -705,6 +697,39 @@ h3.curate-heading {
 .dimension .button {
   margin: 0.1rem 0;
   font-size: 0.8rem;
+}
+
+.scenario-button {
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.5rem 0.5rem;
+  height: 100%;
+}
+
+.scenario-button.selected {
+  background-color: #fe2;
+}
+
+.scenario-button:hover {
+  box-shadow: var(--shadowMode);
+}
+
+.detail-line {
+  display: grid;
+  grid-template-columns: auto auto;
+}
+
+.detail-line .item1 {
+  grid-column: 1 / 2;
+  margin-left: auto;
+  margin-right: 0.5rem;
+}
+
+.detail-line .item2 {
+  grid-column: 2 / 3;
+  margin-right: auto;
 }
 
 @media only screen and (max-width: 50em) {

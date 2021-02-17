@@ -1,7 +1,7 @@
 <template lang="pug">
 #home
   .banner
-    h2 aftersim
+    h2 {{ $t('pave-project') }}
     h3 VSP / Technische Universität Berlin
 
   .tu-logo
@@ -12,7 +12,7 @@
       .main
         .right(style="text-align: right;")
 
-        h1 aftersim
+        h1 {{ $t('pave-project') }}
         h2.readme {{ $t('tagLine') }}
 
         svn-projects.gap
@@ -24,9 +24,11 @@
 
 <i18n>
 en:
+  pave-project: 'PAVE Project'
   more-info: 'For more information:'
-  tagLine: 'the model output browser and data visualizer from TU Berlin.'
+  tagLine: 'MATSim model output browser for the PAVE project.'
 de:
+  pave-project: 'PAVE Projekt'
   more-info: 'Für weitere Informationen:'
   tagLine: 'Hier finden Sie Ergebnisse des PAVE-Projektes '
 </i18n>
