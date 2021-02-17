@@ -27,7 +27,7 @@
               v-for="option in d.options"
               :key="`${option.title}/${option.value}`"
               :class="{'is-link': activeButtons[d.heading] === option.value }"
-              @click="clickedCollectionButton(d.heading, option.value)"
+              @click="clickedOptionButton(d.heading, option.value)"
             ) {{ option.title }}
 
       //- this is the content of readme.md, if it exists
@@ -37,7 +37,7 @@
           v-html="myState.readme"
         )
 
-  //- selected run
+  //- selected run header
   .stripe.cream(v-if="selectedRun")
     .vessel
       h3.curate-heading(v-if="selectedRun") Run ID: {{ selectedRun }}
@@ -46,10 +46,9 @@
         i.fa.fa-arrow-right
         i.fa.fa-arrow-right
 
-  //- selected run
+  //- file system folders
   .stripe.cream
    .vessel
-      //- file system folders
       h3.curate-heading(v-if="!selectedRun && myState.folders.length")  {{ $t('Folders') }}
 
       .curate-content(v-if="!selectedRun && myState.folders.length")
@@ -83,14 +82,13 @@
               p {{ viz.title }}
 
       // individual links to files in this folder
-      h3.curate-heading(v-if="myState.files.length") {{$t('Files')}}
-
-      .curate-content(v-if="myState.files.length")
-        .file-table
-          .file(:class="{fade: myState.isLoading}"
-                v-for="file in myState.files" :key="file")
-            a(:href="`${myState.svnProject.svn}/${myState.subfolder}/${file}`") {{ file }}
-
+      .files-section(v-if="!dimensions")
+        h3.curate-heading(v-if="myState.files.length") {{$t('Files')}}
+        .curate-content(v-if="myState.files.length")
+          .file-table
+            .file(:class="{fade: myState.isLoading}"
+                  v-for="file in myState.files" :key="file")
+              a(:href="`${myState.svnProject.svn}/${myState.subfolder}/${file}`") {{ file }}
 </template>
 
 <script lang="ts">
@@ -113,7 +111,9 @@ import { Vue, Component, Watch, Prop } from 'vue-property-decorator'
 import markdown from 'markdown-it'
 import mediumZoom from 'medium-zoom'
 import micromatch from 'micromatch'
+import Papaparse from 'papaparse'
 import yaml from 'yaml'
+
 import globalStore from '@/store.ts'
 import plugins from '@/plugins/pluginRegistry'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
@@ -160,6 +160,9 @@ export default class VueComponent extends Vue {
   private mdRenderer = new markdown()
 
   private activeButtons: { [heading: string]: string } = {}
+
+  private runLogFolderLookup: { [options: string]: string } = {}
+  private selectedRun: string = ''
 
   private myState: IMyState = {
     errorStatus: '',
@@ -227,8 +230,36 @@ export default class VueComponent extends Vue {
     if (this.myState.runFinder.dimensions) return this.myState.runFinder.dimensions
   }
 
+  private async loadRunLog() {
+    if (!this.myState.svnRoot) return
+
+    const csvFile = 'run-log.csv'
+    const rawCSV = await this.myState.svnRoot.getFileText(this.myState.subfolder + '/' + csvFile)
+
+    const runLog = Papaparse.parse(rawCSV, {
+      header: true,
+      dynamicTyping: true,
+      skipEmptyLines: true,
+    })
+
+    const allRuns = runLog.data as any[]
+
+    // build lookup from the existing options -- start w/foldername and columns past 8
+    allRuns.forEach(run => {
+      let uniqueId = ''
+      Object.values(run)
+        .slice(8)
+        .forEach(value => {
+          if (value) uniqueId += `-${value}`
+        })
+      this.runLogFolderLookup[uniqueId.slice(1)] = run.folder
+    })
+  }
+
   private async buildRunFinder() {
     if (!this.myState.svnRoot) return
+
+    await this.loadRunLog()
 
     const pattern = 'run-lookup.y?(a)ml'
     const collectionFiles: string[] = micromatch(this.myState.files, pattern)
@@ -254,15 +285,13 @@ export default class VueComponent extends Vue {
     }
   }
 
-  private clickedCollectionButton(heading: string, option: string) {
+  private clickedOptionButton(heading: string, option: string) {
     if (option === this.activeButtons[heading]) return
 
     this.activeButtons[heading] = option
     this.buildRunIdFromButtonSelections()
-    this.fetchFolderContents()
   }
 
-  private selectedRun: string = ''
   private buildRunIdFromButtonSelections() {
     const run = this.myState.runFinder.dimensions
       .map(d => {
@@ -270,8 +299,16 @@ export default class VueComponent extends Vue {
       })
       .join('-')
 
-    console.log(run)
-    this.selectedRun = run
+    const folder = this.runLogFolderLookup[run]
+    console.log(run, folder)
+
+    if (folder) {
+      this.selectedRun = folder
+      this.fetchFolderContents()
+    } else {
+      this.selectedRun = ''
+      this.myState.vizes = []
+    }
   }
 
   private clickedVisualization(vizNumber: number) {
@@ -284,7 +321,7 @@ export default class VueComponent extends Vue {
 
     const path =
       `/v/${viz.component}/${this.myState.svnProject.url}/` +
-      `${this.myState.subfolder}/${viz.config}`
+      `${this.myState.subfolder}/${this.selectedRun}/${viz.config}`
     this.$router.push({ path })
   }
 
@@ -328,7 +365,7 @@ export default class VueComponent extends Vue {
     this.myState.vizes = []
     if (this.myState.files.length === 0) return
 
-    this.showReadme()
+    await this.showReadme()
 
     this.myState.summary = this.myState.files.indexOf(this.summaryYamlFilename) !== -1
 
