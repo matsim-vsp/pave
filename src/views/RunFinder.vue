@@ -42,9 +42,11 @@
     .vessel
       h3.curate-heading(v-if="selectedRun") Run ID: {{ selectedRun }}
       p(v-if="selectedRun && !myState.vizes.length") Nothing to show. Select a different service combination.
-      h4(v-else): i table of stuff here, and a map&nbsp;
-        i.fa.fa-arrow-right
-        i.fa.fa-arrow-right
+      .summary-table(v-else)
+        .detail-line(v-for="f in Object.keys(runHeader)")
+          .item1 {{ f }}:
+          .item2 {{ runHeader[f] }}
+
 
   //- file system folders
   .stripe.cream
@@ -118,6 +120,7 @@ import globalStore from '@/store.ts'
 import plugins from '@/plugins/pluginRegistry'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
 import { BreadCrumb, VisualizationPlugin, SVNProject } from '../Globals'
+import { inc } from 'nprogress'
 
 interface VizEntry {
   component: string
@@ -235,6 +238,7 @@ export default class VueComponent extends Vue {
 
     const csvFile = 'run-log.csv'
     const rawCSV = await this.myState.svnRoot.getFileText(this.myState.subfolder + '/' + csvFile)
+    this.runLookup = {}
 
     const runLog = Papaparse.parse(rawCSV, {
       header: true,
@@ -253,8 +257,11 @@ export default class VueComponent extends Vue {
           if (value) uniqueId += `-${value}`
         })
       this.runLogFolderLookup[uniqueId.slice(1)] = run.folder
+      this.runLookup[run.folder] = run
     })
   }
+
+  private runLookup: any = {}
 
   private async buildRunFinder() {
     if (!this.myState.svnRoot) return
@@ -304,10 +311,56 @@ export default class VueComponent extends Vue {
 
     if (folder) {
       this.selectedRun = folder
+      this.showRunHeader()
       this.fetchFolderContents()
     } else {
       this.selectedRun = ''
       this.myState.vizes = []
+    }
+  }
+
+  private runHeader = {
+    fixedCosts: 0,
+    variableCosts: 0,
+    demand: 0,
+    fleetSize: 0,
+    mileage: 0,
+    revenueDistance: 0,
+    incomePerDay: 0,
+    expensesPerDay: 0,
+    revenuePerDay: 0,
+    subsidyPerYear: 0,
+    serviceQuality: '',
+  }
+
+  private showRunHeader() {
+    console.log('showRunHeader', this.selectedRun)
+
+    // get the run details
+    const run = this.runLookup[this.selectedRun]
+
+    const incomePerDay =
+      run.calcDemand * run.calcFixedCosts + run.calcRevenueDistance * run.calcVariableCosts
+
+    const expensesPerDay =
+      run.calcFleetSize * run.calcFixedCosts + run.calcMileage * run.calcVariableCosts
+
+    const revenuePerDay = incomePerDay - expensesPerDay
+
+    const subsidyPerYear = 365 * revenuePerDay
+
+    this.runHeader = {
+      fixedCosts: run.calcFixedCosts,
+      variableCosts: run.calcVariableCosts,
+      demand: run.calcDemand,
+      fleetSize: run.calcFleetSize,
+      mileage: run.calcMileage,
+      revenueDistance: run.calcRevenueDistance,
+      incomePerDay: incomePerDay,
+      expensesPerDay: expensesPerDay,
+      revenuePerDay: revenuePerDay,
+      subsidyPerYear: subsidyPerYear,
+      serviceQuality: run.calcServiceLevel,
     }
   }
 
@@ -742,6 +795,23 @@ h3.curate-heading {
 .dimension .button {
   margin: 0.1rem 0;
   font-size: 0.8rem;
+}
+
+.detail-line {
+  display: grid;
+  grid-template-columns: auto 1fr;
+}
+
+.detail-line .item1 {
+  grid-column: 1 / 2;
+  margin-right: 0.5rem;
+  width: min-content;
+}
+
+.detail-line .item2 {
+  grid-column: 2 / 3;
+  margin-right: auto;
+  font-weight: bold;
 }
 
 @media only screen and (max-width: 50em) {
