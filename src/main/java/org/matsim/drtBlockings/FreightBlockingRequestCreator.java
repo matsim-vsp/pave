@@ -111,6 +111,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
                 .submissionTime(submissionTime)
                 .duration(blockingEnd - blockingStart)
                 .tasks(tourTasks)
+                .startTime(blockingStart)
                 .build();
 
         return request;

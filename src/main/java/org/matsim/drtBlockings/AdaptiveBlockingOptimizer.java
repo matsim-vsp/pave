@@ -167,7 +167,13 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
             //TODO what if the 1st tour of the queue is very long and can never be assigned?
             // => replanning of tours (incorporate org.matsim.drtBlockings.ReplanningBlockingRequestEngine). tschlenther, dec '20
             // the way that works now, we would actually NEED to reject those requests.
-            if(timer.getTimeOfDay() >= latestBlockingSchedulingTime){
+//            if(timer.getTimeOfDay() >= latestBlockingSchedulingTime){
+            if(timer.getTimeOfDay() > drtBlockingRequest.getStartTime()){
+                //Do we still need the latestBlockingSchedulingTIme?? Because with our vehicles for each time window, its not
+                //possible to exceed the global service time
+                //instead of using this we should use timer.getTimeOfDay() > drtBlockingRequest.getBlockingStart.
+                //TODO Before doing serious runs it should be tested that the above constraint
+                // of latestBlockingSchedulingTime really never is false. SM Feb 20
                 rejectBlockingRequest(drtBlockingRequest);
                 blockingRequestsIterator.remove();
             } else {
