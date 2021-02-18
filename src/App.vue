@@ -20,9 +20,12 @@
             span {{ state.locale }}
 
     .breadcrumb-container(v-if="state.breadcrumbs.length")
-      .breadcrumbs(aria-label="breadcrumbs")
+      .breadcrumb.has-bullet-separator.is-centered(aria-label="breadcrumbs")
         ul
-          li(v-for="crumb in state.breadcrumbs") {{ crumb.label }}
+          li(v-for="crumb,i in state.breadcrumbs"
+          )
+            a() {{ crumb.label }}
+            //-  :class="{'is-active': i===state.breadcrumbs.length-1}"
 
   .center-area.nav-padding
     login-panel.login-panel
@@ -176,9 +179,8 @@ canvas {
   padding: 0.25rem 0;
 }
 
-.breadcrumbs {
-  color: #ccc;
-  font-size: 0.8rem;
+.breadcrumb {
+  font-size: 0.9rem;
   padding: 0 3rem;
   margin: 0 auto;
   max-width: $sizeVessel;
@@ -190,8 +192,14 @@ canvas {
     flex-direction: row;
   }
 
-  li {
-    margin-right: 0.5rem;
+  a {
+    color: #ccc;
+    padding: 0 1rem;
+  }
+
+  a:hover {
+    cursor: default;
+    color: #ccc;
   }
 }
 

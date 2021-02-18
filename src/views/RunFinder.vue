@@ -75,7 +75,7 @@
           input.input(v-model="runCosts.variableCosts")
 
   //- file system folders
-  .stripe.cream
+  .stripe.cream2
    .vessel
       h3.curate-heading(v-if="!selectedRun && myState.folders.length")  {{ $t('Folders') }}
 
@@ -644,6 +644,10 @@ export default class VueComponent extends Vue {
   background-color: var(--bgCream);
 }
 
+.cream2 {
+  background-color: var(--bgCream2);
+}
+
 h3,
 h4 {
   margin-top: 2rem;
@@ -848,7 +852,6 @@ h3.curate-heading {
 }
 
 .summary-table .col2 {
-  display: flex;
   flex-direction: column;
   margin-left: 1rem;
   width: max-content;
