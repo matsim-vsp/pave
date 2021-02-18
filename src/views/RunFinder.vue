@@ -38,11 +38,11 @@
         )
 
   //- selected run header
-  .stripe.cream(v-if="selectedRun")
+  .stripe.cream
     .vessel
-      h3.curate-heading(v-if="selectedRun") Summary Results
+      h3.curate-heading Scenario Performance
 
-      //- p(v-if="selectedRun && !myState.vizes.length") Nothing to show. Select a different service combination.
+      p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
 
       .summary-table(v-if="selectedRun && myState.vizes.length")
         .col1
@@ -74,25 +74,12 @@
           .tlabel Per km
           input.input(v-model="runCosts.variableCosts")
 
-  //- file system folders
-  .stripe.cream2
+  //- thumbnails of each viz and image in this folder
+  .stripe.cream2(v-if="myState.vizes.length")
    .vessel
-      h3.curate-heading(v-if="!selectedRun && myState.folders.length")  {{ $t('Folders') }}
+      h3.curate-heading {{ $t('Analysis')}}
 
-      .curate-content(v-if="!selectedRun && myState.folders.length")
-        .folder-table
-          .folder(:class="{fade: myState.isLoading}"
-                  :key="folder.name"
-                  v-for="folder in myState.folders"
-                  @click="openOutputFolder(folder)")
-            p
-              i.fa.fa-folder-open
-              | &nbsp;{{ folder }}
-
-      //- thumbnails of each viz and image in this folder
-      h3.curate-heading(v-if="myState.vizes.length") {{ $t('Analysis')}}
-
-      .curate-content(v-if="myState.vizes.length")
+      .curate-content
         .viz-table
           .viz-grid-item(v-for="viz,index in myState.vizes"
                     :key="viz.config"
@@ -109,14 +96,6 @@
                     @title="updateTitle(index, $event)")
               p {{ viz.title }}
 
-      // individual links to files in this folder
-      .files-section(v-if="!dimensions")
-        h3.curate-heading(v-if="myState.files.length") {{$t('Files')}}
-        .curate-content(v-if="myState.files.length")
-          .file-table
-            .file(:class="{fade: myState.isLoading}"
-                  v-for="file in myState.files" :key="file")
-              a(:href="`${myState.svnProject.svn}/${myState.subfolder}/${file}`") {{ file }}
 </template>
 
 <script lang="ts">
@@ -297,6 +276,8 @@ export default class VueComponent extends Vue {
 
   private async buildRunFinder() {
     if (!this.myState.svnRoot) return
+
+    this.myState.isLoading = true
 
     await this.loadRunLog()
 
