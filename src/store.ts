@@ -46,8 +46,13 @@ export default new Vuex.Store({
     rotateColors(state) {
       state.colorScheme =
         state.colorScheme === ColorScheme.DarkMode ? ColorScheme.LightMode : ColorScheme.DarkMode
-      localStorage.setItem('colorscheme', state.colorScheme)
+
       console.log('NEW COLORS:', state.colorScheme)
+
+      localStorage.setItem('colorscheme', state.colorScheme)
+
+      document.body.style.backgroundColor =
+        state.colorScheme === ColorScheme.LightMode ? '#edebe4' : '#2d3133'
     },
     setLocale(state, value: string) {
       state.locale = value.toLocaleLowerCase()

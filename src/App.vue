@@ -28,17 +28,17 @@
     login-panel.login-panel
     router-view.main-content
 
-  .footer(v-if="!state.isFullScreen")
-    //- colophon.colophon
-    a(href="https://vsp.tu-berlin.de")
-      img(alt="TU-Berlin logo" src="@/assets/images/vsp-logo.png" width=225)
-    a(href="https://matsim.org")
-      img(alt="MATSim logo" src="@/assets/images/matsim-logo-blue.png" width=250)
+  //- .footer(v-if="!state.isFullScreen")
+  //-   //- colophon.colophon
+  //-   a(href="https://vsp.tu-berlin.de")
+  //-     img(alt="TU-Berlin logo" src="@/assets/images/vsp-logo.png" width=225)
+  //-   a(href="https://matsim.org")
+  //-     img(alt="MATSim logo" src="@/assets/images/matsim-logo-blue.png" width=250)
 
-    p aftersim &copy; 2020 VSP TU-Berlin.
-    p More info about VSP:
-      a(href="https://www.vsp.tu-berlin.de") &nbsp;https://vsp.tu-berlin.de
-    p EU GDPR: No personal information collected or transmitted.
+  //-   p aftersim &copy; 2020 VSP TU-Berlin.
+  //-   p More info about VSP:
+  //-     a(href="https://www.vsp.tu-berlin.de") &nbsp;https://vsp.tu-berlin.de
+  //-   p EU GDPR: No personal information collected or transmitted.
 </template>
 
 <i18n>
@@ -87,6 +87,8 @@ class App extends Vue {
       : ColorScheme.LightMode
 
     if (theme === ColorScheme.LightMode) this.$store.commit('rotateColors')
+
+    document.body.style.backgroundColor = theme === ColorScheme.LightMode ? '#edebe4' : '#2d3133'
 
     // locale: we only support EN and DE
     const locale = localStorage.getItem('locale')
@@ -153,7 +155,6 @@ html {
 html {
   overflow-y: auto;
   color: var(--text);
-  background-color: $steelGray;
 }
 
 canvas {
@@ -208,12 +209,12 @@ h3 {
 #main-app {
   display: grid;
   color: var(--text);
-  background-color: var(--bg);
+  background-color: var(--bgCream);
   font-family: Roboto, Avenir, Helvetica, Arial, sans-serif;
   grid-template-columns: 1fr;
   grid-template-rows: auto 1fr auto;
-  margin: 0px 0px 0px 0px;
-  padding: 0px 0px 0px 0px;
+  margin: 0 0;
+  padding: 0 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
