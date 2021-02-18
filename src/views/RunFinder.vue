@@ -40,13 +40,39 @@
   //- selected run header
   .stripe.cream(v-if="selectedRun")
     .vessel
-      h3.curate-heading(v-if="selectedRun") Run ID: {{ selectedRun }}
-      p(v-if="selectedRun && !myState.vizes.length") Nothing to show. Select a different service combination.
-      .summary-table(v-else)
-        .detail-line(v-for="f in Object.keys(runHeader)")
-          .item1 {{ f }}:
-          .item2 {{ runHeader[f] }}
+      h3.curate-heading(v-if="selectedRun") Summary Results
 
+      //- p(v-if="selectedRun && !myState.vizes.length") Nothing to show. Select a different service combination.
+
+      .summary-table(v-if="selectedRun && myState.vizes.length")
+        .col1
+          .tlabel.vspace Run ID
+          .tlabel Demand
+          .tlabel Fleet size
+          .tlabel Mileage
+          .tlabel.vspace Revenue distance
+          .tlabel.blue Income/day
+          .tlabel.blue Expenses/day
+          .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
+          .tlabel.vspace 95% Service quality
+
+        .col2
+          .tlabel.vspace {{ selectedRun }}
+          .tlabel {{ runHeader.demand.toLocaleString() }} rides
+          .tlabel {{ runHeader.fleetSize.toLocaleString() }} vehicles
+          .tlabel {{ runHeader.mileage.toLocaleString() }} km
+          .tlabel.vspace {{ runHeader.revenueDistance.toLocaleString() }} km
+          .tlabel.blue {{ runHeader.incomePerDay.toLocaleString() }} €
+          .tlabel.blue {{ expensesPerDay().toLocaleString() }} €
+          .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
+          .tlabel.vspace {{ (runHeader.serviceQuality / 60.0).toFixed(1) }} min
+
+        .col3
+          b.tlabel Vehicle costs
+          .tlabel Per day
+          input.input(v-model="runCosts.fixedCosts")
+          .tlabel Per km
+          input.input(v-model="runCosts.variableCosts")
 
   //- file system folders
   .stripe.cream
@@ -320,18 +346,33 @@ export default class VueComponent extends Vue {
     }
   }
 
+  private expensesPerDay() {
+    return (
+      this.runHeader.fleetSize * this.runCosts.fixedCosts +
+      this.runHeader.mileage * this.runCosts.variableCosts
+    )
+  }
+
+  private revenuePerDay() {
+    return this.runHeader.incomePerDay - this.expensesPerDay()
+  }
+
+  private annualIncome() {
+    return this.revenuePerDay() * 365.0
+  }
+
+  private runCosts = {
+    fixedCosts: 1,
+    variableCosts: 1,
+  }
+
   private runHeader = {
-    fixedCosts: 0,
-    variableCosts: 0,
-    demand: 0,
-    fleetSize: 0,
-    mileage: 0,
-    revenueDistance: 0,
-    incomePerDay: 0,
-    expensesPerDay: 0,
-    revenuePerDay: 0,
-    subsidyPerYear: 0,
-    serviceQuality: '',
+    demand: 1,
+    fleetSize: 1,
+    mileage: 1,
+    revenueDistance: 1,
+    incomePerDay: 1,
+    serviceQuality: 1,
   }
 
   private showRunHeader() {
@@ -341,27 +382,20 @@ export default class VueComponent extends Vue {
     const run = this.runLookup[this.selectedRun]
 
     const incomePerDay =
-      run.calcDemand * run.calcFixedCosts + run.calcRevenueDistance * run.calcVariableCosts
-
-    const expensesPerDay =
-      run.calcFleetSize * run.calcFixedCosts + run.calcMileage * run.calcVariableCosts
-
-    const revenuePerDay = incomePerDay - expensesPerDay
-
-    const subsidyPerYear = 365 * revenuePerDay
+      run.calcDemand * run.userCostFixed + run.calcRevenueDistance * run.userCostPerKm
 
     this.runHeader = {
-      fixedCosts: run.calcFixedCosts,
-      variableCosts: run.calcVariableCosts,
       demand: run.calcDemand,
       fleetSize: run.calcFleetSize,
       mileage: run.calcMileage,
       revenueDistance: run.calcRevenueDistance,
       incomePerDay: incomePerDay,
-      expensesPerDay: expensesPerDay,
-      revenuePerDay: revenuePerDay,
-      subsidyPerYear: subsidyPerYear,
       serviceQuality: run.calcServiceLevel,
+    }
+
+    this.runCosts = {
+      fixedCosts: run.calcFixedCosts,
+      variableCosts: run.calcVariableCosts,
     }
   }
 
@@ -798,21 +832,51 @@ h3.curate-heading {
   font-size: 0.8rem;
 }
 
-.detail-line {
-  display: grid;
-  grid-template-columns: auto 1fr;
+.summary-table {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: row;
 }
 
-.detail-line .item1 {
-  grid-column: 1 / 2;
-  margin-right: 0.5rem;
-  width: min-content;
+.summary-table .col1 {
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  text-align: right;
 }
 
-.detail-line .item2 {
-  grid-column: 2 / 3;
-  margin-right: auto;
+.summary-table .col2 {
+  display: flex;
+  flex-direction: column;
+  margin-left: 1rem;
+  width: max-content;
+}
+
+.blue {
+  color: var(--link);
+}
+
+.red {
+  color: $tuRed;
+}
+
+.tlabel {
+  margin: 0 0;
+  padding: 0 0;
+}
+
+.col3 {
+  font-size: 0.8rem;
+  margin-left: 3rem;
+  margin-top: 6rem;
+}
+
+.col2 .tlabel {
   font-weight: bold;
+}
+
+.vspace {
+  padding-bottom: 1rem;
 }
 
 @media only screen and (max-width: 50em) {
