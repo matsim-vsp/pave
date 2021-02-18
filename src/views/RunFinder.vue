@@ -385,12 +385,12 @@ export default class VueComponent extends Vue {
       run.calcDemand * run.userCostFixed + run.calcRevenueDistance * run.userCostPerKm
 
     this.runHeader = {
-      demand: run.calcDemand,
-      fleetSize: run.calcFleetSize,
-      mileage: run.calcMileage,
-      revenueDistance: run.calcRevenueDistance,
-      incomePerDay: incomePerDay,
-      serviceQuality: run.calcServiceLevel,
+      demand: 0 + run.calcDemand,
+      fleetSize: 0 + run.calcFleetSize,
+      mileage: 0 + run.calcMileage,
+      revenueDistance: 0 + run.calcRevenueDistance,
+      incomePerDay: 0 + incomePerDay,
+      serviceQuality: 0 + run.calcServiceLevel,
     }
 
     this.runCosts = {
