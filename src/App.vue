@@ -192,7 +192,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Roboto', Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Open Sans', Avenir, Helvetica, Arial, sans-serif;
 }
 
 h2 {
