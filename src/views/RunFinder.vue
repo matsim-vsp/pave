@@ -5,7 +5,7 @@
       .project-bar
         .details
           h2 {{ globalState.breadcrumbs[globalState.breadcrumbs.length -1].label }}
-          p {{ myState.svnProject.name }}
+          p {{ myState.svnProject.description }}
         .logo
           img(width=100 src="@/assets/images/tu-logo.png")
 
@@ -237,7 +237,7 @@ export default class VueComponent extends Vue {
     for (const folder of subfolders) {
       if (!folder) continue
 
-      buildFolder += folder + '/'
+      buildFolder += folder
       crumbs.push({
         label: folder,
         url: '/' + this.myState.svnProject.url + buildFolder,
@@ -261,6 +261,8 @@ export default class VueComponent extends Vue {
 
   private async loadRunLog() {
     if (!this.myState.svnRoot) return
+
+    this.myState.vizes = []
 
     const csvFile = 'run-log.csv'
     const rawCSV = await this.myState.svnRoot.getFileText(this.myState.subfolder + '/' + csvFile)
@@ -435,7 +437,7 @@ export default class VueComponent extends Vue {
     if (!this.myState.svnProject) return
     this.myState.svnRoot = new HTTPFileSystem(this.myState.svnProject)
 
-    this.generateBreadcrumbs()
+    // this.generateBreadcrumbs()
 
     // this happens async
     this.fetchFolderContents()

@@ -21,7 +21,7 @@ const config: any = {
     {
       name: '1. Robotaxi',
       url: '1-robotaxi',
-      description: 'Like taxi service, but robots!',
+      description: 'Automated, networked taxi service',
       svn:
         'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/1-robotaxi',
       need_password: false,
@@ -30,7 +30,7 @@ const config: any = {
     {
       name: '2. Pooling',
       url: '2-pooling',
-      description: 'Text here',
+      description: 'Shared taxi service',
       svn:
         'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/2-pooling',
       need_password: false,
@@ -39,7 +39,7 @@ const config: any = {
     {
       name: '3. Combined',
       url: '3-combined',
-      description: 'What is a robotaxi, Tilmann?',
+      description: 'Automated, networked taxi service with shared pooling',
       svn:
         'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/3-combined',
       need_password: false,

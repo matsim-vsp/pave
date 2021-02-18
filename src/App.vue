@@ -5,14 +5,14 @@
     .breadcrumbs-bar(v-if="state.breadcrumbs.length > 0"
                      :style="{paddingLeft: state.isFullScreen ? '0.75rem':''}")
       nav.breadcrumb(aria-label="breadcrumbs")
-        ul
-          li(v-for="crumb,i in state.breadcrumbs" :key="crumb.label + crumb.url"
-            @click="clickedLink(crumb.url)"
-            @click.middle="openNewTab(crumb.url)"
-            @click.ctrl="openNewTab(crumb.url)"
-            @click.meta="openNewTab(crumb.url)"
+          .nav-item(v-for="link in topNavLinks" :key="link.url"
+            @click="clickedLink(link.url)"
+            @click.middle="openNewTab(link.url)"
+            @click.ctrl="openNewTab(link.url)"
+            @click.meta="openNewTab(link.url)"
+            :class="{'selected': $route.path.endsWith(link.url) }"
             )
-              p {{ i === 0 ? 'PAVE' : crumb.label }}
+              p {{ link.name }}
 
     .locale(@click="toggleTheme")
       i.fa.fa-1x.fa-adjust
@@ -101,6 +101,15 @@ class App extends Vue {
     this.$store.commit('setLocale', locale)
   }
 
+  private get topNavLinks() {
+    // {name, description, need_password, svn, thumbnail, url }
+    const home: any[] = [{ name: 'PAVE', url: '/' }]
+    const topLinks = home.concat(this.state.svnProjects)
+
+    console.log({ topLinks })
+    return topLinks
+  }
+
   private toggleLocale() {
     const newLocale = this.state.locale === 'en' ? 'de' : 'en'
     this.$store.commit('setLocale', newLocale)
@@ -163,7 +172,7 @@ canvas {
 
 .breadcrumbs-bar {
   flex: 1;
-  padding: 0.7rem 3rem;
+  padding: 0 3rem;
   transition: padding 0.2s ease-in-out;
 }
 
@@ -171,16 +180,23 @@ canvas {
   font-size: 0.9rem;
   font-weight: bold;
   margin-left: -0.5rem;
+  display: flex;
+  flex-direction: row;
 }
 
 .breadcrumb p {
   color: #e0e0e0;
   cursor: pointer;
-  margin: 0 0.5rem;
+  padding: 1rem 0.75rem;
 }
 
 .breadcrumb p:hover {
-  color: #a8ffc8;
+  background-color: $matsimBlue;
+  color: white;
+}
+
+.selected p {
+  background-color: $themeColorPale;
 }
 
 .bury-me {
