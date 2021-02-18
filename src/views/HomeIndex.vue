@@ -50,12 +50,12 @@ import globalStore from '@/store'
 })
 class MyComponent extends Vue {
   private mounted() {
-    const crumbs = [
-      {
-        label: 'aftersim',
-        url: '/',
-      },
-    ]
+    const crumbs: any[] = []
+    //   {
+    //     label: 'aftersim',
+    //     url: '/',
+    //   },
+    // ]
 
     // save them!
     globalStore.commit('setBreadCrumbs', crumbs)

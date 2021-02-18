@@ -92,11 +92,11 @@ class MyComponent extends Vue {
   private async generateBreadcrumbs() {
     if (!this.myState.fileSystem) return []
 
-    const crumbs = [
-      {
-        label: this.myState.fileSystem.name,
-        url: '/' + this.myState.fileSystem.url,
-      },
+    const crumbs: any[] = [
+      // {
+      //   label: this.myState.fileSystem.name,
+      //   url: '/' + this.myState.fileSystem.url,
+      // },
     ]
 
     const subfolders = this.myState.subfolder.split('/')
@@ -382,7 +382,9 @@ p {
   grid-column: 1/3;
   width: 100%;
   display: flex;
+  padding: 0 3rem;
   flex-direction: column;
+  color: #444;
 }
 
 #chart {
@@ -394,5 +396,11 @@ p {
 
 .center {
   text-align: center;
+}
+
+@media only screen and (max-width: 40em) {
+  .main-area {
+    padding: 0 1rem 0 1rem;
+  }
 }
 </style>

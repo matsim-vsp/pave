@@ -220,34 +220,37 @@ export default class VueComponent extends Vue {
 
   private generateBreadcrumbs() {
     if (!this.myState.svnProject) return []
-
-    const crumbs = [
-      {
-        label: 'aftersim',
-        url: '/',
-      },
-      {
-        label: this.myState.svnProject.name,
-        url: '/' + this.myState.svnProject.url,
-      },
-    ]
-
-    const subfolders = this.myState.subfolder.split('/')
-    let buildFolder = '/'
-    for (const folder of subfolders) {
-      if (!folder) continue
-
-      buildFolder += folder
-      crumbs.push({
-        label: folder,
-        url: '/' + this.myState.svnProject.url + buildFolder,
-      })
-    }
-
-    // save them!
+    const crumbs: any[] = []
     globalStore.commit('setBreadCrumbs', crumbs)
-
     return crumbs
+
+    // const crumbs = [
+    //   {
+    //     label: 'aftersim',
+    //     url: '/',
+    //   },
+    //   {
+    //     label: this.myState.svnProject.name,
+    //     url: '/' + this.myState.svnProject.url,
+    //   },
+    // ]
+
+    // const subfolders = this.myState.subfolder.split('/')
+    // let buildFolder = '/'
+    // for (const folder of subfolders) {
+    //   if (!folder) continue
+
+    //   buildFolder += folder
+    //   crumbs.push({
+    //     label: folder,
+    //     url: '/' + this.myState.svnProject.url + buildFolder,
+    //   })
+    // }
+
+    // // save them!
+    // globalStore.commit('setBreadCrumbs', crumbs)
+
+    // return crumbs
   }
 
   private mounted() {
@@ -437,7 +440,7 @@ export default class VueComponent extends Vue {
     if (!this.myState.svnProject) return
     this.myState.svnRoot = new HTTPFileSystem(this.myState.svnProject)
 
-    // this.generateBreadcrumbs()
+    this.generateBreadcrumbs()
 
     // this happens async
     this.fetchFolderContents()
@@ -630,6 +633,7 @@ export default class VueComponent extends Vue {
   margin: 0 auto;
   padding: 0rem 3rem 1rem 3rem;
   max-width: $sizeVessel;
+  transition: padding 0.2s ease-in-out;
 }
 
 .white {
@@ -696,10 +700,6 @@ h2 {
     padding: 1rem 0.5rem;
     color: var(--text);
     word-wrap: break-word;
-    /* Required for text-overflow to do anything */
-    // text-overflow: ellipsis;
-    // white-space: nowrap;
-    // overflow: hidden;
   }
 }
 
@@ -793,7 +793,7 @@ h3.curate-heading {
   font-size: 1.8rem;
   font-weight: bold;
   color: var(--textFancy);
-  padding-top: 0.5rem;
+  padding-top: 1rem;
   margin-top: 0rem;
 }
 

@@ -1,44 +1,33 @@
 <template lang="pug">
 #main-app(:class="{'full-page-app' : state.isFullScreen, 'dark-mode': isDarkMode}" )
 
-  #nav
-    .breadcrumbs-bar(v-if="state.breadcrumbs.length > 0"
-                     :style="{paddingLeft: state.isFullScreen ? '0.75rem':''}")
-      nav.breadcrumb(aria-label="breadcrumbs")
-          .nav-item(v-for="link in topNavLinks" :key="link.url"
-            @click="clickedLink(link.url)"
-            @click.middle="openNewTab(link.url)"
-            @click.ctrl="openNewTab(link.url)"
-            @click.meta="openNewTab(link.url)"
-            :class="{'selected': $route.path.endsWith(link.url) }"
-            )
-              p {{ link.name }}
+  .app-nav
+    .top-bar(:style="{paddingLeft: state.isFullScreen ? '0.75rem':''}")
+      nav.top-link
+        router-link(:to="`/${link.url}`" v-for="link in topNavLinks" :key="`/${link.url}`"
+          :class="{'selected': ($route.path==='/' && link.url==='/') || $route.path.indexOf(link.url) > 0 }" )
+            p {{ link.name }}
 
-    .locale(@click="toggleTheme")
-      i.fa.fa-1x.fa-adjust
-      br
-      span {{ $t(state.colorScheme) }}
+        .right-side
+          .locale(@click="toggleTheme")
+            i.fa.fa-1x.fa-adjust
+            br
+            span {{ $t(state.colorScheme) }}
 
-    .locale(@click="toggleLocale")
-      i.fa.fa-1x.fa-globe
-      br
-      span {{ state.locale }}
+          .locale(@click="toggleLocale")
+            i.fa.fa-1x.fa-globe
+            br
+            span {{ state.locale }}
+
+    .breadcrumb-container(v-if="state.breadcrumbs.length")
+      .breadcrumbs(aria-label="breadcrumbs")
+        ul
+          li(v-for="crumb in state.breadcrumbs") {{ crumb.label }}
 
   .center-area.nav-padding
     login-panel.login-panel
     router-view.main-content
 
-  //- .footer(v-if="!state.isFullScreen")
-  //-   //- colophon.colophon
-  //-   a(href="https://vsp.tu-berlin.de")
-  //-     img(alt="TU-Berlin logo" src="@/assets/images/vsp-logo.png" width=225)
-  //-   a(href="https://matsim.org")
-  //-     img(alt="MATSim logo" src="@/assets/images/matsim-logo-blue.png" width=250)
-
-  //-   p aftersim &copy; 2020 VSP TU-Berlin.
-  //-   p More info about VSP:
-  //-     a(href="https://www.vsp.tu-berlin.de") &nbsp;https://vsp.tu-berlin.de
-  //-   p EU GDPR: No personal information collected or transmitted.
 </template>
 
 <i18n>
@@ -103,7 +92,8 @@ class App extends Vue {
 
   private get topNavLinks() {
     // {name, description, need_password, svn, thumbnail, url }
-    const home: any[] = [{ name: 'PAVE', url: '/' }]
+    // a '/' will be prepended
+    const home: any[] = [{ name: 'PAVE', url: '' }]
     const topLinks = home.concat(this.state.svnProjects)
 
     console.log({ topLinks })
@@ -170,27 +160,56 @@ canvas {
   display: block;
 }
 
-.breadcrumbs-bar {
-  flex: 1;
+.top-bar {
+  width: 100%;
   padding: 0 3rem;
+  margin: 0 auto;
+  max-width: $sizeVessel;
   transition: padding 0.2s ease-in-out;
+  // box-shadow: 0px 6px 10px #00000048;
+  z-index: 0;
 }
 
-.breadcrumb {
+.breadcrumb-container {
+  background-color: #3e455c;
+  width: 100%;
+  padding: 0.25rem 0;
+}
+
+.breadcrumbs {
+  color: #ccc;
+  font-size: 0.8rem;
+  padding: 0 3rem;
+  margin: 0 auto;
+  max-width: $sizeVessel;
+  transition: padding 0.2s ease-in-out;
+
+  ul {
+    max-width: $sizeVessel;
+    display: flex;
+    flex-direction: row;
+  }
+
+  li {
+    margin-right: 0.5rem;
+  }
+}
+
+.top-link {
   font-size: 0.9rem;
   font-weight: bold;
-  margin-left: -0.5rem;
+  margin-left: -0.75rem;
   display: flex;
   flex-direction: row;
 }
 
-.breadcrumb p {
+.top-link p {
   color: #e0e0e0;
   cursor: pointer;
   padding: 1rem 0.75rem;
 }
 
-.breadcrumb p:hover {
+.top-link p:hover {
   background-color: $matsimBlue;
   color: white;
 }
@@ -228,7 +247,7 @@ h3 {
   background-color: var(--bgCream);
   font-family: Roboto, Avenir, Helvetica, Arial, sans-serif;
   grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto 1fr;
   margin: 0 0;
   padding: 0 0;
   -webkit-font-smoothing: antialiased;
@@ -248,32 +267,29 @@ a:hover {
   height: 100%;
 }
 
-.modebar-group {
-  top: -1.2rem;
-  right: -1rem;
-}
-
 .login-panel {
   z-index: 12000;
 }
 
-#nav {
+.app-nav {
+  position: sticky;
+  top: 0;
   background-color: $steelGray;
   grid-column: 1 / 2;
   grid-row: 1 / 2;
-  width: 100%;
   z-index: 10000;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  box-shadow: 0px 6px 10px #00000033;
+}
+
+.app-nav a.router-link-exact-active {
+  font-weight: bold;
+  color: #00ffff;
 }
 
 .main-content {
   flex: 1;
-}
-
-#nav a.router-link-exact-active {
-  font-weight: bold;
-  color: #ffffff;
 }
 
 .space {
@@ -357,17 +373,22 @@ a:hover {
   width: min-content !important;
 }
 
+.right-side {
+  display: flex;
+  flex-direction: row;
+  margin-left: auto;
+}
+
 .locale {
   -moz-user-select: none;
   -webkit-user-select: none;
   font-size: 0.7rem;
   background-color: $steelGray;
   color: #ccc;
-  margin: auto 0;
+  margin: auto 0 auto 0.5rem;
   padding: 2px 0px;
   width: 1.5rem;
   text-align: center;
-  margin-right: 0.75rem;
 }
 
 .locale:hover {
@@ -382,7 +403,12 @@ a:hover {
 }
 
 @media only screen and (max-width: 640px) {
-  .breadcrumbs-bar {
+  .top-bar {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .breadcrumbs {
     padding-left: 1rem;
     padding-right: 1rem;
   }
