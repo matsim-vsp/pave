@@ -17,6 +17,8 @@ import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
 import org.matsim.contrib.freight.carrier.CarrierUtils;
 import org.matsim.contrib.freight.carrier.Carriers;
+import org.matsim.contrib.freight.usecases.analysis.CarrierScoreStats;
+import org.matsim.contrib.freight.usecases.analysis.LegHistogram;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
@@ -25,7 +27,10 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.MatsimServices;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.drtBlockings.DrtBlockingModule;
+import org.matsim.drtBlockings.analysis.BasicTourStatsAnalysis;
+import org.matsim.drtBlockings.analysis.NeverStartedToursAnalysisV1;
 import org.matsim.run.RunBerlinScenario;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
 
@@ -97,12 +102,24 @@ public class RunPolicyCaseInBerlin {
 
         Controler controler = prepareControler(scenario);
 
-        //TODO This method needs to be filled! It may be smart to copy + customize it from PFAV RunNormalFreightInBerlin
-        // as we are running our very own scenario
+        //might need to customize this method, for now it stays as it is in PFAV
+        //not sure if its needed here because we already got our carriers analyzed with the following analysis
         prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, FreightUtils.getCarriers(scenario));
 
-        //TODO we should bind in our analyses here as well so they run automatically with every sim run
-        // see PFAV class as well
+        //not sure which analysis are needed. We may need to add some analysis classes
+        BasicTourStatsAnalysis basicBlockingAnalysis = new BasicTourStatsAnalysis(scenario.getNetwork());
+        NeverStartedToursAnalysisV1 blockingRejectionAnalysis = new NeverStartedToursAnalysisV1();
+
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                addControlerListenerBinding().toInstance(basicBlockingAnalysis);
+                addEventHandlerBinding().toInstance(basicBlockingAnalysis);
+
+                addControlerListenerBinding().toInstance(blockingRejectionAnalysis);
+                addEventHandlerBinding().toInstance(blockingRejectionAnalysis);
+            }
+        });
 
         controler.run();
 
@@ -202,7 +219,31 @@ public class RunPolicyCaseInBerlin {
 
     private static void prepareFreightOutputDataAndStats(Scenario scenario, EventsManager eventsManager,
                                                          MatsimServices controler, final Carriers carriers) {
+        //freight only histogram
+        //15 min bins = 900s; Isnt this too detailed?
+        final LegHistogram freightOnly = new LegHistogram(900);
+        freightOnly.setPopulation(scenario.getPopulation());
+        freightOnly.setInclPop(false);
 
+        //everything besides freight histogram
+        final LegHistogram withoutFreight = new LegHistogram(900);
+        withoutFreight.setPopulation(scenario.getPopulation());
+
+        CarrierScoreStats carrierScoreStats = new CarrierScoreStats(carriers, "output/carrier_scores", true);
+
+        eventsManager.addHandler(freightOnly);
+        eventsManager.addHandler(withoutFreight);
+        controler.addControlerListener(carrierScoreStats);
+        controler.addControlerListener((IterationEndsListener) event -> {
+            String dir = event.getServices().getControlerIO().getOutputPath() + "/";
+
+            //write stats
+            freightOnly.writeGraphic(dir + "legHistogram_freight.png");
+            freightOnly.reset(event.getIteration());
+
+            withoutFreight.writeGraphic(dir + "legHistogram_withoutFreight.png");
+            withoutFreight.reset(event.getIteration());
+        });
     }
 
 }

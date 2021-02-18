@@ -7,6 +7,8 @@ import org.matsim.contrib.drt.passenger.events.DrtRequestSubmittedEventHandler;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.core.api.experimental.events.EventsManager;
+import org.matsim.core.controler.events.IterationEndsEvent;
+import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.utils.io.IOUtils;
@@ -20,7 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NeverStartedToursAnalysisV1 implements DrtBlockingRequestSubmittedEventHandler, DrtBlockingRequestScheduledEventHandler {
+public class NeverStartedToursAnalysisV1 implements DrtBlockingRequestSubmittedEventHandler,
+        DrtBlockingRequestScheduledEventHandler, IterationEndsListener {
 
     private Map<Id<Request>, Double> requestToTime = new HashMap<>();
 //    private Map<Id<DvrpVehicle>, DrtBlockingTourData> allTours = new HashMap<>();
@@ -90,11 +93,14 @@ public class NeverStartedToursAnalysisV1 implements DrtBlockingRequestSubmittedE
 
     @Override
     public void handleEvent(DrtBlockingRequestScheduledEvent event) {
-
-//        double submitTime = this.requestToTime.remove(event.getRequestId());
-//        DrtBlockingTourData data = new DrtBlockingTourData(event.getRequestId(), submitTime);
-
         this.scheduledTours.add(event.getRequestId());
+    }
+
+    @Override
+    public void notifyIterationEnds(IterationEndsEvent event) {
+        String dir = event.getServices().getConfig().controler().getOutputDirectory();
+        String outputFile = dir + "/neverStartedTourStatsV1.csv";
+        writeStats(outputFile);
     }
 
     private class DrtBlockingTourData {

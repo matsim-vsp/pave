@@ -20,6 +20,8 @@ import org.matsim.contrib.freight.carrier.Carriers;
 import org.matsim.contrib.freight.controler.CarrierModule;
 import org.matsim.contrib.freight.controler.CarrierPlanStrategyManagerFactory;
 import org.matsim.contrib.freight.controler.CarrierScoringFunctionFactory;
+import org.matsim.contrib.freight.usecases.analysis.CarrierScoreStats;
+import org.matsim.contrib.freight.usecases.analysis.LegHistogram;
 import org.matsim.contrib.freight.usecases.chessboard.CarrierScoringFunctionFactoryImpl;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.api.experimental.events.EventsManager;
@@ -29,6 +31,8 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.MatsimServices;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.controler.listener.IterationEndsListener;
+import org.matsim.drtBlockings.analysis.BaseCaseTourStatsAnalysis;
 import org.matsim.run.RunBerlinScenario;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
 
@@ -100,12 +104,20 @@ public class RunBaseCaseInBerlin {
 
         Controler controler = prepareControler(scenario);
 
-        //TODO This method needs to be filled! It may be smart to copy + customize it from PFAV RunNormalFreightInBerlin
-        // as we are running our very own scenario
+        //might need to customize this method, for now it stays as it is in PFAV
         prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, FreightUtils.getCarriers(scenario));
 
         //TODO we should bind in our analyses here as well so they run automatically with every sim run
-        // see PFAV class as well
+        // how about modifying BasicTourStats and NeverStartedTourStats, so we can apply it to the base case?
+        BaseCaseTourStatsAnalysis analysis = new BaseCaseTourStatsAnalysis(scenario.getNetwork());
+
+        controler.addOverridingModule(new AbstractModule() {
+            @Override
+            public void install() {
+                addControlerListenerBinding().toInstance(analysis);
+                addEventHandlerBinding().toInstance(analysis);
+            }
+        });
 
         controler.run();
 
@@ -205,7 +217,31 @@ public class RunBaseCaseInBerlin {
 
     private static void prepareFreightOutputDataAndStats(Scenario scenario, EventsManager eventsManager,
                                                          MatsimServices controler, final Carriers carriers) {
+        //freight only histogram
+        //15 min bins = 900s; Isnt this too detailed?
+        final LegHistogram freightOnly = new LegHistogram(900);
+        freightOnly.setPopulation(scenario.getPopulation());
+        freightOnly.setInclPop(false);
 
+        //everything besides freight histogram
+        final LegHistogram withoutFreight = new LegHistogram(900);
+        withoutFreight.setPopulation(scenario.getPopulation());
+
+        CarrierScoreStats carrierScoreStats = new CarrierScoreStats(carriers, "output/carrier_scores", true);
+
+        eventsManager.addHandler(freightOnly);
+        eventsManager.addHandler(withoutFreight);
+        controler.addControlerListener(carrierScoreStats);
+        controler.addControlerListener((IterationEndsListener)event -> {
+            String dir = event.getServices().getControlerIO().getOutputPath() + "/";
+
+            //write stats
+            freightOnly.writeGraphic(dir + "legHistogram_freight.png");
+            freightOnly.reset(event.getIteration());
+
+            withoutFreight.writeGraphic(dir + "legHistogram_withoutFreight.png");
+            withoutFreight.reset(event.getIteration());
+        });
     }
 
 }

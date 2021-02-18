@@ -12,6 +12,7 @@ import org.matsim.contrib.dvrp.vrpagent.TaskStartedEvent;
 import org.matsim.contrib.dvrp.vrpagent.TaskStartedEventHandler;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.IterationEndsEvent;
+import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.network.NetworkUtils;
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 public class BasicTourStatsAnalysis implements DrtBlockingRequestScheduledEventHandler, TaskStartedEventHandler,
-TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
+        DrtBlockingEndedEventHandler, LinkEnterEventHandler, IterationEndsListener {
 
     private Network network;
     private Map<Id<DvrpVehicle>, DrtBlockingTourData> currentTours = new HashMap<>();
@@ -46,9 +47,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
 
     private List<DrtBlockingTourData> finishedTours = new ArrayList<>();
 
-    public BasicTourStatsAnalysis(Network network) {
-        this.network = network;
-    }
+    public BasicTourStatsAnalysis(Network network) { this.network = network; }
 
     public static void main(String[] args) {
 //        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/Analysis_test/";
@@ -69,19 +68,12 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
 
             BasicTourStatsAnalysis handler = new BasicTourStatsAnalysis(network);
         manager.addHandler(handler);
-//        manager.addHandler((LinkEnterEventHandler) linkEnterEvent -> System.out.println("HEY"));
         manager.initProcessing();
         MatsimEventsReader reader = DrtBlockingEventsReader.create(manager);
         reader.readFile(eventsFile);
         manager.finishProcessing();
         handler.writeStats(outputFile);
         System.out.println("Writing of DrtBlocking TourStats to " + outputFile + " was successful!");
-    }
-
-    public void notifyIterationEnd(IterationEndsEvent event) {
-        String dir = event.getServices().getConfig().controler().getOutputDirectory();
-        String outputFile = dir + "/BasicTourStats.csv";
-//        writeStats(outputFile);
     }
 
     public void writeStats(String file) {
@@ -111,7 +103,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
         //check if veh has a running tour
 
         //could be that the vehicle will not be recognized because its VehicleId and not vId
-        //maybe its necessary to add .toString after getVehicleId() but should work like this too
+        //maybe its necessary to ad d .toString after getVehicleId() but should work like this too
         //maybe like that
         Id<DvrpVehicle> dvrpVehicleId = Id.create(event.getVehicleId(), DvrpVehicle.class);
         if (this.currentTours.containsKey(dvrpVehicleId)) {
@@ -120,14 +112,7 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
             this.vehToDeparture.putIfAbsent(dvrpVehicleId, event.getTime());
             this.vehToDistance.replace(dvrpVehicleId,
                         distanceSoFar + network.getLinks().get(event.getLinkId()).getLength());
-//            System.out.println(event.getLinkId());
         }
-    }
-
-    @Override
-    public void handleEvent(TaskEndedEvent event) {
-        //not sure if this eventType is even needed
-        //so far we just need DrtBlockingEndedEvent to register end of tour!
     }
 
     @Override
@@ -178,11 +163,6 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
             Double distanceSoFar = this.vehToDistance.remove(event.getVehicleId());
             DrtBlockingTourData data = this.currentTours.remove(event.getVehicleId());
 
-//            this.vehToDistance.replace(event.getVehicleId(),
-//                    distanceSoFar + network.getLinks().get(event.getLinkId()).getLength());
-
-//            System.out.println(data.tourDistance);
-
             //get eventTime and calculate tourDuration
             //The following should be the case for every tour!
             if (event.getTime() > this.vehToDeparture.get(event.getVehicleId())) {
@@ -198,14 +178,10 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
                 data.taskNo = this.vehToTaskNo.remove(event.getVehicleId());
                 data.serviceNo = this.vehToServiceNo.remove(event.getVehicleId());
 
-//                System.out.println(event.getLinkId() + " END OF TOUR!");
-
-//                this.vehToDuration.put(event.getVehicleId(), tourDuration);
             } else {
                 System.out.println("The tours of vehicle " + event.getVehicleId() + " are not correctly handled!");
             }
             //remove  veh from currentTours and out it onto finishedTours
-//            this.finishedTours.add(this.currentTours.remove(event.getVehicleId()));
             this.finishedTours.add(data);
         }
     }
@@ -213,14 +189,24 @@ TaskEndedEventHandler, DrtBlockingEndedEventHandler, LinkEnterEventHandler {
     @Override
     public void handleEvent(DrtBlockingRequestScheduledEvent event) {
         //put veh into map of current tours when Request is requested
-//        currentTours.put(event.getVehicleId(), event.getVehicleId());
         DrtBlockingTourData data = new DrtBlockingTourData(event.getVehicleId(), 0.);
         this.currentTours.put(event.getVehicleId(), data);
         this.vehToRequest.put(event.getVehicleId(), event.getRequestId());
     }
 
+    @Override
+    public void notifyIterationEnds(IterationEndsEvent event) {
+        String dir = event.getServices().getConfig().controler().getOutputDirectory();
+        String outputFile = dir + "/BasicTourStats.csv";
+        writeStats(outputFile);
+    }
+
+    @Override
+    public void reset(int iteration) {
+
+    }
+
     private class DrtBlockingTourData {
-        //TODO: switch from data in maps to data in here!
         private final Id<DvrpVehicle> veh;
         private double departure;
         private double arrival;
