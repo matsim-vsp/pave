@@ -1,10 +1,10 @@
 <template lang="pug">
 .folder-browser
-  .stripe.cream(v-if="myState.svnProject")
+  .stripe.white(v-if="myState.svnProject")
     .vessel
       .project-bar
         .details
-          h2 {{ globalState.breadcrumbs[globalState.breadcrumbs.length -1].label }}
+          h2 {{ myState.svnProject.name }}
           p {{ myState.svnProject.description }}
         .logo
           img(width=100 src="@/assets/images/tu-logo.png")
@@ -803,7 +803,7 @@ h3.curate-heading {
 }
 
 .dimensions {
-  margin: 2rem 0 1rem 0;
+  margin: 0rem 0 1rem 0;
   display: grid;
   gap: 2rem;
 }
