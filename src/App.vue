@@ -196,7 +196,7 @@ canvas {
 }
 
 .selected p {
-  background-color: $themeColorPale;
+  background-color: #3e506d;
 }
 
 .bury-me {
