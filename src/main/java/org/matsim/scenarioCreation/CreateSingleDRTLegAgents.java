@@ -33,10 +33,12 @@ import java.util.List;
 public class CreateSingleDRTLegAgents {
 
 
-//	private static final String INPUT_POPULATION = "C:/Users/Tilmann/tubCloud/VSP_WiMi/MA-Meinhardt/berlin-v5.5-10pct/output/blckBase1.output_plans.xml.gz";
-	private static final String INPUT_POPULATION = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_plans.xml.gz";
-	private static final String INPUT_CONFIG = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_config.xml";
-	private static final String OUTPUT_DRTPOP = "scenarios/berlin-v5.5-1pct/input/drtBlocking/noIncDRT.output_plans_drtOnly_splitAgents_1pct.xml.gz";
+//	private static final String INPUT_POPULATION = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_plans.xml.gz";
+	//	private static final String INPUT_CONFIG = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/1pct/noIncDRT.output_config.xml";
+	private static final String INPUT_POPULATION = "C:/Users/Tilmann/tubCloud/VSP_WiMi/MA-Meinhardt/10pct/p2-23/p2-23.output_plans.xml.gz";
+	private static final String INPUT_CONFIG = "C:/Users/Tilmann/tubCloud/VSP_WiMi/MA-Meinhardt/10pct/p2-23/p2-23.output_config.xml";
+
+	private static final String OUTPUT_DRTPOP = "C:/Users/Tilmann/tubCloud/VSP_WiMi/MA-Meinhardt/10pct/p2-23/p2-23.output_plans_drtLegsOnly.xml.gz";
 
 
 	public static void main(String[] args) {
@@ -45,7 +47,7 @@ public class CreateSingleDRTLegAgents {
 		Config config = ConfigUtils.loadConfig(INPUT_CONFIG);
 		Population drtPop = PopulationUtils.createPopulation(config);
 		PopulationFactory fac = drtPop.getFactory();
-		originalPop.getPersons().values().parallelStream()
+		originalPop.getPersons().values().stream()
 				.map(HasPlansAndId::getSelectedPlan)
 				.forEach(plan -> {
 					List<TripStructureUtils.Trip> trips = TripStructureUtils.getTrips(plan);
@@ -99,7 +101,7 @@ public class CreateSingleDRTLegAgents {
 
 
 		PopulationUtils.writePopulation(drtPop, OUTPUT_DRTPOP);
-		System.out.println("size of new population" + drtPop.getPersons().size());
+		System.out.println("size of new population: " + drtPop.getPersons().size());
 		System.out.println("New Drt only pop was written to " + OUTPUT_DRTPOP);
 	}
 
