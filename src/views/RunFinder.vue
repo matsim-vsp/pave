@@ -17,8 +17,8 @@
   //- run selector
   .stripe.white
    .vessel
-      .dimensions(v-if="dimensions.length")
-        .dimension(v-for="d in dimensions" :key="d.heading")
+      .dimensions(v-if="myState.runFinder.dimensions.length")
+        .dimension(v-for="d in myState.runFinder.dimensions" :key="d.heading")
           h4 {{ d.heading }}
           p {{ d.subheading }}
 
@@ -236,11 +236,6 @@ export default class VueComponent extends Vue {
     this.updateRoute()
   }
 
-  private get dimensions() {
-    const d = []
-    if (this.myState.runFinder.dimensions) return this.myState.runFinder.dimensions
-  }
-
   private async loadRunLog() {
     if (!this.myState.svnRoot) return
 
@@ -285,7 +280,8 @@ export default class VueComponent extends Vue {
     const collectionFiles: string[] = micromatch(this.myState.files, pattern)
 
     if (!collectionFiles.length) {
-      this.myState.runFinder = { dimensions: [] }
+      console.warn('ZERO! will load later...')
+      // this.myState.runFinder = { dimensions: [] }
       return
     }
 
@@ -296,7 +292,6 @@ export default class VueComponent extends Vue {
     this.myState.runFinder = runYaml
     this.buildRunSelectionButtons()
     this.buildRunIdFromButtonSelections()
-    this.fetchFolderContents()
   }
 
   private buildRunSelectionButtons() {
@@ -320,7 +315,6 @@ export default class VueComponent extends Vue {
       .join('-')
 
     const folder = this.runLogFolderLookup[run]
-    console.log(run, folder)
 
     if (folder) {
       this.selectedRun = folder
