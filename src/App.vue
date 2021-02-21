@@ -310,7 +310,7 @@ a:hover {
 
 .center-area {
   grid-column: 1 / 2;
-  grid-row: 2 / 3;
+  grid-row: 2 / 4;
   z-index: 1;
   display: flex;
   flex-direction: row;
