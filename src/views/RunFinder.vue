@@ -445,7 +445,7 @@ export default class VueComponent extends Vue {
           mark: { type: 'arc', innerRadius: 25, outerRadius: 80 },
         },
         {
-          mark: { type: 'text', radius: 90, fontWeight: 'bold', fontSize: 14 },
+          mark: { type: 'text', radius: 108, fontWeight: 'bold', fontSize: 14 },
           encoding: {
             text: { field: 'label', type: 'nominal' },
           },
