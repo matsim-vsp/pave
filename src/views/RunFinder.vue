@@ -54,7 +54,7 @@
           .tlabel.blue Income/day
           .tlabel.blue Expenses/day
           .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
-          .tlabel.vspace 95% Service quality
+          .tlabel.vspace 95% waiting times &lt;
 
         .col2
           .tlabel.vspace {{ selectedRun }}
@@ -90,7 +90,7 @@
                     :is="viz.component"
                     :yamlConfig="viz.config"
                     :fileApi="myState.svnRoot"
-                    :subfolder="`${myState.subfolder}/${selectedRun}`"
+                    :subfolder="`${selectedRun}`"
                     :thumbnail="true"
                     :style="{'pointer-events': viz.component==='image-view' ? 'auto' : 'none'}"
                     @title="updateTitle(index, $event)")
@@ -232,8 +232,10 @@ export default class VueComponent extends Vue {
     // return crumbs
   }
 
-  private mounted() {
-    this.updateRoute()
+  private async mounted() {
+    await this.updateRoute()
+    await this.buildRunFinder()
+    this.setInitialRun()
   }
 
   private async loadRunLog() {
@@ -270,34 +272,32 @@ export default class VueComponent extends Vue {
   private runLookup: any = {}
 
   private async buildRunFinder() {
+    console.log(1)
     if (!this.myState.svnRoot) return
+    console.log(1.5)
 
     this.myState.isLoading = true
 
     await this.loadRunLog()
 
-    const pattern = 'run-lookup.y?(a)ml'
-    const collectionFiles: string[] = micromatch(this.myState.files, pattern)
-
-    if (!collectionFiles.length) {
-      console.warn('ZERO! will load later...')
-      // this.myState.runFinder = { dimensions: [] }
-      return
-    }
-
-    const runYaml = yaml.parse(
-      await this.myState.svnRoot.getFileText(this.myState.subfolder + '/' + collectionFiles[0])
-    )
-
+    const fname = 'run-lookup.yaml'
+    const runYaml = yaml.parse(await this.myState.svnRoot.getFileText(fname))
     this.myState.runFinder = runYaml
-    this.buildRunSelectionButtons()
-    this.buildRunIdFromButtonSelections()
   }
 
-  private buildRunSelectionButtons() {
+  private setInitialRun() {
+    console.log(2)
+    const initialRun = this.runLookup[this.selectedRun]
+    console.log({ initialRun })
+    console.log(this.myState.runFinder.dimensions)
     for (const dimension of this.myState.runFinder.dimensions) {
-      Vue.set(this.activeButtons, dimension.heading, dimension.options[0].value)
+      Vue.set(
+        this.activeButtons,
+        dimension.heading,
+        initialRun ? initialRun[dimension.heading] : dimension.options[0].value
+      )
     }
+    this.buildRunIdFromButtonSelections()
   }
 
   private clickedOptionButton(heading: string, option: string) {
@@ -308,6 +308,8 @@ export default class VueComponent extends Vue {
   }
 
   private buildRunIdFromButtonSelections() {
+    if (!this.myState.svnProject) return
+
     const run = this.myState.runFinder.dimensions
       .map(d => {
         return this.activeButtons[d.heading]
@@ -317,9 +319,8 @@ export default class VueComponent extends Vue {
     const folder = this.runLogFolderLookup[run]
 
     if (folder) {
-      this.selectedRun = folder
-      this.showRunHeader()
-      this.fetchFolderContents()
+      const path = `/${this.myState.svnProject.url}/${folder}`
+      this.$router.replace(path)
     } else {
       this.selectedRun = ''
       this.myState.vizes = []
@@ -387,9 +388,8 @@ export default class VueComponent extends Vue {
 
     if (!this.myState.svnProject) return
 
-    const path =
-      `/v/${viz.component}/${this.myState.svnProject.url}/` +
-      `${this.myState.subfolder}/${this.selectedRun}/${viz.config}`
+    const path = `/v/${viz.component}/${this.myState.svnProject.url}/${this.selectedRun}/${viz.config}`
+    console.log({ path })
     this.$router.push({ path })
   }
 
@@ -407,18 +407,25 @@ export default class VueComponent extends Vue {
     if (!this.$route.name) return
 
     const svnProject = this.getFileSystem(this.$route.name)
-
-    this.selectedRun = ''
     this.myState.svnProject = svnProject
-    this.myState.subfolder = this.$route.params.pathMatch ? this.$route.params.pathMatch : ''
-
     if (!this.myState.svnProject) return
     this.myState.svnRoot = new HTTPFileSystem(this.myState.svnProject)
+
+    // is the specific run on the URL?
+    if (this.$route.params.pathMatch) {
+      this.selectedRun = this.$route.params.pathMatch
+    } else {
+      this.selectedRun = ''
+      await this.buildRunFinder()
+      this.setInitialRun()
+    }
+
+    console.log({ selectedRun: this.selectedRun })
 
     this.generateBreadcrumbs()
 
     // this happens async
-    this.fetchFolderContents()
+    await this.fetchFolderContents()
   }
 
   @Watch('globalState.authAttempts') authenticationChanged() {
@@ -427,8 +434,6 @@ export default class VueComponent extends Vue {
   }
 
   @Watch('myState.files') async filesChanged() {
-    if (!this.selectedRun) await this.buildRunFinder()
-
     // clear visualizations
     this.myState.vizes = []
     if (this.myState.files.length === 0) return
@@ -456,7 +461,7 @@ export default class VueComponent extends Vue {
       this.myState.readme = ''
     } else {
       if (!this.myState.svnRoot) return
-      const text = await this.myState.svnRoot.getFileText(this.myState.subfolder + '/' + readme)
+      const text = await this.myState.svnRoot.getFileText(readme)
       this.myState.readme = this.mdRenderer.render(text)
     }
   }
@@ -480,11 +485,7 @@ export default class VueComponent extends Vue {
   private async buildCuratedSummaryView() {
     if (!this.myState.svnRoot) return
 
-    const summaryYaml = yaml.parse(
-      await this.myState.svnRoot.getFileText(
-        this.myState.subfolder + '/' + this.summaryYamlFilename
-      )
-    )
+    const summaryYaml = yaml.parse(await this.myState.svnRoot.getFileText(this.summaryYamlFilename))
 
     // loop on each curated viz type
     for (const vizName of summaryYaml.plugins) {
@@ -524,7 +525,7 @@ export default class VueComponent extends Vue {
     if (!this.myState.svnRoot) return []
     try {
       const split = glob.split('/')
-      const subsubfolder = this.myState.subfolder + '/' + split[0]
+      const subsubfolder = split[0]
       console.log(subsubfolder)
       const contents = await this.myState.svnRoot.getDirectory(subsubfolder)
       const matches = micromatch(contents.files, split[1])
@@ -575,7 +576,7 @@ export default class VueComponent extends Vue {
       if (this.myState.errorStatus === '<h3>Error</h3>') this.myState.errorStatus = '' + e
 
       if (this.myState.svnProject) {
-        this.myState.errorStatus += `<p><i>${this.myState.svnProject.svn}${this.myState.subfolder}</i></p>`
+        this.myState.errorStatus += `<p><i>${this.myState.svnProject.svn}</i></p>`
       }
 
       // maybe it failed because password?
@@ -585,14 +586,6 @@ export default class VueComponent extends Vue {
     } finally {
       this.myState.isLoading = false
     }
-  }
-
-  private openOutputFolder(folder: string) {
-    if (this.myState.isLoading) return
-    if (!this.myState.svnProject) return
-
-    const path = '/' + this.myState.svnProject.url + '/' + this.myState.subfolder + '/' + folder
-    this.$router.push({ path })
   }
 }
 </script>

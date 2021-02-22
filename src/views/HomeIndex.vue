@@ -130,6 +130,10 @@ a {
   color: var(--text);
 }
 
+h2.readme {
+  padding-top: 0;
+}
+
 .main h1 {
   margin-top: 1rem;
   font-weight: bold;
