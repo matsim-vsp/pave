@@ -695,9 +695,9 @@ class MyComponent extends Vue {
 
     const totalTrips = trips + revTrips
 
-    let html = `<h1>${totalTrips} Bidirectional Trips</h1><br/>`
-    html += `<p> -----------------------------</p>`
-    html += `<p>${trips} trips : ${revTrips} reverse trips</p>`
+    let html = `<h1><b>${totalTrips.toLocaleString()} Bidirectional&nbsp;Trips</b></h1>`
+    html += `<p>____________________________</p>`
+    html += `<p>${trips} trips<br/>${revTrips} reverse trips</p>`
 
     new mapboxgl.Popup({ closeOnClick: true })
       .setLngLat(e.lngLat)
@@ -729,27 +729,19 @@ class MyComponent extends Vue {
 
       const values = this.calculateCentroidValuesForZone(timePeriod, feature)
 
-      centroid.properties.dailyFrom = values.from * this.scaleFactor
-      centroid.properties.dailyTo = values.to * this.scaleFactor
+      centroid.properties.dailyFrom = parseFloat((values.from * this.scaleFactor).toFixed(1))
+      centroid.properties.dailyTo = parseFloat((values.to * this.scaleFactor).toFixed(1))
 
-      this.dailyFrom = centroid.properties.dailyFrom
-      this.dailyTo = centroid.properties.dailyTo
+      this.dailyFrom = values.from * this.scaleFactor
+      this.dailyTo = values.to * this.scaleFactor
 
       centroid.properties.widthFrom = Math.min(
         35,
-        Math.max(
-          12,
-          Math.pow(this.dailyFrom / this.scaleFactor, 0.3) *
-            (1.5 + this.scaleFactor / (this.scaleFactor + 50))
-        )
+        Math.max(12, 4 * (2 + Math.log10(this.dailyFrom)))
       )
       centroid.properties.widthTo = Math.min(
         35,
-        Math.max(
-          12,
-          Math.pow(this.dailyTo / this.scaleFactor, 0.3) *
-            (1.5 + this.scaleFactor / (this.scaleFactor + 50))
-        )
+        Math.max(12, Math.max(12, 4 * (2 + Math.log10(this.dailyTo))))
       )
 
       if (!feature.properties) feature.properties = {}

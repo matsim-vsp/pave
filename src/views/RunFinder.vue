@@ -464,7 +464,6 @@ export default class VueComponent extends Vue {
     delete modeShares.Iteration
     delete modeShares.freight
 
-    console.log(modeShares)
     const vegaValues: any[] = []
     for (const key of Object.keys(modeShares)) {
       const share = Math.floor(1000 * modeShares[key]) / 10.0
@@ -891,7 +890,11 @@ h3.curate-heading {
 }
 
 .col4 {
+  margin-top: -1rem;
   margin-left: 2rem;
+  border: 1px solid #cecece;
+  padding: 0.5rem 0.5rem;
+  border-radius: 8px;
 }
 
 .vspace {
