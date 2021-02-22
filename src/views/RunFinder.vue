@@ -74,6 +74,10 @@
           .tlabel Per km
           input.input(v-model="runCosts.variableCosts")
 
+        .col4(v-if="modeSharePie.data")
+          b Mode Shares
+          #pie-chart
+
   //- thumbnails of each viz and image in this folder
   .stripe.cream2(v-if="myState.vizes.length")
    .vessel
@@ -119,6 +123,7 @@ import markdown from 'markdown-it'
 import mediumZoom from 'medium-zoom'
 import micromatch from 'micromatch'
 import Papaparse from 'papaparse'
+import vegaEmbed from 'vega-embed'
 import yaml from 'yaml'
 
 import globalStore from '@/store.ts'
@@ -379,6 +384,90 @@ export default class VueComponent extends Vue {
       fixedCosts: run.calcFixedCosts,
       variableCosts: run.calcVariableCosts,
     }
+
+    this.buildModeSharePieChart()
+  }
+
+  private modeSharePie: any = {}
+
+  private async buildModeSharePieChart() {
+    console.log('pie chart 1')
+    this.modeSharePie = {}
+    if (!this.myState.svnRoot) return
+
+    const modeStats = this.myState.files.filter(a => a.endsWith('.modestats.txt'))
+    console.log('pie chart 2')
+    console.log(modeStats)
+
+    if (!modeStats.length) return
+
+    const fname = `/${this.selectedRun}/${modeStats[0]}`
+    const modeshareText = await this.myState.svnRoot.getFileText(fname)
+
+    const parsed = Papaparse.parse(modeshareText, {
+      header: true,
+      dynamicTyping: true,
+      skipEmptyLines: true,
+      // delimiter: ';',
+    })
+
+    console.log(parsed)
+    const modeShares: any = parsed.data[parsed.data.length - 1]
+    delete modeShares.Iteration
+    delete modeShares.freight
+
+    console.log(modeShares)
+    const vegaValues: any[] = []
+    for (const key of Object.keys(modeShares)) {
+      const share = Math.floor(1000 * modeShares[key]) / 10.0
+      vegaValues.push({
+        category: key,
+        value: modeShares[key],
+        label: `${key}: ${share}`,
+      })
+    }
+    console.log(vegaValues)
+
+    this.modeSharePie = {
+      $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
+      description: 'Mode Share Summary',
+      data: {
+        values: vegaValues,
+      },
+      background: '#edebe4',
+      // mark: { type: 'arc', innerRadius: 25 },
+      encoding: {
+        theta: { field: 'value', type: 'quantitative', stack: true },
+        color: { field: 'category', type: 'nominal', legend: null },
+      },
+      layer: [
+        {
+          mark: { type: 'arc', outerRadius: 80 },
+        },
+        {
+          mark: { type: 'text', radius: 90 },
+          encoding: {
+            text: { field: 'label', type: 'nominal' },
+          },
+        },
+      ],
+      view: { stroke: null },
+    }
+
+    const embedOptions = {
+      actions: false,
+      hover: true,
+      padding: { top: 5, left: 5, right: 5, bottom: 5 },
+    }
+
+    // remove legends on thumbnails so chart fits better
+    // if (this.thumbnail && this.vizDetails.encoding) {
+    //   for (const layer of Object.keys(this.vizDetails.encoding)) {
+    //     this.vizDetails.encoding[layer].legend = null
+    //   }
+    // }
+
+    vegaEmbed(`#pie-chart`, this.modeSharePie, embedOptions)
   }
 
   private clickedVisualization(vizNumber: number) {
@@ -415,7 +504,6 @@ export default class VueComponent extends Vue {
     // is the specific run on the URL?
     if (this.$route.params.pathMatch) {
       this.selectedRun = this.$route.params.pathMatch
-      this.showRunHeader()
     } else {
       this.selectedRun = ''
       await this.buildRunFinder()
@@ -428,6 +516,7 @@ export default class VueComponent extends Vue {
 
     // this happens async
     await this.fetchFolderContents()
+    this.showRunHeader()
   }
 
   @Watch('globalState.authAttempts') authenticationChanged() {
@@ -868,6 +957,10 @@ h3.curate-heading {
     grid-gap: 0rem;
     grid-template-columns: 1fr;
   }
+}
+
+.col4 {
+  margin-left: 1rem;
 }
 
 @media only screen and (max-width: 40em) {
