@@ -414,6 +414,7 @@ export default class VueComponent extends Vue {
     // is the specific run on the URL?
     if (this.$route.params.pathMatch) {
       this.selectedRun = this.$route.params.pathMatch
+      this.showRunHeader()
     } else {
       this.selectedRun = ''
       await this.buildRunFinder()
