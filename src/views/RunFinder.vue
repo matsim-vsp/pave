@@ -442,7 +442,7 @@ export default class VueComponent extends Vue {
       },
       layer: [
         {
-          mark: { type: 'arc', outerRadius: 80 },
+          mark: { type: 'arc', innerRadius: 25, outerRadius: 80 },
         },
         {
           mark: { type: 'text', radius: 90 },
