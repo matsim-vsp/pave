@@ -159,6 +159,10 @@ html {
   color: var(--text);
 }
 
+:root {
+  font-size: 14px;
+}
+
 canvas {
   display: block;
 }
