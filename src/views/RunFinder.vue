@@ -361,6 +361,7 @@ export default class VueComponent extends Vue {
 
     // get the run details
     const run = this.runLookup[this.selectedRun]
+    if (!run) return
 
     const incomePerDay =
       run.calcDemand * run.userCostFixed + run.calcRevenueDistance * run.userCostPerKm
