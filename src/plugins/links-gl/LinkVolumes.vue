@@ -13,21 +13,23 @@ messages:
   link-gl-layer.anim(v-if="!thumbnail && isLoaded && geojsonFilename"
                 :center="center"
                 :networkUrl="geojsonFilename"
-                :csvData="csvData.rows"
-                :csvColumn="csvData.activeColumn"
-                :colTitle="csvData.header[csvData.activeColumn]"
+                :data="csvData"
                 :dark="isDarkMode"
+                :colors="selectedColorRamp"
   )
 
   .right-side(v-if="isLoaded && !thumbnail")
     collapsible-panel(:darkMode="isDarkMode" width="250" direction="right")
       .panel-items
 
+        //- heading
         .panel-item
           h3 {{ vizDetails.title }}
           p {{ vizDetails.description }}
 
-        .panel-item
+        //- button/dropdown for selecting column
+        .panel-item(v-if="!vizDetails.useSlider")
+          p: b Pollutant
           .dropdown.full-width.is-hoverable
             .dropdown-trigger
               button.full-width.is-warning.button(:class="{'is-loading': csvData.activeColumn < 0}"
@@ -41,6 +43,37 @@ messages:
               .dropdown-content
                 a.dropdown-item(v-for="column in csvData.header"
                                 @click="clickedColumn(column)") {{ column }}
+
+        .panel-item(v-if="!vizDetails.useSlider && csvData.activeColumn > -1")
+          p: b Colors
+          .dropdown.full-width.is-hoverable
+            .dropdown-trigger
+              //- button.full-width.button(:class="{'is-loading': csvData.activeColumn < 0}"
+              //-   aria-haspopup="true" aria-controls="dropdown-menu-column-selector")
+
+              img(:src="`/colors/scale-${selectedColorRamp}.png`"
+                  :style="{'height': '2.4rem', 'width': '100%', 'border-radius': '8px'}")
+
+                //- span {{ selectedColorRamp }}
+                //- span.icon.is-small
+                //-   i.fas.fa-angle-down(aria-hidden="true")
+
+            #dropdown-menu-color-selector.dropdown-menu(role="menu")
+              .dropdown-content(:style="{'padding':'0 0','backgroundColor': '#00000011'}")
+                a.dropdown-item(v-for="colorRamp in Object.keys(colorRamps)"
+                                @click="clickedColorRamp(colorRamp)"
+                                :style="{'padding': '0.25rem 0.25rem'}"
+                )
+                  img(:src="`/colors/scale-${colorRamp}.png`")
+                  p(:style="{'color':'black','lineHeight': '1rem', 'marginBottom':'0.25rem'}") {{ colorRamp }}
+
+        //- .panel-item
+        //-   p: b Bandwidths
+        //-   input.input
+
+        //- .panel-item
+        //-   button.button picker
+
 
   .nav(v-if="!thumbnail && myState.statusMessage")
     p.status-message {{ myState.statusMessage }}
@@ -77,13 +110,12 @@ import {
 
 import LinkGlLayer from './LinkLayer'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
-
 import { VuePlugin } from 'vuera'
-import { parseNumbers } from 'xml2js/lib/processors'
 Vue.use(VuePlugin)
 
 interface CSV {
   header: string[]
+  headerMax: number[]
   rows: { [id: string]: number[] }
   activeColumn: number
 }
@@ -111,12 +143,23 @@ class MyPlugin extends Vue {
 
   private geojsonFilename = ''
   private isButtonActiveColumn = false
+  private center = [13.45, 52.53]
+
+  private selectedColorRamp = 'viridis'
+
+  private colorRamps: { [title: string]: { png: string; diff?: boolean } } = {
+    viridis: { png: 'scale-viridis.png' },
+    // salinity: { png: 'scale-salinity.png' },
+    inferno: { png: 'scale-inferno.png' },
+    bluered: { png: 'scale-salinity.png', diff: true },
+    picnic: { png: 'scale-picnic.png' },
+  }
 
   private vizDetails = {
     title: '',
     description: '',
     csvFile: '',
-    csvFile2: '',
+    csvBase: '',
     shpFile: '',
     dbfFile: '',
     geojsonFile: '',
@@ -135,7 +178,7 @@ class MyPlugin extends Vue {
     thumbnail: this.thumbnail,
   }
 
-  private csvData: CSV = { header: [], rows: {}, activeColumn: -1 }
+  private csvData: CSV = { header: [], headerMax: [], rows: {}, activeColumn: -1 }
 
   private globalState = globalStore.state
   private isDarkMode = this.globalState.colorScheme === ColorScheme.DarkMode
@@ -269,63 +312,32 @@ class MyPlugin extends Vue {
     return this.csvData.header[this.csvData.activeColumn]
   }
 
+  private clickedColorRamp(color: string) {
+    this.selectedColorRamp = color
+    console.log(this.selectedColorRamp)
+  }
+
   private clickedColumn(title: string) {
     const column = this.csvData.header.indexOf(title)
-    if (column > -1) this.csvData.activeColumn = column
+    if (column === -1) return
+
+    // find max value for scaling
+    if (!this.csvData.headerMax[column]) {
+      let max = 0
+      Object.values(this.csvData.rows).forEach(row => {
+        max = Math.max(max, row[column])
+      })
+      if (max) this.csvData.headerMax[column] = max
+    }
+
+    // set the new column
+    this.csvData.activeColumn = column
     this.isButtonActiveColumn = false
-  }
-
-  private updateLegendColors() {
-    // const theme = this.myState.colorScheme == ColorScheme.LightMode ? LIGHT_MODE : DARK_MODE
-    // this.legendBits = [
-    //   { label: 'susceptible', color: theme.susceptible },
-    //   { label: 'latently infected', color: theme.infectedButNotContagious },
-    //   { label: 'contagious', color: theme.contagious },
-    //   { label: 'symptomatic', color: theme.symptomatic },
-    //   { label: 'seriously ill', color: theme.seriouslyIll },
-    //   { label: 'critical', color: theme.critical },
-    //   { label: 'recovered', color: theme.recovered },
-    // ]
-  }
-
-  private get textColor() {
-    const lightmode = {
-      text: '#3498db',
-      bg: '#eeeef480',
-    }
-
-    const darkmode = {
-      text: 'white',
-      bg: '#181518aa',
-    }
-
-    return this.globalState.colorScheme === ColorScheme.DarkMode ? darkmode : lightmode
   }
 
   private findCenter(data: any[]): [number, number] {
     return [13.45, 52.53]
-    // let prop = '' // get first property only
-    // for (prop in this.aggregations) break
-
-    // const xcol = this.aggregations[prop][0]
-    // const ycol = this.aggregations[prop][1]
-
-    // let x = 0
-    // let y = 0
-
-    // let count = 0
-    // for (let i = 0; i < data.length; i += 64) {
-    //   count++
-    //   x += data[i][xcol]
-    //   y += data[i][ycol]
-    // }
-    // x = x / count
-    // y = y / count
-
-    // return [x, y]
   }
-
-  private center = [0, 0]
 
   private async mounted() {
     globalStore.commit('setFullScreen', !this.thumbnail)
@@ -349,10 +361,6 @@ class MyPlugin extends Vue {
     this.isLoaded = true
     this.buildThumbnail()
 
-    console.log('DRT Anfragen sortieren...')
-    this.myState.statusMessage = 'DRT Anfragen sortieren...'
-    // this.handleOrigDest(Object.keys(this.aggregations)[0]) // origins
-
     this.myState.statusMessage = ''
   }
 
@@ -367,15 +375,13 @@ class MyPlugin extends Vue {
   // }
 
   private async loadCSVFiles() {
-    console.log('loading files')
+    console.log('loading CSV files')
     let csvData: any = []
     let csvBase: any = []
 
     const csvFilename = this.myState.fileApi.cleanURL(
       `${this.myState.subfolder}/${this.vizDetails.csvFile}`
     )
-
-    console.log(csvFilename)
 
     try {
       Papaparse.parse(csvFilename, {
@@ -385,12 +391,26 @@ class MyPlugin extends Vue {
         dynamicTyping: true,
         complete: (results: { data: any[] }) => {
           console.log('parsing')
+
+          // create object with link-id as lookup-key
           const rows: { [id: string]: number[] } = {}
-          results.data.slice(1).forEach(a => {
-            rows[a[0].toString()] = a.slice(1)
-          })
-          this.csvData = { header: results.data[0].slice(1), rows, activeColumn: 0 }
-          console.log({ csvData: this.csvData })
+
+          // coroutine to not kill browser
+          coroutines
+            .forEachAsync(results.data.slice(1), (row: any) => {
+              rows[row[0].toString()] = row.slice(1) // skip first element (link-id)
+            })
+            .then(result => {
+              this.csvData = {
+                header: results.data[0].slice(1),
+                headerMax: [],
+                rows,
+                activeColumn: -1,
+              }
+              console.log({ csvData: this.csvData })
+              // need to do this! select first entry
+              this.clickedColumn(this.csvData.header[0])
+            })
         },
       })
     } catch (e) {
@@ -461,19 +481,8 @@ export default MyPlugin
   }
 }
 
-.speed-block {
-  margin-top: 1rem;
-}
-
 .legend-block {
   margin-top: 2rem;
-}
-
-.speed-slider {
-  flex: 1;
-  width: 100%;
-  margin: 0rem 0.5rem 0.25rem 0.25rem;
-  font-weight: bold;
 }
 
 .status-message {
@@ -509,7 +518,7 @@ export default MyPlugin
   top: 0rem;
   bottom: 0rem;
   right: 0;
-  margin: 6rem 0 5rem 0;
+  margin: 8rem 0 5rem 0;
   background-color: var(--bgPanel);
   box-shadow: 0px 2px 10px #22222266;
   font-size: 0.8rem;
@@ -520,39 +529,11 @@ export default MyPlugin
   flex: 1;
 }
 
-.bottom-area {
-  display: flex;
-  flex-direction: row;
-  margin-bottom: 2rem;
-  grid-area: playback;
-  padding: 0rem 1rem 1rem 2rem;
-  pointer-events: auto;
-}
-
-.settings-area {
-  z-index: 20;
-  pointer-events: auto;
-  background-color: $steelGray;
-  color: white;
-  font-size: 0.8rem;
-  padding: 0.25rem 0;
-  margin: 1.5rem 0rem 0 0;
-}
-
 .anim {
   z-index: -1;
   grid-column: 1 / 3;
   grid-row: 1 / 7;
   pointer-events: auto;
-}
-
-.speed-label {
-  font-size: 0.8rem;
-  font-weight: bold;
-}
-
-p.speed-label {
-  margin-bottom: 0.25rem;
 }
 
 .panel-items {
@@ -574,8 +555,8 @@ p.speed-label {
 
 input {
   border: none;
-  background-color: #235;
-  color: #ccc;
+  background-color: var(--bgCream2);
+  color: var(--bgDark);
 }
 
 .row {

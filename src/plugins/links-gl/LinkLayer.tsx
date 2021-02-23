@@ -4,6 +4,7 @@ import DeckGL from '@deck.gl/react'
 import { render } from 'react-dom'
 import { GeoJsonLayer } from '@deck.gl/layers'
 import { scaleLinear, scaleThreshold } from 'd3-scale'
+import colormap from 'colormap'
 
 import { MAP_STYLES } from '@/Globals'
 
@@ -19,9 +20,8 @@ const colorRange = [
   [209, 55, 78],
 ]
 
-const COLOR_SCALE = scaleThreshold()
-  .domain([0, 1, 2, 4, 7, 15, 30, 100, 200, 500, 1000])
-  // .domain([0, 4, 8, 12, 20, 32, 52, 84, 136, 220])
+const SCALED_COLORS = scaleThreshold()
+  .domain([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
   .range([
     [26, 152, 80],
     [102, 189, 99],
@@ -50,28 +50,54 @@ const INITIAL_VIEW_STATE = {
 
 export default function Component({
   networkUrl = '',
-  csvData = {} as { [id: string]: number[] },
-  csvColumn = -1,
-  colTitle = '',
+  data = {} as {
+    rows: { [id: string]: number[] }
+    header: string[]
+    headerMax: number[]
+    activeColumn: number
+  },
   center = [],
   dark = false,
+  colors = 'viridis',
 }) {
-  const [hoverInfo, setHoverInfo] = useState({})
-
+  const { rows, header, headerMax, activeColumn } = data
   const [lon, lat] = center
-  const initialView = Object.assign(INITIAL_VIEW_STATE, { longitude: lon, latitude: lat })
 
+  const initialView = Object.assign(INITIAL_VIEW_STATE, { longitude: lon, latitude: lat })
+  const [hoverInfo, setHoverInfo] = useState({})
+  // const [colorInfo, setColorInfo] = useState(() => createColorRamp(colors))
+
+  const builtColors = colormap({
+    colormap: colors,
+    nshades: 20,
+    format: 'rba',
+  }).map((a: number[]) => [a.slice(0, 3)])
+
+  const fetchColor = scaleThreshold()
+    .domain(new Array(20).fill(0).map((v, i) => 0.05 * i))
+    .range(builtColors)
+
+  // this assumes that zero means hide the link. This may not be generic enough
   const getLineColor = (feature: any) => {
     const id = feature.properties.id
-    const row = csvData[id]
+    const row = rows[id]
 
-    if (!row) return [212, 212, 192]
-    return COLOR_SCALE(row[csvColumn])
+    if (!row) return [0, 0, 0, 0]
+
+    const value = row[activeColumn]
+    if (!value) return [0, 0, 0, 0]
+
+    // const scaledValue = Math.log10(value) / Math.log10(headerMax[activeColumn])
+    // const scaledValue = value / headerMax[activeColumn]
+    const scaledValue = Math.log(value) / Math.log(headerMax[activeColumn])
+    if (scaledValue < 0.01) return [0, 0, 0, 0]
+
+    return fetchColor(scaledValue)
   }
 
-  const getLineWidth = (feature: any) => {
-    return 40
-  }
+  // const getLineWidth = (feature: any) => {
+  //   return 4
+  // }
 
   function handleClick() {
     console.log('click!')
@@ -82,10 +108,10 @@ export default function Component({
     if (!object) return null
 
     const id = object.properties?.id
-    const row = csvData[id]
+    const row = rows[id]
     if (!row) return null
 
-    const value: any = row[csvColumn]
+    const value: any = row[activeColumn]
     if (value === undefined) return null
 
     return (
@@ -102,7 +128,7 @@ export default function Component({
         }}
       >
         <big>
-          <b>{colTitle}</b>
+          <b>{header[activeColumn]}</b>
         </big>
         <p>{value}</p>
       </div>
@@ -114,21 +140,23 @@ export default function Component({
       id: 'linkGeoJson',
       data: networkUrl,
       filled: false,
-      lineWidthMinPixels: 0.5,
+      lineWidthUnits: 'pixels',
+      lineWidthMinPixels: 2,
       pickable: true,
       stroked: false,
+      opacity: 0.7,
       autoHighlight: true,
-      highlightColor: [255, 255, 255], // [64, 255, 64],
+      highlightColor: [255, 128, 255], // [64, 255, 64],
       parameters: {
         depthTest: false,
       },
 
       getLineColor,
-      getLineWidth,
+      getLineWidth: 3,
       onHover: setHoverInfo,
 
       updateTriggers: {
-        getLineColor: { csvColumn },
+        getLineColor: { colors, activeColumn },
         // getLineWidth: { csvColumn },
       },
 
