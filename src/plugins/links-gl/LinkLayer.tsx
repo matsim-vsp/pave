@@ -37,7 +37,7 @@ export const COLOR_SCALE = scaleThreshold()
     [244, 109, 67],
     [215, 48, 39],
     [168, 0, 0],
-  ])
+  ] as any)
 
 const WIDTH_SCALE = scaleLinear()
   .clamp(true)

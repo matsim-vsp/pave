@@ -351,7 +351,8 @@ class MyPlugin extends Vue {
     this.loadCSVFiles()
 
     // runs in background
-    this.geojsonFilename = `${this.myState.fileSystem?.svn}/${this.myState.subfolder}/${this.vizDetails.geojsonFile}`
+    const network = `/${this.myState.subfolder}/${this.vizDetails.geojsonFile}`
+    this.geojsonFilename = this.myState.fileApi.cleanURL(network)
     this.center = this.findCenter([])
 
     this.isLoaded = true
@@ -382,6 +383,8 @@ class MyPlugin extends Vue {
     const csvFilename = this.myState.fileApi.cleanURL(
       `${this.myState.subfolder}/${this.vizDetails.csvFile}`
     )
+
+    console.log(csvFilename)
 
     try {
       Papaparse.parse(csvFilename, {
