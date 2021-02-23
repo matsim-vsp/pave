@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { InteractiveMap } from 'react-map-gl'
 import { AmbientLight, PointLight, LightingEffect } from '@deck.gl/core'
 import DeckGL from '@deck.gl/react'
@@ -9,7 +9,10 @@ import { scaleLinear, scaleThreshold } from 'd3-scale'
 const MAPBOX_TOKEN =
   'pk.eyJ1IjoidnNwLXR1LWJlcmxpbiIsImEiOiJjamNpemh1bmEzNmF0MndudHI5aGFmeXpoIn0.u9f04rjFo7ZbWiSceTTXyA'
 
-const MAP_STYLE = 'mapbox://styles/vsp-tu-berlin/ckek59op0011219pbwfar1rex' // 'mapbox://styles/mapbox/light-v9', // 'mapbox://styles/mapbox/dark-v9', // 'mapbox://styles/vsp-tu-berlin/ckeetelh218ef19ob5nzw5vbh', //
+const MAP_STYLE = 'mapbox://styles/vsp-tu-berlin/ckeetelh218ef19ob5nzw5vbh'
+// dark 'mapbox://styles/vsp-tu-berlin/ckek59op0011219pbwfar1rex'
+// light 'mapbox://styles/vsp-tu-berlin/ckeetelh218ef19ob5nzw5vbh'
+// 'mapbox://styles/mapbox/light-v9', // 'mapbox://styles/mapbox/dark-v9'
 
 export const colorRange = [
   [1, 152, 189],
@@ -20,20 +23,21 @@ export const colorRange = [
   [209, 55, 78],
 ]
 
-// export const COLOR_SCALE = scaleThreshold()
-//   .domain([0, 4, 8, 12, 20, 32, 52, 84, 136, 220])
-//   .range([
-//     [26, 152, 80],
-//     [102, 189, 99],
-//     [166, 217, 106],
-//     [217, 239, 139],
-//     [255, 255, 191],
-//     [254, 224, 139],
-//     [253, 174, 97],
-//     [244, 109, 67],
-//     [215, 48, 39],
-//     [168, 0, 0],
-//   ])
+export const COLOR_SCALE = scaleThreshold()
+  .domain([0, 1, 2, 4, 7, 15, 30, 100, 200, 500, 1000])
+  // .domain([0, 4, 8, 12, 20, 32, 52, 84, 136, 220])
+  .range([
+    [26, 152, 80],
+    [102, 189, 99],
+    [166, 217, 106],
+    [217, 239, 139],
+    [255, 255, 191],
+    [254, 224, 139],
+    [253, 174, 97],
+    [244, 109, 67],
+    [215, 48, 39],
+    [168, 0, 0],
+  ])
 
 const WIDTH_SCALE = scaleLinear()
   .clamp(true)
@@ -115,25 +119,28 @@ function renderTooltip({ object }: any) {
 //   )
 // }
 
-export default function App({ mapStyle = MAP_STYLE, networkUrl = '', center = [] }) {
+export default function App({
+  mapStyle = MAP_STYLE,
+  networkUrl = '',
+  csvData = {} as { [id: string]: number[] },
+  csvColumn = -1,
+  center = [],
+}) {
   const [hoverInfo, setHoverInfo] = useState({})
 
   const [lon, lat] = center
   const initialView = Object.assign(INITIAL_VIEW_STATE, { longitude: lon, latitude: lat })
 
   const getLineColor = (feature: any) => {
-    return colorRange[2]
-    // COLOR_SCALE(75)
-    // if (!fatalities[year]) {
-    //   return [200, 200, 200]
-    // }
-    // const key = getKey(f.properties)
-    // const fatalitiesPer1KMile = ((fatalities[year][key] || 0) / f.properties.length) * 1000
-    // return COLOR_SCALE(fatalitiesPer1KMile)
+    const id = feature.properties.id
+    const row = csvData[id]
+    // console.log(row)
+    if (!row) return [212, 212, 192]
+    return COLOR_SCALE(row[csvColumn])
   }
 
   const getLineWidth = (feature: any) => {
-    return 10
+    return 50
     // if (!incidents[year]) {
     //   return 10
     // }
@@ -144,7 +151,7 @@ export default function App({ mapStyle = MAP_STYLE, networkUrl = '', center = []
 
   const layers = [
     new GeoJsonLayer({
-      id: 'geojson',
+      id: 'linkGeoJson',
       data: networkUrl,
       stroked: false,
       filled: false,
@@ -155,18 +162,17 @@ export default function App({ mapStyle = MAP_STYLE, networkUrl = '', center = []
 
       getLineColor,
       getLineWidth,
-
       pickable: true,
       onHover: setHoverInfo,
 
       updateTriggers: {
-        getLineColor: { year: 2015 },
-        getLineWidth: { year: 2015 },
+        getLineColor: { csvColumn },
+        // getLineWidth: { csvColumn },
       },
 
       transitions: {
-        getLineColor: 1000,
-        getLineWidth: 1000,
+        getLineColor: 500,
+        getLineWidth: 500,
       },
     }),
   ]

@@ -7,12 +7,15 @@ messages:
 </i18n>
 
 <template lang="pug">
-.xy-hexagons(:class="{'hide-thumbnail': !thumbnail}"
+.gl-viz(:class="{'hide-thumbnail': !thumbnail}"
         :style='{"background": urlThumbnail}' oncontextmenu="return false")
 
-  link-gl-layer.anim(v-if="!thumbnail && isLoaded && links"
+  link-gl-layer.anim(v-if="!thumbnail && isLoaded && geojsonFilename"
                 :center="center"
-                :networkUrl="links")
+                :networkUrl="geojsonFilename"
+                :csvData="csvData.rows"
+                :csvColumn="csvData.activeColumn"
+  )
 
   .left-side(v-if="isLoaded && !thumbnail")
     //- collapsible-panel(:darkMode="true" width="250" direction="left")
@@ -21,39 +24,30 @@ messages:
     //-     p {{ vizDetails.description }}
 
   .right-side(v-if="isLoaded && !thumbnail")
-    collapsible-panel(:darkMode="true" width="150" direction="right")
+    collapsible-panel(:darkMode="true" width="250" direction="right")
       .panel-items
 
         .panel-item
-          p.speed-label Aggregate
-        //-   .buttons.has-addons
-        //-     button.button.is-small.is-dark(
-        //-       v-for="agg in Object.keys(aggregations)"
-        //-       :key="agg"
-        //-       :class="{'is-danger': activeAggregation===agg}"
-        //-       @click="handleOrigDest(agg)") {{ agg }}
+          h3 {{ vizDetails.title }}
+          p {{ vizDetails.description }}
+
+        .panel-item
+          .dropdown.full-width.is-hoverable
+            .dropdown-trigger
+              button.full-width.is-warning.button(:class="{'is-loading': csvData.activeColumn < 0}"
+                aria-haspopup="true" aria-controls="dropdown-menu-column-selector")
+
+                span {{ buttonTitle }}
+                span.icon.is-small
+                  i.fas.fa-angle-down(aria-hidden="true")
+
+            #dropdown-menu-column-selector.dropdown-menu(role="menu")
+              .dropdown-content
+                a.dropdown-item(v-for="column in csvData.header"
+                                @click="clickedColumn(column)") {{ column }}
 
         //- .panel-item
-        //-   p.speed-label Show in 3D
-        //-   toggle-button.toggle(:width="40" :value="extrudeTowers" :labels="false"
-        //-     :color="{checked: '#4b7cc4', unchecked: '#222'}"
-        //-     @change="extrudeTowers = !extrudeTowers")
-
-        //- .panel-item
-        //-   p.speed-label Max Height: {{ maxHeight }}
-        //-   vue-slider.speed-slider(v-model="maxHeight"
-        //-     :min="100" :max="1000" :interval="50"
-        //-     :duration="0" :dotSize="16"
-        //-     tooltip="none"
-        //-   )
-
-        //- .panel-item
-        //-   p.speed-label Radius: {{ radius }}
-        //-   vue-slider.speed-slider(v-model="radius"
-        //-     :min="50" :max="1000" :interval="5"
-        //-     :duration="0" :dotSize="16"
-        //-     tooltip="none"
-        //-   )
+        //-   p.speed-label Aggregate
 
   .nav(v-if="!thumbnail && myState.statusMessage")
     p.status-message {{ myState.statusMessage }}
@@ -92,7 +86,14 @@ import LinkGlLayer from './LinkLayer'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
 
 import { VuePlugin } from 'vuera'
+import { parseNumbers } from 'xml2js/lib/processors'
 Vue.use(VuePlugin)
+
+interface CSV {
+  header: string[]
+  rows: { [id: string]: number[] }
+  activeColumn: number
+}
 
 @Component({
   components: {
@@ -115,7 +116,8 @@ class MyPlugin extends Vue {
   @Prop({ required: false })
   private thumbnail!: boolean
 
-  private links = '' // : any[] = []
+  private geojsonFilename = ''
+  private isButtonActiveColumn = false
 
   private vizDetails = {
     title: '',
@@ -141,11 +143,11 @@ class MyPlugin extends Vue {
     thumbnail: this.thumbnail,
   }
 
-  private requests: any[] = []
+  private csvData: CSV = { header: [], rows: {}, activeColumn: -1 }
 
   private globalState = globalStore.state
   private isDarkMode = this.myState.colorScheme === ColorScheme.DarkMode
-  private isLoaded = false
+  private isLoaded = true
 
   // this happens if viz is the full page, not a thumbnail on a project page
   private buildRouteFromUrl() {
@@ -271,6 +273,17 @@ class MyPlugin extends Vue {
     return window.btoa(binary)
   }
 
+  private get buttonTitle() {
+    if (this.csvData.activeColumn === -1) return 'Loading...'
+    return this.csvData.header[this.csvData.activeColumn]
+  }
+
+  private clickedColumn(title: string) {
+    const column = this.csvData.header.indexOf(title)
+    if (column > -1) this.csvData.activeColumn = column
+    this.isButtonActiveColumn = false
+  }
+
   private updateLegendColors() {
     // const theme = this.myState.colorScheme == ColorScheme.LightMode ? LIGHT_MODE : DARK_MODE
     // this.legendBits = [
@@ -300,25 +313,25 @@ class MyPlugin extends Vue {
 
   private findCenter(data: any[]): [number, number] {
     return [13.4, 52.5]
-    let prop = '' // get first property only
-    for (prop in this.aggregations) break
+    // let prop = '' // get first property only
+    // for (prop in this.aggregations) break
 
-    const xcol = this.aggregations[prop][0]
-    const ycol = this.aggregations[prop][1]
+    // const xcol = this.aggregations[prop][0]
+    // const ycol = this.aggregations[prop][1]
 
-    let x = 0
-    let y = 0
+    // let x = 0
+    // let y = 0
 
-    let count = 0
-    for (let i = 0; i < data.length; i += 64) {
-      count++
-      x += data[i][xcol]
-      y += data[i][ycol]
-    }
-    x = x / count
-    y = y / count
+    // let count = 0
+    // for (let i = 0; i < data.length; i += 64) {
+    //   count++
+    //   x += data[i][xcol]
+    //   y += data[i][ycol]
+    // }
+    // x = x / count
+    // y = y / count
 
-    return [x, y]
+    // return [x, y]
   }
 
   private center = [0, 0]
@@ -334,11 +347,11 @@ class MyPlugin extends Vue {
 
     this.myState.statusMessage = 'Dateien laden...'
 
-    // const { dataArray } = await this.loadFiles()
-    // this.links = dataArray
+    // runs in background
+    this.loadCSVFiles()
 
-    this.links = `${this.myState.fileSystem?.svn}/${this.myState.subfolder}/${this.vizDetails.geojsonFile}`
-    console.log({ LINKSZ: this.links })
+    // runs in background
+    this.geojsonFilename = `${this.myState.fileSystem?.svn}/${this.myState.subfolder}/${this.vizDetails.geojsonFile}`
     this.center = this.findCenter([])
 
     this.isLoaded = true
@@ -356,33 +369,40 @@ class MyPlugin extends Vue {
     this.$store.commit('setFullScreen', false)
   }
 
-  private aggregations: { [id: string]: [number, number] } = {}
+  // private handleClickColumnSelector() {
+  //   console.log('click!')
+  //   this.isButtonActiveColumn = !this.isButtonActiveColumn
+  // }
 
-  private async loadFiles() {
+  private async loadCSVFiles() {
     console.log('loading files')
-    let dataArray: any = []
+    let csvData: any = []
+    let csvBase: any = []
+
+    const csvFilename = this.myState.fileApi.cleanURL(
+      `${this.myState.subfolder}/${this.vizDetails.csvFile}`
+    )
 
     try {
-      if (this.vizDetails.geojsonFile.endsWith('json')) {
-        console.log('loading', this.vizDetails.geojsonFile)
-        const json = await this.myState.fileApi.getFileJson(
-          this.myState.subfolder + '/' + this.vizDetails.geojsonFile
-        )
-        dataArray = json['features']
-      } else if (this.vizDetails.geojsonFile.endsWith('gz')) {
-        const blob = await this.myState.fileApi.getFileBlob(
-          this.myState.subfolder + this.vizDetails.geojsonFile
-        )
-        const blobString = blob ? await blobToBinaryString(blob) : null
-        let text = await coroutines.run(pako.inflateAsync(blobString, { to: 'string' }))
-        const json = JSON.parse(text)
-        dataArray = json['features']
-      }
+      Papaparse.parse(csvFilename, {
+        fastMode: true,
+        download: true,
+        skipEmptyLines: true,
+        dynamicTyping: true,
+        complete: (results: { data: any[] }) => {
+          console.log('parsing')
+          const rows: { [id: string]: number[] } = {}
+          results.data.slice(1).forEach(a => {
+            rows[a[0].toString()] = a.slice(1)
+          })
+          this.csvData = { header: results.data[0].slice(1), rows, activeColumn: 0 }
+          console.log({ csvData: this.csvData })
+        },
+      })
     } catch (e) {
       console.error(e)
       this.myState.statusMessage = '' + e
     }
-    return { dataArray }
   }
 
   private rotateColors() {
@@ -410,7 +430,7 @@ export default MyPlugin
 @import '~vue-slider-component/theme/default.css';
 @import '@/styles.scss';
 
-.xy-hexagons {
+.gl-viz {
   display: grid;
   pointer-events: none;
   min-height: $thumbnailHeight;
@@ -424,7 +444,7 @@ export default MyPlugin
     '.           .  rightside';
 }
 
-.xy-hexagons.hide-thumbnail {
+.gl-viz.hide-thumbnail {
   background: none;
 }
 
@@ -499,15 +519,18 @@ export default MyPlugin
 }
 
 .right-side {
-  grid-area: rightside;
+  position: absolute;
+  top: 0rem;
+  bottom: 0rem;
+  right: 0;
+  margin: 6rem 0 5rem 0;
   background-color: $steelGray;
-  box-shadow: 0px 2px 10px #11111188;
+  box-shadow: 0px 2px 10px #111111ee;
   color: white;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   font-size: 0.8rem;
   pointer-events: auto;
-  margin-bottom: 3rem;
 }
 
 .playback-stuff {
@@ -561,6 +584,15 @@ p.speed-label {
 
 .panel-item {
   margin-bottom: 1rem;
+
+  h3 {
+    line-height: 1.7rem;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+  }
 }
 
 input {
@@ -582,6 +614,11 @@ label {
 .toggle {
   margin-bottom: 0.25rem;
   margin-right: 0.5rem;
+}
+
+.full-width {
+  display: block;
+  width: 100%;
 }
 
 @media only screen and (max-width: 640px) {
