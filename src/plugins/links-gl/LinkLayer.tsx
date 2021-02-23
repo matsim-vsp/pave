@@ -5,13 +5,10 @@ import { render } from 'react-dom'
 import { GeoJsonLayer } from '@deck.gl/layers'
 import { scaleLinear, scaleThreshold } from 'd3-scale'
 
+import { MAP_STYLES } from '@/Globals'
+
 const MAPBOX_TOKEN =
   'pk.eyJ1IjoidnNwLXR1LWJlcmxpbiIsImEiOiJjamNpemh1bmEzNmF0MndudHI5aGFmeXpoIn0.u9f04rjFo7ZbWiSceTTXyA'
-
-const MAP_STYLE = 'mapbox://styles/vsp-tu-berlin/ckeetelh218ef19ob5nzw5vbh'
-// dark 'mapbox://styles/vsp-tu-berlin/ckek59op0011219pbwfar1rex'
-// light 'mapbox://styles/vsp-tu-berlin/ckeetelh218ef19ob5nzw5vbh'
-// 'mapbox://styles/mapbox/light-v9', // 'mapbox://styles/mapbox/dark-v9'
 
 const colorRange = [
   [1, 152, 189],
@@ -52,12 +49,12 @@ const INITIAL_VIEW_STATE = {
 }
 
 export default function Component({
-  mapStyle = MAP_STYLE,
   networkUrl = '',
   csvData = {} as { [id: string]: number[] },
   csvColumn = -1,
   colTitle = '',
   center = [],
+  dark = false,
 }) {
   const [hoverInfo, setHoverInfo] = useState({})
 
@@ -95,11 +92,13 @@ export default function Component({
       <div
         className="tooltip"
         style={{
-          backgroundColor: 'white',
+          backgroundColor: dark ? '#445' : 'white',
+          color: dark ? 'white' : '#222',
           padding: '1rem 1rem',
           position: 'absolute',
           left: x + 4,
           top: y - 80,
+          boxShadow: '0px 2px 10px #22222266',
         }}
       >
         <big>
@@ -156,7 +155,7 @@ export default function Component({
         // @ts-ignore */
         <StaticMap
           reuseMaps
-          mapStyle={mapStyle}
+          mapStyle={dark ? MAP_STYLES.dark : MAP_STYLES.light}
           preventStyleDiffing={true}
           mapboxApiAccessToken={MAPBOX_TOKEN}
         />

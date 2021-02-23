@@ -2,7 +2,7 @@
 #main-app(:class="{'full-page-app' : state.isFullScreen, 'dark-mode': isDarkMode}" )
 
   .app-nav
-    .top-bar(:style="{paddingLeft: state.isFullScreen ? '0.75rem':''}")
+    .top-bar(:class="{'full-page-app' : state.isFullScreen}")
       nav.top-link
         router-link(:to="`/${link.url}`" v-for="link in topNavLinks" :key="`/${link.url}`"
           :class="{'selected': ($route.path==='/' && link.url==='/') || $route.path.indexOf(link.url) > 0 }" )
@@ -172,9 +172,14 @@ canvas {
   padding: 0 3rem;
   margin: 0 auto;
   max-width: $sizeVessel;
-  transition: padding 0.2s ease-in-out;
+  transition: padding 0.2s ease-in-out, max-width 0.3s ease-in-out;
   // box-shadow: 0px 6px 10px #00000048;
   z-index: 0;
+}
+
+.top-bar.full-page-app {
+  padding: 0 1rem;
+  max-width: unset;
 }
 
 .breadcrumb-container {

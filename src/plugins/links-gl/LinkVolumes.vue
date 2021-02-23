@@ -16,6 +16,7 @@ messages:
                 :csvData="csvData.rows"
                 :csvColumn="csvData.activeColumn"
                 :colTitle="csvData.header[csvData.activeColumn]"
+                :dark="isDarkMode"
   )
 
   .right-side(v-if="isLoaded && !thumbnail")
@@ -127,7 +128,6 @@ class MyPlugin extends Vue {
 
   public myState = {
     statusMessage: '',
-    colorScheme: ColorScheme.DarkMode,
     fileApi: this.fileApi,
     fileSystem: undefined as SVNProject | undefined,
     subfolder: this.subfolder,
@@ -138,8 +138,8 @@ class MyPlugin extends Vue {
   private csvData: CSV = { header: [], rows: {}, activeColumn: -1 }
 
   private globalState = globalStore.state
-  private isDarkMode = this.myState.colorScheme === ColorScheme.DarkMode
-  private isLoaded = true
+  private isDarkMode = this.globalState.colorScheme === ColorScheme.DarkMode
+  private isLoaded = false
 
   // this happens if viz is the full page, not a thumbnail on a project page
   private buildRouteFromUrl() {
@@ -250,9 +250,8 @@ class MyPlugin extends Vue {
     await this.getVizDetails()
   }
 
-  @Watch('state.colorScheme') private swapTheme() {
-    this.isDarkMode = this.myState.colorScheme === ColorScheme.DarkMode
-    // this.updateLegendColors()
+  @Watch('globalState.colorScheme') private swapTheme() {
+    this.isDarkMode = this.globalState.colorScheme === ColorScheme.DarkMode
   }
 
   private arrayBufferToBase64(buffer: any) {
@@ -300,11 +299,11 @@ class MyPlugin extends Vue {
       bg: '#181518aa',
     }
 
-    return this.myState.colorScheme === ColorScheme.DarkMode ? darkmode : lightmode
+    return this.globalState.colorScheme === ColorScheme.DarkMode ? darkmode : lightmode
   }
 
   private findCenter(data: any[]): [number, number] {
-    return [13.4, 52.5]
+    return [13.45, 52.53]
     // let prop = '' // get first property only
     // for (prop in this.aggregations) break
 
@@ -398,14 +397,6 @@ class MyPlugin extends Vue {
       console.error(e)
       this.myState.statusMessage = '' + e
     }
-  }
-
-  private rotateColors() {
-    this.myState.colorScheme =
-      this.myState.colorScheme === ColorScheme.DarkMode
-        ? ColorScheme.LightMode
-        : ColorScheme.DarkMode
-    localStorage.setItem('plugin/agent-animation/colorscheme', this.myState.colorScheme)
   }
 }
 
@@ -505,7 +496,7 @@ export default MyPlugin
   flex-direction: column;
   grid-area: leftside;
   background-color: var(--bgPanel);
-  box-shadow: 0px 2px 10px #11111188;
+  box-shadow: 0px 2px 10px #22222266;
   font-size: 0.8rem;
   pointer-events: auto;
   margin: 2rem 0 3rem 0;
