@@ -56,15 +56,15 @@ export default class VueComponent extends Vue {
   cursor: pointer;
   align-items: center;
   font-size: 22px;
-  background-color: #223446;
+  background-color: var(--bgCream);
   outline: none;
   color: #ccc;
   transition: background-color 0.25s, border-radius 0.15s;
 }
 
 .xbutton:hover {
-  background-color: #1b2a3f;
-  color: yellow;
+  background-color: var(--bgCream2);
+  color: var(--link);
 }
 
 .rotate {

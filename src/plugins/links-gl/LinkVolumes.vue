@@ -15,16 +15,11 @@ messages:
                 :networkUrl="geojsonFilename"
                 :csvData="csvData.rows"
                 :csvColumn="csvData.activeColumn"
+                :colTitle="csvData.header[csvData.activeColumn]"
   )
 
-  .left-side(v-if="isLoaded && !thumbnail")
-    //- collapsible-panel(:darkMode="true" width="250" direction="left")
-    //-   .panel-items
-    //-     p.big.xtitle {{ vizDetails.title }}
-    //-     p {{ vizDetails.description }}
-
   .right-side(v-if="isLoaded && !thumbnail")
-    collapsible-panel(:darkMode="true" width="250" direction="right")
+    collapsible-panel(:darkMode="isDarkMode" width="250" direction="right")
       .panel-items
 
         .panel-item
@@ -45,9 +40,6 @@ messages:
               .dropdown-content
                 a.dropdown-item(v-for="column in csvData.header"
                                 @click="clickedColumn(column)") {{ column }}
-
-        //- .panel-item
-        //-   p.speed-label Aggregate
 
   .nav(v-if="!thumbnail && myState.statusMessage")
     p.status-message {{ myState.statusMessage }}
@@ -443,7 +435,7 @@ export default MyPlugin
   grid-template-rows: auto 1fr auto;
   grid-template-areas:
     'leftside    .        .'
-    '.     .        .'
+    '.           .        .'
     '.           .  rightside';
 }
 
@@ -459,7 +451,6 @@ export default MyPlugin
   flex-direction: row;
   margin: auto auto;
   background-color: #00000080;
-  // border: 1px solid $matsimBlue;
   padding: 0.25rem 3rem;
 
   a {
@@ -510,28 +501,26 @@ export default MyPlugin
 }
 
 .left-side {
-  grid-area: leftside;
-  background-color: $steelGray;
-  box-shadow: 0px 2px 10px #11111188;
-  color: white;
   display: flex;
   flex-direction: column;
+  grid-area: leftside;
+  background-color: var(--bgPanel);
+  box-shadow: 0px 2px 10px #11111188;
   font-size: 0.8rem;
   pointer-events: auto;
   margin: 2rem 0 3rem 0;
 }
 
 .right-side {
+  display: flex;
+  flex-direction: row;
   position: absolute;
   top: 0rem;
   bottom: 0rem;
   right: 0;
   margin: 6rem 0 5rem 0;
-  background-color: $steelGray;
-  box-shadow: 0px 2px 10px #111111ee;
-  color: white;
-  display: flex;
-  flex-direction: row;
+  background-color: var(--bgPanel);
+  box-shadow: 0px 2px 10px #22222266;
   font-size: 0.8rem;
   pointer-events: auto;
 }
@@ -560,7 +549,6 @@ export default MyPlugin
 }
 
 .anim {
-  background-color: #181919;
   z-index: -1;
   grid-column: 1 / 3;
   grid-row: 1 / 7;
@@ -574,11 +562,6 @@ export default MyPlugin
 
 p.speed-label {
   margin-bottom: 0.25rem;
-}
-
-.tooltip {
-  padding: 5rem 5rem;
-  background-color: #ccc;
 }
 
 .panel-items {

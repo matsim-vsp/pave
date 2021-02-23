@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { InteractiveMap } from 'react-map-gl'
-import { AmbientLight, PointLight, LightingEffect } from '@deck.gl/core'
+import { StaticMap } from 'react-map-gl'
 import DeckGL from '@deck.gl/react'
 import { render } from 'react-dom'
 import { GeoJsonLayer } from '@deck.gl/layers'
@@ -14,7 +13,7 @@ const MAP_STYLE = 'mapbox://styles/vsp-tu-berlin/ckeetelh218ef19ob5nzw5vbh'
 // light 'mapbox://styles/vsp-tu-berlin/ckeetelh218ef19ob5nzw5vbh'
 // 'mapbox://styles/mapbox/light-v9', // 'mapbox://styles/mapbox/dark-v9'
 
-export const colorRange = [
+const colorRange = [
   [1, 152, 189],
   [73, 227, 206],
   [216, 254, 181],
@@ -23,7 +22,7 @@ export const colorRange = [
   [209, 55, 78],
 ]
 
-export const COLOR_SCALE = scaleThreshold()
+const COLOR_SCALE = scaleThreshold()
   .domain([0, 1, 2, 4, 7, 15, 30, 100, 200, 500, 1000])
   // .domain([0, 4, 8, 12, 20, 32, 52, 84, 136, 220])
   .range([
@@ -52,78 +51,12 @@ const INITIAL_VIEW_STATE = {
   // maxZoom: 8,
 }
 
-// function aggregateAccidents(accidents) {
-//   const incidents = {}
-//   const fatalities = {}
-
-//   if (accidents) {
-//     accidents.forEach(a => {
-//       const r = (incidents[a.year] = incidents[a.year] || {})
-//       const f = (fatalities[a.year] = fatalities[a.year] || {})
-//       const key = getKey(a)
-//       r[key] = a.incidents
-//       f[key] = a.fatalities
-//     })
-//   }
-//   return { incidents, fatalities }
-// }
-
-function renderTooltip({ object }: any) {
-  if (!object || !object.position || !object.position.length) {
-    return null
-  }
-
-  const lat = object.position[1]
-  const lng = object.position[0]
-  const count = object.points.length
-
-  return {
-    text: `\
-    ${count} Pickups
-    latitude: ${Number.isFinite(lat) ? lat.toFixed(6) : ''}
-    longitude: ${Number.isFinite(lng) ? lng.toFixed(6) : ''}
-    `,
-  }
-}
-
-// function renderTooltip({ fatalities, incidents, year, hoverInfo }) {
-//   const { object, x, y } = hoverInfo
-
-//   if (!object) {
-//     return null
-//   }
-
-//   const props = object.properties
-//   const key = getKey(props)
-//   const f = fatalities[year][key]
-//   const r = incidents[year][key]
-
-//   const content = r ? (
-//     <div>
-//       <b>{f}</b> people died in <b>{r}</b> crashes on{' '}
-//       {props.type === 'SR' ? props.state : props.type}-{props.id} in <b>{year}</b>
-//     </div>
-//   ) : (
-//     <div>
-//       no accidents recorded in <b>{year}</b>
-//     </div>
-//   )
-
-//   return (
-//     <div className="tooltip" style={{ left: x, top: y }}>
-//       <big>
-//         {props.name} ({props.state})
-//       </big>
-//       {content}
-//     </div>
-//   )
-// }
-
-export default function App({
+export default function Component({
   mapStyle = MAP_STYLE,
   networkUrl = '',
   csvData = {} as { [id: string]: number[] },
   csvColumn = -1,
+  colTitle = '',
   center = [],
 }) {
   const [hoverInfo, setHoverInfo] = useState({})
@@ -134,35 +67,65 @@ export default function App({
   const getLineColor = (feature: any) => {
     const id = feature.properties.id
     const row = csvData[id]
-    // console.log(row)
+
     if (!row) return [212, 212, 192]
     return COLOR_SCALE(row[csvColumn])
   }
 
   const getLineWidth = (feature: any) => {
-    return 50
-    // if (!incidents[year]) {
-    //   return 10
-    // }
-    // const key = getKey(f.properties)
-    // const incidentsPer1KMile = ((incidents[year][key] || 0) / f.properties.length) * 1000
-    // return WIDTH_SCALE(incidentsPer1KMile)
+    return 40
+  }
+
+  function handleClick() {
+    console.log('click!')
+  }
+
+  function renderTooltip({ hoverInfo }: any) {
+    const { object, x, y } = hoverInfo
+    if (!object) return null
+
+    const id = object.properties?.id
+    const row = csvData[id]
+    if (!row) return null
+
+    const value: any = row[csvColumn]
+    if (value === undefined) return null
+
+    return (
+      <div
+        className="tooltip"
+        style={{
+          backgroundColor: 'white',
+          padding: '1rem 1rem',
+          position: 'absolute',
+          left: x + 4,
+          top: y - 80,
+        }}
+      >
+        <big>
+          <b>{colTitle}</b>
+        </big>
+        <p>{value}</p>
+      </div>
+    )
   }
 
   const layers = [
     new GeoJsonLayer({
       id: 'linkGeoJson',
       data: networkUrl,
-      stroked: false,
       filled: false,
       lineWidthMinPixels: 0.5,
+      pickable: true,
+      stroked: false,
+      autoHighlight: true,
+      highlightColor: [255, 255, 255], // [64, 255, 64],
       parameters: {
         depthTest: false,
       },
 
       getLineColor,
       getLineWidth,
-      pickable: true,
       onHover: setHoverInfo,
 
       updateTriggers: {
@@ -182,48 +145,23 @@ export default function App({
     //@ts-ignore */
     <DeckGL
       layers={layers}
-      effects={[lightingEffect]}
       initialViewState={initialView}
       controller={true}
-      getTooltip={renderTooltip}
+      pickingRadius={5}
+      getCursor={() => 'pointer'}
+      onClick={handleClick}
     >
       {
         /*
         // @ts-ignore */
-        <InteractiveMap
+        <StaticMap
           reuseMaps
           mapStyle={mapStyle}
           preventStyleDiffing={true}
           mapboxApiAccessToken={MAPBOX_TOKEN}
         />
       }
-      {renderTooltip({ year: 2015, hoverInfo })}
+      {renderTooltip({ hoverInfo })}
     </DeckGL>
   )
-}
-
-const ambientLight = new AmbientLight({
-  color: [255, 255, 255],
-  intensity: 1.0,
-})
-
-const pointLight1 = new PointLight({
-  color: [255, 255, 255],
-  intensity: 0.8,
-  position: [-0.144528, 49.739968, 80000],
-})
-
-const pointLight2 = new PointLight({
-  color: [255, 255, 255],
-  intensity: 0.8,
-  position: [-3.807751, 54.104682, 8000],
-})
-
-const lightingEffect = new LightingEffect({ ambientLight, pointLight1, pointLight2 })
-
-const material = {
-  ambient: 0.64,
-  diffuse: 0.6,
-  shininess: 32,
-  specularColor: [51, 51, 51],
 }
