@@ -46,7 +46,6 @@
 
       .summary-table(v-if="myState.selectedRun && myState.vizes.length")
         .col1
-          .tlabel.vspace Run ID
           .tlabel Demand
           .tlabel Fleet size
           .tlabel Mileage
@@ -57,7 +56,6 @@
           .tlabel.vspace 95% waiting times &lt;
 
         .col2
-          .tlabel.vspace {{ myState.selectedRun }}
           .tlabel {{ runHeader.demand.toLocaleString() }} rides
           .tlabel {{ runHeader.fleetSize.toLocaleString() }} vehicles
           .tlabel {{ runHeader.mileage.toLocaleString() }} km
@@ -883,6 +881,7 @@ h3.curate-heading {
   font-size: 0.8rem;
   margin-left: 3rem;
   margin-top: 6rem;
+  min-width: 5rem;
 }
 
 .col2 .tlabel {
