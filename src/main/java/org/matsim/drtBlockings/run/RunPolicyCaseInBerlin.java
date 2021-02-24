@@ -4,7 +4,8 @@ package org.matsim.drtBlockings.run;
 *   Run class for the DRT-Blocking policy cases in Berlin, where DRT and Freight-traffic is handled by one fleet
 *   Differences to Base Case:
 *       1) Because of the fact that Freight traffic is handled by the same fleet as DRT we need to include the DrtBlockingModule
-*       2) We do not need some of the carrier modules
+ *      2) Drt needs to be set as Carrier mode as well: CarrierUtils.setCarrierMode(carrier, drtCfg.getMode());
+*       3) We do not need some of the carrier modules
  */
 
 import ch.sbb.matsim.config.SwissRailRaptorConfigGroup;
@@ -161,12 +162,16 @@ public class RunPolicyCaseInBerlin {
         Scenario scenario = RunDrtOpenBerlinScenario.prepareScenario(config);
         FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
+        //This lets our engine know that we want to handle freight traffic by the drt fleet
+        FreightUtils.getCarriers(scenario).getCarriers().values().forEach(carrier -> {
+            CarrierUtils.setCarrierMode(carrier, drtCfg.getMode());
+        });
+
         //Run Tourplanning if the carriers plans were not already planned before running the sim
         if(performTourplanning){
             try {
                 FreightUtils.getCarriers(scenario).getCarriers().values().forEach(carrier -> {
-                    CarrierUtils.setCarrierMode(carrier, drtCfg.getMode());
-                    CarrierUtils.setJspritIterations(carrier, 20);
+                    CarrierUtils.setJspritIterations(carrier, 50);
                 });
                 FreightUtils.runJsprit(scenario, freightCfg);
                 new File(config.controler().getOutputDirectory()).mkdirs();
@@ -210,8 +215,7 @@ public class RunPolicyCaseInBerlin {
             @Override
             public void install() {
                 install(new DvrpModule());
-                controler.addOverridingModule( new DvrpModule()) ;
-                controler.addOverridingModule( new DrtBlockingModule(drtCfg));
+                install(new DrtBlockingModule(drtCfg));
             }
         });
         controler.configureQSimComponents(DvrpQSimComponents.activateAllModes(MultiModeDrtConfigGroup.get(controler.getConfig())));

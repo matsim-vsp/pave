@@ -3,14 +3,22 @@ package org.matsim.drtBlockings.run;
 /**
  *   Run class for the DRT-Blocking base case in Berlin, where DRT and Freight-traffic is handled separately
  *   Differences to Policy Cases:
- *       1) Because of the fact that Freight traffic is handled seperately from DRT we dont need to include the DrtBlockingModule
- *       2) We do need some more carrier modules
+ *       1) Because of the fact that Freight traffic is handled separately from DRT we dont need to include the DrtBlockingModule
+ *       2) We also dont need to set CarrierUtils.setCarrierMode(carrier, drtCfg.getMode());
+ *       3) We do need some more carrier modules
  */
 
 import ch.sbb.matsim.config.SwissRailRaptorConfigGroup;
+import com.google.inject.Singleton;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.TransportMode;
+import org.matsim.contrib.drt.routing.DrtRoute;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
+import org.matsim.contrib.drt.run.MultiModeDrtModule;
+import org.matsim.contrib.dvrp.fleet.DvrpVehicleLookup;
+import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
+import org.matsim.contrib.dvrp.run.DvrpMode;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
 import org.matsim.contrib.freight.FreightConfigGroup;
@@ -27,14 +35,25 @@ import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.GlobalConfigGroup;
+import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.MatsimServices;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.controler.listener.IterationEndsListener;
+import org.matsim.core.population.routes.GenericRouteImpl;
+import org.matsim.core.router.Transit;
+import org.matsim.core.scoring.functions.ScoringParametersForPerson;
+import org.matsim.core.scoring.functions.SubpopulationScoringParameters;
+import org.matsim.drtBlockings.DrtBlockingModule;
 import org.matsim.drtBlockings.analysis.BaseCaseTourStatsAnalysis;
+import org.matsim.pt.config.TransitConfigGroup;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.run.RunBerlinScenario;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
+import org.matsim.run.drtBlocking.RunDrtBlocking;
+import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
@@ -53,18 +72,26 @@ public class RunBaseCaseInBerlin {
      *             8) path to plans
      */
 
-    //General input
-    private static final String INPUT_CONFIG = "";
-    private static final String INPUT_NETWORK_CHANGE_EVENTS = "";
-    private static final String INPUT_DRT_PLANS = "";
-    private static final String INPUT_NETWORK = "";
+    //GENERAL INPUT
+    //dir for 1 carrier only
+    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
+    //dir for all Berlin carriers
+//    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
+    private static final String INPUT_CONFIG = INPUT_DIR + "p2-23.output_config.xml";
+    private static final String INPUT_NETWORK_CHANGE_EVENTS = INPUT_DIR + "p2-23.networkChangeEvents.xml.gz";
+//    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtLegsOnly.xml.gz";
+    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_200Persons.xml.gz";
+//    private static final String INPUT_DRT_PLANS = INPUT_DIR + "pnoIncDRT.output_plans_drtUsersOnly_selectedPlans.xml.gz";
+    private static final String INPUT_NETWORK = INPUT_DIR + "p2-23.output_network.xml.gz";
 
-    //Carrier input
-    private static final String CARRIERS_PLANS_PLANNED = "";
-    private static final String CARRIER_VEHICLE_TYPES = "";
+    //CARRIER INPUT
+    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_LichtenbergNord_8-24_PLANNED.xml";
+    private static final String CARRIER_VEHICLE_TYPES = INPUT_DIR + "carrier_vehicleTypes.xml";
     private static final boolean RUN_TOURPLANNING = false;
 
     private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/";
+
+    private static final String TRANSIT_FILE = "berlin-v5.5-transit-schedule_empty.xml";
 
     public static void main(String[] args) {
         String configPath;
@@ -120,7 +147,6 @@ public class RunBaseCaseInBerlin {
         });
 
         controler.run();
-
     }
 
     public static Config prepareConfig(String configPath, String carrierPlans, String carrierVehTypes, String inputNetwork,
@@ -138,6 +164,9 @@ public class RunBaseCaseInBerlin {
         config.network().setTimeVariantNetwork(true);
         config.plans().setInputFile(inputPlans);
         config.qsim().setFlowCapFactor(100.);
+
+        QSimConfigGroup qSimCfg = ConfigUtils.addOrGetModule(config, QSimConfigGroup.class);
+        qSimCfg.setNumberOfThreads(4);
 
         //Freight settings
         FreightConfigGroup freightConfig = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
@@ -163,8 +192,7 @@ public class RunBaseCaseInBerlin {
         if(performTourplanning){
             try {
                 FreightUtils.getCarriers(scenario).getCarriers().values().forEach(carrier -> {
-                    CarrierUtils.setCarrierMode(carrier, drtCfg.getMode());
-                    CarrierUtils.setJspritIterations(carrier, 20);
+                    CarrierUtils.setJspritIterations(carrier, 50);
                 });
                 FreightUtils.runJsprit(scenario, freightCfg);
                 new File(config.controler().getOutputDirectory()).mkdirs();
@@ -175,6 +203,7 @@ public class RunBaseCaseInBerlin {
                 e.printStackTrace();
             }
         }
+//        configureTransitForTest(config);
         return scenario;
     }
 
@@ -190,6 +219,7 @@ public class RunBaseCaseInBerlin {
             public void install() {
                 bind(CarrierPlanStrategyManagerFactory.class).toInstance(() -> null);
                 bind(CarrierScoringFunctionFactory.class).to(CarrierScoringFunctionFactoryImpl.class);
+                bind(ScoringParametersForPerson.class).to(SubpopulationScoringParameters.class).in(Singleton.class);
             }
         });
 
@@ -198,21 +228,25 @@ public class RunBaseCaseInBerlin {
 
     private static void configureDRTOnly(Scenario scenario, Controler controler) {
 
-        //this line is only needed if DrtBlocking is wished to be activated (=only in the policy cases)
-//        DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(scenario.getConfig());
+        DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(scenario.getConfig());
 
-        //Here the main difference between base case and policy cases is set:
-        //Base case does not need to add DrtBlockingModule
-        //Policy cases do need the module
         controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
                 install(new DvrpModule());
-                controler.addOverridingModule( new DvrpModule()) ;
-//                controler.addOverridingModule( new DrtBlockingModule(drtCfg));
+                //this is needed to get the sim running although we dont want to use DrtBlocking
+                // however it does not automatically imply that the drt fleet is used for freight!
+                install(new DrtBlockingModule(drtCfg));
             }
         });
         controler.configureQSimComponents(DvrpQSimComponents.activateAllModes(MultiModeDrtConfigGroup.get(controler.getConfig())));
+    }
+
+    private static void configureTransitForTest(Config config) {
+
+        TransitConfigGroup transitCfg = ConfigUtils.addOrGetModule(config, TransitConfigGroup.class);
+        transitCfg.setUseTransit(false);
+        transitCfg.setTransitScheduleFile(TRANSIT_FILE);
     }
 
     private static void prepareFreightOutputDataAndStats(Scenario scenario, EventsManager eventsManager,
