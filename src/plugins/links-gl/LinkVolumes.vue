@@ -35,7 +35,7 @@ messages:
               button.full-width.is-warning.button(:class="{'is-loading': csvData.activeColumn < 0}"
                 aria-haspopup="true" aria-controls="dropdown-menu-column-selector")
 
-                span {{ buttonTitle }}
+                b {{ buttonTitle }}
                 span.icon.is-small
                   i.fas.fa-angle-down(aria-hidden="true")
 
@@ -51,7 +51,7 @@ messages:
               //- button.full-width.button(:class="{'is-loading': csvData.activeColumn < 0}"
               //-   aria-haspopup="true" aria-controls="dropdown-menu-column-selector")
 
-              img(:src="`/colors/scale-${selectedColorRamp}.png`"
+              img(:src="`/pave/colors/scale-${selectedColorRamp}.png`"
                   :style="{'height': '2.4rem', 'width': '100%', 'border-radius': '8px'}")
 
                 //- span {{ selectedColorRamp }}
