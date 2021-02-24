@@ -151,8 +151,7 @@ public class RunDrtBlocking {
 			@Override
 			public void install() {
 				install(new DvrpModule());
-				controler.addOverridingModule( new DvrpModule() ) ;
-				controler.addOverridingModule( new DrtBlockingModule(drtCfg));
+				install(new DrtBlockingModule(drtCfg));
 			}
 		});
 		controler.configureQSimComponents(DvrpQSimComponents.activateAllModes(MultiModeDrtConfigGroup.get(controler.getConfig())));
