@@ -232,7 +232,7 @@ canvas {
 }
 
 .selected p {
-  background-color: #3e506d;
+  background-color: #3e455c;
 }
 
 .bury-me {

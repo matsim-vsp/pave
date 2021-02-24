@@ -27,6 +27,31 @@ messages:
           h3 {{ vizDetails.title }}
           p {{ vizDetails.description }}
 
+          //- label.checkbox
+          //-   input(type="checkbox" v-model="showTimeRange")
+          //-   | &nbsp;Zeitraum
+
+      //- .panel-items
+      //-   h4.heading Linienbreiten
+      //-   scale-slider.time-slider(v-if="headers.length > 0"
+      //-     :stops='SCALE_STOPS'
+      //-     @change='bounceScale')
+      //-   label.checkbox
+      //-     input(type="checkbox" v-model="showAllRoads")
+      //-     | &nbsp;Gesamtes Straßennetz anzeigen
+
+
+      .panel-items
+
+        //- time-of-day slider
+        .panel-item(v-if="vizDetails.useSlider")
+          p: b Time of Day
+          p(v-if="csvData.header.length===0"): b (loading...)
+          time-slider.time-slider(v-if="csvData.header.length > 0"
+            :useRange='showTimeRange'
+            :stops="csvData.header"
+            @change='bounceTimeSlider')
+
         //- button/dropdown for selecting column
         .panel-item(v-if="!vizDetails.useSlider")
           p: b Select data column
@@ -42,9 +67,9 @@ messages:
             #dropdown-menu-column-selector.dropdown-menu(role="menu" :style="{'max-height':'16rem', 'overflow-y': 'auto', 'border': '1px solid #ccc'}")
               .dropdown-content
                 a.dropdown-item(v-for="column in csvData.header"
-                                @click="clickedColumn(column)") {{ column }}
+                                @click="handleNewDataColumn(column)") {{ column }}
 
-        .panel-item(v-if="!vizDetails.useSlider && csvData.activeColumn > -1")
+        .panel-item(v-if="csvData.activeColumn > -1")
           p: b Colors
           .dropdown.full-width.is-hoverable
             .dropdown-trigger
@@ -83,8 +108,8 @@ messages:
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import Papaparse from 'papaparse'
-import VueSlider from 'vue-slider-component'
 import { ToggleButton } from 'vue-js-toggle-button'
+import { debounce } from 'debounce'
 import readBlob from 'read-blob'
 import { Route } from 'vue-router'
 import YAML from 'yaml'
@@ -96,6 +121,7 @@ import * as coroutines from 'js-coroutines'
 import globalStore from '@/store'
 import pako from '@aftersim/pako'
 import CollapsiblePanel from '@/components/CollapsiblePanel.vue'
+import TimeSlider from '@/plugins/links-gl/TimeSlider.vue'
 
 import {
   ColorScheme,
@@ -124,7 +150,7 @@ interface CSV {
   components: {
     CollapsiblePanel,
     LinkGlLayer,
-    VueSlider,
+    TimeSlider,
     ToggleButton,
   } as any,
 })
@@ -145,6 +171,9 @@ class MyPlugin extends Vue {
   private isButtonActiveColumn = false
   private center = [13.45, 52.53]
 
+  private showTimeRange = false
+  private bounceTimeSlider = debounce(this.changedTimeSlider, 200)
+
   private selectedColorRamp = 'viridis'
 
   private colorRamps: { [title: string]: { png: string; diff?: boolean } } = {
@@ -160,6 +189,7 @@ class MyPlugin extends Vue {
     description: '',
     csvFile: '',
     csvBase: '',
+    useSlider: false,
     shpFile: '',
     dbfFile: '',
     geojsonFile: '',
@@ -317,7 +347,7 @@ class MyPlugin extends Vue {
     console.log(this.selectedColorRamp)
   }
 
-  private clickedColumn(title: string) {
+  private handleNewDataColumn(title: string) {
     const column = this.csvData.header.indexOf(title)
     if (column === -1) return
 
@@ -376,12 +406,12 @@ class MyPlugin extends Vue {
 
   private async loadCSVFiles() {
     console.log('loading CSV files')
-    let csvData: any = []
-    let csvBase: any = []
 
     const csvFilename = this.myState.fileApi.cleanURL(
       `${this.myState.subfolder}/${this.vizDetails.csvFile}`
     )
+
+    let globalMax = 0
 
     try {
       Papaparse.parse(csvFilename, {
@@ -393,23 +423,26 @@ class MyPlugin extends Vue {
           console.log('parsing')
 
           // create object with link-id as lookup-key
-          const rows: { [id: string]: number[] } = {}
+          const allLinks: { [id: string]: number[] } = {}
 
           // coroutine to not kill browser
           coroutines
-            .forEachAsync(results.data.slice(1), (row: any) => {
-              rows[row[0].toString()] = row.slice(1) // skip first element (link-id)
+            .forEachAsync(results.data.splice(1), (link: any) => {
+              const key = link[0].toString()
+              if (this.vizDetails.useSlider) {
+                const entries = link.slice(1) // skip first element (contains link-id)
+                const total = entries.reduce((a: number, b: number) => a + b, 0)
+                globalMax = Math.max(globalMax, total)
+                allLinks[key] = [total, ...entries] // total comes first
+              } else {
+                allLinks[key] = link.slice(1) // skip first element (contains link-id)
+              }
             })
             .then(result => {
-              this.csvData = {
-                header: results.data[0].slice(1),
-                headerMax: [],
-                rows,
-                activeColumn: -1,
-              }
-              console.log({ csvData: this.csvData })
-              // need to do this! select first entry
-              this.clickedColumn(this.csvData.header[0])
+              const header = results.data[0].slice(1) as string[]
+              if (this.vizDetails.useSlider) header.unshift('All')
+
+              this.finishedLoadingCSVs(header, allLinks, globalMax)
             })
         },
       })
@@ -417,6 +450,99 @@ class MyPlugin extends Vue {
       console.error(e)
       this.myState.statusMessage = '' + e
     }
+  }
+
+  private finishedLoadingCSVs(
+    header: string[],
+    allLinks: { [id: string]: number[] },
+    globalMax: number
+  ) {
+    const cleanHeaders = header.map(h => h.replace(':00:00', ''))
+
+    this.csvData = {
+      header: cleanHeaders,
+      headerMax: this.vizDetails.useSlider
+        ? new Array(this.csvData.header.length).fill(globalMax)
+        : [],
+      rows: allLinks,
+      activeColumn: -1,
+    }
+
+    console.log({ csvData: this.csvData })
+    // need to do this! select first entry
+    this.handleNewDataColumn(this.csvData.header[0])
+  }
+
+  private changedTimeSlider(value: any) {
+    console.log('new slider!', value)
+    if (value.length && value.length === 1) value = value[0]
+
+    this.handleNewDataColumn(value)
+
+    // this.currentTimeBin = value
+    // const widthFactor = this.WIDTH_SCALE * this.currentScale
+
+    // if (this.showTimeRange == false) {
+    //   this.map.setPaintProperty('my-layer', 'line-width', [
+    //     '*',
+    //     widthFactor,
+    //     ['abs', ['get', value]],
+    //   ])
+    //   this.map.setPaintProperty('my-layer', 'line-offset', [
+    //     '*',
+    //     0.5 * widthFactor,
+    //     ['abs', ['get', value]],
+    //   ])
+
+    //   // this complicated mess is how MapBox deals with conditionals. Yuck!
+    //   // #ff0 -- yellow hover
+    //   // #8ca -- null, no data
+    //   // #55b -- bluish/purple, link volume bandwidth
+    //   // #900 -- deep red, diff volume positive
+    //   // #5f5 -- bright light green, diff volume negative
+
+    //   this.map.setPaintProperty('my-layer', 'line-color', [
+    //     'case',
+    //     ['boolean', ['feature-state', 'hover'], false],
+    //     '#ff0',
+    //     ['==', ['get', value], null],
+    //     '#8ca',
+    //     ['<', ['get', value], 0],
+    //     '#5f5',
+    //     this.vizDetails.csvFile2 ? '#900' : '#55b',
+    //   ])
+
+    //   const filter = this.showAllRoads ? null : ['!=', ['get', this.currentTimeBin], null]
+    //   this.map.setFilter('my-layer', filter)
+    // } else {
+    //   const sumElements: any = ['+']
+
+    //   // build the summation expressions: e.g. ['+', ['get', '1'], ['get', '2']]
+    //   let include = false
+    //   for (const header of this.headers) {
+    //     if (header === value[0]) include = true
+
+    //     // don't double-count the total
+    //     if (header === this.TOTAL_MSG) continue
+
+    //     if (include) sumElements.push(['get', header])
+
+    //     if (header === value[1]) include = false
+    //   }
+
+    //   this.map.setPaintProperty('my-layer', 'line-width', ['*', widthFactor, sumElements])
+    //   this.map.setPaintProperty('my-layer', 'line-offset', ['*', 0.5 * widthFactor, sumElements])
+    //   this.map.setPaintProperty('my-layer', 'line-color', [
+    //     'case',
+    //     ['boolean', ['feature-state', 'hover'], false],
+    //     '#0f6',
+    //     ['==', sumElements, null],
+    //     '#8ca',
+    //     ['<', sumElements, 0],
+    //     '#fc0',
+    //     '#559',
+    //   ])
+    // }
   }
 }
 

@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { StaticMap } from 'react-map-gl'
 import DeckGL from '@deck.gl/react'
-import { render } from 'react-dom'
 import { GeoJsonLayer } from '@deck.gl/layers'
 import { scaleLinear, scaleThreshold } from 'd3-scale'
+import { StaticMap } from 'react-map-gl'
 import colormap from 'colormap'
 
 import { MAP_STYLES } from '@/Globals'
@@ -76,21 +75,24 @@ export default function Component({
   const fetchColor = scaleThreshold()
     .domain(new Array(20).fill(0).map((v, i) => 0.05 * i))
     .range(builtColors)
+  // .range(dark ? builtColors : builtColors.reverse())
 
   // this assumes that zero means hide the link. This may not be generic enough
+  const colorPaleGrey = dark ? [80, 80, 80, 40] : [212, 212, 212, 40]
+  const colorInvisible = [0, 0, 0, 0]
+
   const getLineColor = (feature: any) => {
     const id = feature.properties.id
     const row = rows[id]
 
-    if (!row) return [0, 0, 0, 0]
+    if (!row) return colorInvisible
 
     const value = row[activeColumn]
-    if (!value) return [0, 0, 0, 0]
+    if (!value) return colorInvisible
 
-    // const scaledValue = Math.log10(value) / Math.log10(headerMax[activeColumn])
     // const scaledValue = value / headerMax[activeColumn]
     const scaledValue = Math.log(value) / Math.log(headerMax[activeColumn])
-    if (scaledValue < 0.01) return [0, 0, 0, 0]
+    if (scaledValue < 0.0001) return colorPaleGrey
 
     return fetchColor(scaledValue)
   }
@@ -152,11 +154,11 @@ export default function Component({
       },
 
       getLineColor,
-      getLineWidth: 3,
+      getLineWidth: 2,
       onHover: setHoverInfo,
 
       updateTriggers: {
-        getLineColor: { colors, activeColumn },
+        getLineColor: { dark, colors, activeColumn },
         // getLineWidth: { csvColumn },
       },
 

@@ -143,10 +143,11 @@ export const DARK_MODE: ColorSet = {
 }
 
 export const MAP_STYLES = {
-  light: 'mapbox://styles/vsp-tu-berlin/ckeetelh218ef19ob5nzw5vbh',
+  light: 'mapbox://styles/mapbox/light-v10',
   dark: 'mapbox://styles/vsp-tu-berlin/ckek59op0011219pbwfar1rex',
 }
-// light 'mapbox://styles/vsp-tu-berlin/ckeetelh218ef19ob5nzw5vbh'
+// dark: 'mapbox://styles/vsp-tu-berlin/ckek59op0011219pbwfar1rex',
+// light 'mapbox://styles/vsp-tu-berlin/ckeetelh218ef19ob5nzw5vbh' // but still has some color
 // 'mapbox://styles/mapbox/light-v9', // 'mapbox://styles/mapbox/dark-v9'
 
 export enum LegendItemType {
