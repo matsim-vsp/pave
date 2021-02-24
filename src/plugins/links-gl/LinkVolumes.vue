@@ -29,7 +29,7 @@ messages:
 
         //- button/dropdown for selecting column
         .panel-item(v-if="!vizDetails.useSlider")
-          p: b Pollutant
+          p: b Select data column
           .dropdown.full-width.is-hoverable
             .dropdown-trigger
               button.full-width.is-warning.button(:class="{'is-loading': csvData.activeColumn < 0}"
@@ -39,7 +39,7 @@ messages:
                 span.icon.is-small
                   i.fas.fa-angle-down(aria-hidden="true")
 
-            #dropdown-menu-column-selector.dropdown-menu(role="menu")
+            #dropdown-menu-column-selector.dropdown-menu(role="menu" :style="{'max-height':'16rem', 'overflow-y': 'auto', 'border': '1px solid #ccc'}")
               .dropdown-content
                 a.dropdown-item(v-for="column in csvData.header"
                                 @click="clickedColumn(column)") {{ column }}
@@ -52,7 +52,7 @@ messages:
               //-   aria-haspopup="true" aria-controls="dropdown-menu-column-selector")
 
               img(:src="`/pave/colors/scale-${selectedColorRamp}.png`"
-                  :style="{'height': '2.4rem', 'width': '100%', 'border-radius': '8px'}")
+                  :style="{'height': '2.3rem', 'width': '100%', 'border-radius': '5px'}")
 
                 //- span {{ selectedColorRamp }}
                 //- span.icon.is-small
