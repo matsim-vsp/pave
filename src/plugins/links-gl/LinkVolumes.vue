@@ -1,9 +1,17 @@
 <i18n>
-messages:
-  en:
-    title: "hello world"
-  de:
-    title: "Hallo liebe"
+en:
+  all: "All"
+  colors: "Colors"
+  loading: "Loading"
+  selectColumn: "Select data column"
+  timeOfDay: "Time of Day"
+
+de:
+  all: "Alle"
+  colors: "Farben"
+  loading: "Wird geladen"
+  selectColumn: "Datenspalte wählen"
+  timeOfDay: "Uhrzeit"
 </i18n>
 
 <template lang="pug">
@@ -45,8 +53,8 @@ messages:
 
         //- time-of-day slider
         .panel-item(v-if="vizDetails.useSlider")
-          p: b Time of Day
-          p(v-if="csvData.header.length===0"): b (loading...)
+          p: b {{ $t('timeOfDay') }}
+          p(v-if="csvData.header.length===0"): b {{ `(${$t('loading')}...)` }}
           time-slider.time-slider(v-if="csvData.header.length > 0"
             :useRange='showTimeRange'
             :stops="csvData.header"
@@ -54,7 +62,7 @@ messages:
 
         //- button/dropdown for selecting column
         .panel-item(v-if="!vizDetails.useSlider")
-          p: b Select data column
+          p: b {{ $t('selectColumn') }}
           .dropdown.full-width.is-hoverable
             .dropdown-trigger
               button.full-width.is-warning.button(:class="{'is-loading': csvData.activeColumn < 0}"
@@ -70,7 +78,7 @@ messages:
                                 @click="handleNewDataColumn(column)") {{ column }}
 
         .panel-item(v-if="csvData.activeColumn > -1")
-          p: b Colors
+          p: b {{ $t('colors') }}
           .dropdown.full-width.is-hoverable
             .dropdown-trigger
               //- button.full-width.button(:class="{'is-loading': csvData.activeColumn < 0}"
@@ -440,7 +448,7 @@ class MyPlugin extends Vue {
             })
             .then(result => {
               const header = results.data[0].slice(1) as string[]
-              if (this.vizDetails.useSlider) header.unshift('All')
+              if (this.vizDetails.useSlider) header.unshift(`${this.$t('all')}`)
 
               this.finishedLoadingCSVs(header, allLinks, globalMax)
             })
