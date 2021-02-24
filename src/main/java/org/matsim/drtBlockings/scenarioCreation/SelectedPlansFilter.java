@@ -54,11 +54,11 @@ public class SelectedPlansFilter {
                         for(String attribute : attr.keySet()) {
                             drtPerson.getAttributes().putAttribute(attribute, attr.get(attribute));
                         }
-                        String name = "income";
-                        double income = 1234.;
-
-                        drtPerson.getAttributes().putAttribute(name, income);
-                        outputPop.addPerson(drtPerson);
+//                        String name = "income";
+//                        double income = 1234.;
+//
+//                        drtPerson.getAttributes().putAttribute(name, income);
+//                        outputPop.addPerson(drtPerson);
                     }
                 }
             }
