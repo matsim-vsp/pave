@@ -5,6 +5,7 @@ import XyHexagons from '@/plugins/xy-hexagons/XyHexagons.vue'
 import AgentAnimation from '@/plugins/agent-animation/AgentAnimation.vue'
 import LinksGl from '@/plugins/links-gl/LinkVolumes.vue'
 import LinkVolumes from '@/plugins/link-vols/LinkVolumes.vue'
+import ShapeFile from '@/plugins/shape-file/ShapeFile.vue'
 import SankeyDiagram from '@/plugins/sankey/SankeyDiagram.vue'
 import VegaLite from '@/plugins/vega-lite/VegaLite.vue'
 import AggregateOd from '@/plugins/aggregate-od/AggregateOd.vue'
@@ -20,6 +21,7 @@ const plugins = {
   AgentAnimation,
   LinksGl,
   LinkVolumes,
+  ShapeFile,
   SankeyDiagram,
   VegaLite,
   AggregateOd,

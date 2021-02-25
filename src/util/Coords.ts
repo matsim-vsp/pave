@@ -38,7 +38,7 @@ proj4.defs('Cottbus', proj4.defs('EPSG:25833'))
 proj4.defs('Berlin', proj4.defs('EPSG:31468'))
 proj4.defs('South Africa', proj4.defs('EPSG:2048'))
 
-function toLngLat(projection: string, p: Xy) {
+function toLngLat(projection: string, p: Xy): Xy {
   return proj4(projection, 'WGS84', p) as any
 }
 
