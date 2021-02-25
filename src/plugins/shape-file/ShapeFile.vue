@@ -319,21 +319,21 @@ class MyPlugin extends Vue {
     console.log(this.selectedColorRamp)
   }
 
-  private handleNewDataColumn(header: string) {
-    // const column = this.shapefile.header.indexOf(title)
-    // if (column === -1) return
+  private columnMax: { [id: string]: number } = {}
 
+  private handleNewDataColumn(header: string) {
     // // find max value for scaling
-    // if (!this.shapefile.headerMax[column]) {
-    //   let max = 0
-    //   Object.values(this.shapefile.rows).forEach(row => {
-    //     max = Math.max(max, row[column])
-    //   })
-    //   if (max) this.shapefile.headerMax[column] = max
-    // }
+    if (!this.columnMax[header]) {
+      let max = 0
+      Object.values(this.shapefile.data).forEach(row => {
+        max = Math.max(max, row.properties[header])
+      })
+      if (max) this.columnMax[header] = max || 1
+    }
 
     // set the new column
     this.activeHeader = header
+    this.maxValueForScaling = this.columnMax[header]
     this.isButtonActiveColumn = false
   }
 
