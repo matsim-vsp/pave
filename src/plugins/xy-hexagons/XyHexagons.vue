@@ -1,3 +1,12 @@
+<i18n>
+en:
+  loading: 'Loading data...'
+  sorting: 'Sorting into bins...'
+de:
+  loading: 'Dateien laden...'
+  sorting: 'Sortieren...'
+</i18n>
+
 <template lang="pug">
 .xy-hexagons(:class="{'hide-thumbnail': !thumbnail}"
         :style='{"background": urlThumbnail}' oncontextmenu="return false")
@@ -5,6 +14,7 @@
   xy-hex-layer.anim(v-if="!thumbnail && isLoaded"
                 :center="center"
                 :data="requests"
+                :dark="isDarkMode"
                 :extrude="extrudeTowers"
                 :radius="radius"
                 :maxHeight="maxHeight")
@@ -87,6 +97,7 @@ import XyHexLayer from './XyHexLayer'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
 
 import { VuePlugin } from 'vuera'
+import Coords from '@/util/Coords'
 Vue.use(VuePlugin)
 
 @Component({
@@ -125,7 +136,6 @@ class XyHexagons extends Vue {
 
   public myState = {
     statusMessage: '',
-    colorScheme: ColorScheme.DarkMode,
     fileApi: this.fileApi,
     fileSystem: undefined as SVNProject | undefined,
     subfolder: this.subfolder,
@@ -139,7 +149,7 @@ class XyHexagons extends Vue {
   private searchEnabled = false
 
   private globalState = globalStore.state
-  private isDarkMode = this.myState.colorScheme === ColorScheme.DarkMode
+  private isDarkMode = this.globalState.colorScheme === ColorScheme.DarkMode
   private isLoaded = false
 
   private activeAggregation: string = ''
@@ -260,9 +270,8 @@ class XyHexagons extends Vue {
     await this.getVizDetails()
   }
 
-  @Watch('state.colorScheme') private swapTheme() {
-    this.isDarkMode = this.myState.colorScheme === ColorScheme.DarkMode
-    // this.updateLegendColors()
+  @Watch('globalState.colorScheme') private swapTheme() {
+    this.isDarkMode = this.globalState.colorScheme === ColorScheme.DarkMode
   }
 
   private arrayBufferToBase64(buffer: any) {
@@ -273,19 +282,6 @@ class XyHexagons extends Vue {
       binary += String.fromCharCode(bytes[i])
     }
     return window.btoa(binary)
-  }
-
-  private updateLegendColors() {
-    // const theme = this.myState.colorScheme == ColorScheme.LightMode ? LIGHT_MODE : DARK_MODE
-    // this.legendBits = [
-    //   { label: 'susceptible', color: theme.susceptible },
-    //   { label: 'latently infected', color: theme.infectedButNotContagious },
-    //   { label: 'contagious', color: theme.contagious },
-    //   { label: 'symptomatic', color: theme.symptomatic },
-    //   { label: 'seriously ill', color: theme.seriouslyIll },
-    //   { label: 'critical', color: theme.critical },
-    //   { label: 'recovered', color: theme.recovered },
-    // ]
   }
 
   private get textColor() {
@@ -299,7 +295,7 @@ class XyHexagons extends Vue {
       bg: '#181518aa',
     }
 
-    return this.myState.colorScheme === ColorScheme.DarkMode ? darkmode : lightmode
+    return this.globalState.colorScheme === ColorScheme.DarkMode ? darkmode : lightmode
   }
 
   private findCenter(data: any[]): [number, number] {
@@ -336,26 +332,28 @@ class XyHexagons extends Vue {
 
     this.generateBreadcrumbs()
 
-    this.myState.statusMessage = 'Dateien laden...'
+    this.myState.statusMessage = `${this.$i18n.t('loading')}`
 
     console.log('loading files')
     const { dataArray } = await this.loadFiles()
     this.rawRequests = dataArray
 
     this.aggregations = this.parseAggregations()
+
+    await this.reproject()
+
     this.center = this.findCenter(this.rawRequests)
 
     this.isLoaded = true
     this.buildThumbnail()
 
-    console.log('DRT Anfragen sortieren...')
-    this.myState.statusMessage = 'DRT Anfragen sortieren...'
+    this.myState.statusMessage = `${this.$i18n.t('sorting')}`
     this.handleOrigDest(Object.keys(this.aggregations)[0]) // origins
 
     this.myState.statusMessage = ''
   }
 
-  private parseAggregations(): { [id: string]: [number, number] } {
+  private parseAggregations(): { [id: string]: [any, any] } {
     const aggs = {} as any
     for (let agg of this.vizDetails.data.aggregations) {
       aggs[agg.title] = [agg.x, agg.y]
@@ -364,6 +362,24 @@ class XyHexagons extends Vue {
   }
 
   private rawRequests: any[] = []
+
+  private async reproject() {
+    if (!this.vizDetails.projection) return
+
+    this.myState.statusMessage = 'Reprojecting...'
+    for (const aggregation of Object.keys(this.aggregations)) {
+      const x = this.aggregations[aggregation][0]
+      const y = this.aggregations[aggregation][1]
+
+      await coroutines.forEachAsync(this.rawRequests, (row: any) => {
+        const wgs84 = Coords.toLngLat(this.vizDetails.projection, { x: row[x], y: row[y] })
+        row[x] = wgs84.x
+        row[y] = wgs84.y
+      })
+    }
+
+    this.myState.statusMessage = ''
+  }
 
   private beforeDestroy() {
     globalStore.commit('setFullScreen', false)
@@ -376,34 +392,37 @@ class XyHexagons extends Vue {
     let dataArray: any = []
 
     try {
-      if (this.vizDetails.file.endsWith('json')) {
-        const json = await this.myState.fileApi.getFileJson(
-          this.myState.subfolder + '/' + this.vizDetails.file
-        )
-        dataArray = json[this.vizDetails.data.elements]
-      } else if (this.vizDetails.file.endsWith('gz')) {
-        const blob = await this.myState.fileApi.getFileBlob(
-          this.myState.subfolder + this.vizDetails.file
-        )
-        const blobString = blob ? await blobToBinaryString(blob) : null
-        let text = await coroutines.run(pako.inflateAsync(blobString, { to: 'string' }))
-        const json = JSON.parse(text)
+      let text = ''
+      let filename = `${this.myState.subfolder}/${this.vizDetails.file}`
 
+      // first, ungzip if we need to
+      if (this.vizDetails.file.endsWith('gz')) {
+        const blob = await this.myState.fileApi.getFileBlob(filename)
+        const blobString = blob ? await blobToBinaryString(blob) : null
+        text = await coroutines.run(pako.inflateAsync(blobString, { to: 'string' }))
+      } else {
+        text = await this.myState.fileApi.getFileText(filename)
+      }
+
+      if (this.vizDetails.file.indexOf('.json') > -1) {
+        const json = await coroutines.parseAsync(text)
         dataArray = json[this.vizDetails.data.elements]
+      } else {
+        'papa-parsing'
+        // if it's not JSON, let's assume it's csv/tsv/xsv and let papaparse figure it out
+        const csv = Papaparse.parse(text, {
+          header: true,
+          skipEmptyLines: true,
+          dynamicTyping: true,
+        })
+        dataArray = csv.data
       }
     } catch (e) {
       console.error(e)
       this.myState.statusMessage = '' + e
     }
+    console.log({ dataArray })
     return { dataArray }
-  }
-
-  private rotateColors() {
-    this.myState.colorScheme =
-      this.myState.colorScheme === ColorScheme.DarkMode
-        ? ColorScheme.LightMode
-        : ColorScheme.DarkMode
-    localStorage.setItem('plugin/agent-animation/colorscheme', this.myState.colorScheme)
   }
 }
 
@@ -501,9 +520,8 @@ export default XyHexagons
 
 .left-side {
   grid-area: leftside;
-  background-color: $steelGray;
-  box-shadow: 0px 2px 10px #11111188;
-  color: white;
+  background-color: var(--bgPanel);
+  box-shadow: 0px 2px 10px #22222266;
   display: flex;
   flex-direction: column;
   font-size: 0.8rem;
@@ -513,9 +531,8 @@ export default XyHexagons
 
 .right-side {
   grid-area: rightside;
-  background-color: $steelGray;
-  box-shadow: 0px 2px 10px #11111188;
-  color: white;
+  background-color: var(--bgPanel);
+  box-shadow: 0px 2px 10px #22222266;
   display: flex;
   flex-direction: column;
   font-size: 0.8rem;
