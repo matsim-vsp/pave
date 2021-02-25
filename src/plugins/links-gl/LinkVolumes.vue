@@ -97,7 +97,7 @@ de:
                                 @click="clickedColorRamp(colorRamp)"
                                 :style="{'padding': '0.25rem 0.25rem'}"
                 )
-                  img(:src="`/colors/scale-${colorRamp}.png`")
+                  img(:src="`/pave/colors/scale-${colorRamp}.png`")
                   p(:style="{'color':'black','lineHeight': '1rem', 'marginBottom':'0.25rem'}") {{ colorRamp }}
 
         //- .panel-item

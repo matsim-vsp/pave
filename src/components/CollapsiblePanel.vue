@@ -56,14 +56,14 @@ export default class VueComponent extends Vue {
   cursor: pointer;
   align-items: center;
   font-size: 22px;
-  background-color: var(--bgCream);
+  background-color: var(--bgCream3);
   outline: none;
   color: #ccc;
   transition: background-color 0.25s, border-radius 0.15s;
 }
 
 .xbutton:hover {
-  background-color: var(--bgCream2);
+  background-color: var(--bgCream);
   color: var(--link);
 }
 
