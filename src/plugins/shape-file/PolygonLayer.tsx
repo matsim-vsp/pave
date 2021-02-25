@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import DeckGL from '@deck.gl/react'
-import { COORDINATE_SYSTEM } from '@deck.gl/core'
 
 import { GeoJsonLayer } from '@deck.gl/layers'
 import { scaleLinear, scaleThreshold } from 'd3-scale'
@@ -55,15 +54,15 @@ export default function Component({
   },
   center = [],
   dark = false,
-  colors = 'viridis',
+  colors = '',
   activeColumn = '',
+  maxValue = 1000,
 }) {
   const { data, header, prj } = shapefile
   const [lon, lat] = center
 
   const initialView = Object.assign(INITIAL_VIEW_STATE, { longitude: lon, latitude: lat })
   const [hoverInfo, setHoverInfo] = useState({})
-  // const [colorInfo, setColorInfo] = useState(() => createColorRamp(colors))
 
   const builtColors = colormap({
     colormap: colors,
@@ -74,6 +73,7 @@ export default function Component({
   const fetchColor = scaleThreshold()
     .domain(new Array(20).fill(0).map((v, i) => 0.05 * i))
     .range(builtColors)
+
   // .range(dark ? builtColors : builtColors.reverse())
 
   // this assumes that zero means hide the link. This may not be generic enough
@@ -117,7 +117,7 @@ export default function Component({
           boxShadow: '0px 2px 10px #22222266',
         }}
       >
-        <p>
+        <div>
           {Object.keys(object.properties).map((prop, i) => {
             return (
               <div key={i}>
@@ -125,7 +125,7 @@ export default function Component({
               </div>
             )
           })}
-        </p>
+        </div>
       </div>
     )
   }
@@ -149,7 +149,7 @@ export default function Component({
           color: dark ? 'white' : '#222',
           padding: '1rem 1rem',
           position: 'absolute',
-          left: x + 4,
+          left: x + 20,
           top: y - 80,
           boxShadow: '0px 2px 10px #22222266',
         }}
@@ -168,23 +168,24 @@ export default function Component({
       data: data,
       filled: true,
       lineWidthUnits: 'pixels',
-      lineWidthMinPixels: 2,
+      lineWidthMinPixels: 1,
       pickable: true,
       stroked: true,
       opacity: 0.7,
       autoHighlight: true,
-      highlightColor: [255, 128, 255], // [64, 255, 64],
+      // highlightColor: [255, 128, 255, 255], // [64, 255, 64],
       parameters: {
-        depthTest: false,
+        depthTest: true,
       },
 
-      getLineColor: [255, 255, 255, 255],
-      getFillColor: [64, 192, 128, 160],
+      getLineColor: [255, 255, 255, 128],
+      getFillColor: (f: any) => SCALED_COLORS(f.properties[activeColumn] / maxValue),
       getLineWidth: 2,
       onHover: setHoverInfo,
 
       updateTriggers: {
-        getLineColor: { dark, colors, activeColumn },
+        // getLineColor: { dark, colors, activeColumn },
+        getFillColor: { dark, colors, activeColumn, maxValue },
         // getLineWidth: { csvColumn },
       },
 

@@ -24,6 +24,7 @@ de:
                 :activeColumn="this.activeHeader"
                 :dark="isDarkMode"
                 :colors="selectedColorRamp"
+                :maxValue="maxValueForScaling"
   )
 
   .right-side(v-if="isLoaded && !thumbnail")
@@ -54,13 +55,10 @@ de:
                 a.dropdown-item(v-for="column in shapefile.header"
                                 @click="handleNewDataColumn(column)") {{ column }}
 
-        //- .panel-item(v-if="csvData.activeColumn > -1")
+        //- .panel-item(v-if="activeHeader")
         //-   p: b {{ $t('colors') }}
         //-   .dropdown.full-width.is-hoverable
         //-     .dropdown-trigger
-        //-       //- button.full-width.button(:class="{'is-loading': csvData.activeColumn < 0}"
-        //-       //-   aria-haspopup="true" aria-controls="dropdown-menu-column-selector")
-
         //-       img(:src="`/pave/colors/scale-${selectedColorRamp}.png`"
         //-           :style="{'height': '2.3rem', 'width': '100%', 'border-radius': '5px'}")
 
@@ -148,6 +146,7 @@ class MyPlugin extends Vue {
   private activeHeader = ''
   private isButtonActiveColumn = false
   private center = [13.45, 52.53]
+  private maxValueForScaling = 1000
 
   private selectedColorRamp = 'viridis'
 
