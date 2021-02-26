@@ -31,12 +31,9 @@ de:
     collapsible-panel(:darkMode="isDarkMode" width="250" direction="right")
       .panel-items
 
-        //- heading
         .panel-item
           h3 {{ vizDetails.title }}
           p {{ vizDetails.description }}
-
-      .panel-items
 
         //- button/dropdown for selecting column
         .panel-item
@@ -82,22 +79,13 @@ de:
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import Papaparse from 'papaparse'
 import { ToggleButton } from 'vue-js-toggle-button'
-import readBlob from 'read-blob'
-import { Route } from 'vue-router'
-import YAML from 'yaml'
-import vuera from 'vuera'
 import { blobToArrayBuffer, blobToBinaryString } from 'blob-util'
-import * as coroutines from 'js-coroutines'
-import { ShapefileLoader } from '@loaders.gl/shapefile'
-import { load } from '@loaders.gl/core'
+import readBlob from 'read-blob'
 import reproject from 'reproject'
-
-import globalStore from '@/store'
-import pako from '@aftersim/pako'
-import CollapsiblePanel from '@/components/CollapsiblePanel.vue'
-import TimeSlider from '@/plugins/links-gl/TimeSlider.vue'
+import * as shapefile from 'shapefile'
+import YAML from 'yaml'
+import * as coroutines from 'js-coroutines'
 
 import {
   ColorScheme,
@@ -108,9 +96,13 @@ import {
   VisualizationPlugin,
 } from '@/Globals'
 
-import PolygonLayer from './PolygonLayer'
-import HTTPFileSystem from '@/util/HTTPFileSystem'
+import globalStore from '@/store'
+import CollapsiblePanel from '@/components/CollapsiblePanel.vue'
 import Coords from '@/util/Coords'
+import HTTPFileSystem from '@/util/HTTPFileSystem'
+import PolygonLayer from './PolygonLayer'
+import TimeSlider from '@/plugins/links-gl/TimeSlider.vue'
+
 import { VuePlugin } from 'vuera'
 Vue.use(VuePlugin)
 
@@ -135,7 +127,6 @@ class MyPlugin extends Vue {
   @Prop({ required: false })
   private thumbnail!: boolean
 
-  private shapeFilename = ''
   private shapefile: {
     data: any[]
     header: string[]
@@ -375,30 +366,49 @@ class MyPlugin extends Vue {
   private async loadShapefile() {
     console.log('loading shapefile')
 
-    const url = this.myState.fileApi.cleanURL(
-      `${this.myState.subfolder}/${this.myState.yamlConfig}`
-    )
+    const url = `${this.myState.subfolder}/${this.myState.yamlConfig}`
+
+    console.log(url)
+    // first, get shp/dbf files
+    let geojson: any = {}
     try {
-      const shapefile = await load(url, ShapefileLoader) // , { shp: { _maxDimensions: 2 } }
+      const shpPromise = this.myState.fileApi.getFileBlob(url)
+      const dbfPromise = this.myState.fileApi.getFileBlob(url.replace('.shp', '.dbf'))
+      await Promise.all([shpPromise, dbfPromise])
 
-      const wgs84 = reproject.toWgs84(
-        { type: 'FeatureCollection', features: shapefile.data },
-        shapefile.prj
-      )
+      const shpBlob = await (await shpPromise)?.arrayBuffer()
+      const dbfBlob = await (await dbfPromise)?.arrayBuffer()
+      if (!shpBlob || !dbfBlob) return
 
-      const bbox: any = shapefile.header.bbox
-      const boxMin = Coords.toLngLat(shapefile.prj, { x: bbox.minX, y: bbox.minY })
-      const boxMax = Coords.toLngLat(shapefile.prj, { x: bbox.maxX, y: bbox.maxY })
-      const newBox = { minX: boxMin.x, minY: boxMin.y, maxX: boxMax.x, maxY: boxMax.y }
-
-      const header = Object.keys(shapefile.data[0].properties)
-      this.shapefile = { data: wgs84.features, prj: shapefile.prj, header, bbox: newBox }
-
-      this.handleNewDataColumn(this.shapefile.header[0])
+      geojson = await shapefile.read(shpBlob, dbfBlob)
     } catch (e) {
       console.error(e)
       this.myState.statusMessage = '' + e
+      return
     }
+
+    // next, see if there is a .prj file with projection information
+    let projection = ''
+    try {
+      projection = await this.myState.fileApi.getFileText(url.replace('.shp', '.prj'))
+    } catch (e) {
+      // we can live without a projection
+    }
+
+    // then, reproject if we have a .prj file
+    if (projection) geojson = reproject.toWgs84(geojson, projection)
+
+    console.log({ geojson })
+    const bbox: any = geojson.bbox
+    const boxMin = Coords.toLngLat(projection, { x: bbox[0], y: bbox[1] })
+    const boxMax = Coords.toLngLat(projection, { x: bbox[2], y: bbox[3] })
+    const newBox = { minX: boxMin.x, minY: boxMin.y, maxX: boxMax.x, maxY: boxMax.y }
+
+    const header = Object.keys(geojson.features[0].properties)
+    this.shapefile = { data: geojson.features, prj: projection, header, bbox: newBox }
+
+    // done! show the first column
+    this.handleNewDataColumn(this.shapefile.header[0])
   }
 }
 

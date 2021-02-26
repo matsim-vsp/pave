@@ -104,16 +104,21 @@ export default function Component({
     const { object, x, y } = hoverInfo
     if (!object) return
 
-    return (
+    // try to figure out how tall it is? So tooltip doesn't go below the screen bottom
+    let tooltipHeight = 24 + 22 * Object.keys(object.properties).length
+    if (y + tooltipHeight < window.innerHeight) tooltipHeight = 0
+
+    const tooltip = (
       <div
+        id="shape-tooltip"
         className="tooltip"
         style={{
           backgroundColor: dark ? '#445' : 'white',
           color: dark ? 'white' : '#222',
           padding: '1rem 1rem',
           position: 'absolute',
-          left: x + 10,
-          top: y - 80,
+          left: x + 15,
+          top: y - tooltipHeight,
           boxShadow: '0px 2px 10px #22222266',
         }}
       >
@@ -128,6 +133,8 @@ export default function Component({
         </div>
       </div>
     )
+
+    return tooltip
   }
 
   function renderTooltip({ hoverInfo }: any) {

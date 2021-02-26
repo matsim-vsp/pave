@@ -42,6 +42,5 @@ declare module '@deck.gl/geo-layers'
 declare module '@loaders.gl/shapefile'
 declare module '@luma.gl/constants'
 declare module '@luma.gl/core'
-declare module '@math.gl/polygon'
 
 declare module '@aftersim/pako'
