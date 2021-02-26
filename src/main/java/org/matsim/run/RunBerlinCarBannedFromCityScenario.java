@@ -134,6 +134,7 @@ public class RunBerlinCarBannedFromCityScenario {
 //                bind(MainModeIdentifier.class).to(OpenBerlinIntermodalMainModeIdentifier.class);
                 bind(AnalysisMainModeIdentifier.class).to(OpenBerlinIntermodalMainModeIdentifier.class);
 
+                //tune mode choice: at the beginning, double the weight of mode choice and tune it back down later
                 bind(TuneModeChoice.class).in(Singleton.class);
                 addControlerListenerBinding().to(TuneModeChoice.class);
             }

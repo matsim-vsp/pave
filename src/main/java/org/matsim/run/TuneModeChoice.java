@@ -43,37 +43,44 @@ class TuneModeChoice implements IterationStartsListener {
 	@Inject
 	private Config config;
 
+
+
 	@Override
 	public void notifyIterationStarts(IterationStartsEvent iterationStartsEvent) {
 
-		StrategyConfigGroup.StrategySettings subtourModeChoice = null;
+		StrategyConfigGroup.StrategySettings modeChoice = null;
 		StrategyConfigGroup.StrategySettings changeExpBeta = null;
 
 		for (StrategyConfigGroup.StrategySettings strategySettings : planStrategies.keySet()) {
-			if (strategySettings.getStrategyName().equals(DefaultPlanStrategiesModule.DefaultStrategy.SubtourModeChoice) &&
-					strategySettings.getSubpopulation().equals("person")) {
-				subtourModeChoice = strategySettings;
+			if ( (strategySettings.getStrategyName().equals(DefaultPlanStrategiesModule.DefaultStrategy.SubtourModeChoice)
+					|| strategySettings.getStrategyName().equals(DefaultPlanStrategiesModule.DefaultStrategy.ChangeSingleTripMode) ) //assuming that only one of the mode choice strategies is configured
+			&&	strategySettings.getSubpopulation().equals("person") ) {
+				modeChoice = strategySettings;
 			} else if (strategySettings.getStrategyName().equals("ChangeExpBeta") &&
 					strategySettings.getSubpopulation().equals("person")) {
 				changeExpBeta = strategySettings;
 			}
 		}
 		if (iterationStartsEvent.getIteration() == 0) {
-			if (changeExpBeta != null && subtourModeChoice != null) {
-				changeExpBeta.setWeight(changeExpBeta.getWeight() - subtourModeChoice.getWeight());
-				subtourModeChoice.setWeight(2 * subtourModeChoice.getWeight());
+			if (changeExpBeta != null && modeChoice != null) {
+				changeExpBeta.setWeight(changeExpBeta.getWeight() - modeChoice.getWeight());
+				modeChoice.setWeight(2 * modeChoice.getWeight());
 			}
 		} else if( !reset &&
-				( iterationStartsEvent.getIteration() == 100 ||
-				iterationStartsEvent.getIteration() >= 0.2 * (config.controler().getLastIteration() - config.controler().getFirstIteration()) * config.strategy().getFractionOfIterationsToDisableInnovation() ) ) {
-			if (changeExpBeta != null && subtourModeChoice != null) {
-				subtourModeChoice.setWeight(0.5 * subtourModeChoice.getWeight());
-				changeExpBeta.setWeight(changeExpBeta.getWeight() + subtourModeChoice.getWeight());
+				(
+				iterationStartsEvent.getIteration() == 100
+//						||	iterationStartsEvent.getIteration() >= 0.2 * (config.controler().getLastIteration() - config.controler().getFirstIteration()) * config.strategy().getFractionOfIterationsToDisableInnovation()
+				)
+		) {
+			if (changeExpBeta != null && modeChoice != null) {
+				modeChoice.setWeight(0.5 * modeChoice.getWeight());
+				changeExpBeta.setWeight(changeExpBeta.getWeight() + modeChoice.getWeight());
 			}
 			reset = true;
 		}
 
-		log.info("subtourModeChoice weight in iteration=" + iterationStartsEvent.getIteration() + " is = " + subtourModeChoice.getWeight());
+		log.info("modeChoice weight in iteration=" + iterationStartsEvent.getIteration() + " is = " + modeChoice.getWeight());
+		log.info("mode choice strategy name is " + modeChoice.getStrategyName());
 		log.info("changeExpBeta weight in iteration=" + iterationStartsEvent.getIteration() + " is = " + changeExpBeta.getWeight());
 	}
 }
