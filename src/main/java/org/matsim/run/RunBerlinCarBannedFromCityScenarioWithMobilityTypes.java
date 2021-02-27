@@ -27,7 +27,6 @@ import org.matsim.accessEgress2CarByDRT.DRTAccessWalkEgress2CarModule;
 import org.matsim.accessEgress2CarByDRT.WalkAccessDRTEgress2CarModule;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -35,17 +34,17 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.router.AnalysisMainModeIdentifier;
 import org.matsim.core.utils.collections.Tuple;
+import org.matsim.core.utils.io.IOUtils;
 import org.matsim.optDRT.MultiModeOptDrtConfigGroup;
 import org.matsim.optDRT.OptDrt;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
+import org.matsim.utils.gis.shp2matsim.ShpGeometryUtils;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.matsim.utils.gis.shp2matsim.ShpGeometryUtils.loadPreparedGeometries;
 
 public class RunBerlinCarBannedFromCityScenarioWithMobilityTypes {
 
@@ -118,10 +117,12 @@ public class RunBerlinCarBannedFromCityScenarioWithMobilityTypes {
 //        CarBannedScenarioPreparation.banCarFromDRTServiceArea(scenario, drtConfigGroup, TransportMode.car);
 
         { //this is for open berlin scenario in pave context only!
-            CarBannedScenarioPreparation.banCarAndRideFromArea(scenario, carFreeZoneShape);
-//        replace ride trips inside service area with single-leg car trips (which will then be routed with fallback mode which triggers mode choice)
-            List<PreparedGeometry> serviceAreaGeoms = loadPreparedGeometries(drtConfigGroup.getDrtServiceAreaShapeFileURL(scenario.getConfig().getContext()));
-            CarBannedScenarioPreparation.replaceRideTripsWithinGeomsWithSingleLegTripsOfMode(scenario.getPopulation(), TransportMode.car, serviceAreaGeoms); //TODO what is the best replacement mode for ride?
+
+            List<PreparedGeometry> carFreeGeoms = ShpGeometryUtils.loadPreparedGeometries(IOUtils.resolveFileOrResource(carFreeZoneShape));
+            CarBannedScenarioPreparation.banCarAndRideFromArea(scenario, carFreeGeoms);
+
+            //this modifies input plans!! careful!
+            CarBannedScenarioPreparation.modifyPlans(scenario, carFreeGeoms, DRT_ACCESS_DRT_WALK_MODE, WALK_ACCESS_DRT_EGRESS_MODE);
         }
 
         //insert vehicles for new modes
