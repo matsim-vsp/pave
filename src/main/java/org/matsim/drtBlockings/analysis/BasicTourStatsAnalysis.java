@@ -52,12 +52,12 @@ public class BasicTourStatsAnalysis implements DrtBlockingRequestScheduledEventH
     public static void main(String[] args) {
 //        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/chessboard/Analysis_test/";
 //        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-1pct/drtBlockingTest_30Blockings_realisticServiceTimeWindows/";
-        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-1pct/drtBlockingTest_30Blockings_realisticServiceTimeWindows_adaptiveBlocking/";
+        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-10pct/";
 //        String eventsFile = dir + "output_events.xml.gz";
-        String eventsFile = dir + "noIncDRT.output_events.xml.gz";
+        String eventsFile = dir + "p2-23DRTBlockingBaseCase.output_events.xml.gz";
 //        String carriersFile = dir + "";
 //        String inputNetwork = dir + "output_network.xml.gz";
-        String inputNetwork = dir + "noIncDRT.output_network.xml.gz";
+        String inputNetwork = dir + "p2-23DRTBlockingBaseCase.output_network.xml.gz";
         String outputFile = dir + "BasicTourStats.csv";
 //        final Carriers carriers = new Carriers();
 //        new CarrierPlanXmlReader(carriers).readFile(carriersFile);
@@ -79,7 +79,7 @@ public class BasicTourStatsAnalysis implements DrtBlockingRequestScheduledEventH
     public void writeStats(String file) {
         BufferedWriter writer = IOUtils.getBufferedWriter(file);
         try {
-            System.out.println("WRITING!");
+            System.out.println("WRITING TOUR STATS FOR POLICY CASE!");
             int i =1;
             writer.write("no;vehId;totalDistance [m];accessLegDistance [m];departureTime [s];arrivalTime [s];tourDuration [s];accessLegDuration [s];requestId;numberOfServices;numberOfTasks");
             writer.newLine();

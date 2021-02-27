@@ -11,14 +11,12 @@ package org.matsim.drtBlockings.run;
 import ch.sbb.matsim.config.SwissRailRaptorConfigGroup;
 import com.google.inject.Singleton;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.TransportMode;
-import org.matsim.contrib.drt.routing.DrtRoute;
+import org.matsim.contrib.drt.analysis.DrtAnalysisControlerListener;
+import org.matsim.contrib.drt.analysis.DrtModeAnalysisModule;
+import org.matsim.contrib.drt.analysis.DrtTripsAnalyser;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
-import org.matsim.contrib.drt.run.MultiModeDrtModule;
-import org.matsim.contrib.dvrp.fleet.DvrpVehicleLookup;
-import org.matsim.contrib.dvrp.run.DvrpConfigGroup;
-import org.matsim.contrib.dvrp.run.DvrpMode;
+import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
 import org.matsim.contrib.freight.FreightConfigGroup;
@@ -35,25 +33,19 @@ import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.GlobalConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.MatsimServices;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.controler.listener.IterationEndsListener;
-import org.matsim.core.population.routes.GenericRouteImpl;
-import org.matsim.core.router.Transit;
 import org.matsim.core.scoring.functions.ScoringParametersForPerson;
 import org.matsim.core.scoring.functions.SubpopulationScoringParameters;
 import org.matsim.drtBlockings.DrtBlockingModule;
 import org.matsim.drtBlockings.analysis.BaseCaseTourStatsAnalysis;
 import org.matsim.pt.config.TransitConfigGroup;
-import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.run.RunBerlinScenario;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
-import org.matsim.run.drtBlocking.RunDrtBlocking;
-import playground.vsp.scoring.IncomeDependentUtilityOfMoneyPersonScoringParameters;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
@@ -76,7 +68,7 @@ public class RunBaseCaseInBerlin {
     //dir for 1 carrier only
     private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
     //dir for all Berlin carriers
-//    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
+//    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
     private static final String INPUT_CONFIG = INPUT_DIR + "p2-23.output_config.xml";
     private static final String INPUT_NETWORK_CHANGE_EVENTS = INPUT_DIR + "p2-23.networkChangeEvents.xml.gz";
 //    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtLegsOnly.xml.gz";
@@ -89,8 +81,7 @@ public class RunBaseCaseInBerlin {
     private static final String CARRIER_VEHICLE_TYPES = INPUT_DIR + "carrier_vehicleTypes.xml";
     private static final boolean RUN_TOURPLANNING = false;
 
-    private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/";
-
+    private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/base_cases/" + CARRIERS_PLANS_PLANNED.replace(INPUT_DIR, "");
     private static final String TRANSIT_FILE = "berlin-v5.5-transit-schedule_empty.xml";
 
     public static void main(String[] args) {
@@ -136,13 +127,14 @@ public class RunBaseCaseInBerlin {
 
         //TODO we should bind in our analyses here as well so they run automatically with every sim run
         // how about modifying BasicTourStats and NeverStartedTourStats, so we can apply it to the base case?
-        BaseCaseTourStatsAnalysis analysis = new BaseCaseTourStatsAnalysis(scenario.getNetwork());
+        BaseCaseTourStatsAnalysis tourAnalysis = new BaseCaseTourStatsAnalysis(scenario.getNetwork());
+//        DrtAnalysisControlerListener drtAnalysis = prepareDrtAnalysis(controler);
 
         controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
-                addControlerListenerBinding().toInstance(analysis);
-                addEventHandlerBinding().toInstance(analysis);
+                addControlerListenerBinding().toInstance(tourAnalysis);
+                addEventHandlerBinding().toInstance(tourAnalysis);
             }
         });
 
@@ -182,7 +174,7 @@ public class RunBaseCaseInBerlin {
 
     public static Scenario prepareScenario(Config config, boolean performTourplanning) {
 
-        DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(config);
+//        DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(config);
         FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
 
         Scenario scenario = RunDrtOpenBerlinScenario.prepareScenario(config);
@@ -277,5 +269,17 @@ public class RunBaseCaseInBerlin {
             withoutFreight.reset(event.getIteration());
         });
     }
+
+//    private static DrtAnalysisControlerListener prepareDrtAnalysis(Controler controler) {
+//
+//        Config config = controler.getConfig();
+//        DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(config);
+//        Fleet fleet = drtCfg.get
+//
+//        DrtAnalysisControlerListener drtAnalysis = new DrtAnalysisControlerListener(config, drtCfg, fleet, drtVehicleStats,
+//                matsimServices, network, drtRequestAnalyzer);
+//
+//        return drtAnalysis;
+//    }
 
 }
