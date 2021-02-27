@@ -4,14 +4,15 @@ en:
   colors: "Colors"
   loading: "Loading"
   selectColumn: "Select data column"
-  timeOfDay: "Time of Day"
-
+  timeOfDay: "Time of day"
+  bandwidths: "Line widths"
 de:
   all: "Alle"
   colors: "Farben"
   loading: "Wird geladen"
   selectColumn: "Datenspalte wählen"
   timeOfDay: "Uhrzeit"
+  bandwidths: "Linienbreiten"
 </i18n>
 
 <template lang="pug">
@@ -24,6 +25,7 @@ de:
                 :data="csvData"
                 :dark="isDarkMode"
                 :colors="selectedColorRamp"
+                :maxWidth="maxWidth"
   )
 
   .right-side(v-if="isLoaded && !thumbnail")
@@ -38,18 +40,6 @@ de:
           //- label.checkbox
           //-   input(type="checkbox" v-model="showTimeRange")
           //-   | &nbsp;Zeitraum
-
-      //- .panel-items
-      //-   h4.heading Linienbreiten
-      //-   scale-slider.time-slider(v-if="headers.length > 0"
-      //-     :stops='SCALE_STOPS'
-      //-     @change='bounceScale')
-      //-   label.checkbox
-      //-     input(type="checkbox" v-model="showAllRoads")
-      //-     | &nbsp;Gesamtes Straßennetz anzeigen
-
-
-      .panel-items
 
         //- time-of-day slider
         .panel-item(v-if="vizDetails.useSlider")
@@ -77,6 +67,22 @@ de:
                 a.dropdown-item(v-for="column in csvData.header"
                                 @click="handleNewDataColumn(column)") {{ column }}
 
+        .panel-item
+          p: b {{ $t('bandwidths')}}
+
+          .options(style="display: flex; flex-direction:column;")
+            input.input(v-model="maxWidth")
+            | &nbsp;Max Width
+
+            //- label.checkbox
+            //-   input(type="checkbox")
+            //-   | &nbsp;None
+
+            //- label.checkbox
+            //-   input(type="checkbox")
+            //-   | &nbsp;Relative
+
+
         .panel-item(v-if="csvData.activeColumn > -1")
           p: b {{ $t('colors') }}
           .dropdown.full-width.is-hoverable
@@ -100,14 +106,6 @@ de:
                   img(:src="`/pave/colors/scale-${colorRamp}.png`")
                   p(:style="{'color':'black','lineHeight': '1rem', 'marginBottom':'0.25rem'}") {{ colorRamp }}
 
-        //- .panel-item
-        //-   p: b Bandwidths
-        //-   input.input
-
-        //- .panel-item
-        //-   button.button picker
-
-
   .nav(v-if="!thumbnail && myState.statusMessage")
     p.status-message {{ myState.statusMessage }}
 
@@ -115,15 +113,11 @@ de:
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import Papaparse from 'papaparse'
 import { ToggleButton } from 'vue-js-toggle-button'
 import { debounce } from 'debounce'
+import Papaparse from 'papaparse'
 import readBlob from 'read-blob'
-import { Route } from 'vue-router'
 import YAML from 'yaml'
-import vuera from 'vuera'
-import crossfilter from 'crossfilter2'
-import { blobToArrayBuffer, blobToBinaryString } from 'blob-util'
 import * as coroutines from 'js-coroutines'
 
 import globalStore from '@/store'
@@ -178,6 +172,7 @@ class MyPlugin extends Vue {
   private geojsonFilename = ''
   private isButtonActiveColumn = false
   private center = [13.45, 52.53]
+  private maxWidth = '10000'
 
   private showTimeRange = false
   private bounceTimeSlider = debounce(this.changedTimeSlider, 200)
@@ -217,6 +212,7 @@ class MyPlugin extends Vue {
   }
 
   private csvData: CSV = { header: [], headerMax: [], rows: {}, activeColumn: -1 }
+  private csvBase: CSV = { header: [], headerMax: [], rows: {}, activeColumn: -1 }
 
   private globalState = globalStore.state
   private isDarkMode = this.globalState.colorScheme === ColorScheme.DarkMode
@@ -413,61 +409,61 @@ class MyPlugin extends Vue {
   // }
 
   private async loadCSVFiles() {
-    console.log('loading CSV files')
+    const promises: any[] = []
+    promises.push(this.loadCSVFile(this.vizDetails.csvFile))
 
-    const csvFilename = this.myState.fileApi.cleanURL(
-      `${this.myState.subfolder}/${this.vizDetails.csvFile}`
-    )
+    // if (this.vizDetails.csvBase) promises.push(this.loadCSVFile(this.vizDetails.csvBase))
+    await Promise.all(promises)
 
-    let globalMax = 0
+    this.csvData = await promises[0]
+    if (promises[1]) this.csvBase = await promises[1]
 
-    try {
-      Papaparse.parse(csvFilename, {
-        fastMode: true,
-        download: true,
-        skipEmptyLines: true,
-        dynamicTyping: true,
-        complete: (results: { data: any[] }) => {
-          console.log('parsing')
-
-          // create object with link-id as lookup-key
-          const allLinks: { [id: string]: number[] } = {}
-
-          // coroutine to not kill browser
-          coroutines
-            .forEachAsync(results.data.splice(1), (link: any) => {
-              const key = link[0].toString()
-              if (this.vizDetails.useSlider) {
-                const entries = link.slice(1) // skip first element (contains link-id)
-                const total = entries.reduce((a: number, b: number) => a + b, 0)
-                globalMax = Math.max(globalMax, total)
-                allLinks[key] = [total, ...entries] // total comes first
-              } else {
-                allLinks[key] = link.slice(1) // skip first element (contains link-id)
-              }
-            })
-            .then(result => {
-              const header = results.data[0].slice(1) as string[]
-              if (this.vizDetails.useSlider) header.unshift(`${this.$t('all')}`)
-
-              this.finishedLoadingCSVs(header, allLinks, globalMax)
-            })
-        },
-      })
-    } catch (e) {
-      console.error(e)
-      this.myState.statusMessage = '' + e
-    }
+    console.log('got it')
+    console.log({ csvData: this.csvData, csvBase: this.csvBase })
+    // data is all loaded! select first column for display
+    this.handleNewDataColumn(this.csvData.header[0])
   }
 
-  private finishedLoadingCSVs(
-    header: string[],
-    allLinks: { [id: string]: number[] },
-    globalMax: number
-  ) {
+  private async loadCSVFile(filename: string) {
+    console.log('loading CSV file:', filename)
+
+    const csvFilename = `${this.myState.subfolder}/${this.vizDetails.csvFile}`
+
+    let globalMax = 0
+    const raw = await this.myState.fileApi.getFileText(csvFilename)
+    const parsed = await Papaparse.parse(raw, {
+      header: false,
+      skipEmptyLines: true,
+      dynamicTyping: true,
+    })
+    console.log({ parsed })
+    console.log('parsing', filename)
+
+    // create object with link-id as lookup-key
+    const allLinks: { [id: string]: number[] } = {}
+
+    // coroutine to not kill browser - add up total values and save in lookup
+    await coroutines.forEachAsync(parsed.data.splice(1), (link: any) => {
+      const key = link[0].toString()
+      if (this.vizDetails.useSlider) {
+        const entries = link.slice(1) // skip first element (contains link-id)
+        const total = entries.reduce((a: number, b: number) => a + b, 0)
+        globalMax = Math.max(globalMax, total)
+        allLinks[key] = [total, ...entries] // total comes first
+      } else {
+        allLinks[key] = link.slice(1) // skip first element (contains link-id)
+      }
+    })
+
+    const rowZero = parsed.data[0] as string[]
+    const header = rowZero.slice(1) // skip first column with link id's
+
+    if (this.vizDetails.useSlider) header.unshift(`${this.$t('all')}`)
+
+    // some people insist on labeling "8 AM" as "08:00:00" which is annoying
     const cleanHeaders = header.map(h => h.replace(':00:00', ''))
 
-    this.csvData = {
+    return {
       header: cleanHeaders,
       headerMax: this.vizDetails.useSlider
         ? new Array(this.csvData.header.length).fill(globalMax)
@@ -475,10 +471,6 @@ class MyPlugin extends Vue {
       rows: allLinks,
       activeColumn: -1,
     }
-
-    console.log({ csvData: this.csvData })
-    // need to do this! select first entry
-    this.handleNewDataColumn(this.csvData.header[0])
   }
 
   private changedTimeSlider(value: any) {

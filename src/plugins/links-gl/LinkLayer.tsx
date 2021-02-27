@@ -57,6 +57,7 @@ export default function Component({
   },
   center = [],
   dark = false,
+  maxWidth = '',
   colors = 'viridis',
 }) {
   const { rows, header, headerMax, activeColumn } = data
@@ -64,6 +65,8 @@ export default function Component({
 
   const initialView = Object.assign(INITIAL_VIEW_STATE, { longitude: lon, latitude: lat })
   const [hoverInfo, setHoverInfo] = useState({})
+  const maxWidthValue = parseFloat(maxWidth)
+
   // const [colorInfo, setColorInfo] = useState(() => createColorRamp(colors))
 
   const builtColors = colormap({
@@ -97,9 +100,22 @@ export default function Component({
     return fetchColor(scaledValue)
   }
 
-  // const getLineWidth = (feature: any) => {
-  //   return 4
-  // }
+  // Line Widths:
+  // --> 2 pixels if no line width at all
+  // --> Scaled up to 50 pixels, scaled vs. maxWidth
+  const getLineWidth = (feature: any) => {
+    if (!maxWidthValue) return 0
+
+    const id = feature.properties.id
+    const row = rows[id]
+
+    if (!row) return 0
+
+    const value = row[activeColumn]
+
+    const scaledValue = (50.0 * value) / maxWidthValue
+    return Math.min(scaledValue, 100)
+  }
 
   function handleClick() {
     console.log('click!')
@@ -154,12 +170,12 @@ export default function Component({
       },
 
       getLineColor,
-      getLineWidth: 2,
+      getLineWidth,
       onHover: setHoverInfo,
 
       updateTriggers: {
         getLineColor: { dark, colors, activeColumn },
-        // getLineWidth: { csvColumn },
+        getLineWidth: { maxWidth, activeColumn },
       },
 
       transitions: {
