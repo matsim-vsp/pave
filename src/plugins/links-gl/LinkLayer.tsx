@@ -49,18 +49,27 @@ const INITIAL_VIEW_STATE = {
 
 export default function Component({
   networkUrl = '',
+  center = [],
+  colors = 'viridis',
+  dark = false,
+  maxWidth = '',
   data = {} as {
     rows: { [id: string]: number[] }
     header: string[]
     headerMax: number[]
     activeColumn: number
   },
-  center = [],
-  dark = false,
-  maxWidth = '',
-  colors = 'viridis',
+  showDiffs = false,
+  base = {} as {
+    rows: { [id: string]: number[] }
+    header: string[]
+    headerMax: number[]
+    activeColumn: number
+  },
 }) {
   const { rows, header, headerMax, activeColumn } = data
+  const baseData = showDiffs ? base.rows : {}
+
   const [lon, lat] = center
 
   const initialView = Object.assign(INITIAL_VIEW_STATE, { longitude: lon, latitude: lat })
@@ -84,6 +93,10 @@ export default function Component({
   const colorPaleGrey = dark ? [80, 80, 80, 40] : [212, 212, 212, 40]
   const colorInvisible = [0, 0, 0, 0]
 
+  const color0 = fetchColor(0)
+  const color1 = fetchColor(1)
+
+  // --- LINE COLORS -----------------------------------------------
   const getLineColor = (feature: any) => {
     const id = feature.properties.id
     const row = rows[id]
@@ -93,14 +106,26 @@ export default function Component({
     const value = row[activeColumn]
     if (!value) return colorInvisible
 
-    // const scaledValue = value / headerMax[activeColumn]
-    const scaledValue = Math.log(value) / Math.log(headerMax[activeColumn])
-    if (scaledValue < 0.0001) return colorPaleGrey
+    // comparison?
+    if (showDiffs) {
+      const baseRow = baseData[id]
+      if (!baseRow) return color1
 
-    return fetchColor(scaledValue)
+      const baseValue = baseRow[activeColumn]
+      // const diff = (value - baseValue) / maxWidthValue
+      const diff = value - baseValue
+      if (diff === 0) return 0 // fetchColor(0.5)
+      return baseValue < value ? color1 : color0
+    } else {
+      // const scaledValue = value / headerMax[activeColumn]
+      const scaledValue = Math.log(value) / Math.log(headerMax[activeColumn])
+      if (scaledValue < 0.0001) return colorPaleGrey
+
+      return fetchColor(scaledValue)
+    }
   }
 
-  // Line Widths:
+  // --- LINE WIDTHS -----------------------------------------------
   // --> 2 pixels if no line width at all
   // --> Scaled up to 50 pixels, scaled vs. maxWidth
   const getLineWidth = (feature: any) => {
@@ -110,11 +135,20 @@ export default function Component({
     const row = rows[id]
 
     if (!row) return 0
-
     const value = row[activeColumn]
 
-    const scaledValue = (50.0 * value) / maxWidthValue
-    return Math.min(scaledValue, 100)
+    // comparison?
+    if (showDiffs) {
+      const baseRow = baseData[id]
+      if (!baseRow) return 0
+
+      const baseValue = baseRow[activeColumn]
+      const diff = (50 * Math.abs(value - baseValue)) / maxWidthValue
+      return diff
+    } else {
+      const scaledValue = (50.0 * value) / maxWidthValue
+      return Math.min(scaledValue, 100)
+    }
   }
 
   function handleClick() {
@@ -159,12 +193,12 @@ export default function Component({
       data: networkUrl,
       filled: false,
       lineWidthUnits: 'pixels',
-      lineWidthMinPixels: 2,
+      lineWidthMinPixels: 1,
       pickable: true,
       stroked: false,
       opacity: 0.7,
       autoHighlight: true,
-      highlightColor: [255, 128, 255], // [64, 255, 64],
+      // highlightColor: [255, 128, 255, 255], // [64, 255, 64],
       parameters: {
         depthTest: false,
       },
@@ -174,8 +208,8 @@ export default function Component({
       onHover: setHoverInfo,
 
       updateTriggers: {
-        getLineColor: { dark, colors, activeColumn },
-        getLineWidth: { maxWidth, activeColumn },
+        getLineColor: { showDiffs, dark, colors, activeColumn },
+        getLineWidth: { showDiffs, maxWidth, activeColumn },
       },
 
       transitions: {

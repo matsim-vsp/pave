@@ -6,6 +6,7 @@ en:
   selectColumn: "Select data column"
   timeOfDay: "Time of day"
   bandwidths: "Line widths"
+  showDiffs: "Show Differences"
 de:
   all: "Alle"
   colors: "Farben"
@@ -13,6 +14,7 @@ de:
   selectColumn: "Datenspalte wählen"
   timeOfDay: "Uhrzeit"
   bandwidths: "Linienbreiten"
+  showDiffs: "Differenzen"
 </i18n>
 
 <template lang="pug">
@@ -23,6 +25,8 @@ de:
                 :center="center"
                 :networkUrl="geojsonFilename"
                 :data="csvData"
+                :base="csvBase"
+                :showDiffs="showDiffs",
                 :dark="isDarkMode"
                 :colors="selectedColorRamp"
                 :maxWidth="maxWidth"
@@ -98,13 +102,20 @@ de:
                 //-   i.fas.fa-angle-down(aria-hidden="true")
 
             #dropdown-menu-color-selector.dropdown-menu(role="menu")
-              .dropdown-content(:style="{'padding':'0 0','backgroundColor': '#00000011'}")
+              .dropdown-content(:style="{'padding':'0 0'}")
                 a.dropdown-item(v-for="colorRamp in Object.keys(colorRamps)"
                                 @click="clickedColorRamp(colorRamp)"
                                 :style="{'padding': '0.25rem 0.25rem'}"
                 )
                   img(:src="`/pave/colors/scale-${colorRamp}.png`")
-                  p(:style="{'color':'black','lineHeight': '1rem', 'marginBottom':'0.25rem'}") {{ colorRamp }}
+                  p(:style="{'lineHeight': '1rem', 'marginBottom':'0.25rem'}") {{ colorRamp }}
+
+        //- DIFF checkbox
+        .panel-item
+          p: b {{ $t('showDiffs') }}
+          toggle-button.toggle(:width="40" :value="showDiffs" :labels="false"
+            :color="{checked: '#4b7cc4', unchecked: '#222'}"
+            @change="showDiffs = !showDiffs")
 
   .nav(v-if="!thumbnail && myState.statusMessage")
     p.status-message {{ myState.statusMessage }}
@@ -174,6 +185,7 @@ class MyPlugin extends Vue {
   private center = [13.45, 52.53]
   private maxWidth = '10000'
 
+  private showDiffs = false
   private showTimeRange = false
   private bounceTimeSlider = debounce(this.changedTimeSlider, 200)
 
@@ -255,7 +267,7 @@ class MyPlugin extends Vue {
     for (const folder of subfolders) {
       if (!folder) continue
 
-      buildFolder += folder + '/'
+      buildFolder += folder
       crumbs.push({
         label: folder,
         url: '/' + this.myState.fileSystem.url + buildFolder,
@@ -355,7 +367,7 @@ class MyPlugin extends Vue {
     const column = this.csvData.header.indexOf(title)
     if (column === -1) return
 
-    // find max value for scaling
+    // // find max value for scaling
     if (!this.csvData.headerMax[column]) {
       let max = 0
       Object.values(this.csvData.rows).forEach(row => {
@@ -412,14 +424,14 @@ class MyPlugin extends Vue {
     const promises: any[] = []
     promises.push(this.loadCSVFile(this.vizDetails.csvFile))
 
-    // if (this.vizDetails.csvBase) promises.push(this.loadCSVFile(this.vizDetails.csvBase))
+    if (this.vizDetails.csvBase) promises.push(this.loadCSVFile(this.vizDetails.csvBase))
     await Promise.all(promises)
 
     this.csvData = await promises[0]
     if (promises[1]) this.csvBase = await promises[1]
 
-    console.log('got it')
     console.log({ csvData: this.csvData, csvBase: this.csvBase })
+
     // data is all loaded! select first column for display
     this.handleNewDataColumn(this.csvData.header[0])
   }
@@ -427,7 +439,7 @@ class MyPlugin extends Vue {
   private async loadCSVFile(filename: string) {
     console.log('loading CSV file:', filename)
 
-    const csvFilename = `${this.myState.subfolder}/${this.vizDetails.csvFile}`
+    const csvFilename = `${this.myState.subfolder}/${filename}`
 
     let globalMax = 0
     const raw = await this.myState.fileApi.getFileText(csvFilename)
@@ -703,6 +715,14 @@ label {
 .full-width {
   display: block;
   width: 100%;
+}
+
+#dropdown-menu-color-selector {
+  background-color: var(--bgBold);
+
+  p {
+    color: #888;
+  }
 }
 
 @media only screen and (max-width: 640px) {
