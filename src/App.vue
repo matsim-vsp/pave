@@ -24,8 +24,9 @@
         ul
           li(v-for="crumb,i in state.breadcrumbs"
           )
-            a() {{ crumb.label }}
-            //-  :class="{'is-active': i===state.breadcrumbs.length-1}"
+            router-link(v-if="i < state.breadcrumbs.length-1"
+                        :to="crumb.url") {{ crumb.label }}
+            a.no-breadcrumb-link(v-else) {{ crumb.label }}
 
   .center-area.nav-padding
     login-panel.login-panel
@@ -207,6 +208,11 @@ canvas {
   }
 
   a:hover {
+    cursor: pointer;
+    color: white;
+  }
+
+  a.no-breadcrumb-link {
     cursor: default;
     color: #ccc;
   }

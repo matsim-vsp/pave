@@ -198,7 +198,7 @@ class XyHexagons extends Vue {
     for (const folder of subfolders) {
       if (!folder) continue
 
-      buildFolder += folder + '/'
+      buildFolder += folder
       crumbs.push({
         label: folder,
         url: '/' + this.myState.fileSystem.url + buildFolder,

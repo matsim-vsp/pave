@@ -22,6 +22,7 @@ class SVNFileSystem {
 
     path = path.replaceAll('//', '/')
     path = path.replace('https:/', 'https://')
+    path = path.replace('http:/', 'http://')
     // console.log('CLEAN2: ', path)
     return path
   }
