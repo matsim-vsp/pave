@@ -163,8 +163,20 @@ export default function Component({
     const row = rows[id]
     if (!row) return null
 
-    const value: any = row[activeColumn]
-    if (value === undefined) return null
+    let value = row[activeColumn]
+    let baseValue = 0
+    let diff = undefined
+
+    if (showDiffs) {
+      const baseRow = baseData[id]
+      if (baseRow) baseValue = baseRow[activeColumn]
+      diff = value - baseValue
+    } else {
+      value = row[activeColumn]
+      if (value === undefined) return null
+    }
+
+    const baseElement = baseValue ? <p>+/- Base: {diff}</p> : null
 
     return (
       <div
@@ -183,6 +195,7 @@ export default function Component({
           <b>{header[activeColumn]}</b>
         </big>
         <p>{value}</p>
+        {baseElement}
       </div>
     )
   }
@@ -193,7 +206,7 @@ export default function Component({
       data: networkUrl,
       filled: false,
       lineWidthUnits: 'pixels',
-      lineWidthMinPixels: 1,
+      lineWidthMinPixels: 0,
       pickable: true,
       stroked: false,
       opacity: 0.7,

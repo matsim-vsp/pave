@@ -572,8 +572,6 @@ export default class VueComponent extends Vue {
     console.log(this.myState.readme)
   }
 
-  private summaryYamlFilename = 'viz-summary.yml'
-
   private buildShowEverythingView() {
     // loop on each viz type
     for (const viz of this.globalState.visualizationTypes.values()) {
