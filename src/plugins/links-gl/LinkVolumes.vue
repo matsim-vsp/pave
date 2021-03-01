@@ -48,8 +48,11 @@ de:
         //- time-of-day slider
         .panel-item(v-if="vizDetails.useSlider")
           p: b {{ $t('timeOfDay') }}
-          p(v-if="csvData.header.length===0"): b {{ `(${$t('loading')}...)` }}
-          time-slider.time-slider(v-if="csvData.header.length > 0"
+
+          button.button.full-width.is-warning.is-loading(v-if="csvData.activeColumn < 0"
+                aria-haspopup="true" aria-controls="dropdown-menu-column-selector")
+
+          time-slider.time-slider(v-else
             :useRange='showTimeRange'
             :stops="csvData.header"
             @change='bounceTimeSlider')
@@ -111,7 +114,7 @@ de:
                   p(:style="{'lineHeight': '1rem', 'marginBottom':'0.25rem'}") {{ colorRamp }}
 
         //- DIFF checkbox
-        .panel-item
+        .panel-item(v-if="csvBase.header.length")
           p: b {{ $t('showDiffs') }}
           toggle-button.toggle(:width="40" :value="showDiffs" :labels="false"
             :color="{checked: '#4b7cc4', unchecked: '#222'}"
@@ -442,12 +445,20 @@ class MyPlugin extends Vue {
     const csvFilename = `${this.myState.subfolder}/${filename}`
 
     let globalMax = 0
-    const raw = await this.myState.fileApi.getFileText(csvFilename)
-    const parsed = await Papaparse.parse(raw, {
-      header: false,
-      skipEmptyLines: true,
-      dynamicTyping: true,
-    })
+
+    let parsed: any = {}
+    try {
+      const raw = await this.myState.fileApi.getFileText(csvFilename)
+      parsed = await Papaparse.parse(raw, {
+        header: false,
+        skipEmptyLines: true,
+        dynamicTyping: true,
+      })
+    } catch (e) {
+      console.error(e)
+      return { header: [], headerMax: [], rows: {}, activeColumn: -1 }
+    }
+
     console.log({ parsed })
     console.log('parsing', filename)
 
