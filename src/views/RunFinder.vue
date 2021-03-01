@@ -1,102 +1,102 @@
 <template lang="pug">
 .folder-browser
-  .stripe.white(v-if="myState.svnProject")
+  .left-strip
+    .dimensions(v-if="myState.runFinder.dimensions.length")
+      h3 Select Run:
+      .dimension(v-for="d in myState.runFinder.dimensions" :key="d.heading")
+        h4 {{ d.heading }}
+        p {{ d.subheading }}
+
+        button.button(
+          v-for="option in d.options"
+          :key="`${option.title}/${option.value}`"
+          :class="{'is-link': myState.activeButtons[d.heading] === option.value }"
+          @click="clickedOptionButton(d.heading, option.value)"
+        ) {{ option.title }}
+
+  .right-strip
+    .stripe.white(v-if="myState.svnProject")
+      .vessel
+        .project-bar
+          .details
+            h2 {{ myState.svnProject.name }}
+            p {{ myState.svnProject.description }}
+
+    //- show network errors
+    .stripe.white(v-if="myState.errorStatus")
+      .vessel
+        .badnews(v-html="myState.errorStatus")
+
+    //- this is the content of readme.md, if it exists
+    .stripe.white
+      .vessel
+        .readme-header
+          .curate-content.markdown(
+            v-if="myState.readme"
+            v-html="myState.readme"
+          )
+
+    //- selected run header
+    .stripe.cream
+      .vessel
+        h3.curate-heading Scenario Performance
+
+        p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
+
+        .summary-table(v-if="myState.selectedRun && myState.vizes.length")
+          .col1
+            .tlabel Demand
+            .tlabel Fleet size
+            .tlabel Mileage
+            .tlabel.vspace Revenue distance
+            .tlabel.blue Income/day
+            .tlabel.blue Expenses/day
+            .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
+            .tlabel.vspace 95% waiting times &lt;
+
+          .col2
+            .tlabel {{ runHeader.demand.toLocaleString() }} rides
+            .tlabel {{ runHeader.fleetSize.toLocaleString() }} vehicles
+            .tlabel {{ runHeader.mileage.toLocaleString() }} km
+            .tlabel.vspace {{ runHeader.revenueDistance.toLocaleString() }} km
+            .tlabel.blue {{ runHeader.incomePerDay.toLocaleString() }} €
+            .tlabel.blue {{ expensesPerDay().toLocaleString() }} €
+            .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
+            .tlabel.vspace {{ (runHeader.serviceQuality / 60.0).toFixed(1) }} min
+
+          .col3
+            b.tlabel Vehicle costs
+            .tlabel Per day
+            input.input(v-model="runCosts.fixedCosts")
+            .tlabel Per km
+            input.input(v-model="runCosts.variableCosts")
+
+          .col4(v-if="modeSharePie.data")
+            b Mode Shares
+            #pie-chart
+
+    //- thumbnails of each viz and image in this folder
+    .stripe.cream2(v-if="myState.vizes.length")
     .vessel
-      .project-bar
-        .details
-          h2 {{ myState.svnProject.name }}
-          p {{ myState.svnProject.description }}
-        .logo
-          img(width=100 src="@/assets/images/tu-logo.png")
+        h3.curate-heading {{ $t('Analysis')}}
 
-  //- show network errors
-  .stripe.white(v-if="myState.errorStatus")
-   .vessel
-    .badnews(v-html="myState.errorStatus")
+        .curate-content
+          .viz-table
+            .viz-grid-item(v-for="viz,index in myState.vizes"
+                      :key="viz.config"
+                      @click="clickedVisualization(index)")
 
-  //- run selector
-  .stripe.white
-   .vessel
-      .dimensions(v-if="myState.runFinder.dimensions.length")
-        .dimension(v-for="d in myState.runFinder.dimensions" :key="d.heading")
-          h4 {{ d.heading }}
-          p {{ d.subheading }}
+              .viz-frame
+                component.viz-frame-component(
+                      :is="viz.component"
+                      :yamlConfig="viz.config"
+                      :fileApi="myState.svnRoot"
+                      :subfolder="`${myState.selectedRun}`"
+                      :thumbnail="true"
+                      :style="{'pointer-events': viz.component==='image-view' ? 'auto' : 'none'}"
+                      @title="updateTitle(index, $event)")
+                p {{ viz.title }}
 
-          .buttons
-            button.button(
-              v-for="option in d.options"
-              :key="`${option.title}/${option.value}`"
-              :class="{'is-link': myState.activeButtons[d.heading] === option.value }"
-              @click="clickedOptionButton(d.heading, option.value)"
-            ) {{ option.title }}
-
-      //- this is the content of readme.md, if it exists
-      .readme-header
-        .curate-content.markdown(
-          v-if="myState.readme"
-          v-html="myState.readme"
-        )
-
-  //- selected run header
-  .stripe.cream
-    .vessel
-      h3.curate-heading Scenario Performance
-
-      p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
-
-      .summary-table(v-if="myState.selectedRun && myState.vizes.length")
-        .col1
-          .tlabel Demand
-          .tlabel Fleet size
-          .tlabel Mileage
-          .tlabel.vspace Revenue distance
-          .tlabel.blue Income/day
-          .tlabel.blue Expenses/day
-          .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
-          .tlabel.vspace 95% waiting times &lt;
-
-        .col2
-          .tlabel {{ runHeader.demand.toLocaleString() }} rides
-          .tlabel {{ runHeader.fleetSize.toLocaleString() }} vehicles
-          .tlabel {{ runHeader.mileage.toLocaleString() }} km
-          .tlabel.vspace {{ runHeader.revenueDistance.toLocaleString() }} km
-          .tlabel.blue {{ runHeader.incomePerDay.toLocaleString() }} €
-          .tlabel.blue {{ expensesPerDay().toLocaleString() }} €
-          .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
-          .tlabel.vspace {{ (runHeader.serviceQuality / 60.0).toFixed(1) }} min
-
-        .col3
-          b.tlabel Vehicle costs
-          .tlabel Per day
-          input.input(v-model="runCosts.fixedCosts")
-          .tlabel Per km
-          input.input(v-model="runCosts.variableCosts")
-
-        .col4(v-if="modeSharePie.data")
-          b Mode Shares
-          #pie-chart
-
-  //- thumbnails of each viz and image in this folder
-  .stripe.cream2(v-if="myState.vizes.length")
-   .vessel
-      h3.curate-heading {{ $t('Analysis')}}
-
-      .curate-content
-        .viz-table
-          .viz-grid-item(v-for="viz,index in myState.vizes"
-                    :key="viz.config"
-                    @click="clickedVisualization(index)")
-
-            .viz-frame
-              component.viz-frame-component(
-                    :is="viz.component"
-                    :yamlConfig="viz.config"
-                    :fileApi="myState.svnRoot"
-                    :subfolder="`${myState.selectedRun}`"
-                    :thumbnail="true"
-                    :style="{'pointer-events': viz.component==='image-view' ? 'auto' : 'none'}"
-                    @title="updateTitle(index, $event)")
-              p {{ viz.title }}
 
 </template>
 
@@ -248,7 +248,12 @@ export default class VueComponent extends Vue {
   }
 
   private mounted() {
+    globalStore.commit('setFullScreen', true)
     this.updateRoute()
+  }
+
+  private beforeDestory() {
+    globalStore.commit('setFullScreen', false)
   }
 
   private needsInitialRun = true
@@ -553,13 +558,18 @@ export default class VueComponent extends Vue {
 
   private async showReadme() {
     const readme = 'readme.md'
-    if (this.myState.files.indexOf(readme) === -1) {
-      this.myState.readme = ''
-    } else {
-      if (!this.myState.svnRoot) return
+
+    // readme is just per ober-alt for PAVE
+
+    if (!this.myState.svnRoot) return
+    try {
       const text = await this.myState.svnRoot.getFileText(readme)
       this.myState.readme = this.mdRenderer.render(text)
+    } catch (e) {
+      console.warn('couldnt find readme')
+      // no readme? oh well
     }
+    console.log(this.myState.readme)
   }
 
   private summaryYamlFilename = 'viz-summary.yml'
@@ -632,7 +642,22 @@ export default class VueComponent extends Vue {
 @import '@/styles.scss';
 
 .folder-browser {
+  display: grid;
+  grid-template-columns: 18rem 1fr;
+  grid-template-rows: 100%;
   background-color: var(--bgBold);
+}
+
+.left-strip {
+  background-color: var(--text);
+  color: var(--bgPanel);
+  padding: 0 2rem;
+}
+
+.right-strip {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .vessel {
@@ -754,8 +779,8 @@ h2 {
 
 .project-bar {
   display: flex;
-  margin-bottom: 1rem;
-  padding: 2rem 0 0 0;
+  margin-bottom: 0rem;
+  padding: 1rem 0 0 0;
   z-index: 10000;
 }
 
@@ -795,7 +820,7 @@ h2 {
 }
 
 .readme-header {
-  font-size: 1.1rem;
+  font-size: 1rem;
   padding-bottom: 1rem;
 }
 
@@ -813,14 +838,21 @@ h3.curate-heading {
 }
 
 .dimensions {
-  margin: 0rem 0 1rem 0;
+  top: 4.5rem;
+  position: sticky;
+  margin: 1rem 0 0rem 0;
   display: grid;
   gap: 2rem;
+
+  h3 {
+    margin: 0 0;
+    padding: 0 0;
+  }
 }
 
 .dimension {
   // border: var(--borderThin);
-  grid-row: 1 / 2;
+  grid-column: 1 / 2;
   // padding: 0.5rem 0.5rem 1rem 0.5rem;
   // margin: 0.5rem 0.25rem;
 }
@@ -831,7 +863,7 @@ h3.curate-heading {
   flex: 1;
   font-size: 1.1rem;
   font-weight: bold;
-  color: var(--textFancy);
+  color: var(--bgCream);
 }
 
 .dimension p {
@@ -842,10 +874,11 @@ h3.curate-heading {
 .dimension .button {
   margin: 0.1rem 0;
   font-size: 0.8rem;
+  width: 100%;
 }
 
 .summary-table {
-  margin-top: 1rem;
+  margin: 1rem 0;
   display: flex;
   flex-direction: row;
 }

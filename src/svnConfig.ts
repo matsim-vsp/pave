@@ -31,6 +31,7 @@ const config: any = {
       name: '2. Pooling',
       url: '2-pooling',
       description: 'Shared taxi service',
+      // svn: 'http://localhost:8000/pave/2-pooling',
       svn:
         'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/2-pooling',
       need_password: false,
@@ -54,6 +55,14 @@ const config: any = {
       need_password: false,
       thumbnail: 'thumb-robots.jpg',
     },
+    // {
+    //   name: 'local',
+    //   url: 'local',
+    //   description: 'local',
+    //   svn: 'http:localhost:8000/pave/2-pooling',
+    //   need_password: false,
+    //   thumbnail: 'thumb-robots.jpg',
+    // },
   ],
 }
 

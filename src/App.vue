@@ -2,7 +2,7 @@
 #main-app(:class="{'full-page-app' : state.isFullScreen, 'dark-mode': isDarkMode}" )
 
   .app-nav
-    .top-bar(:class="{'full-page-app' : state.isFullScreen}")
+    .top-bar.full-page-app
       nav.top-link
         router-link(:to="`/${link.url}`" v-for="link in topNavLinks" :key="`/${link.url}`"
           :class="{'selected': ($route.path==='/' && link.url==='/') || $route.path.indexOf(link.url) > 0 }" )
