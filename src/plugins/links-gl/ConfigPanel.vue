@@ -40,9 +40,7 @@
     p: b {{ $t('bandwidths') }}
 
     .options(style="display: flex; flex-direction:column;")
-      input.input(v-model.number="scaleWidthValue")
-
-
+      input.input(v-model.lazy.number="scaleWidthValue")
 
   //- COLOR PICKER
   .panel-item(v-if="activeColumn > -1")

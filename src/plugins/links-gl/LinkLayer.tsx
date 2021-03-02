@@ -195,7 +195,7 @@ export default function Component({
       data: geojson,
       widthUnits: 'pixels',
       widthMinPixels: 0,
-      widthMaxPixels: 100,
+      widthMaxPixels: 200,
       pickable: true,
       opacity: 0.8,
       autoHighlight: true,
