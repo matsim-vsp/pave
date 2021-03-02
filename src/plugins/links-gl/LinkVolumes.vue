@@ -5,7 +5,7 @@ en:
   loading: "Loading"
   selectColumn: "Select data column"
   timeOfDay: "Time of day"
-  bandwidths: "Line widths"
+  bandwidths: "Widths: 1 pixel ="
   showDiffs: "Show Differences"
 de:
   all: "Alle"
@@ -13,7 +13,7 @@ de:
   loading: "Wird geladen"
   selectColumn: "Datenspalte wählen"
   timeOfDay: "Uhrzeit"
-  bandwidths: "Linienbreiten"
+  bandwidths: "Linienbreiten: 1 pixel ="
   showDiffs: "Differenzen"
 </i18n>
 
@@ -21,18 +21,20 @@ de:
 .gl-viz(:class="{'hide-thumbnail': !thumbnail}"
         :style='{"background": urlThumbnail}' oncontextmenu="return false")
 
-  link-gl-layer.anim(v-if="!thumbnail && isLoaded && geojsonFilename"
-                :center="center"
-                :networkUrl="geojsonFilename"
-                :data="csvData"
+  link-gl-layer.anim(v-if="!thumbnail && isLoaded"
+                :geojson="geojsonData"
+                :build="csvData"
                 :base="csvBase"
+                :buildData="buildData"
+                :baseData="baseData"
                 :showDiffs="showDiffs",
-                :dark="isDarkMode"
                 :colors="selectedColorRamp"
-                :maxWidth="maxWidth"
+                :scaleWidth="scaleWidth"
+                :dark="isDarkMode"
+                :center="center"
   )
 
-  .right-side(v-if="isLoaded && !thumbnail")
+  .right-side(v-if="!thumbnail")
     collapsible-panel(:darkMode="isDarkMode" width="250" direction="right")
       .panel-items
 
@@ -41,77 +43,20 @@ de:
           h3 {{ vizDetails.title }}
           p {{ vizDetails.description }}
 
-          //- label.checkbox
-          //-   input(type="checkbox" v-model="showTimeRange")
-          //-   | &nbsp;Zeitraum
-
-        //- time-of-day slider
-        .panel-item(v-if="vizDetails.useSlider")
-          p: b {{ $t('timeOfDay') }}
-
-          button.button.full-width.is-warning.is-loading(v-if="csvData.activeColumn < 0"
-                aria-haspopup="true" aria-controls="dropdown-menu-column-selector")
-
-          time-slider.time-slider(v-else
-            :useRange='showTimeRange'
-            :stops="csvData.header"
-            @change='bounceTimeSlider')
-
         //- button/dropdown for selecting column
-        .panel-item(v-if="!vizDetails.useSlider")
-          p: b {{ $t('selectColumn') }}
-          .dropdown.full-width.is-hoverable
-            .dropdown-trigger
-              button.full-width.is-warning.button(:class="{'is-loading': csvData.activeColumn < 0}"
-                aria-haspopup="true" aria-controls="dropdown-menu-column-selector")
-
-                b {{ buttonTitle }}
-                span.icon.is-small
-                  i.fas.fa-angle-down(aria-hidden="true")
-
-            #dropdown-menu-column-selector.dropdown-menu(role="menu" :style="{'max-height':'16rem', 'overflow-y': 'auto', 'border': '1px solid #ccc'}")
-              .dropdown-content
-                a.dropdown-item(v-for="column in csvData.header"
-                                @click="handleNewDataColumn(column)") {{ column }}
-
         .panel-item
-          p: b {{ $t('bandwidths')}}
-
-          .options(style="display: flex; flex-direction:column;")
-            input.input(v-model="maxWidth")
-            | &nbsp;Max Width
-
-            //- label.checkbox
-            //-   input(type="checkbox")
-            //-   | &nbsp;None
-
-            //- label.checkbox
-            //-   input(type="checkbox")
-            //-   | &nbsp;Relative
-
-
-        .panel-item(v-if="csvData.activeColumn > -1")
-          p: b {{ $t('colors') }}
-          .dropdown.full-width.is-hoverable
-            .dropdown-trigger
-              //- button.full-width.button(:class="{'is-loading': csvData.activeColumn < 0}"
-              //-   aria-haspopup="true" aria-controls="dropdown-menu-column-selector")
-
-              img(:src="`/pave/colors/scale-${selectedColorRamp}.png`"
-                  :style="{'height': '2.3rem', 'width': '100%', 'border-radius': '5px'}")
-
-                //- span {{ selectedColorRamp }}
-                //- span.icon.is-small
-                //-   i.fas.fa-angle-down(aria-hidden="true")
-
-            #dropdown-menu-color-selector.dropdown-menu(role="menu")
-              .dropdown-content(:style="{'padding':'0 0'}")
-                a.dropdown-item(v-for="colorRamp in Object.keys(colorRamps)"
-                                @click="clickedColorRamp(colorRamp)"
-                                :style="{'padding': '0.25rem 0.25rem'}"
-                )
-                  img(:src="`/pave/colors/scale-${colorRamp}.png`")
-                  p(:style="{'lineHeight': '1rem', 'marginBottom':'0.25rem'}") {{ colorRamp }}
+          config-panel(
+            :header="csvBase.header"
+            :activeColumn="csvData.activeColumn"
+            :scaleWidth="scaleWidth"
+            :selectedColorRamp="selectedColorRamp"
+            :csvData="csvData"
+            :useSlider="vizDetails.useSlider"
+            @colors="clickedColorRamp"
+            @column="handleNewDataColumn"
+            @slider="handleNewDataColumn"
+            @scale="handleScaleWidthChanged"
+          )
 
         //- DIFF checkbox
         .panel-item(v-if="csvBase.header.length")
@@ -129,6 +74,7 @@ de:
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import { ToggleButton } from 'vue-js-toggle-button'
 import { debounce } from 'debounce'
+import { DeckGL, Mapbox } from '@hirelofty/vue_deckgl'
 import Papaparse from 'papaparse'
 import readBlob from 'read-blob'
 import YAML from 'yaml'
@@ -138,6 +84,7 @@ import globalStore from '@/store'
 import pako from '@aftersim/pako'
 import CollapsiblePanel from '@/components/CollapsiblePanel.vue'
 import TimeSlider from '@/plugins/links-gl/TimeSlider.vue'
+import ConfigPanel from './ConfigPanel.vue'
 
 import {
   ColorScheme,
@@ -150,6 +97,7 @@ import {
   DARK_MODE,
 } from '@/Globals'
 
+import LineLayerVue from '@/layers/LineLayerVue.vue'
 import LinkGlLayer from './LinkLayer'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
 import { VuePlugin } from 'vuera'
@@ -158,14 +106,18 @@ Vue.use(VuePlugin)
 interface CSV {
   header: string[]
   headerMax: number[]
-  rows: { [id: string]: number[] }
+  rows: Float32Array
   activeColumn: number
 }
 
 @Component({
   components: {
     CollapsiblePanel,
+    ConfigPanel,
+    DeckGL,
+    LineLayerVue,
     LinkGlLayer,
+    Mapbox,
     TimeSlider,
     ToggleButton,
   } as any,
@@ -183,24 +135,24 @@ class MyPlugin extends Vue {
   @Prop({ required: false })
   private thumbnail!: boolean
 
-  private geojsonFilename = ''
-  private isButtonActiveColumn = false
+  // store ALL the columns here, we'll just pass a reference to one column each to the view
+  private buildColumnValues: Float32Array[] = []
+  private baseColumnValues: Float32Array[] = []
+
   private center = [13.45, 52.53]
-  private maxWidth = '10000'
+
+  private isButtonActiveColumn = false
+
+  private scaleWidth = 1000
 
   private showDiffs = false
   private showTimeRange = false
-  private bounceTimeSlider = debounce(this.changedTimeSlider, 200)
+  // private debounceTimeSlider = debounce(this.changedTimeSlider, 200)
+  // private debounceScaleWidth = debounce(this.handleMaxWidthChanged, 500)
+
+  private geojsonData: any[] = []
 
   private selectedColorRamp = 'viridis'
-
-  private colorRamps: { [title: string]: { png: string; diff?: boolean } } = {
-    viridis: { png: 'scale-viridis.png' },
-    // salinity: { png: 'scale-salinity.png' },
-    inferno: { png: 'scale-inferno.png' },
-    bluered: { png: 'scale-salinity.png', diff: true },
-    picnic: { png: 'scale-picnic.png' },
-  }
 
   private vizDetails = {
     title: '',
@@ -226,8 +178,14 @@ class MyPlugin extends Vue {
     thumbnail: this.thumbnail,
   }
 
-  private csvData: CSV = { header: [], headerMax: [], rows: {}, activeColumn: -1 }
-  private csvBase: CSV = { header: [], headerMax: [], rows: {}, activeColumn: -1 }
+  private csvData: CSV = { header: [], headerMax: [], rows: new Float32Array(), activeColumn: -1 }
+  private csvBase: CSV = { header: [], headerMax: [], rows: new Float32Array(), activeColumn: -1 }
+
+  private buildData: Float32Array = new Float32Array()
+  private baseData: Float32Array = new Float32Array()
+
+  private linkOffsetLookup: { [id: string]: number } = {}
+  private numLinks = 0
 
   private globalState = globalStore.state
   private isDarkMode = this.globalState.colorScheme === ColorScheme.DarkMode
@@ -366,22 +324,37 @@ class MyPlugin extends Vue {
     console.log(this.selectedColorRamp)
   }
 
+  private handleScaleWidthChanged(value: number) {
+    console.log(value)
+    this.scaleWidth = value
+  }
+
   private handleNewDataColumn(title: string) {
     const column = this.csvData.header.indexOf(title)
     if (column === -1) return
 
+    console.log('got it')
     // // find max value for scaling
     if (!this.csvData.headerMax[column]) {
       let max = 0
-      Object.values(this.csvData.rows).forEach(row => {
-        max = Math.max(max, row[column])
-      })
+
+      this.buildColumnValues[column].forEach(value => (max = Math.max(max, value)))
+
+      console.log(max)
       if (max) this.csvData.headerMax[column] = max
     }
 
     // set the new column
+    // this.csvData.rows = buildColumnValues[column]
+    // this.csvBase.rows = baseColumnValues[column]
+    console.log('setting it')
+
+    this.buildData = this.buildColumnValues[column]
+    this.baseData = this.baseColumnValues[column]
+
     this.csvData.activeColumn = column
     this.isButtonActiveColumn = false
+    console.log('dit it')
   }
 
   private findCenter(data: any[]): [number, number] {
@@ -399,18 +372,61 @@ class MyPlugin extends Vue {
 
     this.myState.statusMessage = 'Dateien laden...'
 
-    // runs in background
-    this.loadCSVFiles()
+    // load network fully, first
+    const allLinks = await this.loadGeojsonFeatures()
+    if (!allLinks) return
+
+    console.log('5: ok')
+
+    // then load CSVs in background
+    await this.loadCSVFiles()
 
     // runs in background
-    const network = `/${this.myState.subfolder}/${this.vizDetails.geojsonFile}`
-    this.geojsonFilename = this.myState.fileApi.cleanURL(network)
     this.center = this.findCenter([])
 
-    this.isLoaded = true
     this.buildThumbnail()
 
     this.myState.statusMessage = ''
+    console.log('999: ok')
+    this.geojsonData = allLinks
+    this.isLoaded = true
+  }
+
+  private async loadGeojsonFeatures() {
+    try {
+      this.linkOffsetLookup = {}
+      this.numLinks = 0
+
+      console.log('1: load network')
+      this.myState.statusMessage = 'Loading network...'
+
+      const network = `/${this.myState.subfolder}/${this.vizDetails.geojsonFile}`
+      const text = await this.myState.fileApi.getFileText(network)
+
+      console.log('2: json network')
+      const json = JSON.parse(text)
+      console.log({ json })
+      console.log('3: build index')
+      this.numLinks = json.features.length
+
+      // super-efficient format is [ offset, coordsFrom[], coordsTo[] ]
+      const linkElements: any[] = []
+
+      for (let i = 0; i < this.numLinks; i++) {
+        const feature = json.features[i]
+        const link = [i, feature.geometry.coordinates[0], feature.geometry.coordinates[1]]
+        linkElements.push(link)
+
+        this.linkOffsetLookup[feature.properties.id] = i
+      }
+
+      console.log('4: done!')
+      console.log({ linkElements })
+      return linkElements
+    } catch (e) {
+      this.myState.statusMessage = '' + e
+      return null
+    }
   }
 
   private beforeDestroy() {
@@ -418,10 +434,10 @@ class MyPlugin extends Vue {
     this.$store.commit('setFullScreen', false)
   }
 
-  // private handleClickColumnSelector() {
-  //   console.log('click!')
-  //   this.isButtonActiveColumn = !this.isButtonActiveColumn
-  // }
+  private handleClickColumnSelector() {
+    console.log('click!')
+    this.isButtonActiveColumn = !this.isButtonActiveColumn
+  }
 
   private async loadCSVFiles() {
     const promises: any[] = []
@@ -430,17 +446,24 @@ class MyPlugin extends Vue {
     if (this.vizDetails.csvBase) promises.push(this.loadCSVFile(this.vizDetails.csvBase))
     await Promise.all(promises)
 
-    this.csvData = await promises[0]
-    if (promises[1]) this.csvBase = await promises[1]
+    const { allColumns, header, headerMax } = await promises[0]
+    this.buildColumnValues = allColumns
+    this.csvData = { header, headerMax, rows: new Float32Array(), activeColumn: -1 }
+
+    if (promises[1]) {
+      const { allColumns, header, headerMax } = await promises[1]
+      this.baseColumnValues = allColumns
+      this.csvBase = { header, headerMax, rows: new Float32Array(), activeColumn: -1 }
+    }
 
     console.log({ csvData: this.csvData, csvBase: this.csvBase })
-
+    this.myState.statusMessage = 'Finishing up...'
     // data is all loaded! select first column for display
     this.handleNewDataColumn(this.csvData.header[0])
   }
 
   private async loadCSVFile(filename: string) {
-    console.log('loading CSV file:', filename)
+    console.log('7a: loading CSV:', filename)
 
     const csvFilename = `${this.myState.subfolder}/${filename}`
 
@@ -448,7 +471,11 @@ class MyPlugin extends Vue {
 
     let parsed: any = {}
     try {
+      this.myState.statusMessage = 'Loading CSV data...'
+
       const raw = await this.myState.fileApi.getFileText(csvFilename)
+      console.log('7b: papaparsing', filename)
+
       parsed = await Papaparse.parse(raw, {
         header: false,
         skipEmptyLines: true,
@@ -459,24 +486,38 @@ class MyPlugin extends Vue {
       return { header: [], headerMax: [], rows: {}, activeColumn: -1 }
     }
 
-    console.log({ parsed })
-    console.log('parsing', filename)
+    console.log('7c: building index:', filename)
 
-    // create object with link-id as lookup-key
-    const allLinks: { [id: string]: number[] } = {}
+    // an array containing a separate Float32Array for each CSV column
+    const allLinks: Float32Array[] = []
+    const numColumns = parsed.data[0].length - (this.vizDetails.useSlider ? 0 : 1)
 
-    // coroutine to not kill browser - add up total values and save in lookup
-    await coroutines.forEachAsync(parsed.data.splice(1), (link: any) => {
-      const key = link[0].toString()
+    console.log('number of columns', numColumns)
+    for (let i = 0; i < numColumns; i++) {
+      allLinks.push(new Float32Array(this.numLinks))
+    }
+
+    for (const link of parsed.data.splice(1)) {
+      // get array offset, or skip if this link isn't in the network!
+      const offset = this.linkOffsetLookup[link[0].toString()]
+      if (offset === undefined) continue
+
       if (this.vizDetails.useSlider) {
         const entries = link.slice(1) // skip first element (contains link-id)
         const total = entries.reduce((a: number, b: number) => a + b, 0)
+
         globalMax = Math.max(globalMax, total)
-        allLinks[key] = [total, ...entries] // total comes first
+        allLinks[0][offset] = total // total comes first
+        entries.forEach((value: number, i: number) => {
+          allLinks[i + 1][offset] = value
+        })
       } else {
-        allLinks[key] = link.slice(1) // skip first element (contains link-id)
+        const entries = link.slice(1) // skip first element (contains link-id)
+        entries.forEach((value: number, i: number) => {
+          allLinks[i][offset] = value
+        })
       }
-    })
+    }
 
     const rowZero = parsed.data[0] as string[]
     const header = rowZero.slice(1) // skip first column with link id's
@@ -487,12 +528,11 @@ class MyPlugin extends Vue {
     const cleanHeaders = header.map(h => h.replace(':00:00', ''))
 
     return {
+      allColumns: allLinks,
       header: cleanHeaders,
       headerMax: this.vizDetails.useSlider
         ? new Array(this.csvData.header.length).fill(globalMax)
         : [],
-      rows: allLinks,
-      activeColumn: -1,
     }
   }
 
@@ -501,71 +541,6 @@ class MyPlugin extends Vue {
     if (value.length && value.length === 1) value = value[0]
 
     this.handleNewDataColumn(value)
-
-    // this.currentTimeBin = value
-    // const widthFactor = this.WIDTH_SCALE * this.currentScale
-
-    // if (this.showTimeRange == false) {
-    //   this.map.setPaintProperty('my-layer', 'line-width', [
-    //     '*',
-    //     widthFactor,
-    //     ['abs', ['get', value]],
-    //   ])
-    //   this.map.setPaintProperty('my-layer', 'line-offset', [
-    //     '*',
-    //     0.5 * widthFactor,
-    //     ['abs', ['get', value]],
-    //   ])
-
-    //   // this complicated mess is how MapBox deals with conditionals. Yuck!
-    //   // #ff0 -- yellow hover
-    //   // #8ca -- null, no data
-    //   // #55b -- bluish/purple, link volume bandwidth
-    //   // #900 -- deep red, diff volume positive
-    //   // #5f5 -- bright light green, diff volume negative
-
-    //   this.map.setPaintProperty('my-layer', 'line-color', [
-    //     'case',
-    //     ['boolean', ['feature-state', 'hover'], false],
-    //     '#ff0',
-    //     ['==', ['get', value], null],
-    //     '#8ca',
-    //     ['<', ['get', value], 0],
-    //     '#5f5',
-    //     this.vizDetails.csvFile2 ? '#900' : '#55b',
-    //   ])
-
-    //   const filter = this.showAllRoads ? null : ['!=', ['get', this.currentTimeBin], null]
-    //   this.map.setFilter('my-layer', filter)
-    // } else {
-    //   const sumElements: any = ['+']
-
-    //   // build the summation expressions: e.g. ['+', ['get', '1'], ['get', '2']]
-    //   let include = false
-    //   for (const header of this.headers) {
-    //     if (header === value[0]) include = true
-
-    //     // don't double-count the total
-    //     if (header === this.TOTAL_MSG) continue
-
-    //     if (include) sumElements.push(['get', header])
-
-    //     if (header === value[1]) include = false
-    //   }
-
-    //   this.map.setPaintProperty('my-layer', 'line-width', ['*', widthFactor, sumElements])
-    //   this.map.setPaintProperty('my-layer', 'line-offset', ['*', 0.5 * widthFactor, sumElements])
-    //   this.map.setPaintProperty('my-layer', 'line-color', [
-    //     'case',
-    //     ['boolean', ['feature-state', 'hover'], false],
-    //     '#0f6',
-    //     ['==', sumElements, null],
-    //     '#8ca',
-    //     ['<', sumElements, 0],
-    //     '#fc0',
-    //     '#559',
-    //   ])
-    // }
   }
 }
 
@@ -674,12 +649,7 @@ export default MyPlugin
   pointer-events: auto;
 }
 
-.playback-stuff {
-  flex: 1;
-}
-
 .anim {
-  z-index: -1;
   grid-column: 1 / 3;
   grid-row: 1 / 7;
   pointer-events: auto;

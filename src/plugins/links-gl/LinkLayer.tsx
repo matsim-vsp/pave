@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import DeckGL from '@deck.gl/react'
-import { GeoJsonLayer } from '@deck.gl/layers'
+import { LineLayer } from '@deck.gl/layers'
 import { scaleLinear, scaleThreshold } from 'd3-scale'
 import { StaticMap } from 'react-map-gl'
 import colormap from 'colormap'
@@ -9,6 +9,12 @@ import { MAP_STYLES } from '@/Globals'
 
 const MAPBOX_TOKEN =
   'pk.eyJ1IjoidnNwLXR1LWJlcmxpbiIsImEiOiJjamNpemh1bmEzNmF0MndudHI5aGFmeXpoIn0.u9f04rjFo7ZbWiSceTTXyA'
+
+enum COLUMNS {
+  offset = 0,
+  coordFrom = 1,
+  coordTo = 2,
+}
 
 const colorRange = [
   [1, 152, 189],
@@ -48,33 +54,38 @@ const INITIAL_VIEW_STATE = {
 }
 
 export default function Component({
-  networkUrl = '',
+  geojson = [] as any[],
   center = [],
   colors = 'viridis',
   dark = false,
-  maxWidth = '',
-  data = {} as {
-    rows: { [id: string]: number[] }
+  scaleWidth = 1000,
+  build = {} as {
+    rows: Float32Array
     header: string[]
     headerMax: number[]
     activeColumn: number
   },
-  showDiffs = false,
   base = {} as {
-    rows: { [id: string]: number[] }
+    rows: Float32Array
     header: string[]
     headerMax: number[]
     activeColumn: number
   },
+  buildData = new Float32Array(),
+  baseData = new Float32Array(),
+  showDiffs = false,
 }) {
-  const { rows, header, headerMax, activeColumn } = data
-  const baseData = showDiffs ? base.rows : {}
+  const { header, headerMax, activeColumn } = build
+  const rows = buildData
+  // const baseData = showDiffs ? base.rows : []
 
   const [lon, lat] = center
 
   const initialView = Object.assign(INITIAL_VIEW_STATE, { longitude: lon, latitude: lat })
   const [hoverInfo, setHoverInfo] = useState({})
-  const maxWidthValue = parseFloat(maxWidth)
+
+  // console.log('hello')
+  console.log(headerMax[activeColumn])
 
   // const [colorInfo, setColorInfo] = useState(() => createColorRamp(colors))
 
@@ -82,7 +93,7 @@ export default function Component({
     colormap: colors,
     nshades: 20,
     format: 'rba',
-  }).map((a: number[]) => [a.slice(0, 3)])
+  }).map((a: number[]) => [a[0], a[1], a[2], 255])
 
   const fetchColor = scaleThreshold()
     .domain(new Array(20).fill(0).map((v, i) => 0.05 * i))
@@ -98,22 +109,15 @@ export default function Component({
 
   // --- LINE COLORS -----------------------------------------------
   const getLineColor = (feature: any) => {
-    const id = feature.properties.id
-    const row = rows[id]
+    const value = rows[feature[COLUMNS.offset]]
 
-    if (!row) return colorInvisible
-
-    const value = row[activeColumn]
     if (!value) return colorInvisible
 
     // comparison?
     if (showDiffs) {
-      const baseRow = baseData[id]
-      if (!baseRow) return color1
-
-      const baseValue = baseRow[activeColumn]
-      // const diff = (value - baseValue) / maxWidthValue
+      const baseValue = baseData[feature[COLUMNS.offset]]
       const diff = value - baseValue
+
       if (diff === 0) return 0 // fetchColor(0.5)
       return baseValue < value ? color1 : color0
     } else {
@@ -129,25 +133,15 @@ export default function Component({
   // --> 2 pixels if no line width at all
   // --> Scaled up to 50 pixels, scaled vs. maxWidth
   const getLineWidth = (feature: any) => {
-    if (!maxWidthValue) return 0
-
-    const id = feature.properties.id
-    const row = rows[id]
-
-    if (!row) return 0
-    const value = row[activeColumn]
+    const value = rows[feature[COLUMNS.offset]]
 
     // comparison?
     if (showDiffs) {
-      const baseRow = baseData[id]
-      if (!baseRow) return 0
-
-      const baseValue = baseRow[activeColumn]
-      const diff = (50 * Math.abs(value - baseValue)) / maxWidthValue
-      return diff
+      const baseValue = baseData[feature[COLUMNS.offset]]
+      const diff = Math.abs(value - baseValue)
+      return diff / scaleWidth
     } else {
-      const scaledValue = (50.0 * value) / maxWidthValue
-      return Math.min(scaledValue, 100)
+      return value / scaleWidth
     }
   }
 
@@ -159,20 +153,15 @@ export default function Component({
     const { object, x, y } = hoverInfo
     if (!object) return null
 
-    const id = object.properties?.id
-    const row = rows[id]
-    if (!row) return null
+    const value = rows[object[COLUMNS.offset]]
 
-    let value = row[activeColumn]
     let baseValue = 0
     let diff = undefined
 
     if (showDiffs) {
-      const baseRow = baseData[id]
-      if (baseRow) baseValue = baseRow[activeColumn]
+      baseValue = baseData[object[COLUMNS.offset]]
       diff = value - baseValue
     } else {
-      value = row[activeColumn]
       if (value === undefined) return null
     }
 
@@ -201,33 +190,37 @@ export default function Component({
   }
 
   const layers = [
-    new GeoJsonLayer({
-      id: 'linkGeoJson',
-      data: networkUrl,
-      filled: false,
-      lineWidthUnits: 'pixels',
-      lineWidthMinPixels: 0,
+    new LineLayer({
+      id: 'linkLayer',
+      data: geojson,
+      widthUnits: 'pixels',
+      widthMinPixels: 0,
+      widthMaxPixels: 100,
       pickable: true,
-      stroked: false,
-      opacity: 0.7,
+      opacity: 0.8,
       autoHighlight: true,
       // highlightColor: [255, 128, 255, 255], // [64, 255, 64],
       parameters: {
         depthTest: false,
       },
 
-      getLineColor,
-      getLineWidth,
+      getSourcePosition: (link: any[]) => link[COLUMNS.coordFrom],
+      getTargetPosition: (link: any[]) => link[COLUMNS.coordTo],
+
+      getColor: getLineColor,
+      getWidth: getLineWidth,
+      // widthScale: scaleWidth,
+
       onHover: setHoverInfo,
 
       updateTriggers: {
-        getLineColor: { showDiffs, dark, colors, activeColumn },
-        getLineWidth: { showDiffs, maxWidth, activeColumn },
+        getColor: { showDiffs, dark, colors, activeColumn },
+        getWidth: { showDiffs, scaleWidth, activeColumn },
       },
 
       transitions: {
-        getLineColor: 500,
-        getLineWidth: 500,
+        getColor: 500,
+        getWidth: 500,
       },
     }),
   ]
