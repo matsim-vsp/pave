@@ -106,6 +106,7 @@ export default function App({
       extruded: extrude,
       getPosition: (d: any) => d,
       pickable: true,
+      opacity: 0.7,
       radius,
       upperPercentile,
       material,

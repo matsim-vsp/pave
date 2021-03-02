@@ -20,7 +20,7 @@ de:
                 :maxHeight="maxHeight")
 
   .left-side(v-if="isLoaded && !thumbnail")
-    collapsible-panel(:darkMode="true" width="250" direction="left")
+    collapsible-panel(:darkMode="true" width="300" direction="left")
       .panel-items
         p.big.xtitle {{ vizDetails.title }}
         p {{ vizDetails.description }}
@@ -520,8 +520,8 @@ export default XyHexagons
 
 .left-side {
   grid-area: leftside;
-  background-color: var(--bgPanel);
-  box-shadow: 0px 2px 10px #22222266;
+  // background-color: var(--bgPanel);
+  // box-shadow: 0px 2px 10px #22222266;
   display: flex;
   flex-direction: column;
   font-size: 0.8rem;
@@ -531,8 +531,6 @@ export default XyHexagons
 
 .right-side {
   grid-area: rightside;
-  background-color: var(--bgPanel);
-  box-shadow: 0px 2px 10px #22222266;
   display: flex;
   flex-direction: column;
   font-size: 0.8rem;

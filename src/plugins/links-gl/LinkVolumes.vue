@@ -96,7 +96,6 @@ import {
   DARK_MODE,
 } from '@/Globals'
 
-import LineLayerVue from '@/layers/LineLayerVue.vue'
 import LinkGlLayer from './LinkLayer'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
 import { VuePlugin } from 'vuera'
@@ -113,7 +112,6 @@ interface CSV {
   components: {
     CollapsiblePanel,
     ConfigPanel,
-    LineLayerVue,
     LinkGlLayer,
     TimeSlider,
     ToggleButton,
@@ -564,10 +562,9 @@ export default MyPlugin
   background: url('assets/thumbnail.jpg') no-repeat;
   background-size: cover;
   grid-template-columns: auto 1fr auto;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto 1fr;
   grid-template-areas:
-    'leftside    .        .'
-    '.           .        .'
+    'leftside    .  rightside'
     '.           .  rightside';
 }
 
@@ -633,21 +630,16 @@ export default MyPlugin
 }
 
 .right-side {
+  z-index: 1;
   display: flex;
   flex-direction: row;
-  position: absolute;
-  top: 0;
-  right: 0;
-  margin: 8rem 0 5rem 0;
-  background-color: var(--bgPanel);
-  box-shadow: 0px 2px 10px #22222266;
-  font-size: 0.8rem;
-  pointer-events: auto;
+  grid-area: rightside;
+  margin: 5rem 0 auto 0;
 }
 
 .anim {
-  grid-column: 1 / 3;
-  grid-row: 1 / 7;
+  grid-column: 1 / 4;
+  grid-row: 1 / 4;
   pointer-events: auto;
 }
 

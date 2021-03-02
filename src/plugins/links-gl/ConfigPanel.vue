@@ -14,7 +14,7 @@
       @change='debounceTimeSlider')
 
 
-  //- Column picker
+  //- Column picker  -- if no slider
   .panel-item(v-if="!useSlider")
     p: b {{ $t('selectColumn') }}
 
