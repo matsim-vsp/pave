@@ -85,7 +85,7 @@ export default function Component({
   const [hoverInfo, setHoverInfo] = useState({})
 
   // console.log('hello')
-  console.log(headerMax[activeColumn])
+  // console.log(headerMax[activeColumn])
 
   // const [colorInfo, setColorInfo] = useState(() => createColorRamp(colors))
 

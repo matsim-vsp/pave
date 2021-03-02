@@ -23,9 +23,8 @@
         button.full-width.is-warning.button(
           :class="{'is-loading': activeColumn < 0}"
           aria-haspopup="true" aria-controls="dropdown-menu-column-selector"
-          @click="handleClickDropdown" @blur="clearDropdown"
+          @click="handleClickDropdown"
         )
-
           b {{ buttonTitle }}
           span.icon.is-small
             i.fas.fa-angle-down(aria-hidden="true")
@@ -166,8 +165,8 @@ export default class VueComponent extends Vue {
   }
 
   private async handleSelectColumn(column: string) {
+    console.log('panel: selected', column)
     this.isButtonActive = false
-    await this.$nextTick()
     this.$emit('column', column)
   }
 }

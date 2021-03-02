@@ -325,6 +325,7 @@ class MyPlugin extends Vue {
   }
 
   private handleNewDataColumn(title: string) {
+    console.log('handling it:', title)
     const column = this.csvData.header.indexOf(title)
     if (column === -1) return
 
