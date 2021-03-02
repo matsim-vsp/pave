@@ -58,7 +58,7 @@ export default function Component({
   center = [],
   colors = 'viridis',
   dark = false,
-  scaleWidth = 1000,
+  scaleWidth = 250,
   build = {} as {
     rows: Float32Array
     header: string[]

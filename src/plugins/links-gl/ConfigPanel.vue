@@ -110,7 +110,7 @@ export default class VueComponent extends Vue {
   private isButtonActive = false
   private isColorButtonActive = false
 
-  private scaleWidthValue = '1000'
+  private scaleWidthValue = '250'
 
   private colorRamps: { [title: string]: { png: string; diff?: boolean } } = {
     viridis: { png: 'scale-viridis.png' },
@@ -207,6 +207,12 @@ input {
   border: none;
   background-color: var(--bgCream2);
   color: var(--bgDark);
+}
+
+.dropdown {
+  width: 208px;
+  position: absolute;
+  overflow: visible;
 }
 
 #dropdown-menu-color-selector {

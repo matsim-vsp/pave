@@ -35,7 +35,7 @@ de:
   )
 
   .right-side(v-if="!thumbnail")
-    collapsible-panel(:darkMode="isDarkMode" width="250" direction="right")
+    collapsible-panel(:darkMode="isDarkMode" width="256" direction="right")
       .panel-items
 
         //- heading
@@ -59,7 +59,7 @@ de:
           )
 
         //- DIFF checkbox
-        .panel-item(v-if="csvBase.header.length")
+        .panel-item.diff-section(v-if="csvBase.header.length")
           p: b {{ $t('showDiffs') }}
           toggle-button.toggle(:width="40" :value="showDiffs" :labels="false"
             :color="{checked: '#4b7cc4', unchecked: '#222'}"
@@ -74,7 +74,6 @@ de:
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import { ToggleButton } from 'vue-js-toggle-button'
 import { debounce } from 'debounce'
-import { DeckGL, Mapbox } from '@hirelofty/vue_deckgl'
 import Papaparse from 'papaparse'
 import readBlob from 'read-blob'
 import YAML from 'yaml'
@@ -114,10 +113,8 @@ interface CSV {
   components: {
     CollapsiblePanel,
     ConfigPanel,
-    DeckGL,
     LineLayerVue,
     LinkGlLayer,
-    Mapbox,
     TimeSlider,
     ToggleButton,
   } as any,
@@ -143,7 +140,7 @@ class MyPlugin extends Vue {
 
   private isButtonActiveColumn = false
 
-  private scaleWidth = 1000
+  private scaleWidth = 250
 
   private showDiffs = false
   private showTimeRange = false
@@ -566,7 +563,7 @@ export default MyPlugin
   min-height: $thumbnailHeight;
   background: url('assets/thumbnail.jpg') no-repeat;
   background-size: cover;
-  grid-template-columns: auto 1fr min-content;
+  grid-template-columns: auto 1fr auto;
   grid-template-rows: auto 1fr auto;
   grid-template-areas:
     'leftside    .        .'
@@ -639,8 +636,7 @@ export default MyPlugin
   display: flex;
   flex-direction: row;
   position: absolute;
-  top: 0rem;
-  bottom: 0rem;
+  top: 0;
   right: 0;
   margin: 8rem 0 5rem 0;
   background-color: var(--bgPanel);
@@ -704,6 +700,14 @@ label {
   p {
     color: #888;
   }
+}
+
+.panel-item {
+  margin-top: 1rem;
+}
+
+.diff-section {
+  margin-top: 2.5rem;
 }
 
 @media only screen and (max-width: 640px) {
