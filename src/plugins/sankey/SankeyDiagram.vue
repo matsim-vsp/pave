@@ -1,5 +1,6 @@
 <template lang="pug">
-.sankey-container(v-if="myState.yamlConfig" :class="{'show-thumbnail': myState.thumbnail}")
+.sankey-container(v-if="myState.yamlConfig"
+                  :class="{'show-thumbnail': myState.thumbnail, 'show-flipper': flipperID}")
   .main-area
     .labels(v-show="!(myState.thumbnail)")
       h3.center {{ vizDetails.title }}
@@ -14,6 +15,7 @@
 'use strict'
 
 import nprogress from 'nprogress'
+import Papaparse from 'papaparse'
 import yaml from 'yaml'
 import { sankey, sankeyDiagram } from 'd3-sankey-diagram'
 import { select } from 'd3-selection'
@@ -21,7 +23,7 @@ import { scaleOrdinal } from 'd3-scale'
 import { schemeCategory10 } from 'd3-scale-chromatic'
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 
-import globalStore from '@/store.ts'
+import globalStore from '@/store'
 import { FileSystem, SVNProject, VisualizationPlugin } from '../../Globals'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
 
@@ -45,6 +47,9 @@ class MyComponent extends Vue {
   @Prop({ required: false })
   private thumbnail!: boolean
 
+  @Prop({ required: false })
+  private flipperID!: string
+
   private globalState = globalStore.state
 
   private myState = {
@@ -62,6 +67,8 @@ class MyComponent extends Vue {
   private totalTrips = 0
 
   private get cleanConfigId() {
+    if (this.flipperID) return this.flipperID
+
     const clean = this.myState.yamlConfig.replace(/[\W_]+/g, '')
     return clean
   }
@@ -192,8 +199,7 @@ class MyComponent extends Vue {
       const flows = await this.myState.fileApi.getFileText(
         this.myState.subfolder + '/' + this.vizDetails.csv
       )
-
-      return { flows }
+      return flows
     } catch (e) {
       console.error({ e })
       this.loadingText = '' + e
@@ -205,7 +211,7 @@ class MyComponent extends Vue {
     }
   }
 
-  private processInputs(networks: any) {
+  private processInputs(rawdata: any) {
     this.loadingText = 'Building node graph...'
 
     const fromNodes: any = []
@@ -214,11 +220,13 @@ class MyComponent extends Vue {
     this.totalTrips = 0
 
     // build lookups
-    const csv = networks.flows.split('\n')
-    for (const line of csv.slice(1)) {
-      const cols = line.trim().split(';')
+    const csv = Papaparse.parse(rawdata, {
+      header: false,
+      skipEmptyLines: true,
+      dynamicTyping: true,
+    })
 
-      if (!cols) continue
+    for (const cols of csv.data.slice(1) as any[]) {
       if (cols.length < 2) continue
 
       if (!fromNodes.includes(cols[0])) fromNodes.push(cols[0])
@@ -256,16 +264,16 @@ class MyComponent extends Vue {
 
   private doD3() {
     const data = this.jsonChart
-    data.order = [[[4, 1, 2, 3, 0, 5]], [[6, 7, 8, 9, 10, 11]]]
-    data.alignTypes = true
-    data.alignLinkTypes = true
+    // data.order = [[[4, 1, 2, 3, 0, 5]], [[6, 7, 8, 9, 10, 11]]]
+    // data.alignTypes = true
+    // data.alignLinkTypes = true
 
     const layout = sankey()
       .extent([
-        [100, 100],
-        [700, 600],
+        [150, 10],
+        [650, 790],
       ])
-      .nodeWidth(3)
+      .nodeWidth(5)
 
     // layout.ordering(data.order)
 
@@ -280,6 +288,9 @@ class MyComponent extends Vue {
       .call(diagram)
       .attr('preserveAspectRatio', 'xMinYMin meet')
       .attr('viewBox', '0 0 800 800')
+      .style('font-size', this.thumbnail ? '34px' : '24px')
+      .style('font-weight', 'bold')
+      .style('text-color', '#aaa')
   }
 }
 
@@ -310,6 +321,11 @@ export default MyComponent
 .show-thumbnail {
   padding-top: 0;
   height: $thumbnailHeight;
+}
+
+.show-flipper {
+  padding-top: 0;
+  height: 14rem;
 }
 
 h1 {

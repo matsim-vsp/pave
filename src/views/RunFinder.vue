@@ -38,46 +38,54 @@
 
     //- selected run header
     .stripe
-      .vessel.white.performance(:style="{borderRadius: '10px', marginBottom: '2rem'}")
-        h3.curate-heading Scenario Performance
+      .vessel(:style="{borderRadius: '10px', marginBottom: '2rem'}")
+        .white.call-out-box
+          h3.curate-heading Scenario Performance
+          p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
 
-        p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
+          .summary-table(v-if="myState.selectedRun && myState.vizes.length")
+            .col1
+              .tlabel Demand
+              .tlabel Fleet size
+              .tlabel Mileage
+              .tlabel.vspace Revenue distance
+              .tlabel.blue Income/day
+              .tlabel.blue Expenses/day
+              .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
+              .tlabel.vspace 95% waiting times &lt;
 
-        .summary-table(v-if="myState.selectedRun && myState.vizes.length")
-          .col1
-            .tlabel Demand
-            .tlabel Fleet size
-            .tlabel Mileage
-            .tlabel.vspace Revenue distance
-            .tlabel.blue Income/day
-            .tlabel.blue Expenses/day
-            .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
-            .tlabel.vspace 95% waiting times &lt;
+            .col2
+              .tlabel {{ runHeader.demand.toLocaleString() }} rides
+              .tlabel {{ runHeader.fleetSize.toLocaleString() }} vehicles
+              .tlabel {{ runHeader.mileage.toLocaleString() }} km
+              .tlabel.vspace {{ runHeader.revenueDistance.toLocaleString() }} km
+              .tlabel.blue {{ runHeader.incomePerDay.toLocaleString() }} €
+              .tlabel.blue {{ expensesPerDay().toLocaleString() }} €
+              .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
+              .tlabel.vspace {{ (runHeader.serviceQuality / 60.0).toFixed(1) }} min
 
-          .col2
-            .tlabel {{ runHeader.demand.toLocaleString() }} rides
-            .tlabel {{ runHeader.fleetSize.toLocaleString() }} vehicles
-            .tlabel {{ runHeader.mileage.toLocaleString() }} km
-            .tlabel.vspace {{ runHeader.revenueDistance.toLocaleString() }} km
-            .tlabel.blue {{ runHeader.incomePerDay.toLocaleString() }} €
-            .tlabel.blue {{ expensesPerDay().toLocaleString() }} €
-            .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
-            .tlabel.vspace {{ (runHeader.serviceQuality / 60.0).toFixed(1) }} min
+            .col3
+              b.tlabel Vehicle costs
+              .tlabel Per day
+              input.input(v-model="runCosts.fixedCosts")
+              .tlabel Per km
+              input.input(v-model="runCosts.variableCosts")
 
-          .col3
-            b.tlabel Vehicle costs
-            .tlabel Per day
-            input.input(v-model="runCosts.fixedCosts")
-            .tlabel Per km
-            input.input(v-model="runCosts.variableCosts")
+            .col4(v-if="modeSharePie.data")
+              b Mode Shares
+              #pie-chart
 
-          .col4(v-if="modeSharePie.data")
-            b Mode Shares
-            #pie-chart
+
+    //- sankey flipper
+    .stripe(v-if="myState.vizes.length")
+      .vessel
+        h3.curate-heading Mode Shifts
+        sankey-flipper(:myState="myState")
+
 
     //- thumbnails of each viz and image in this folder
-    .stripe.cream2(v-if="myState.vizes.length")
-    .vessel
+    .stripe(v-if="myState.vizes.length")
+      .vessel
         h3.curate-heading {{ $t('Analysis')}}
 
         .curate-content
@@ -128,7 +136,7 @@ import globalStore from '@/store'
 import plugins from '@/plugins/pluginRegistry'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
 import { BreadCrumb, VisualizationPlugin, SVNProject } from '../Globals'
-import { inc } from 'nprogress'
+import SankeyFlipper from '@/components/SankeyFlipper.vue'
 
 interface VizEntry {
   component: string
@@ -162,7 +170,7 @@ interface RunFinder {
 }
 
 @Component({
-  components: plugins,
+  components: Object.assign({ SankeyFlipper }, plugins),
   props: {},
   i18n,
 })
@@ -483,7 +491,7 @@ export default class VueComponent extends Vue {
       data: {
         values: vegaValues,
       },
-      background: '#edebe4',
+      background: 'white',
       // mark: { type: 'arc', innerRadius: 25 },
       encoding: {
         theta: { field: 'value', type: 'quantitative', stack: true },
@@ -659,7 +667,7 @@ export default class VueComponent extends Vue {
 
 .vessel {
   margin: 0 auto;
-  padding: 0rem 3rem 1rem 3rem;
+  padding: 0rem 3rem 0.5rem 3rem;
   max-width: $sizeVessel;
   transition: padding 0.2s ease-in-out;
 }
@@ -817,8 +825,13 @@ h2 {
 }
 
 .curate-heading {
-  padding: 0rem 0rem;
+  padding: 1rem 0rem 0 0;
   margin: 0rem 0rem;
+}
+
+.call-out-box {
+  padding: 0.5rem 1rem 0 1rem;
+  border-radius: 10px;
 }
 
 .readme-header {
@@ -830,8 +843,7 @@ h3.curate-heading {
   font-size: 1.8rem;
   font-weight: bold;
   color: var(--textFancy);
-  padding-top: 1rem;
-  margin-top: 0rem;
+  margin-bottom: 0.5rem;
 }
 
 .curate-content {
@@ -924,9 +936,11 @@ h3.curate-heading {
 }
 
 .col4 {
+  background-color: white;
+  color: #444;
   margin-top: -1rem;
   margin-left: 2rem;
-  border: 1px solid #cecece;
+  // border: 1px solid #cecece;
   padding: 0.5rem 0.5rem;
   border-radius: 8px;
 }
