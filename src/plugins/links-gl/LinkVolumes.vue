@@ -77,8 +77,8 @@ import { debounce } from 'debounce'
 import Papaparse from 'papaparse'
 import readBlob from 'read-blob'
 import YAML from 'yaml'
-import * as coroutines from 'js-coroutines'
-import workerpool from 'workerpool'
+// import * as coroutines from 'js-coroutines'
+// import workerpool from 'workerpool'
 
 import globalStore from '@/store'
 import pako from '@aftersim/pako'
@@ -504,18 +504,25 @@ class MyPlugin extends Vue {
       this.buildColumnValues = allLinks
       this.csvData = details
       this.handleNewDataColumn(this.csvData.header[0])
-    } else {
+    } else if (this.vizDetails.csvBase) {
       // otherwise we loaded baseline
       this.baseColumnValues = allLinks
       this.csvBase = details
+    } else {
+      // we are ONLY loading build
+      this.buildColumnValues = allLinks
+      this.csvData = details
+      this.handleNewDataColumn(this.csvData.header[0])
     }
 
     // ARE WE DONE?
     if (this.csvFilesToLoad.length) {
-      // this.myState.statusMessage = 'Loading CSV Baseline...'
+      this.myState.statusMessage = 'Loading CSV Baseline...'
       this.loadCSVFile(this.csvFilesToLoad[0])
+    } else {
+      this.myState.statusMessage = ''
+      this.handleNewDataColumn(this.csvData.header[0])
     }
-    this.myState.statusMessage = ''
   }
 
   private loadCSVFile(filename: string) {
@@ -525,6 +532,7 @@ class MyPlugin extends Vue {
 
     try {
       Papaparse.parse(csvFilename, {
+        // preview: 10000,
         download: true,
         header: false,
         skipEmptyLines: true,
@@ -583,14 +591,14 @@ export default MyPlugin
   z-index: 5;
   grid-column: 1 / 4;
   grid-row: 1 / 4;
+  box-shadow: 0px 2px 10px #22222266;
   display: flex;
   flex-direction: row;
-  margin: auto auto;
-  background-color: #00000080;
-  padding: 0.25rem 3rem;
+  margin: auto auto 0 0;
+  background-color: var(--bgPanel);
+  padding: 0rem 3rem;
 
   a {
-    font-weight: bold;
     color: white;
     text-decoration: none;
 
@@ -601,8 +609,9 @@ export default MyPlugin
 
   p {
     margin: auto 0.5rem auto 0;
+    font-weight: normal;
     padding: 0 0;
-    color: white;
+    color: var(--textFancy);
   }
 }
 
@@ -655,8 +664,6 @@ export default MyPlugin
 }
 
 .panel-item {
-  margin-top: 7rem;
-
   h3 {
     line-height: 1.7rem;
     margin-bottom: 0.5rem;
@@ -688,11 +695,6 @@ label {
   margin-right: 0.5rem;
 }
 
-.full-width {
-  display: block;
-  width: 100%;
-}
-
 #dropdown-menu-color-selector {
   background-color: var(--bgBold);
 
@@ -706,7 +708,7 @@ label {
 }
 
 .diff-section {
-  margin-top: 4rem;
+  margin-top: 1rem;
 }
 
 @media only screen and (max-width: 640px) {

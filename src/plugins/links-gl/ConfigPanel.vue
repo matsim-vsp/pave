@@ -41,23 +41,23 @@
     .options(style="display: flex; flex-direction:column;")
       input.input(v-model.lazy.number="scaleWidthValue")
 
-  //- COLOR PICKER
-  .panel-item(v-if="activeColumn > -1")
-    p: b {{ $t('colors') }}
-    .dropdown.full-width(:class="{'is-active': isColorButtonActive}")
-      .dropdown-trigger
-        img.color-button(:src="`/pave/colors/scale-${selectedColorRamp}.png`"
-            :style="{'height': '2.3rem', 'width': '100%', 'border-radius': '5px'}"
-            @click="() => this.isColorButtonActive = !this.isColorButtonActive"
-        )
 
-      #dropdown-menu-color-selector.dropdown-menu(role="menu")
-        .dropdown-content(:style="{'padding':'0 0'}")
-          a.dropdown-item(v-for="colorRamp in Object.keys(colorRamps)"
-                          @click="handleColorRamp(colorRamp)"
-                          :style="{'padding': '0.25rem 0.25rem'}")
-            img(:src="`/pave/colors/scale-${colorRamp}.png`")
-            p(:style="{'lineHeight': '1rem', 'marginBottom':'0.25rem'}") {{ colorRamp }}
+  //- COLOR PICKER
+  .panel-item.color-picker(v-if="activeColumn > -1")
+    p: b {{ $t('colors') }}
+      .dropdown.full-width(:class="{'is-active': isColorButtonActive}")
+        .dropdown-trigger
+          img.color-button(:src="`/pave/colors/scale-${selectedColorRamp}.png`"
+              @click="() => this.isColorButtonActive = !this.isColorButtonActive"
+          )
+
+        #dropdown-menu-color-selector.dropdown-menu(role="menu")
+          .dropdown-content(:style="{'padding':'0 0'}")
+            a.dropdown-item(v-for="colorRamp in Object.keys(colorRamps)"
+                            @click="handleColorRamp(colorRamp)"
+                            :style="{'padding': '0.25rem 0.25rem'}")
+              img(:src="`/pave/colors/scale-${colorRamp}.png`")
+              p(:style="{'lineHeight': '1rem', 'marginBottom':'0.25rem'}") {{ colorRamp }}
 
 </template>
 
@@ -193,6 +193,12 @@ p {
   font-size: 0.9rem;
 }
 
+.color-picker {
+  margin-top: 1.5rem;
+  height: 4rem;
+  display: inline-block;
+}
+
 .color-button:hover {
   cursor: pointer;
   box-shadow: 0px 0px 3px 3px rgba(128, 128, 128, 0.3);
@@ -209,9 +215,9 @@ input {
 }
 
 .dropdown {
-  width: 175px;
   position: absolute;
   overflow: visible;
+  width: 175px;
 }
 
 #dropdown-menu-color-selector {

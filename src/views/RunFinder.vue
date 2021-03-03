@@ -124,7 +124,7 @@ import Papaparse from 'papaparse'
 import vegaEmbed from 'vega-embed'
 import yaml from 'yaml'
 
-import globalStore from '@/store.ts'
+import globalStore from '@/store'
 import plugins from '@/plugins/pluginRegistry'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
 import { BreadCrumb, VisualizationPlugin, SVNProject } from '../Globals'
