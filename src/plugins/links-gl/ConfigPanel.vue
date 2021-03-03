@@ -29,13 +29,13 @@
           span.icon.is-small
             i.fas.fa-angle-down(aria-hidden="true")
 
-      #dropdown-menu-column-selector.dropdown-menu(role="menu" :style="{'max-height':'16rem', 'overflow-y': 'auto', 'border': '1px solid #ccc'}")
+      #dropdown-menu-column-selector.dropdown-menu(role="menu" :style="{'max-height':'24rem', 'overflow-y': 'auto', 'border': '1px solid #ccc'}")
         .dropdown-content
           a.dropdown-item(v-for="column in header"
                           @click="handleSelectColumn(column)") {{ column }}
 
   //- BANDWIDTHS
-  .panel-item
+  .panel-item(:class="{'vert-space': !useSlider}")
     p: b {{ $t('bandwidths') }}
 
     .options(style="display: flex; flex-direction:column;")
@@ -186,7 +186,7 @@ export default class VueComponent extends Vue {
 }
 
 .panel-item {
-  margin-bottom: 1rem;
+  margin-top: 1rem;
 }
 
 p {
@@ -209,7 +209,7 @@ input {
 }
 
 .dropdown {
-  width: 208px;
+  width: 175px;
   position: absolute;
   overflow: visible;
 }
@@ -220,6 +220,10 @@ input {
   p {
     color: #888;
   }
+}
+
+.vert-space {
+  margin-top: 4rem;
 }
 
 @media only screen and (max-width: 640px) {

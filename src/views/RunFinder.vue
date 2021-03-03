@@ -569,7 +569,6 @@ export default class VueComponent extends Vue {
       console.warn('couldnt find readme')
       // no readme? oh well
     }
-    console.log(this.myState.readme)
   }
 
   private buildShowEverythingView() {

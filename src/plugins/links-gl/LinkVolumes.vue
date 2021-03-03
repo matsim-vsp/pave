@@ -46,7 +46,7 @@ de:
         //- button/dropdown for selecting column
         .panel-item
           config-panel(
-            :header="csvBase.header"
+            :header="csvData.header"
             :activeColumn="csvData.activeColumn"
             :scaleWidth="scaleWidth"
             :selectedColorRamp="selectedColorRamp"
@@ -78,6 +78,7 @@ import Papaparse from 'papaparse'
 import readBlob from 'read-blob'
 import YAML from 'yaml'
 import * as coroutines from 'js-coroutines'
+import workerpool from 'workerpool'
 
 import globalStore from '@/store'
 import pako from '@aftersim/pako'
@@ -333,18 +334,11 @@ class MyPlugin extends Vue {
     // // find max value for scaling
     if (!this.csvData.headerMax[column]) {
       let max = 0
-
       this.buildColumnValues[column].forEach(value => (max = Math.max(max, value)))
-
-      console.log(max)
       if (max) this.csvData.headerMax[column] = max
     }
 
-    // set the new column
-    // this.csvData.rows = buildColumnValues[column]
-    // this.csvBase.rows = baseColumnValues[column]
     console.log('setting it')
-
     this.buildData = this.buildColumnValues[column]
     this.baseData = this.baseColumnValues[column]
 
@@ -373,9 +367,8 @@ class MyPlugin extends Vue {
     if (!allLinks) return
 
     console.log('5: ok')
-
-    // then load CSVs in background
-    await this.loadCSVFiles()
+    this.geojsonData = allLinks
+    this.isLoaded = true
 
     // runs in background
     this.center = this.findCenter([])
@@ -384,8 +377,9 @@ class MyPlugin extends Vue {
 
     this.myState.statusMessage = ''
     console.log('999: ok')
-    this.geojsonData = allLinks
-    this.isLoaded = true
+
+    // then load CSVs in background
+    this.loadCSVFiles()
   }
 
   private async loadGeojsonFeatures() {
@@ -435,54 +429,25 @@ class MyPlugin extends Vue {
     this.isButtonActiveColumn = !this.isButtonActiveColumn
   }
 
-  private async loadCSVFiles() {
-    const promises: any[] = []
-    promises.push(this.loadCSVFile(this.vizDetails.csvFile))
+  private csvFilesToLoad: string[] = []
 
-    if (this.vizDetails.csvBase) promises.push(this.loadCSVFile(this.vizDetails.csvBase))
-    await Promise.all(promises)
+  private loadCSVFiles() {
+    this.myState.statusMessage = 'Loading CSV data...'
 
-    const { allColumns, header, headerMax } = await promises[0]
-    this.buildColumnValues = allColumns
-    this.csvData = { header, headerMax, rows: new Float32Array(), activeColumn: -1 }
+    // these will load sequentially and on a worker, to make things seem faster
+    this.csvFilesToLoad = [this.vizDetails.csvFile]
+    if (this.vizDetails.csvBase) this.csvFilesToLoad.push(this.vizDetails.csvBase)
 
-    if (promises[1]) {
-      const { allColumns, header, headerMax } = await promises[1]
-      this.baseColumnValues = allColumns
-      this.csvBase = { header, headerMax, rows: new Float32Array(), activeColumn: -1 }
-    }
-
-    console.log({ csvData: this.csvData, csvBase: this.csvBase })
-    this.myState.statusMessage = 'Finishing up...'
-    // data is all loaded! select first column for display
-    this.handleNewDataColumn(this.csvData.header[0])
+    // start the first load. The rest will happen sequentially,
+    // because papaparse will call finishedLoadingCSV() when it's done loading & parsing
+    this.loadCSVFile(this.csvFilesToLoad[0])
   }
 
-  private async loadCSVFile(filename: string) {
-    console.log('7a: loading CSV:', filename)
+  private async finishedLoadingCSV(parsed: any) {
+    const currentCSV = this.csvFilesToLoad.shift()
 
-    const csvFilename = `${this.myState.subfolder}/${filename}`
-
-    let globalMax = 0
-
-    let parsed: any = {}
-    try {
-      this.myState.statusMessage = 'Loading CSV data...'
-
-      const raw = await this.myState.fileApi.getFileText(csvFilename)
-      console.log('7b: papaparsing', filename)
-
-      parsed = await Papaparse.parse(raw, {
-        header: false,
-        skipEmptyLines: true,
-        dynamicTyping: true,
-      })
-    } catch (e) {
-      console.error(e)
-      return { header: [], headerMax: [], rows: {}, activeColumn: -1 }
-    }
-
-    console.log('7c: building index:', filename)
+    console.log('FINISHED PARSING: ', currentCSV)
+    this.myState.statusMessage = 'Analyzing...'
 
     // an array containing a separate Float32Array for each CSV column
     const allLinks: Float32Array[] = []
@@ -492,6 +457,8 @@ class MyPlugin extends Vue {
     for (let i = 0; i < numColumns; i++) {
       allLinks.push(new Float32Array(this.numLinks))
     }
+
+    let globalMax = 0
 
     for (const link of parsed.data.splice(1)) {
       // get array offset, or skip if this link isn't in the network!
@@ -523,12 +490,51 @@ class MyPlugin extends Vue {
     // some people insist on labeling "8 AM" as "08:00:00" which is annoying
     const cleanHeaders = header.map(h => h.replace(':00:00', ''))
 
-    return {
-      allColumns: allLinks,
+    const details = {
       header: cleanHeaders,
       headerMax: this.vizDetails.useSlider
         ? new Array(this.csvData.header.length).fill(globalMax)
         : [],
+      rows: new Float32Array(),
+      activeColumn: -1,
+    }
+
+    if (this.csvFilesToLoad.length) {
+      // if there's still a file to load, then we just loaded build
+      this.buildColumnValues = allLinks
+      this.csvData = details
+      this.handleNewDataColumn(this.csvData.header[0])
+    } else {
+      // otherwise we loaded baseline
+      this.baseColumnValues = allLinks
+      this.csvBase = details
+    }
+
+    // ARE WE DONE?
+    if (this.csvFilesToLoad.length) {
+      // this.myState.statusMessage = 'Loading CSV Baseline...'
+      this.loadCSVFile(this.csvFilesToLoad[0])
+    }
+    this.myState.statusMessage = ''
+  }
+
+  private loadCSVFile(filename: string) {
+    console.log('7a: loading CSV:', filename)
+
+    const csvFilename = this.myState.fileApi.cleanURL(`${this.myState.subfolder}/${filename}`)
+
+    try {
+      Papaparse.parse(csvFilename, {
+        download: true,
+        header: false,
+        skipEmptyLines: true,
+        dynamicTyping: true,
+        worker: true,
+        complete: this.finishedLoadingCSV,
+      })
+    } catch (e) {
+      console.error(e)
+      return { allColumns: [], header: [], headerMax: [] }
     }
   }
 
@@ -649,7 +655,7 @@ export default MyPlugin
 }
 
 .panel-item {
-  margin-bottom: 1rem;
+  margin-top: 7rem;
 
   h3 {
     line-height: 1.7rem;
@@ -696,11 +702,11 @@ label {
 }
 
 .panel-item {
-  margin-top: 1rem;
+  margin-top: 0rem;
 }
 
 .diff-section {
-  margin-top: 2.5rem;
+  margin-top: 4rem;
 }
 
 @media only screen and (max-width: 640px) {

@@ -219,8 +219,8 @@ export default function Component({
       },
 
       transitions: {
-        getColor: 500,
-        getWidth: 500,
+        getColor: 350,
+        getWidth: 350,
       },
     }),
   ]
