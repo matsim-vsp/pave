@@ -38,7 +38,7 @@
 
     //- selected run header
     .stripe
-      .vessel.white(:style="{borderRadius: '10px', marginBottom: '2rem'}")
+      .vessel.white.performance(:style="{borderRadius: '10px', marginBottom: '2rem'}")
         h3.curate-heading Scenario Performance
 
         p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
@@ -662,6 +662,11 @@ export default class VueComponent extends Vue {
   padding: 0rem 3rem 1rem 3rem;
   max-width: $sizeVessel;
   transition: padding 0.2s ease-in-out;
+}
+
+.performance {
+  max-width: 56rem;
+  padding: 0 1rem 1rem 1rem;
 }
 
 .white {
