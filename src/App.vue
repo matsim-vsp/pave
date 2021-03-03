@@ -405,6 +405,7 @@ a:hover {
 .locale {
   -moz-user-select: none;
   -webkit-user-select: none;
+  user-select: none;
   font-size: 0.7rem;
   background-color: $steelGray;
   color: #ccc;

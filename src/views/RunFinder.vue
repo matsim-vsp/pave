@@ -14,8 +14,8 @@
           @click="clickedOptionButton(d.heading, option.value)"
         ) {{ option.title }}
 
-  .right-strip
-    .stripe.white(v-if="myState.svnProject")
+  .right-strip.cream
+    .stripe(v-if="myState.svnProject")
       .vessel
         .project-bar
           .details
@@ -23,12 +23,12 @@
             p {{ myState.svnProject.description }}
 
     //- show network errors
-    .stripe.white(v-if="myState.errorStatus")
+    .stripe(v-if="myState.errorStatus")
       .vessel
         .badnews(v-html="myState.errorStatus")
 
     //- this is the content of readme.md, if it exists
-    .stripe.white
+    .stripe
       .vessel
         .readme-header
           .curate-content.markdown(
@@ -37,8 +37,8 @@
           )
 
     //- selected run header
-    .stripe.cream
-      .vessel
+    .stripe
+      .vessel.white(:style="{borderRadius: '10px', marginBottom: '2rem'}")
         h3.curate-heading Scenario Performance
 
         p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
@@ -642,7 +642,6 @@ export default class VueComponent extends Vue {
   display: grid;
   grid-template-columns: 18rem 1fr;
   grid-template-rows: 100%;
-  background-color: var(--bgBold);
 }
 
 .left-strip {
@@ -655,6 +654,7 @@ export default class VueComponent extends Vue {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  background-color: var(--bg);
 }
 
 .vessel {
