@@ -261,7 +261,10 @@ class MyPlugin extends Vue {
     //   }
     // }
     // const t = this.vizDetails.title ? this.vizDetails.title : 'Network Links'
-    this.$emit('title', 'SHAPEFILE!')
+    this.$emit(
+      'title',
+      `Shapefile: ${this.myState.yamlConfig.slice(0, this.myState.yamlConfig.length - 4)}`
+    )
   }
 
   private async buildThumbnail() {
