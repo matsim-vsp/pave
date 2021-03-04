@@ -1,6 +1,7 @@
 <template lang="pug">
 .sankey-container(v-if="myState.yamlConfig"
                   :class="{'show-thumbnail': myState.thumbnail, 'show-flipper': flipperID}")
+
   .main-area
     .labels(v-show="!(myState.thumbnail)")
       h3.center {{ vizDetails.title }}
@@ -9,6 +10,7 @@
       p.center {{ totalTrips.toLocaleString() }} total trips
 
     svg(:id="cleanConfigId")
+
 </template>
 
 <script lang="ts">
@@ -270,7 +272,7 @@ class MyComponent extends Vue {
 
     const layout = sankey()
       .extent([
-        [150, 10],
+        [150, 0],
         [650, 790],
       ])
       .nodeWidth(5)
@@ -324,8 +326,10 @@ export default MyComponent
 }
 
 .show-flipper {
-  padding-top: 0;
-  height: 14rem;
+  margin-top: -1rem;
+  display: inline-block;
+  width: 20rem;
+  // padding-top: 0;
 }
 
 h1 {
@@ -401,13 +405,6 @@ p {
   padding: 0 3rem;
   flex-direction: column;
   color: #444;
-}
-
-#chart {
-  width: 100%;
-  max-width: 55rem;
-  height: auto;
-  margin: 0px auto;
 }
 
 .center {

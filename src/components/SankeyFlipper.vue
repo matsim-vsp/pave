@@ -1,8 +1,6 @@
 <template lang="pug">
 .sankey-flipper(v-if="activePlot")
   .diagram
-    h4 {{ `${this.selectedPlotNumber + 1}. ${activePlot.title}` }}
-
     sankey-diagram(v-if="selectedPlotNumber > -1"
       :yamlConfig="activePlot.config"
       :fileApi="myState.svnRoot"
@@ -12,15 +10,15 @@
       :flipperID="'sankey-flipper'"
     )
 
+  h4 {{ `${this.selectedPlotNumber + 1}. ${activePlot.title}` }}
+
   .butdtons
-    button.button.is-link(@click="switchPlot(1)")
-      //- span Next
-      span.icon.is-small: i.fas.fa-arrow-right
-
-    button.button.is-link(@click="switchPlot(-1)")
+    button.button.is-outlined(@click="switchPlot(-1)")
       span.icon.is-small: i.fas.fa-arrow-left
-      //- span Prev
-
+      span Prev
+    button.button.is-outlined(@click="switchPlot(1)")
+      span Next
+      span.icon.is-small: i.fas.fa-arrow-right
 
 
 </template>
@@ -64,12 +62,8 @@ class MyComponent extends Vue {
     vizes: VizEntry[]
     selectedRun: string
   }
-  private globalState = globalStore.state
-
-  private vizDetails: SankeyYaml = { csv: '', title: '', description: '' }
 
   private allSankeys: any[] = []
-
   private selectedPlotNumber = -1
 
   private get activePlot() {
@@ -82,7 +76,6 @@ class MyComponent extends Vue {
   }
 
   public mounted() {
-    console.log('FLIPPER ----------')
     if (this.myState.vizes)
       this.allSankeys = this.myState.vizes.filter(viz => viz.component === 'sankey-diagram')
     this.selectedPlotNumber = 0
@@ -96,26 +89,33 @@ export default MyComponent
 @import '@/styles.scss';
 .sankey-flipper {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 }
 
 .diagram {
-  display: inline-block;
-  width: 50%;
-  height: 25rem;
+  flex: 1;
+  // display: inline-block;
+  width: 100%;
   padding: 1rem 0rem;
   background-color: white;
   text-align: center;
 }
 
+h4 {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #444;
+}
+
 .butdtons {
-  margin-left: 0.5rem;
+  // margin-left: 0.5rem;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  margin: 1rem auto 0 auto;
 }
 
 .button {
-  margin-bottom: 0.25rem;
+  margin-right: 0.25rem;
 }
 
 @media only screen and (max-width: 40em) {

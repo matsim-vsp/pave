@@ -40,7 +40,7 @@
     .stripe
       .vessel(:style="{borderRadius: '10px', marginBottom: '2rem'}")
         .white.call-out-box
-          h3.curate-heading Scenario Performance
+          h3.curate-heading At-a-Glance
           p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
 
           .summary-table(v-if="myState.selectedRun && myState.vizes.length")
@@ -53,6 +53,9 @@
               .tlabel.blue Expenses/day
               .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
               .tlabel.vspace 95% waiting times &lt;
+              b.tlabel Vehicle costs
+              .tlabel: b Per day
+              input.input(v-model="runCosts.fixedCosts")
 
             .col2
               .tlabel {{ runHeader.demand.toLocaleString() }} rides
@@ -63,24 +66,14 @@
               .tlabel.blue {{ expensesPerDay().toLocaleString() }} €
               .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
               .tlabel.vspace {{ (runHeader.serviceQuality / 60.0).toFixed(1) }} min
-
-            .col3
-              b.tlabel Vehicle costs
-              .tlabel Per day
-              input.input(v-model="runCosts.fixedCosts")
+              .tlabel :
               .tlabel Per km
               input.input(v-model="runCosts.variableCosts")
 
-            .col4(v-if="modeSharePie.data")
-              b Mode Shares
-              #pie-chart
-
-
-    //- sankey flipper
-    .stripe(v-if="myState.vizes.length")
-      .vessel
-        h3.curate-heading Mode Shifts
-        sankey-flipper(:myState="myState")
+            .col3(v-if="modeSharePie.data")
+              sankey-flipper(:myState="myState")
+              //- b Mode Shares
+              //- #pie-chart
 
 
     //- thumbnails of each viz and image in this folder
@@ -413,9 +406,9 @@ export default class VueComponent extends Vue {
   }
 
   private expensesPerDay() {
-    return (
+    return Math.round(
       this.runHeader.fleetSize * this.runCosts.fixedCosts +
-      this.runHeader.mileage * this.runCosts.variableCosts
+        this.runHeader.mileage * this.runCosts.variableCosts
     )
   }
 
@@ -440,9 +433,9 @@ export default class VueComponent extends Vue {
     this.runHeader = {
       demand: 0 + run.calcDemand,
       fleetSize: 0 + run.calcFleetSize,
-      mileage: 0 + run.calcMileage,
-      revenueDistance: 0 + run.calcRevenueDistance,
-      incomePerDay: 0 + incomePerDay,
+      mileage: Math.round(0 + run.calcMileage),
+      revenueDistance: Math.round(0 + run.calcRevenueDistance),
+      incomePerDay: Math.round(0 + incomePerDay),
       serviceQuality: 0 + run.calcServiceLevel,
     }
 
@@ -517,7 +510,7 @@ export default class VueComponent extends Vue {
       padding: { top: 5, left: 5, right: 5, bottom: 5 },
     }
 
-    vegaEmbed(`#pie-chart`, this.modeSharePie, embedOptions)
+    // vegaEmbed(`#pie-chart`, this.modeSharePie, embedOptions)
   }
 
   private clickedVisualization(vizNumber: number) {
@@ -895,19 +888,30 @@ h3.curate-heading {
   margin: 1rem 0;
   display: flex;
   flex-direction: row;
-}
 
-.summary-table .col1 {
-  display: flex;
-  flex-direction: column;
-  width: max-content;
-  text-align: right;
-}
+  .col1 {
+    display: flex;
+    flex-direction: column;
+    width: min-content;
+    text-align: right;
+    margin-bottom: 1rem;
+  }
 
-.summary-table .col2 {
-  flex-direction: column;
-  margin-left: 0.5rem;
-  width: max-content;
+  .col2 {
+    flex-direction: column;
+    margin-left: 0.5rem;
+    width: min-content;
+
+    .tlabel {
+      margin-left: auto;
+      font-weight: bold;
+    }
+  }
+
+  .col3 {
+    flex: 1;
+    padding: 0.5rem 0.5rem;
+  }
 }
 
 .blue {
@@ -922,27 +926,6 @@ h3.curate-heading {
   width: max-content;
   margin: 0 0;
   padding: 0 0;
-}
-
-.col3 {
-  font-size: 0.8rem;
-  margin-left: 3rem;
-  margin-top: 6rem;
-  min-width: 5rem;
-}
-
-.col2 .tlabel {
-  font-weight: bold;
-}
-
-.col4 {
-  background-color: white;
-  color: #444;
-  margin-top: -1rem;
-  margin-left: 2rem;
-  // border: 1px solid #cecece;
-  padding: 0.5rem 0.5rem;
-  border-radius: 8px;
 }
 
 .vspace {
