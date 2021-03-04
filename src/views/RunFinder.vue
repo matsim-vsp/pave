@@ -39,8 +39,8 @@
     //- selected run header
     .stripe
       .vessel(:style="{borderRadius: '10px', marginBottom: '2rem'}")
-        .white.call-out-box
-          h3.curate-heading DRT Operator KPIs
+        .call-out-box
+          h3.curate-heading DRT Operator: Key Performance Indicators
           p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
 
           .summary-table(v-if="myState.selectedRun && myState.vizes.length")
@@ -786,8 +786,14 @@ h2 {
 }
 
 .call-out-box {
+  background-color: white;
+  color: #222;
   padding: 0rem 1rem 0.25rem 2rem;
   border-radius: 10px;
+
+  h3.curate-heading {
+    color: #1c5179;
+  }
 }
 
 .readme-header {
@@ -878,7 +884,7 @@ h3.curate-heading {
 }
 
 .blue {
-  color: var(--link);
+  color: #1c5179;
 }
 
 .red {
