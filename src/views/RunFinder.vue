@@ -51,11 +51,11 @@
               .tlabel Total Mileage
               .tlabel.vspace Revenue distance
               .tlabel.blue Income/day
-              .tlabel.blue Expenses/day
-              .tlabel.blue Toll income
-              .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
+              .tlabel.blue Toll income/day
+              .tlabel.red Expenses/day*
+              .tlabel.vspace.aboveline(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
               .tlabel.vspace 95% waiting times &lt;
-              b.tlabel Vehicle costs
+              b.tlabel *Vehicle costs
               .tlabel: b Per day
               input.input(v-model="runCosts.fixedCosts")
 
@@ -63,12 +63,13 @@
               .tlabel {{ runHeader.demand.toLocaleString() }} rides
               .tlabel {{ runHeader.fleetSize.toLocaleString() }} vehicles
               .tlabel {{ runHeader.mileage.toLocaleString() }} km
-              .tlabel --need-column--
+              .tlabel {{ totalMileage().toLocaleString() }} km
               .tlabel.vspace {{ runHeader.revenueDistance.toLocaleString() }} km
               .tlabel.blue {{ runHeader.incomePerDay.toLocaleString() }} €
-              .tlabel.blue {{ expensesPerDay().toLocaleString() }} €
-              .tlabel.blue --need-column--
-              .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
+              .tlabel.blue {{ runHeader.tollIncome.toLocaleString() }} €
+              .tlabel.red {{ expensesPerDay().toLocaleString() }} €
+              .tlabel.vspace.aboveline(
+                :class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
               .tlabel.vspace {{ (runHeader.serviceQuality / 60.0).toFixed(1) }} min
               .tlabel :
               .tlabel Per km
@@ -188,6 +189,8 @@ export default class VueComponent extends Vue {
     revenueDistance: 1,
     incomePerDay: 1,
     serviceQuality: 1,
+    tollIncome: 0,
+    carMileage: 0,
   }
 
   private myState: IMyState = {
@@ -386,6 +389,12 @@ export default class VueComponent extends Vue {
     )
   }
 
+  private totalMileage() {
+    const total = this.runHeader.mileage + (this.runHeader.carMileage || 0)
+
+    return Math.round(total)
+  }
+
   private revenuePerDay() {
     return this.runHeader.incomePerDay - this.expensesPerDay()
   }
@@ -408,9 +417,11 @@ export default class VueComponent extends Vue {
       demand: 0 + run.calcDemand,
       fleetSize: 0 + run.calcFleetSize,
       mileage: Math.round(0 + run.calcMileage),
+      totalMileage: run.tollIncome || 0,
       revenueDistance: Math.round(0 + run.calcRevenueDistance),
       incomePerDay: Math.round(0 + incomePerDay),
       serviceQuality: 0 + run.calcServiceLevel,
+      tollIncome: run.tollIncome || 0,
     }
 
     this.runCosts = {
@@ -895,6 +906,10 @@ h3.curate-heading {
   width: max-content;
   margin: 0 0;
   padding: 0 0;
+}
+
+.aboveline {
+  border-top: 1px solid #ccc;
 }
 
 .vspace {
