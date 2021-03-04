@@ -40,17 +40,19 @@
     .stripe
       .vessel(:style="{borderRadius: '10px', marginBottom: '2rem'}")
         .white.call-out-box
-          h3.curate-heading At-a-Glance
+          h3.curate-heading DRT Operator KPIs
           p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
 
           .summary-table(v-if="myState.selectedRun && myState.vizes.length")
             .col1
               .tlabel Demand
               .tlabel Fleet size
-              .tlabel Mileage
+              .tlabel Fleet mileage
+              .tlabel Total Mileage
               .tlabel.vspace Revenue distance
               .tlabel.blue Income/day
               .tlabel.blue Expenses/day
+              .tlabel.blue Toll income
               .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
               .tlabel.vspace 95% waiting times &lt;
               b.tlabel Vehicle costs
@@ -61,19 +63,19 @@
               .tlabel {{ runHeader.demand.toLocaleString() }} rides
               .tlabel {{ runHeader.fleetSize.toLocaleString() }} vehicles
               .tlabel {{ runHeader.mileage.toLocaleString() }} km
+              .tlabel --need-column--
               .tlabel.vspace {{ runHeader.revenueDistance.toLocaleString() }} km
               .tlabel.blue {{ runHeader.incomePerDay.toLocaleString() }} €
               .tlabel.blue {{ expensesPerDay().toLocaleString() }} €
+              .tlabel.blue --need-column--
               .tlabel.vspace(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
               .tlabel.vspace {{ (runHeader.serviceQuality / 60.0).toFixed(1) }} min
               .tlabel :
               .tlabel Per km
               input.input(v-model="runCosts.variableCosts")
 
-            .col3(v-if="modeSharePie.data")
-              sankey-flipper(:myState="myState")
-              //- b Mode Shares
-              //- #pie-chart
+            .col3(v-if="modeSharePie.description")
+              sankey-flipper(:myState="myState" :modeSharePie="modeSharePie")
 
 
     //- thumbnails of each viz and image in this folder
@@ -122,7 +124,6 @@ import markdown from 'markdown-it'
 import mediumZoom from 'medium-zoom'
 import micromatch from 'micromatch'
 import Papaparse from 'papaparse'
-import vegaEmbed from 'vega-embed'
 import yaml from 'yaml'
 
 import globalStore from '@/store'
@@ -130,6 +131,7 @@ import plugins from '@/plugins/pluginRegistry'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
 import { BreadCrumb, VisualizationPlugin, SVNProject } from '../Globals'
 import SankeyFlipper from '@/components/SankeyFlipper.vue'
+import VegaComponent from '@/plugins/vega-lite/VegaLite.vue'
 
 interface VizEntry {
   component: string
@@ -218,34 +220,6 @@ export default class VueComponent extends Vue {
     const crumbs: any[] = []
     globalStore.commit('setBreadCrumbs', crumbs)
     return crumbs
-
-    // const crumbs = [
-    //   {
-    //     label: 'aftersim',
-    //     url: '/',
-    //   },
-    //   {
-    //     label: this.myState.svnProject.name,
-    //     url: '/' + this.myState.svnProject.url,
-    //   },
-    // ]
-
-    // const subfolders = this.myState.subfolder.split('/')
-    // let buildFolder = '/'
-    // for (const folder of subfolders) {
-    //   if (!folder) continue
-
-    //   buildFolder += folder
-    //   crumbs.push({
-    //     label: folder,
-    //     url: '/' + this.myState.svnProject.url + buildFolder,
-    //   })
-    // }
-
-    // // save them!
-    // globalStore.commit('setBreadCrumbs', crumbs)
-
-    // return crumbs
   }
 
   private mounted() {
@@ -448,14 +422,12 @@ export default class VueComponent extends Vue {
   }
 
   private async buildModeSharePieChart() {
-    console.log('pie chart')
     if (!this.myState.svnRoot) return
 
     const modeStats = this.myState.files.filter(a => a.endsWith('.modestats.txt'))
-
     if (!modeStats.length) return
 
-    const fname = `/${this.myState.selectedRun}/${modeStats[0]}`
+    const fname = `${this.myState.selectedRun}/${modeStats[0]}`
     const modeshareText = await this.myState.svnRoot.getFileText(fname)
 
     const parsed = Papaparse.parse(modeshareText, {
@@ -485,7 +457,6 @@ export default class VueComponent extends Vue {
         values: vegaValues,
       },
       background: 'white',
-      // mark: { type: 'arc', innerRadius: 25 },
       encoding: {
         theta: { field: 'value', type: 'quantitative', stack: true },
         color: { field: 'category', type: 'nominal', legend: null },
@@ -495,7 +466,7 @@ export default class VueComponent extends Vue {
           mark: { type: 'arc', innerRadius: 25, outerRadius: 80 },
         },
         {
-          mark: { type: 'text', radius: 108, fontWeight: 'bold', fontSize: 14 },
+          mark: { type: 'text', radius: 108, fontWeight: 'bold', fontSize: 12 },
           encoding: {
             text: { field: 'label', type: 'nominal' },
           },
@@ -503,14 +474,6 @@ export default class VueComponent extends Vue {
       ],
       view: { stroke: null },
     }
-
-    const embedOptions = {
-      actions: false,
-      hover: true,
-      padding: { top: 5, left: 5, right: 5, bottom: 5 },
-    }
-
-    // vegaEmbed(`#pie-chart`, this.modeSharePie, embedOptions)
   }
 
   private clickedVisualization(vizNumber: number) {
@@ -823,7 +786,7 @@ h2 {
 }
 
 .call-out-box {
-  padding: 0.5rem 1rem 0 1rem;
+  padding: 0rem 1rem 0.25rem 2rem;
   border-radius: 10px;
 }
 

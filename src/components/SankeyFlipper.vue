@@ -1,18 +1,19 @@
 <template lang="pug">
 .sankey-flipper(v-if="activePlot")
   .diagram
-    sankey-diagram(v-if="selectedPlotNumber > -1"
+    .pie(v-show="activePlot.piechart" id="pie-chart")
+
+    sankey-diagram(v-if="selectedPlotNumber > -1 && !activePlot.piechart"
       :yamlConfig="activePlot.config"
       :fileApi="myState.svnRoot"
       :subfolder="`${myState.selectedRun}`"
       :thumbnail="true"
-      :style="{'pointer-events': 'none'}"
       :flipperID="'sankey-flipper'"
     )
 
   h4 {{ `${this.selectedPlotNumber + 1}. ${activePlot.title}` }}
 
-  .butdtons
+  .buttons-prev-next
     button.button.is-outlined(@click="switchPlot(-1)")
       span.icon.is-small: i.fas.fa-arrow-left
       span Prev
@@ -20,13 +21,13 @@
       span Next
       span.icon.is-small: i.fas.fa-arrow-right
 
-
 </template>
 
 <script lang="ts">
 'use strict'
 
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import vegaEmbed from 'vega-embed'
 
 import globalStore from '@/store'
 import { SVNProject } from '@/Globals'
@@ -53,8 +54,17 @@ Number.prototype.mod = function(n) {
   return ((this % n) + n) % n
 }
 
+const embedOptions = {
+  actions: false,
+  hover: true,
+  padding: { top: 0, left: 5, right: 5, bottom: 0 },
+}
+
 @Component({ components: { SankeyDiagram } })
 class MyComponent extends Vue {
+  @Prop({ required: true })
+  private modeSharePie!: any
+
   @Prop({ required: true })
   private myState!: {
     svnProject: SVNProject
@@ -76,8 +86,18 @@ class MyComponent extends Vue {
   }
 
   public mounted() {
-    if (this.myState.vizes)
-      this.allSankeys = this.myState.vizes.filter(viz => viz.component === 'sankey-diagram')
+    const vizes: any[] = []
+
+    if (this.modeSharePie.description) {
+      vizes.push({ piechart: true, title: this.modeSharePie.description })
+      vegaEmbed(`#pie-chart`, this.modeSharePie, embedOptions)
+    }
+
+    if (this.myState.vizes) {
+      const sankeys = this.myState.vizes.filter(viz => viz.component === 'sankey-diagram')
+      vizes.push(...sankeys)
+    }
+    this.allSankeys = vizes
     this.selectedPlotNumber = 0
   }
 }
@@ -94,11 +114,14 @@ export default MyComponent
 
 .diagram {
   flex: 1;
-  // display: inline-block;
   width: 100%;
   padding: 1rem 0rem;
   background-color: white;
   text-align: center;
+}
+
+.pie {
+  height: 15rem;
 }
 
 h4 {
@@ -107,8 +130,7 @@ h4 {
   color: #444;
 }
 
-.butdtons {
-  // margin-left: 0.5rem;
+.buttons-prev-next {
   display: flex;
   flex-direction: row;
   margin: 1rem auto 0 auto;
