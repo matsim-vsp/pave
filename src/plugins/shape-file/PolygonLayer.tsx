@@ -178,7 +178,7 @@ export default function Component({
       lineWidthMinPixels: 1,
       pickable: true,
       stroked: true,
-      opacity: 0.7,
+      opacity: 0.5,
       autoHighlight: true,
       // highlightColor: [255, 128, 255, 255], // [64, 255, 64],
       parameters: {
@@ -191,14 +191,11 @@ export default function Component({
       onHover: setHoverInfo,
 
       updateTriggers: {
-        // getLineColor: { dark, colors, activeColumn },
         getFillColor: { dark, colors, activeColumn, maxValue },
-        // getLineWidth: { csvColumn },
       },
 
       transitions: {
-        getLineColor: 500,
-        getLineWidth: 500,
+        getFillColor: 250,
       },
     }),
   ]

@@ -52,26 +52,6 @@ de:
                 a.dropdown-item(v-for="column in shapefile.header"
                                 @click="handleNewDataColumn(column)") {{ column }}
 
-        //- .panel-item(v-if="activeHeader")
-        //-   p: b {{ $t('colors') }}
-        //-   .dropdown.full-width.is-hoverable
-        //-     .dropdown-trigger
-        //-       img(:src="`/pave/colors/scale-${selectedColorRamp}.png`"
-        //-           :style="{'height': '2.3rem', 'width': '100%', 'border-radius': '5px'}")
-
-        //-         //- span {{ selectedColorRamp }}
-        //-         //- span.icon.is-small
-        //-         //-   i.fas.fa-angle-down(aria-hidden="true")
-
-        //-     #dropdown-menu-color-selector.dropdown-menu(role="menu")
-        //-       .dropdown-content(:style="{'padding':'0 0','backgroundColor': '#00000011'}")
-        //-         a.dropdown-item(v-for="colorRamp in Object.keys(colorRamps)"
-        //-                         @click="clickedColorRamp(colorRamp)"
-        //-                         :style="{'padding': '0.25rem 0.25rem'}"
-        //-         )
-        //-           img(:src="`/colors/scale-${colorRamp}.png`")
-        //-           p(:style="{'color':'black','lineHeight': '1rem', 'marginBottom':'0.25rem'}") {{ colorRamp }}
-
   .nav(v-if="!thumbnail && myState.statusMessage")
     p.status-message {{ myState.statusMessage }}
 
@@ -437,12 +417,9 @@ export default MyPlugin
   min-height: $thumbnailHeight;
   background: url('assets/thumbnail.jpg') no-repeat;
   background-size: cover;
-  grid-template-columns: auto 1fr min-content;
-  grid-template-rows: auto 1fr auto;
-  grid-template-areas:
-    'leftside    .        .'
-    '.           .        .'
-    '.           .  rightside';
+  grid-template-columns: auto 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: 'leftside    rightside';
 }
 
 .gl-viz.hide-thumbnail {
@@ -451,8 +428,8 @@ export default MyPlugin
 
 .nav {
   z-index: 5;
-  grid-column: 1 / 4;
-  grid-row: 1 / 4;
+  grid-column: 1 / 3;
+  grid-row: 1 / 2;
   display: flex;
   flex-direction: row;
   margin: auto auto;
@@ -507,16 +484,10 @@ export default MyPlugin
 }
 
 .right-side {
+  grid-area: rightside;
   display: flex;
   flex-direction: row;
-  position: absolute;
-  top: 0rem;
-  bottom: 0rem;
-  right: 0;
-  margin: 8rem 0 5rem 0;
-  background-color: var(--bgPanel);
-  box-shadow: 0px 2px 10px #22222266;
-  font-size: 0.8rem;
+  margin: 5rem 0 auto auto;
   pointer-events: auto;
 }
 
@@ -527,12 +498,13 @@ export default MyPlugin
 .anim {
   z-index: -1;
   grid-column: 1 / 3;
-  grid-row: 1 / 7;
+  grid-row: 1 / 2;
   pointer-events: auto;
 }
 
 .panel-items {
   margin: 0.5rem 0.5rem;
+  margin-bottom: 3rem;
 }
 
 .panel-item {
@@ -572,6 +544,13 @@ label {
 .full-width {
   display: block;
   width: 100%;
+}
+
+.dropdown {
+  position: absolute;
+  overflow: visible;
+  display: inline-block;
+  width: 8rem;
 }
 
 @media only screen and (max-width: 640px) {
