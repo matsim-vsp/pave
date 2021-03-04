@@ -39,7 +39,7 @@
     p: b {{ $t('bandwidths') }}
 
     .options(style="display: flex; flex-direction:column;")
-      input.input(v-model.lazy.number="scaleWidthValue")
+      input.input(v-model.number="scaleWidthValue")
 
 
   //- COLOR PICKER
@@ -123,17 +123,20 @@ export default class VueComponent extends Vue {
   }
 
   @Watch('scaleWidthValue') handleScaleChanged() {
-    console.log(this.scaleWidthValue)
+    // if (this.scaleWidth === parseFloat(this.scaleWidthValue)) return
+
     if (isNaN(parseFloat(this.scaleWidthValue))) {
       return
     }
-    this.$emit('scale', this.scaleWidthValue)
+    this.debounceScale()
   }
 
-  @Watch('scaleWidth') gotNewScale() {
-    if (this.scaleWidth !== parseFloat(this.scaleWidthValue)) {
-      this.scaleWidthValue = '' + this.scaleWidth
-    }
+  private debounceScale = debounce(this.gotNewScale, 500)
+  private gotNewScale() {
+    // if (this.scaleWidth !== parseFloat(this.scaleWidthValue)) {
+    //   this.scaleWidthValue = '' + this.scaleWidth
+    // }
+    this.$emit('scale', parseFloat(this.scaleWidthValue))
   }
 
   private debounceTimeSlider = debounce(this.changedTimeSlider, 250)
