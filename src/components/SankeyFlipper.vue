@@ -108,20 +108,16 @@ export default MyComponent
 <style scoped lang="scss">
 @import '@/styles.scss';
 .sankey-flipper {
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
 .diagram {
-  flex: 1;
-  width: 100%;
-  padding: 1rem 0rem;
+  padding: 0rem 0rem;
   background-color: white;
   text-align: center;
-}
-
-.pie {
-  height: 15rem;
+  margin: auto 0;
 }
 
 h4 {

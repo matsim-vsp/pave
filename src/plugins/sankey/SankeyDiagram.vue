@@ -273,7 +273,7 @@ class MyComponent extends Vue {
     const layout = sankey()
       .extent([
         [150, 0],
-        [650, 790],
+        [650, 800],
       ])
       .nodeWidth(5)
 
@@ -328,7 +328,7 @@ export default MyComponent
 .show-flipper {
   margin-top: -1rem;
   display: inline-block;
-  width: 20rem;
+  width: 24rem;
   // padding-top: 0;
 }
 
