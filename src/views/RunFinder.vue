@@ -186,11 +186,11 @@ export default class VueComponent extends Vue {
     demand: 1,
     fleetSize: 1,
     mileage: 1,
+    carMileage: 0,
     revenueDistance: 1,
     incomePerDay: 1,
     serviceQuality: 1,
     tollIncome: 0,
-    carMileage: 0,
   }
 
   private myState: IMyState = {
@@ -417,7 +417,7 @@ export default class VueComponent extends Vue {
       demand: 0 + run.calcDemand,
       fleetSize: 0 + run.calcFleetSize,
       mileage: Math.round(0 + run.calcMileage),
-      totalMileage: run.tollIncome || 0,
+      carMileage: Math.round(0 + run.calcCarKm),
       revenueDistance: Math.round(0 + run.calcRevenueDistance),
       incomePerDay: Math.round(0 + incomePerDay),
       serviceQuality: 0 + run.calcServiceLevel,
