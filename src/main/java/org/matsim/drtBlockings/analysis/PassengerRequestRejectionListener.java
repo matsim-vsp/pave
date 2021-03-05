@@ -69,11 +69,15 @@ public class PassengerRequestRejectionListener implements PassengerRequestReject
     }
 
     public void writeOutput(String fileName){
-        try (CompactCSVWriter writer = new CompactCSVWriter(IOUtils.getBufferedWriter(fileName), ';')) {
+        try {
+            CompactCSVWriter writer = new CompactCSVWriter(IOUtils.getBufferedWriter(fileName), ';');
             writeHeader(writer);
             while(! this.event2Output.isEmpty()){
                 writer.writeNext(this.event2Output.pollFirstEntry().getValue());
             }
+            writer.close();
+        } catch (Exception e){
+            e.printStackTrace();
         }
     }
 
