@@ -66,18 +66,18 @@ public class RunBaseCaseInBerlin {
 
     //GENERAL INPUT
     //dir for 1 carrier only
-    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
+//    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
     //dir for all Berlin carriers
-//    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
+    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
     private static final String INPUT_CONFIG = INPUT_DIR + "p2-23.output_config.xml";
     private static final String INPUT_NETWORK_CHANGE_EVENTS = INPUT_DIR + "p2-23.networkChangeEvents.xml.gz";
-//    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtLegsOnly.xml.gz";
-    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_200Persons.xml.gz";
-//    private static final String INPUT_DRT_PLANS = INPUT_DIR + "pnoIncDRT.output_plans_drtUsersOnly_selectedPlans.xml.gz";
+    //DIE FOLGENDEN PLÄNE FÜR SERIOUS RUNS VERWENDEN!
+    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtUsersOnly_selectedPlans_noRoutes.xml.gz";
     private static final String INPUT_NETWORK = INPUT_DIR + "p2-23.output_network.xml.gz";
+    private static final String INPUT_DRT_VEHICLES = INPUT_DIR + "p2-23.drt__vehicles.xml.gz";
 
     //CARRIER INPUT
-    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_LichtenbergNord_8-24_PLANNED.xml";
+    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_8-24_PLANNED.xml";
     private static final String CARRIER_VEHICLE_TYPES = INPUT_DIR + "carrier_vehicleTypes.xml";
     private static final boolean RUN_TOURPLANNING = false;
 
@@ -125,10 +125,7 @@ public class RunBaseCaseInBerlin {
         //might need to customize this method, for now it stays as it is in PFAV
         prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, FreightUtils.getCarriers(scenario));
 
-        //TODO we should bind in our analyses here as well so they run automatically with every sim run
-        // how about modifying BasicTourStats and NeverStartedTourStats, so we can apply it to the base case?
         BaseCaseTourStatsAnalysis tourAnalysis = new BaseCaseTourStatsAnalysis(scenario.getNetwork());
-//        DrtAnalysisControlerListener drtAnalysis = prepareDrtAnalysis(controler);
 
         controler.addOverridingModule(new AbstractModule() {
             @Override
@@ -155,10 +152,10 @@ public class RunBaseCaseInBerlin {
         config.network().setChangeEventsInputFile(networkChangeEvents);
         config.network().setTimeVariantNetwork(true);
         config.plans().setInputFile(inputPlans);
-        config.qsim().setFlowCapFactor(100.);
+        config.qsim().setFlowCapFactor(10.);
 
-        QSimConfigGroup qSimCfg = ConfigUtils.addOrGetModule(config, QSimConfigGroup.class);
-        qSimCfg.setNumberOfThreads(4);
+//        QSimConfigGroup qSimCfg = ConfigUtils.addOrGetModule(config, QSimConfigGroup.class);
+//        qSimCfg.setNumberOfThreads(4);
 
         //Freight settings
         FreightConfigGroup freightConfig = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
@@ -221,6 +218,7 @@ public class RunBaseCaseInBerlin {
     private static void configureDRTOnly(Scenario scenario, Controler controler) {
 
         DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(scenario.getConfig());
+        drtCfg.setVehiclesFile(INPUT_DRT_VEHICLES);
 
         controler.addOverridingModule(new AbstractModule() {
             @Override
@@ -269,17 +267,5 @@ public class RunBaseCaseInBerlin {
             withoutFreight.reset(event.getIteration());
         });
     }
-
-//    private static DrtAnalysisControlerListener prepareDrtAnalysis(Controler controler) {
-//
-//        Config config = controler.getConfig();
-//        DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(config);
-//        Fleet fleet = drtCfg.get
-//
-//        DrtAnalysisControlerListener drtAnalysis = new DrtAnalysisControlerListener(config, drtCfg, fleet, drtVehicleStats,
-//                matsimServices, network, drtRequestAnalyzer);
-//
-//        return drtAnalysis;
-//    }
 
 }
