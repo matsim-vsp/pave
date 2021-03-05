@@ -38,6 +38,7 @@ import org.matsim.drtBlockings.tasks.FreightDeliveryTask;
 import org.matsim.drtBlockings.tasks.FreightDriveTask;
 import org.matsim.drtBlockings.tasks.FreightPickupTask;
 import org.matsim.drtBlockings.tasks.FreightRetoolTask;
+import org.matsim.vehicles.Vehicle;
 
 import java.util.*;
 
@@ -78,7 +79,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
     private Set<DrtBlockingRequest> createBlockingRequestsForCarrier(Carrier carrier){
         Set<DrtBlockingRequest> requests = new HashSet<>();
-        Map<Id<CarrierVehicle>, Integer> vehicleCount = new HashMap<>();
+        Map<Id<Vehicle>, Integer> vehicleCount = new HashMap<>();
 
 //        int count = 0;
         for (ScheduledTour tour : carrier.getSelectedPlan().getScheduledTours()){
@@ -86,7 +87,8 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
             if(vehicleCount.get(tour.getVehicle().getId()) == null){
                 vehCount = 1;
             } else{
-                vehCount = vehicleCount.get(tour.getVehicle().getId());
+                vehCount = vehicleCount.get(tour.getVehicle().getId()) + 1;
+                vehicleCount.replace(tour.getVehicle().getId(), vehCount);
             }
             String tourID = carrier.getId() + "_" + tour.getVehicle().getId() + "_" + vehCount; /* + "_" + count;*/
             requests.add(createRequest(carrier.getId(), Id.create(tour.getVehicle().getId(), DvrpVehicle.class), tour, tourID));
@@ -105,7 +107,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         double blockingEnd = tourTasks.get(tourTasks.size() - 1).getEndTime();
 
         DrtBlockingRequest request = DrtBlockingRequest.newBuilder()
-                .id(Id.create(id, Request.class))
+                .id(id)
                 .mode(mode)
                 .carrierId(carrierId)
                 .submissionTime(submissionTime)
