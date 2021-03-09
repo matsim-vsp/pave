@@ -179,8 +179,10 @@ class MyComponent extends Vue {
   }
 
   private async getVizDetails() {
-    const files = await this.loadFiles()
-    if (files) this.jsonChart = this.processInputs(files)
+    const text = await this.loadFiles()
+    if (!text) return
+
+    this.jsonChart = this.processInputs(text)
 
     this.loadingText = ''
     this.doD3()
@@ -211,6 +213,7 @@ class MyComponent extends Vue {
         globalStore.commit('requestLogin', this.myState.fileSystem.url)
       }
     }
+    return ''
   }
 
   private processInputs(rawdata: any) {

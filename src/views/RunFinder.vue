@@ -445,6 +445,7 @@ export default class VueComponent extends Vue {
     if (!modeStats.length) return
 
     const fname = `${this.myState.selectedRun}/${modeStats[0]}`
+    console.log(fname)
     const modeshareText = await this.myState.svnRoot.getFileText(fname)
 
     const parsed = Papaparse.parse(modeshareText, {
@@ -570,6 +571,7 @@ export default class VueComponent extends Vue {
 
     this.myState.isLoading = true
     this.myState.errorStatus = ''
+    this.modeSharePie = {}
     if (this.myState.files.length) this.myState.files = []
 
     try {
