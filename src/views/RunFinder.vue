@@ -134,6 +134,8 @@ import { BreadCrumb, VisualizationPlugin, SVNProject } from '../Globals'
 import SankeyFlipper from '@/components/SankeyFlipper.vue'
 import VegaComponent from '@/plugins/vega-lite/VegaLite.vue'
 
+const RUN_LOG_NUM_KPI_COLUMNS = 12
+
 interface VizEntry {
   component: string
   config: string
@@ -322,7 +324,7 @@ export default class VueComponent extends Vue {
     allRuns.forEach(run => {
       let uniqueId = ''
       Object.values(run)
-        .slice(12)
+        .slice(RUN_LOG_NUM_KPI_COLUMNS)
         .forEach(value => {
           if (value) uniqueId += `-${value}`
         })
