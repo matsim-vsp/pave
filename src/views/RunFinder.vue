@@ -48,7 +48,7 @@
               .tlabel Demand
               .tlabel Fleet size
               .tlabel Fleet mileage
-              .tlabel Total Mileage
+              .tlabel Total mileage
               .tlabel.vspace Revenue distance
               .tlabel.blue Income/day
               .tlabel.blue Toll income/day
@@ -317,17 +317,19 @@ export default class VueComponent extends Vue {
       this.myState.errorStatus = `NO RUN LOG! Add 'run-log.csv' to SVN ${this.$route.path} !`
     }
 
+    // console.log('got the runlog', allRuns)
     // build lookup from the existing options -- start w/foldername and columns past 8
     allRuns.forEach(run => {
       let uniqueId = ''
       Object.values(run)
-        .slice(10)
+        .slice(12)
         .forEach(value => {
           if (value) uniqueId += `-${value}`
         })
       this.myState.runLogFolderLookup[uniqueId.slice(1)] = run.folder
       this.runLookup[run.folder] = run
     })
+    // console.log({ runLogFolderLookup: this.myState.runLogFolderLookup })
   }
 
   private async buildRunFinder() {
@@ -371,7 +373,9 @@ export default class VueComponent extends Vue {
       })
       .join('-')
 
+    // console.log(run)
     const folder = this.myState.runLogFolderLookup[run]
+    // console.log({ folder })
 
     if (folder) {
       const path = `/${this.myState.svnProject.url}/${folder}`
@@ -435,7 +439,7 @@ export default class VueComponent extends Vue {
   private async buildModeSharePieChart() {
     if (!this.myState.svnRoot) return
 
-    const modeStats = this.myState.files.filter(a => a.endsWith('.modestats.txt'))
+    const modeStats = this.myState.files.filter(a => a === 'modeStats-berlin.txt')
     if (!modeStats.length) return
 
     const fname = `${this.myState.selectedRun}/${modeStats[0]}`
@@ -874,7 +878,7 @@ h3.curate-heading {
     flex-direction: column;
     width: min-content;
     text-align: right;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
   }
 
   .col2 {
