@@ -26,7 +26,7 @@ import { schemeCategory10 } from 'd3-scale-chromatic'
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 
 import globalStore from '@/store'
-import { FileSystem, SVNProject, VisualizationPlugin } from '../../Globals'
+import { FileSystem, Status, SVNProject, VisualizationPlugin } from '../../Globals'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
 
 interface SankeyYaml {
@@ -190,24 +190,28 @@ class MyComponent extends Vue {
   }
 
   private async loadFiles() {
-    try {
-      this.loadingText = 'Loading files...'
+    this.loadingText = 'Loading files...'
 
+    try {
       const text = await this.myState.fileApi.getFileText(
         this.myState.subfolder + '/' + this.myState.yamlConfig
       )
       this.vizDetails = yaml.parse(text)
 
       this.$emit('title', this.vizDetails.title)
+      const csvFilename = this.myState.subfolder + '/' + this.vizDetails.csv
 
-      const flows = await this.myState.fileApi.getFileText(
-        this.myState.subfolder + '/' + this.vizDetails.csv
-      )
+      const flows = await this.myState.fileApi.getFileText(csvFilename)
       return flows
     } catch (e) {
       console.error({ e })
       this.loadingText = '' + e
-
+      this.$store.commit('setStatus', {
+        type: Status.WARNING,
+        msg:
+          `In: ${this.myState.subfolder + '/' + this.myState.yamlConfig}:<br/>` +
+          `Could not find: ${this.vizDetails.csv}`,
+      })
       // maybe it failed because password?
       if (this.myState.fileSystem && this.myState.fileSystem.need_password && e.status === 401) {
         globalStore.commit('requestLogin', this.myState.fileSystem.url)

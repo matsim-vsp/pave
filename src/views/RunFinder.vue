@@ -130,7 +130,7 @@ import yaml from 'yaml'
 import globalStore from '@/store'
 import plugins from '@/plugins/pluginRegistry'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
-import { BreadCrumb, VisualizationPlugin, SVNProject } from '../Globals'
+import { BreadCrumb, VisualizationPlugin, Status, SVNProject } from '@/Globals'
 import SankeyFlipper from '@/components/SankeyFlipper.vue'
 import VegaComponent from '@/plugins/vega-lite/VegaLite.vue'
 
@@ -445,7 +445,6 @@ export default class VueComponent extends Vue {
     if (!modeStats.length) return
 
     const fname = `${this.myState.selectedRun}/${modeStats[0]}`
-    console.log(fname)
     const modeshareText = await this.myState.svnRoot.getFileText(fname)
 
     const parsed = Papaparse.parse(modeshareText, {

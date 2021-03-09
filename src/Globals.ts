@@ -1,3 +1,8 @@
+export enum Status {
+  INFO,
+  WARNING,
+}
+
 export interface SVNProject {
   name: string
   url: string

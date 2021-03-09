@@ -95,6 +95,7 @@ import {
   VisualizationPlugin,
   LIGHT_MODE,
   DARK_MODE,
+  Status,
 } from '@/Globals'
 
 import LinkGlLayer from './LinkLayer'
@@ -415,6 +416,12 @@ class MyPlugin extends Vue {
       return linkElements
     } catch (e) {
       this.myState.statusMessage = '' + e
+
+      this.$store.commit('setStatus', {
+        type: Status.WARNING,
+        msg: `Could not find: ${this.myState.subfolder}/${this.vizDetails.geojsonFile}`,
+      })
+
       return null
     }
   }
@@ -542,6 +549,12 @@ class MyPlugin extends Vue {
       })
     } catch (e) {
       console.error(e)
+
+      this.$store.commit('setStatus', {
+        type: Status.WARNING,
+        msg: `Could not find: ${this.myState.subfolder}/${filename}`,
+      })
+
       return { allColumns: [], header: [], headerMax: [] }
     }
   }

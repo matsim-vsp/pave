@@ -32,6 +32,15 @@
     login-panel.login-panel
     router-view.main-content
 
+  .message-zone(v-if="state.statusErrors.length")
+    .message-error(v-for="err,i in state.statusErrors")
+      p: i.fa.fa-icon.fa-exclamation-triangle(style="color: orange;")
+      p(v-html="err")
+      button.button.is-small.is-black.is-inverted(
+        @click="removeErrorMessage(i)"
+      )
+        i.fa.fa-icon.fa-times
+
 </template>
 
 <i18n>
@@ -100,8 +109,11 @@ class App extends Vue {
     const home: any[] = [{ name: 'PAVE', url: '' }]
     const topLinks = home.concat(this.state.svnProjects)
 
-    console.log({ topLinks })
     return topLinks
+  }
+
+  private removeErrorMessage(row: number) {
+    this.$store.commit('clearError', row)
   }
 
   private toggleLocale() {
@@ -424,6 +436,38 @@ a:hover {
 .locale:active {
   border: 1px solid #aaa;
   transform: translateY(1px);
+}
+
+.message-zone {
+  position: sticky;
+  bottom: 0px;
+  z-index: 5;
+  grid-column: 1 / 2;
+  grid-row: 1 / 4;
+  box-shadow: 0px 2px 10px #22222266;
+  display: flex;
+  flex-direction: column;
+  margin: auto auto 0 0;
+  background-color: var(--bgPanel);
+  border-top: 2px solid #ba2b00;
+  border-right: 2px solid #ba2b00;
+}
+
+.message-error {
+  padding: 0.5rem 0.5rem;
+  background-color: #fff6c3;
+  display: flex;
+  flex-direction: row;
+
+  p {
+    margin: auto 0.5rem auto 0;
+    font-weight: normal;
+    padding: 0 0;
+    color: black;
+  }
+  button {
+    margin: auto 0;
+  }
 }
 
 @media only screen and (max-width: 640px) {

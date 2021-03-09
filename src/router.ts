@@ -3,7 +3,6 @@ import VueRouter, { Route, RouteConfig } from 'vue-router'
 import HomeIndex from '@/views/HomeIndex.vue'
 import FolderBrowser from '@/views/FolderBrowser.vue'
 import RunFinder from '@/views/RunFinder.vue'
-import RunFilterer from '@/views/RunFilterer.vue'
 
 import globalStore from '@/store'
 

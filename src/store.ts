@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import { BreadCrumb, ColorScheme, VisualizationPlugin } from '@/Globals'
+import { BreadCrumb, ColorScheme, Status, VisualizationPlugin } from '@/Globals'
 import svnConfig from '@/svnConfig.ts'
 
 Vue.use(Vuex)
@@ -14,7 +14,8 @@ export default new Vuex.Store({
     credentials: { fake: 'fake' } as { [url: string]: string },
     isFullScreen: false,
     needLoginForUrl: '',
-    statusMessage: 'loading',
+    statusErrors: [] as string[],
+    statusMessage: 'Loading',
     svnProjects: svnConfig.projects,
     visualizationTypes: new Map() as Map<string, VisualizationPlugin>,
     colorScheme: ColorScheme.DarkMode,
@@ -40,8 +41,23 @@ export default new Vuex.Store({
     setFullScreen(state, value: boolean) {
       state.isFullScreen = value
     },
-    setStatusMessage(state, value: string) {
-      state.statusMessage = value
+    setStatus(state, value: { type: Status; msg: string }) {
+      if (value.type === Status.INFO) {
+        state.statusMessage = value.msg
+      } else {
+        if (
+          // don't repeat yourself
+          !state.statusErrors.length ||
+          state.statusErrors[state.statusErrors.length - 1] !== value.msg
+        ) {
+          state.statusErrors.push(value.msg)
+        }
+      }
+    },
+    clearError(state, value: number) {
+      if (state.statusErrors.length >= value) {
+        state.statusErrors.splice(value, 1) // remove one element
+      }
     },
     rotateColors(state) {
       state.colorScheme =
