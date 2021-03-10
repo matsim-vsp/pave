@@ -38,6 +38,7 @@ import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.network.algorithms.MultimodalNetworkCleaner;
+import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.TripRouter;
 import org.matsim.core.router.TripStructureUtils;
@@ -330,7 +331,10 @@ class CarBannedScenarioPreparation {
 	/**
 	 * <b>Important:</b> this is designed and implies usage of SingleTrip mode choice strategies and probably does not work with SubtourModeChoice! <br><br>
 	 *
-	 * modifies the plans such that <br> <br>
+	 * copies all plans (!) and modifies them such that... <br> <br>
+	 *
+	 * * the modified copy has the type 'modified' while the original plan has the type 'original'. agents will keep one plan of each type at each time<br>
+	 * ...<br>
 	 *
 	 * * <b>ride</b> trips that touch {@code carFreeGeoms}, meaning either originate AND/OR end in those, are replaced by <b>pt</b> trips <br>
 	 * * <b>car</b> trips that originate in {@code carFreeGeoms} and end outside are replaced with {@code intermodalCarOriginMode}<br>
@@ -354,9 +358,21 @@ class CarBannedScenarioPreparation {
 
 		Counter counter = new Counter("plan");
 
+		Set<Plan> originalPlans = new HashSet<>();
+
 		scenario.getPopulation().getPersons().values().stream()
 				.flatMap(person -> person.getPlans().stream())
 				.forEach(plan -> {
+
+					//first copy the plan. call the copy 'original'
+					Plan originalPlan = fac.createPlan();
+					PopulationUtils.copyFromTo(plan, fac.createPlan());
+					originalPlan.setPerson(plan.getPerson());
+					originalPlan.setType("original");
+					originalPlans.add(originalPlan);
+
+					//now modify the plan. call the modified plan 'modifiedIntermodal'
+					plan.setType("modified");
 					counter.incCounter();
 					TripStructureUtils.getTrips(plan).stream()
 						.forEach(trip -> {
@@ -383,7 +399,7 @@ class CarBannedScenarioPreparation {
 											mode = intermodalCarDestinationMode;
 											replacedDestinationCarWithInterModalTrips.increment();
 									} else {
-										return; //trip is neither starts nor ends in carFreeGeoms
+										return; //trip neither starts nor ends in carFreeGeoms
 									}
 									if (mode.equals(TransportMode.car) || mode.equals(TransportMode.ride)) throw new RuntimeException("could not find substitution mode for car within " + scenario.getConfig().changeMode().getModes());
 									Leg leg = fac.createLeg(mode);
@@ -400,6 +416,12 @@ class CarBannedScenarioPreparation {
 		log.info("total nr of car trips replaces = " + replacedCarTrips);
 		log.info("nr of car trips replaced with " + intermodalCarOriginMode + " = " + replacedOriginCarWithInterModalTrips);
 		log.info("nr of car trips replaced with " + intermodalCarDestinationMode + " = " + replacedDestinationCarWithInterModalTrips);
+
+		log.info("adding back " + originalPlans.size() + " original plans");
+		for (Plan originalPlan : originalPlans) {
+			scenario.getPopulation().getPersons().get(originalPlan.getPerson().getId()).addPlan(originalPlan);
+		}
+		log.info("finished modifying input plans....");
 	}
 
 	private static boolean tripOriginatesInGeoms(Scenario scenario, TripStructureUtils.Trip trip, List<PreparedGeometry> geoms){
