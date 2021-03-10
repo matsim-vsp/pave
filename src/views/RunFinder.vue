@@ -43,37 +43,40 @@
           h3.curate-heading DRT Operator: Key Performance Indicators
           p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
 
+          p OPERATOR 1: &lt; &gt;
           .summary-table(v-if="myState.selectedRun && myState.vizes.length")
             .col1
-              .tlabel Demand
-              .tlabel Fleet size
-              .tlabel Fleet mileage
-              .tlabel Total mileage
-              .tlabel.vspace Revenue distance
-              .tlabel.blue Income/day
-              .tlabel.blue Toll income/day
-              .tlabel.red Expenses/day*
-              .tlabel.vspace.aboveline(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
-              .tlabel.vspace 95% waiting times &lt;
               b.tlabel *Vehicle costs
               .tlabel: b Per day
               input.input(v-model="runCosts.fixedCosts")
 
+              .tlabel 95% waiting times &lt;
+              .tlabel Demand
+              .tlabel Fleet size
+              .tlabel Fleet mileage
+              .tlabel.vspace Revenue distance
+              .tlabel.blue Income/day
+              .tlabel.red Expenses/day*
+              .tlabel.vspace.aboveline(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
+              .tlabel.blue Toll income/day
+              .tlabel Total mileage
+
             .col2
-              .tlabel {{ runHeader.demand.toLocaleString() }} rides
-              .tlabel {{ runHeader.fleetSize.toLocaleString() }} vehicles
-              .tlabel {{ runHeader.mileage.toLocaleString() }} km
-              .tlabel {{ totalMileage().toLocaleString() }} km
-              .tlabel.vspace {{ runHeader.revenueDistance.toLocaleString() }} km
-              .tlabel.blue {{ runHeader.incomePerDay.toLocaleString() }} €
-              .tlabel.blue {{ runHeader.tollIncome.toLocaleString() }} €
-              .tlabel.red {{ expensesPerDay().toLocaleString() }} €
-              .tlabel.vspace.aboveline(
-                :class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
-              .tlabel.vspace {{ (runHeader.serviceQuality / 60.0).toFixed(1) }} min
               .tlabel :
               .tlabel Per km
               input.input(v-model="runCosts.variableCosts")
+
+              .tlabel {{ (runHeader.serviceQuality / 60.0).toFixed(1) }} min
+              .tlabel {{ runHeader.demand.toLocaleString() }} rides
+              .tlabel {{ runHeader.fleetSize.toLocaleString() }} vehicles
+              .tlabel {{ runHeader.mileage.toLocaleString() }} v•km
+              .tlabel.vspace {{ runHeader.revenueDistance.toLocaleString() }} p•km
+              .tlabel.blue {{ runHeader.incomePerDay.toLocaleString() }} €
+              .tlabel.red {{ expensesPerDay().toLocaleString() }} €
+              .tlabel.vspace.aboveline(
+                :class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
+              .tlabel.blue {{ runHeader.tollIncome.toLocaleString() }} €
+              .tlabel {{ totalMileage().toLocaleString() }} v•km
 
             .col3(v-if="modeSharePie.description")
               sankey-flipper(:myState="myState" :modeSharePie="modeSharePie")
@@ -469,7 +472,7 @@ export default class VueComponent extends Vue {
 
     this.modeSharePie = {
       $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
-      description: 'Mode Share Summary',
+      description: 'Mode Trip Share Summary',
       data: {
         values: vegaValues,
       },
@@ -921,6 +924,10 @@ h3.curate-heading {
 
 .vspace {
   padding-bottom: 1rem;
+}
+
+input {
+  margin-bottom: 1rem;
 }
 
 @media only screen and (max-width: 50em) {
