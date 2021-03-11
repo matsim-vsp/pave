@@ -366,7 +366,7 @@ class CarBannedScenarioPreparation {
 
 					//first copy the plan. call the copy 'original'
 					Plan originalPlan = fac.createPlan();
-					PopulationUtils.copyFromTo(plan, fac.createPlan());
+					PopulationUtils.copyFromTo(plan, originalPlan);
 					originalPlan.setPerson(plan.getPerson());
 					originalPlan.setType("original");
 					originalPlans.add(originalPlan);
@@ -411,7 +411,7 @@ class CarBannedScenarioPreparation {
 						});
 					}
 				);
-		log.info("finished modifying plans");
+//		log.info("finished modifying plans");
 		log.info("nr of ride trips replaced = " + replacedRideTrips);
 		log.info("total nr of car trips replaces = " + replacedCarTrips);
 		log.info("nr of car trips replaced with " + intermodalCarOriginMode + " = " + replacedOriginCarWithInterModalTrips);
