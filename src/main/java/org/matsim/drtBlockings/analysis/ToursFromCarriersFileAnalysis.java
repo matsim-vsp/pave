@@ -11,6 +11,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
+import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.vehicles.Vehicle;
@@ -71,7 +72,9 @@ public class ToursFromCarriersFileAnalysis implements IterationEndsListener {
                 List<Id<CarrierService>> services = null;
                 for(Tour.TourElement e : tour.getTour().getTourElements()) {
                     if(e instanceof Tour.Leg) {
-                        distance = distance + ((Tour.Leg) e).getRoute().getDistance();
+
+
+                        distance = distance + ((NetworkRoute) ((Tour.Leg) e).getRoute()).getLinkIds()getDistance();
                         duration = duration + ((Tour.Leg) e).getExpectedTransportTime();
                     } else if(e instanceof Tour.ServiceActivity) {
                         serviceCount = serviceCount + 1;
