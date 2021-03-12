@@ -39,20 +39,24 @@ public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
     @Override
     public double calcNewEndTime(DvrpVehicle vehicle, StayTask task, double newBeginTime) {
         double duration = task.getEndTime() - task.getBeginTime();
-        if(task.getTaskType().equals(FreightServiceTask.FREIGHT_SERVICE_TASK_TYPE)
-                && timeWindowHandling.equals(FreightConfigGroup.TimeWindowHandling.enforceBeginnings)){
-                TimeWindow timeWindow = ((FreightServiceTask) task).getTimeWindow();
-                duration = ((FreightServiceTask) task).getCarrierService().getServiceDuration();
-                if(newBeginTime <= timeWindow.getStart()){
-                    return timeWindow.getStart() + duration;
-                } else if(newBeginTime > timeWindow.getEnd()){
-                    //TODO do something less restrictive
-                    throw new RuntimeException("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() + " but it will come too late for that");
-                }
-        } else if(task.getTaskType().equals(FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE) //TODO pickup also has time window that should be respected
-            || task.getTaskType().equals(FreightRetoolTask.RETOOL_TASK_TYPE)){
+
+        if(timeWindowHandling.equals(FreightConfigGroup.TimeWindowHandling.enforceBeginnings) &&
+                (task.getTaskType().equals(FreightServiceTask.FREIGHT_SERVICE_TASK_TYPE) || task.getTaskType().equals(FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE) ) ) {
+            TimeWindow timeWindow = task instanceof FreightServiceTask ? ((FreightServiceTask) task).getTimeWindow() : ((FreightPickupTask) task).getTimeWindow();
+            if(newBeginTime <= timeWindow.getStart()){
+                return timeWindow.getStart() + duration;
+            } else if(newBeginTime > timeWindow.getEnd()){
+                //TODO do something less restrictive
+                throw new RuntimeException("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() + " but it will come too late for that");
+            }
+        }
+
+        if(task.getTaskType().equals(FreightServiceTask.FREIGHT_SERVICE_TASK_TYPE) ||
+                task.getTaskType().equals(FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE) ||
+                task.getTaskType().equals(FreightRetoolTask.RETOOL_TASK_TYPE) ) {
             return newBeginTime + duration;
         }
+
         return super.calcNewEndTime(vehicle, task, newBeginTime);
     }
 }
