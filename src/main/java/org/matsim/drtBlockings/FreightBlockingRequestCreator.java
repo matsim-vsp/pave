@@ -71,6 +71,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
         carriers.getCarriers().values().forEach(carrier -> {
             if(CarrierUtils.getCarrierMode(carrier).equals(mode)){
+                System.out.println("CARRIER: " + carrier.getId());
                 requests.addAll(createBlockingRequestsForCarrier(carrier));
             }
         });
@@ -90,7 +91,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
                 vehCount = vehicleCount.get(tour.getVehicle().getId()) + 1;
                 vehicleCount.replace(tour.getVehicle().getId(), vehCount);
             }
-            String tourID = carrier.getId() + "_" + tour.getVehicle().getId() + "_" + vehCount; /* + "_" + count;*/
+            String tourID = /*carrier.getId() + "_" + */tour.getVehicle().getId() + "_" + vehCount; /* + "_" + count;*/
             requests.add(createRequest(carrier.getId(), Id.create(tour.getVehicle().getId(), DvrpVehicle.class), tour, tourID));
 //            count++;
         }
