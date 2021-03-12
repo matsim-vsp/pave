@@ -25,9 +25,9 @@ import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.drtBlockings.DrtBlockingRequest;
 import org.matsim.drtBlockings.events.*;
-import org.matsim.drtBlockings.tasks.FreightDeliveryTask;
 import org.matsim.drtBlockings.tasks.FreightDriveTask;
 import org.matsim.drtBlockings.tasks.FreightRetoolTask;
+import org.matsim.drtBlockings.tasks.FreightServiceTask;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -166,7 +166,7 @@ public class BasicTourStatsAnalysis implements DrtBlockingRequestScheduledEventH
                 } else {
                     System.out.println("Access leg duration for vehicle " + dvrpVehicleId + " is " + accessDuration + " (< 0!");
                 }
-            } else if(event.getTaskType()==FreightDeliveryTask.FREIGHT_DELIVERY_TASK_TYPE) {
+            } else if(event.getTaskType()== FreightServiceTask.FREIGHT_SERVICE_TASK_TYPE) {
 
                 this.started = this.started +1;
                 if(!this.vehToServiceNo.containsKey(dvrpVehicleId)) {
