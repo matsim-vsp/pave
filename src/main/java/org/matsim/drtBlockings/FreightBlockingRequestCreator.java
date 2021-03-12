@@ -34,7 +34,7 @@ import org.matsim.contrib.freight.carrier.*;
 import org.matsim.core.config.Config;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.util.TravelTime;
-import org.matsim.drtBlockings.tasks.FreightDeliveryTask;
+import org.matsim.drtBlockings.tasks.FreightServiceTask;
 import org.matsim.drtBlockings.tasks.FreightDriveTask;
 import org.matsim.drtBlockings.tasks.FreightPickupTask;
 import org.matsim.drtBlockings.tasks.FreightRetoolTask;
@@ -169,13 +169,12 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
                 double currentTaskEndTime = previousTaskEndTime + ((Tour.TourActivity) tourElement).getDuration();
                 if (tourElement instanceof Tour.ServiceActivity){
                     Tour.ServiceActivity serviceAct = (Tour.ServiceActivity) tourElement;
-                    tourTasks.add(new FreightDeliveryTask(serviceAct, previousTaskEndTime, currentTaskEndTime,  network.getLinks().get(serviceAct.getLocation())));
+                    tourTasks.add(new FreightServiceTask(serviceAct, previousTaskEndTime, currentTaskEndTime,  network.getLinks().get(serviceAct.getLocation())));
                 } else if(tourElement instanceof Tour.Pickup){
                     Tour.Pickup pickup = (Tour.Pickup) tourElement;
                     tourTasks.add(new FreightPickupTask(pickup, previousTaskEndTime, currentTaskEndTime, network.getLinks().get(pickup.getLocation())));
                 } else if (tourElement instanceof Tour.Delivery){
-                    Tour.Delivery delivery = (Tour.Delivery) tourElement;
-                    tourTasks.add(new FreightDeliveryTask(delivery, previousTaskEndTime, currentTaskEndTime, network.getLinks().get(delivery.getLocation())));
+                    throw new RuntimeException("no drt task type implemented yet for freight delivery activities..."); //TODO
                 } else {
                     throw new RuntimeException();
                 }

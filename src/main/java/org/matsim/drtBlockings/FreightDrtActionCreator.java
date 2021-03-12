@@ -32,7 +32,7 @@ import org.matsim.contrib.dynagent.DynAction;
 import org.matsim.contrib.dynagent.DynAgent;
 import org.matsim.contrib.dynagent.IdleDynActivity;
 import org.matsim.core.mobsim.framework.MobsimTimer;
-import org.matsim.drtBlockings.tasks.FreightDeliveryTask;
+import org.matsim.drtBlockings.tasks.FreightServiceTask;
 import org.matsim.drtBlockings.tasks.FreightPickupTask;
 import org.matsim.drtBlockings.tasks.FreightRetoolTask;
 
@@ -60,11 +60,13 @@ class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
 		//we can use IdleDynActivity even though vehicle is not idle. The object type only
         //prohibits to alter the activity and time...
 
-        if(currentTask instanceof FreightDeliveryTask)
-                return new IdleDynActivity("FreightDrtDelivery", currentTask::getEndTime);
+        if(currentTask instanceof FreightServiceTask)
+                return new IdleDynActivity("FreightDrtService_" + ((FreightServiceTask) currentTask).getCarrierService().getId(),
+						currentTask::getEndTime);
 
         if(currentTask instanceof FreightPickupTask)
-                return new IdleDynActivity("FreightDrtPickup", currentTask::getEndTime);
+                return new IdleDynActivity("FreightDrtPickup_" + ((FreightPickupTask) currentTask).getShipment().getId(),
+						currentTask::getEndTime);
 
         if(currentTask instanceof FreightRetoolTask)
                 return new IdleDynActivity("FreightDrtRetooling", currentTask::getEndTime);

@@ -22,7 +22,6 @@ package org.matsim.drtBlockings.tasks;
 
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.schedule.DrtStayTaskEndTimeCalculator;
-import org.matsim.contrib.drt.util.DrtEventsReaders;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.freight.FreightConfigGroup;
@@ -40,10 +39,10 @@ public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
     @Override
     public double calcNewEndTime(DvrpVehicle vehicle, StayTask task, double newBeginTime) {
         double duration = task.getEndTime() - task.getBeginTime();
-        if(task.getTaskType().equals(FreightDeliveryTask.FREIGHT_DELIVERY_TASK_TYPE)
+        if(task.getTaskType().equals(FreightServiceTask.FREIGHT_SERVICE_TASK_TYPE)
                 && timeWindowHandling.equals(FreightConfigGroup.TimeWindowHandling.enforceBeginnings)){
-                TimeWindow timeWindow = ((FreightDeliveryTask) task).getTimeWindow();
-                duration = ((FreightDeliveryTask) task).getDeliveryDuration();
+                TimeWindow timeWindow = ((FreightServiceTask) task).getTimeWindow();
+                duration = ((FreightServiceTask) task).getCarrierService().getServiceDuration();
                 if(newBeginTime <= timeWindow.getStart()){
                     return timeWindow.getStart() + duration;
                 } else if(newBeginTime > timeWindow.getEnd()){

@@ -29,32 +29,23 @@ import org.matsim.contrib.freight.carrier.Tour;
 
 import static org.matsim.contrib.drt.schedule.DrtTaskBaseType.STAY;
 
-public class    FreightDeliveryTask extends StayTask {
+public class FreightServiceTask extends StayTask {
 
-    private final Tour.TourActivity tourActivity;
+    private final Tour.ServiceActivity serviceActivity;
 
-    public static final DrtTaskType FREIGHT_DELIVERY_TASK_TYPE = new DrtTaskType("DELIVERY", STAY);
+    public static final DrtTaskType FREIGHT_SERVICE_TASK_TYPE = new DrtTaskType("SERVICE", STAY);
 
-    public FreightDeliveryTask(Tour.TourActivity deliveryActivity, double start, double end, Link location){
-        super(FREIGHT_DELIVERY_TASK_TYPE, start, end, location);
-        if(location.getId() != deliveryActivity.getLocation()) throw new IllegalArgumentException();
-
-        if(! (deliveryActivity instanceof Tour.ShipmentBasedActivity || deliveryActivity instanceof Tour.ServiceActivity) ){
-            throw new IllegalArgumentException();
-        }
-        this.tourActivity = deliveryActivity;
+    public FreightServiceTask(Tour.ServiceActivity serviceActivity, double start, double end, Link location){
+        super(FREIGHT_SERVICE_TASK_TYPE, start, end, location);
+        if(location.getId() != serviceActivity.getLocation()) throw new IllegalArgumentException();
+        this.serviceActivity = serviceActivity;
     }
 
     public TimeWindow getTimeWindow() {
-        return this.tourActivity.getTimeWindow();
+        return this.serviceActivity.getTimeWindow();
     }
 
-    public double getDeliveryDuration(){
-        return this.tourActivity.getDuration();
-    }
-
-    // TODO consider to change this class into a FreightServiceTask and only return the service (and not a more general Activity)
-    public Tour.TourActivity getTourActivity() {
-        return tourActivity;
+    public CarrierService getCarrierService() {
+        return serviceActivity.getService();
     }
 }
