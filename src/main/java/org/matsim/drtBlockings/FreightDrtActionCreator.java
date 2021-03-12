@@ -42,6 +42,11 @@ class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
 	private final PassengerHandler passengerHandler;
 	private final DrtActionCreator delegate;
 
+	public static final String SERVICE_ACTTYPE_PREFIX = "FreightDrtService_";
+	public static final String PICKUP_ACTTYPE_PREFIX = "FreightDrtPickup_";
+	public static final String RETOOL_ACTTYPE_PREFIX = "FreightDrtRetooling";
+
+
 	FreightDrtActionCreator(PassengerHandler passengerHandler, MobsimTimer timer, DvrpConfigGroup dvrpCfg) {
 		this(passengerHandler, v -> VrpLegFactory.createWithOnlineTracker(dvrpCfg.getMobsimMode(), v,
 				OnlineTrackerListener.NO_LISTENER, timer));
@@ -61,15 +66,15 @@ class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
         //prohibits to alter the activity and time...
 
         if(currentTask instanceof FreightServiceTask)
-                return new IdleDynActivity("FreightDrtService_" + ((FreightServiceTask) currentTask).getCarrierService().getId(),
+                return new IdleDynActivity(SERVICE_ACTTYPE_PREFIX + ((FreightServiceTask) currentTask).getCarrierService().getId(),
 						currentTask::getEndTime);
 
         if(currentTask instanceof FreightPickupTask)
-                return new IdleDynActivity("FreightDrtPickup_" + ((FreightPickupTask) currentTask).getShipment().getId(),
+                return new IdleDynActivity(PICKUP_ACTTYPE_PREFIX + ((FreightPickupTask) currentTask).getShipment().getId(),
 						currentTask::getEndTime);
 
         if(currentTask instanceof FreightRetoolTask)
-                return new IdleDynActivity("FreightDrtRetooling", currentTask::getEndTime);
+                return new IdleDynActivity(RETOOL_ACTTYPE_PREFIX, currentTask::getEndTime);
 
         else return delegate.createAction(dynAgent, vehicle, now);
     }
