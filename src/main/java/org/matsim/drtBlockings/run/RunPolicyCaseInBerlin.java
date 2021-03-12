@@ -9,6 +9,7 @@ package org.matsim.drtBlockings.run;
  */
 
 import ch.sbb.matsim.config.SwissRailRaptorConfigGroup;
+import com.google.inject.Singleton;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
@@ -28,11 +29,14 @@ import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.MatsimServices;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.controler.listener.IterationEndsListener;
+import org.matsim.core.scoring.functions.ScoringParametersForPerson;
+import org.matsim.core.scoring.functions.SubpopulationScoringParameters;
 import org.matsim.drtBlockings.DrtBlockingModule;
 import org.matsim.drtBlockings.analysis.BasicTourStatsAnalysis;
 import org.matsim.drtBlockings.analysis.NeverStartedToursAnalysisV1;
@@ -58,17 +62,19 @@ public class RunPolicyCaseInBerlin {
 
     //General input
     //dir for 1 carrier only
-//    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
+    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
     //dir for all Berlin carriers
-    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
+//    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
     private static final String INPUT_CONFIG = INPUT_DIR + "p2-23.output_config.xml";
     private static final String INPUT_NETWORK_CHANGE_EVENTS = INPUT_DIR + "p2-23.networkChangeEvents.xml.gz";
-    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtUsersOnly_selectedPlans_noRoutes.xml.gz";
+//    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtUsersOnly_selectedPlans_noRoutes.xml.gz";
+    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_200Persons.xml.gz";
     private static final String INPUT_NETWORK = INPUT_DIR + "p2-23.output_network.xml.gz";
     private static final String INPUT_DRT_VEHICLES = INPUT_DIR + "p2-23.drt__vehicles.xml.gz";
 
     //Carrier input
-    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_8-24_PLANNED.xml";
+//    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_8-24_PLANNED.xml";
+    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_LichtenbergNord_8-24_PLANNED_oneTour.xml";
     private static final String CARRIER_VEHICLE_TYPES = INPUT_DIR + "carrier_vehicleTypes.xml";
     private static final boolean RUN_TOURPLANNING = false;
 
@@ -151,6 +157,9 @@ public class RunPolicyCaseInBerlin {
         config.plans().setInputFile(inputPlans);
         config.qsim().setFlowCapFactor(10.);
 
+//        QSimConfigGroup qSimCfg = ConfigUtils.addOrGetModule(config, QSimConfigGroup.class);
+//        qSimCfg.setNumberOfThreads(4);
+
         //Freight settings
         FreightConfigGroup freightConfig = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
         freightConfig.setCarriersFile(carrierPlans);
@@ -172,9 +181,15 @@ public class RunPolicyCaseInBerlin {
         FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
         //This lets our engine know that we want to handle freight traffic by the drt fleet
-        FreightUtils.getCarriers(scenario).getCarriers().values().forEach(carrier -> {
-            CarrierUtils.setCarrierMode(carrier, drtCfg.getMode());
-        });
+        try {
+            FreightUtils.getCarriers(scenario).getCarriers().values().forEach(carrier -> {
+                CarrierUtils.setCarrierMode(carrier, drtCfg.getMode());
+            });
+
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+
 
         //Run Tourplanning if the carriers plans were not already planned before running the sim
         if(performTourplanning){
@@ -200,12 +215,13 @@ public class RunPolicyCaseInBerlin {
         configureDRTIncludingDRTBlocking(scenario, controler);
 
         //this was copied from PFAV RunNormalFreightInBerlin class, not sure if its necessary
-        controler.addOverridingModule(new CarrierModule());
+//        controler.addOverridingModule(new CarrierModule());
         controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
-                bind(CarrierPlanStrategyManagerFactory.class).toInstance(() -> null);
-                bind(CarrierScoringFunctionFactory.class).to(CarrierScoringFunctionFactoryImpl.class);
+//                bind(CarrierPlanStrategyManagerFactory.class).toInstance(() -> null);
+//                bind(CarrierScoringFunctionFactory.class).to(CarrierScoringFunctionFactoryImpl.class);
+                bind(ScoringParametersForPerson.class).to(SubpopulationScoringParameters.class).in(Singleton.class);
             }
         });
 

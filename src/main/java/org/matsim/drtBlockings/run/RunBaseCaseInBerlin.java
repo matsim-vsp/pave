@@ -72,7 +72,8 @@ public class RunBaseCaseInBerlin {
     private static final String INPUT_CONFIG = INPUT_DIR + "p2-23.output_config.xml";
     private static final String INPUT_NETWORK_CHANGE_EVENTS = INPUT_DIR + "p2-23.networkChangeEvents.xml.gz";
     //DIE FOLGENDEN PLÄNE FÜR SERIOUS RUNS VERWENDEN!
-    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtUsersOnly_selectedPlans_noRoutes.xml.gz";
+//    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtUsersOnly_selectedPlans_noRoutes.xml.gz";
+    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_200Persons.xml.gz";
     private static final String INPUT_NETWORK = INPUT_DIR + "p2-23.output_network.xml.gz";
     private static final String INPUT_DRT_VEHICLES = INPUT_DIR + "p2-23.drt__vehicles.xml.gz";
 
@@ -81,7 +82,7 @@ public class RunBaseCaseInBerlin {
     private static final String CARRIER_VEHICLE_TYPES = INPUT_DIR + "carrier_vehicleTypes.xml";
     private static final boolean RUN_TOURPLANNING = false;
 
-    private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/base_cases/" + CARRIERS_PLANS_PLANNED.replace(INPUT_DIR, "");
+    private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/base_cases/test/" + CARRIERS_PLANS_PLANNED.replace(INPUT_DIR, "");
     private static final String TRANSIT_FILE = "berlin-v5.5-transit-schedule_empty.xml";
 
     public static void main(String[] args) {
