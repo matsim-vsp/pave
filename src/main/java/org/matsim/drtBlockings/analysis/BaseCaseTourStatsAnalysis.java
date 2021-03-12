@@ -42,7 +42,7 @@ public class BaseCaseTourStatsAnalysis implements LinkEnterEventHandler, Activit
     public BaseCaseTourStatsAnalysis(Network network) { this.network = network; }
 
     public static void main(String[] args) {
-        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-10pct/";
+        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-10pct/base_cases/carriers_4hTimeWindows_openBerlinNet_8-24_PLANNED.xml/";
         String eventsFile = dir + "p2-23DRTBlockingBaseCase.output_events.xml.gz";
         String inputNetwork = dir + "p2-23DRTBlockingBaseCase.output_network.xml.gz";
         String outputFile = dir + "BaseCaseTourStats.csv";
@@ -94,7 +94,6 @@ public class BaseCaseTourStatsAnalysis implements LinkEnterEventHandler, Activit
         if (this.currentTours.containsKey(driverId)) {
             //add up linkLength to distance travelled so far
             Double distanceSoFar = this.driverToDistance.computeIfAbsent(driverId, v -> 0.);
-            this.driverToDeparture.putIfAbsent(driverId, event.getTime());
             this.driverToDistance.replace(driverId,
                     distanceSoFar + network.getLinks().get(event.getLinkId()).getLength());
         }
@@ -115,15 +114,24 @@ public class BaseCaseTourStatsAnalysis implements LinkEnterEventHandler, Activit
             }
         } else if(event.getActType().equals("end")) {
             if (this.currentTours.containsKey(driverId)) {
-                //add up linkLength to distance travelled so far
-                Double distanceSoFar = this.driverToDistance.remove(driverId);
+
+                Double distanceSoFar;
+                if(this.driverToDistance.containsKey(driverId)) {
+                    //add up linkLength to distance travelled so far
+                    distanceSoFar = this.driverToDistance.remove(driverId);
+                } else {
+                    distanceSoFar = 0.;
+                    System.out.println("INFO: driver " + driverId + " did not enter any link! " +
+                            "Therefore the distance for this tour is set to 0!" );
+                }
+
                 FreightTourData data = this.currentTours.remove(driverId);
 
                 //get eventTime and calculate tourDuration
                 //The following should be the case for every tour!
                 if (event.getTime() > this.driverToDeparture.get(driverId)) {
                     this.driverToArrival.put(driverId, event.getTime());
-                    Double tourDuration = event.getTime() - driverToDeparture.get(driverId);
+                    Double tourDuration = event.getTime() - this.driverToDeparture.get(driverId);
                     data.tourDuration = tourDuration;
 
                     //Does this make sense??? I saw that services on the same link are done like:
@@ -157,6 +165,7 @@ public class BaseCaseTourStatsAnalysis implements LinkEnterEventHandler, Activit
             //put driver into map of current tours when tour starts
             FreightTourData data = new FreightTourData(event.getPersonId(), 0.);
             this.currentTours.put(event.getPersonId(), data);
+            this.driverToDeparture.putIfAbsent(event.getPersonId(), event.getTime());
         }
 
 
