@@ -50,7 +50,7 @@ public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
                     //TODO do something less restrictive
                     throw new RuntimeException("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() + " but it will come too late for that");
                 }
-        } else if(task.getTaskType().equals(FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE)
+        } else if(task.getTaskType().equals(FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE) //TODO pickup also has time window that should be respected
             || task.getTaskType().equals(FreightRetoolTask.RETOOL_TASK_TYPE)){
             return newBeginTime + duration;
         }
