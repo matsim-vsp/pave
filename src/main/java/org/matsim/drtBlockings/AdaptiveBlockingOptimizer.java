@@ -104,6 +104,8 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
 //    @Override
     public void blockingRequestSubmitted(DrtBlockingRequest drtBlockingRequest) {
         this.blockingRequests.add(drtBlockingRequest);
+        log.info("blocking request " + drtBlockingRequest.getId() + " starting at " + drtBlockingRequest.getStartTime()
+                + " was submitted");
         eventsManager.processEvent(new DrtBlockingRequestSubmittedEvent(timer.getTimeOfDay(), drtBlockingRequest.getMode(),
                 drtBlockingRequest.getId(), drtBlockingRequest.getStartLink().getId(), drtBlockingRequest.getEndLink().getId(), drtBlockingRequest.getPlannedBlockingDuration()));
     }
@@ -132,6 +134,7 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
         if(scheduleInquiry.isIdle(vehicle)){ //TODO actually we could unblock the vehicle already when the last retooling has begun. What happens if we call eventsManager.processEvent(futureTime) ?
             //if the blocking request has started and the vehicle is idle then we can unblock the vehicle..
             this.blockingManager.unblockVehicle(vehicle);
+            log.info("Blocking of vehicle " + vehicle.getId() + " has ended at " + timer.getTimeOfDay());
             this.eventsManager.processEvent(
                     new DrtBlockingEndedEvent(timer.getTimeOfDay(), vehicle.getId(), Tasks.getEndLink(vehicle.getSchedule().getCurrentTask()).getId()));
         } else {
@@ -198,7 +201,7 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
                         }
 
                         log.info("blocking vehicle " + vehicle.getId() + " for time period start=" + timer.getTimeOfDay()
-                                + " end=" + timer.getTimeOfDay() + drtBlockingRequest.getPlannedBlockingDuration());
+                                + " end=" + (timer.getTimeOfDay() + drtBlockingRequest.getPlannedBlockingDuration()));
                         idleVehicles.remove(vehicle);
                         scheduleTasksForBlockedVehicle(drtBlockingRequest, vehicle);
                         if(! this.blockingManager.blockVehicle(vehicle,drtBlockingRequest)) throw new RuntimeException("could not block vehicle=" + vehicle + ". should not happen... ");
@@ -243,6 +246,7 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
                 previousTask = task;
             }
             schedule.addTask(new DrtStayTask(previousTask.getEndTime(), vehicle.getServiceEndTime(), Tasks.getEndLink(previousTask)));
+            System.out.println(schedule.getTasks());
     }
 
     private OptionalTime retrieveEndTimeOfBlocking(Schedule schedule) {
