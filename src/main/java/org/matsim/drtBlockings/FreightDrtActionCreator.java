@@ -36,7 +36,7 @@ import org.matsim.drtBlockings.tasks.FreightServiceTask;
 import org.matsim.drtBlockings.tasks.FreightPickupTask;
 import org.matsim.drtBlockings.tasks.FreightRetoolTask;
 
-class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
+public class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
 
 	private final VrpLegFactory legFactory;
 	private final PassengerHandler passengerHandler;
