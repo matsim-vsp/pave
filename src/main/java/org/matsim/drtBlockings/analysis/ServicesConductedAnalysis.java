@@ -49,7 +49,7 @@ public class ServicesConductedAnalysis implements ActivityStartEventHandler, Ite
 	public void handleEvent(ActivityStartEvent event) {
 		if(event.getActType().startsWith(FreightDrtActionCreator.SERVICE_ACTTYPE_PREFIX)){
 			Id<CarrierService> serviceId = Id.create(event.getActType().substring(event.getActType().indexOf("_") + 1), CarrierService.class);
-			if(serviceStartEvents.containsKey(serviceId))
+			if(!serviceStartEvents.containsKey(serviceId))
 			this.serviceStartEvents.putIfAbsent(serviceId, event);
 		}
 	}
@@ -70,16 +70,23 @@ public class ServicesConductedAnalysis implements ActivityStartEventHandler, Ite
 
 	void writeAnalysis(String outputFilePath) throws IOException {
 		BufferedWriter writer = IOUtils.getBufferedWriter(outputFilePath);
-		writer.write("carrierId;serviceId,startTime;personId");
+		writer.write("carrierId;serviceId;endOfServiceTimeWindow;startTime;delay;personId");
 		for (Carrier carrier : carriers.getCarriers().values()) {
 			for (Id<CarrierService> serviceId : carrier.getServices().keySet()) {
+				double endOfServiceTimeWindow = carrier.getServices().get(serviceId).getServiceStartTimeWindow().getEnd();
 				writer.newLine();
-				writer.write(carrier.getId() + ";" + serviceId + ";" );
+				writer.write(carrier.getId() + ";" + serviceId + ";" + endOfServiceTimeWindow + ";");
 				if(this.serviceStartEvents.containsKey(serviceId)){
 					ActivityStartEvent event = serviceStartEvents.get(serviceId);
-					writer.write(event.getTime() + ";" + event.getPersonId()) ;
+					double delay;
+					if(event.getTime() > endOfServiceTimeWindow) {
+						delay = event.getTime() - endOfServiceTimeWindow;
+					} else {
+						delay = 0;
+					}
+					writer.write(event.getTime() + ";" + delay + ";" + event.getPersonId());
 				} else {
-					writer.write("-;-");
+					writer.write("-;-;-");
 				}
 			}
 		}
