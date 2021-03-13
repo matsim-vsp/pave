@@ -18,63 +18,70 @@ import org.matsim.vehicles.Vehicle;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ToursFromCarriersFileAnalysis implements IterationEndsListener {
 
-    private static final String INPUT_DIR = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-10pct/policy_cases/";
-    private static final String INPUT_CONFIG = INPUT_DIR + "p2-23.output_config.xml";
-    private static final String INPUT_PLANS = INPUT_DIR + "p2-23.output_plans_200Persons.xml.gz";
-    private static final String INPUT_CARRIERS = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_8-24.xml";
-    private static final String INPUT_CARRIER_VEHICLE_TYPES = INPUT_DIR + "carrier_vehicleTypes.xml";
-    private static final String OUTPUT_STATS_FILE = INPUT_DIR + "ToursFromCarriersAnalysis.csv";
+    private Carriers carriers;
+    private Network network;
 
     private List<CarrierTourData> tours = new ArrayList<>();
-//    private Map<Id<Link>, Integer> packagesOnLinks = new HashMap<>();
 
-    public static void main(String[] args) {
-        ToursFromCarriersFileAnalysis analysis = new ToursFromCarriersFileAnalysis();
-        analysis.run();
+    public ToursFromCarriersFileAnalysis(Network network, Carriers carriers) {
+        this.network = network;
+        this.carriers = carriers;
     }
 
-    private void run() {
-        Config config = ConfigUtils.loadConfig(INPUT_CONFIG);
-        config.plans().setInputFile(INPUT_PLANS);
+
+    public static void main(String[] args) {
+
+        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-10pct/policy_cases/";
+        String inputConfig = dir + "p2-23.output_config.xml";
+        String inputNetwork = dir + "p2-23DRTBlockingPolicyCase.output_network.xml.gz";
+        String inputPlans = dir + "p2-23.output_plans_200Persons.xml.gz";
+        String inputCarriers = dir + "carriers_4hTimeWindows_openBerlinNet_8-24.xml";
+        String inputVehicleTypes = dir + "carrier_vehicleTypes.xml";
+        String outputFile = dir + "ToursFromCarriersAnalysis.csv";
+        Config config = ConfigUtils.loadConfig(inputConfig);
+
+        config.network().setInputFile(inputNetwork);
+
+        config.plans().setInputFile(inputPlans);
         FreightConfigGroup freightCfg = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
-        freightCfg.setCarriersFile(INPUT_CARRIERS);
-        freightCfg.setCarriersVehicleTypesFile(INPUT_CARRIER_VEHICLE_TYPES);
+        freightCfg.setCarriersFile(inputCarriers);
+        freightCfg.setCarriersVehicleTypesFile(inputVehicleTypes);
 
         Scenario scenario = ScenarioUtils.loadScenario(config);
         FreightUtils.loadCarriersAccordingToFreightConfig(scenario);
 
-        Carriers carriers = FreightUtils.getCarriers(scenario);
-        ToursFromCarriersFileAnalysis analysis = new ToursFromCarriersFileAnalysis();
-        analysis.analyzeCarrierServices(carriers);
-        analysis.writeStats(OUTPUT_STATS_FILE);
-        System.out.println("Writing of carrier service stats to " + OUTPUT_STATS_FILE + " was successful!");
-}
+        Network network = scenario.getNetwork();
 
-    public void analyzeCarrierServices(Carriers carriers) {
+        Carriers carriers = FreightUtils.getCarriers(scenario);
+        ToursFromCarriersFileAnalysis analysis = new ToursFromCarriersFileAnalysis(network, carriers);
+        analysis.analyzeCarrierServices(carriers, network);
+        analysis.writeStats(outputFile);
+        System.out.println("Writing of carrier service stats to " + outputFile + " was successful!");
+    }
+
+    public void analyzeCarrierServices(Carriers carriers, Network network) {
         for(Carrier carrier : carriers.getCarriers().values()) {
             for(ScheduledTour tour : carrier.getSelectedPlan().getScheduledTours()) {
 
                 Id<Vehicle> id = tour.getVehicle().getId();
                 double start = tour.getTour().getStart().getTimeWindow().getStart();
 
-                CarrierTourData data = new CarrierTourData(id, start);
-
                 double distance = 0;
                 int serviceCount = 0;
                 double duration = 0;
-                List<Id<CarrierService>> services = null;
+                List<Id<CarrierService>> services = new ArrayList<>();
                 for(Tour.TourElement e : tour.getTour().getTourElements()) {
                     if(e instanceof Tour.Leg) {
 
 
-                        distance = distance + ((NetworkRoute) ((Tour.Leg) e).getRoute()).getLinkIds()getDistance();
+                        for( Id<Link> linkId : ((NetworkRoute) ((Tour.Leg) e).getRoute()).getLinkIds()) {
+                            distance = distance + network.getLinks().get(linkId).getLength();
+                        }
+
                         duration = duration + ((Tour.Leg) e).getExpectedTransportTime();
                     } else if(e instanceof Tour.ServiceActivity) {
                         serviceCount = serviceCount + 1;
@@ -89,6 +96,8 @@ public class ToursFromCarriersFileAnalysis implements IterationEndsListener {
                     }
                 }
 
+                CarrierTourData data = new CarrierTourData(createTourId(id, services.get(0)), start);
+
                 data.duration = duration;
                 data.distance = distance;
                 data.carrierId = carrier.getId();
@@ -100,6 +109,13 @@ public class ToursFromCarriersFileAnalysis implements IterationEndsListener {
         }
     }
 
+    private Id<Vehicle> createTourId(Id<Vehicle> id, Id<CarrierService> firstServiceId) {
+
+        Id<Vehicle> tourId = Id.create(id + "_" + firstServiceId, Vehicle.class);
+
+        return tourId;
+    }
+
     public void writeStats(String file) {
         BufferedWriter statsWriter = IOUtils.getBufferedWriter(file);
         try {
@@ -109,7 +125,9 @@ public class ToursFromCarriersFileAnalysis implements IterationEndsListener {
                     "carrierId;numberOfServices;services");
             statsWriter.newLine();
 
-            for (CarrierTourData data  : this.tours) {
+//            PriorityQueue<CarrierTourData> sortedTours = new PriorityQueue<>(Comparator.comparing(CarrierTourData::getTourId));
+
+            for(CarrierTourData data  : this.tours) {
                 statsWriter.write(i + ";" + data.carrierId + data.tourId + ";" + data.distance + ";" + data.start + ";" +
                         (data.start + data.duration) + ";" +data.duration + ";" + data.carrierId + ";" +
                         data.serviceCount + ";" + data.services);
@@ -124,8 +142,11 @@ public class ToursFromCarriersFileAnalysis implements IterationEndsListener {
 
     @Override
     public void notifyIterationEnds(IterationEndsEvent event) {
-        String INPUT_DIR = event.getServices().getConfig().controler().getOutputDirectory();
-        String outputFile = INPUT_DIR + "/ToursFromCarriersAnalysis.csv";
+        ToursFromCarriersFileAnalysis analysis = new ToursFromCarriersFileAnalysis(network, carriers);
+        analysis.analyzeCarrierServices(carriers, network);
+
+        String dir = event.getServices().getConfig().controler().getOutputDirectory();
+        String outputFile = dir + "/ToursFromCarriersAnalysis.csv";
         writeStats(outputFile);
     }
 
