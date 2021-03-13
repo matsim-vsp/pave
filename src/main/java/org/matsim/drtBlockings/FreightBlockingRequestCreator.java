@@ -20,6 +20,7 @@
 
 package org.matsim.drtBlockings;
 
+import com.graphhopper.jsprit.core.problem.solution.route.activity.ServiceActivity;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -83,15 +84,20 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         Map<Id<Vehicle>, Integer> vehicleCount = new HashMap<>();
 
 //        int count = 0;
+        int vehCount;
         for (ScheduledTour tour : carrier.getSelectedPlan().getScheduledTours()){
-            int vehCount;
+
             if(vehicleCount.get(tour.getVehicle().getId()) == null){
                 vehCount = 1;
             } else{
                 vehCount = vehicleCount.get(tour.getVehicle().getId()) + 1;
                 vehicleCount.replace(tour.getVehicle().getId(), vehCount);
             }
-            String tourID = /*carrier.getId() + "_" + */tour.getVehicle().getId() + "_" + vehCount; /* + "_" + count;*/
+
+            //TODO add noOfServices to tourId!
+            //or better Id of first service!
+//            String tourID = carrier.getId() + "" + tour.getVehicle().getId() + "_" + vehCount; /* + "_" + count;*/
+            String tourID = carrier.getId() + "" + tour.getVehicle().getId() + "_" + getFirstTourServiceOrShipmentForId(tour.getTour());
             requests.add(createRequest(carrier.getId(), Id.create(tour.getVehicle().getId(), DvrpVehicle.class), tour, tourID));
 //            count++;
         }
@@ -211,6 +217,22 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 //        double totalTT = 1.0D + networkRoute.getTravelTime() + linkTT;
         double totalTT = (currentTime + linkTT) - departureTime;
         return new VrpPathWithTravelDataImpl(departureTime, totalTT, links, linkTTs);
+    }
+
+    private Id<CarrierService> getFirstTourServiceOrShipmentForId(Tour tour) {
+
+        Id<CarrierService> firstServiceOrShipmentId = null;
+        for(Tour.TourElement e : tour.getTourElements()) {
+            if(e instanceof Tour.ServiceActivity) {
+                firstServiceOrShipmentId = ((Tour.ServiceActivity) e).getService().getId();
+                break;
+            } else if(e instanceof Tour.ShipmentBasedActivity) {
+                firstServiceOrShipmentId = Id.create(((Tour.ShipmentBasedActivity) e).getShipment().getId(), CarrierService.class);   
+                break;
+            }
+        }
+
+        return firstServiceOrShipmentId;
     }
 
 }
