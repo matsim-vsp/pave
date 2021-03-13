@@ -40,6 +40,8 @@ import org.matsim.core.scoring.functions.SubpopulationScoringParameters;
 import org.matsim.drtBlockings.DrtBlockingModule;
 import org.matsim.drtBlockings.analysis.BasicTourStatsAnalysis;
 import org.matsim.drtBlockings.analysis.NeverStartedToursAnalysisV1;
+import org.matsim.drtBlockings.analysis.ServicesConductedAnalysis;
+import org.matsim.drtBlockings.analysis.ToursFromCarriersFileAnalysis;
 import org.matsim.run.RunBerlinScenario;
 import org.matsim.run.drt.RunDrtOpenBerlinScenario;
 
@@ -62,9 +64,9 @@ public class RunPolicyCaseInBerlin {
 
     //General input
     //dir for 1 carrier only
-    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
+//    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
     //dir for all Berlin carriers
-//    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
+    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
     private static final String INPUT_CONFIG = INPUT_DIR + "p2-23.output_config.xml";
     private static final String INPUT_NETWORK_CHANGE_EVENTS = INPUT_DIR + "p2-23.networkChangeEvents.xml.gz";
 //    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtUsersOnly_selectedPlans_noRoutes.xml.gz";
@@ -73,8 +75,11 @@ public class RunPolicyCaseInBerlin {
     private static final String INPUT_DRT_VEHICLES = INPUT_DIR + "p2-23.drt__vehicles.xml.gz";
 
     //Carrier input
-//    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_8-24_PLANNED.xml";
-    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_LichtenbergNord_8-24_PLANNED_oneTour.xml";
+    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_8-24_PLANNED.xml";
+//    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_fullDay_PLANNED.xml";
+//    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_2hTimeWindows_openBerlinNet_8-24_PLANNED.xml";
+//    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_2hTimeWindows_openBerlinNet_fullDay_PLANNED.xml";
+//    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_LichtenbergNord_8-24_PLANNED_oneTour.xml";
     private static final String CARRIER_VEHICLE_TYPES = INPUT_DIR + "carrier_vehicleTypes.xml";
     private static final boolean RUN_TOURPLANNING = false;
 
@@ -125,6 +130,8 @@ public class RunPolicyCaseInBerlin {
         //not sure which analysis are needed. We may need to add some analysis classes
         BasicTourStatsAnalysis basicBlockingAnalysis = new BasicTourStatsAnalysis(scenario.getNetwork());
         NeverStartedToursAnalysisV1 blockingRejectionAnalysis = new NeverStartedToursAnalysisV1();
+        ServicesConductedAnalysis servicesConductedAnalysis = new ServicesConductedAnalysis(FreightUtils.getCarriers(scenario));
+        ToursFromCarriersFileAnalysis toursFromCarriersFileAnalysis = new ToursFromCarriersFileAnalysis(scenario.getNetwork(), FreightUtils.getCarriers(scenario));
 
         controler.addOverridingModule(new AbstractModule() {
             @Override
@@ -134,6 +141,11 @@ public class RunPolicyCaseInBerlin {
 
                 addControlerListenerBinding().toInstance(blockingRejectionAnalysis);
                 addEventHandlerBinding().toInstance(blockingRejectionAnalysis);
+
+                addControlerListenerBinding().toInstance(servicesConductedAnalysis);
+                addEventHandlerBinding().toInstance(servicesConductedAnalysis);
+
+                //addControlerListenerBinding().toInstance(toursFromCarriersFileAnalysis);
             }
         });
 
@@ -147,7 +159,7 @@ public class RunPolicyCaseInBerlin {
         Config config = RunDrtOpenBerlinScenario.prepareConfig(new String[]{configPath});
 
         //General settings
-        config.controler().setLastIteration(0);
+        config.controler().setLastIteration(2);
         config.controler().setRunId(config.controler().getRunId() + "DRTBlockingPolicyCase");
         config.controler().setOutputDirectory(outputPath);
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
