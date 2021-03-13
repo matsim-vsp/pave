@@ -7,6 +7,8 @@ import org.matsim.contrib.drt.passenger.events.DrtRequestSubmittedEventHandler;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.core.api.experimental.events.EventsManager;
+import org.matsim.core.controler.events.IterationEndsEvent;
+import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.utils.io.IOUtils;
@@ -20,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NeverStartedToursAnalysisV2 implements DrtBlockingRequestRejectedEventHandler {
+public class NeverStartedToursAnalysisV2 implements DrtBlockingRequestRejectedEventHandler, IterationEndsListener {
 
     private List<DrtBlockingTourData> rejectedTours = new ArrayList<>();
 
@@ -71,6 +73,16 @@ public class NeverStartedToursAnalysisV2 implements DrtBlockingRequestRejectedEv
         DrtBlockingTourData data = new DrtBlockingTourData(event.getRequestId(), event.getTime());
         rejectedTours.add(data);
 
+    }
+
+    @Override
+    public void notifyIterationEnds(IterationEndsEvent event) {
+        writeStats(event.getServices().getControlerIO().getIterationFilename(event.getIteration(), "neverStartedTourStatsV2.csv"));
+    }
+
+    @Override
+    public void reset(int iteration) {
+        this.rejectedTours.clear();
     }
 
     private class DrtBlockingTourData {

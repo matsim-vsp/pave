@@ -9,6 +9,7 @@ import org.matsim.api.core.v01.events.handler.ActivityStartEventHandler;
 import org.matsim.api.core.v01.events.handler.LinkEnterEventHandler;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.contrib.freight.carrier.CarrierService;
 import org.matsim.contrib.freight.carrier.Tour;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.IterationEndsEvent;
@@ -54,8 +55,6 @@ public class BaseCaseTourStatsAnalysis implements LinkEnterEventHandler, Activit
         BaseCaseTourStatsAnalysis handler = new BaseCaseTourStatsAnalysis(network);
         manager.addHandler(handler);
         manager.initProcessing();
-        //TODO EventsReader finden oder bauen
-        // vllt geht es auch mit dem standard reader
         MatsimEventsReader reader = new MatsimEventsReader(manager);
 //        FreightEventsReader reader = new FreightEventsReader(manager);
         reader.readFile(eventsFile);
@@ -105,6 +104,8 @@ public class BaseCaseTourStatsAnalysis implements LinkEnterEventHandler, Activit
         Id<Person> driverId = event.getPersonId();
         //noOfServices
         if(event.getActType().equals("service")) {
+
+
 
             if(!this.driverToServiceNo.containsKey(driverId)) {
                 this.driverToServiceNo.put(driverId, 1);
@@ -167,19 +168,22 @@ public class BaseCaseTourStatsAnalysis implements LinkEnterEventHandler, Activit
             this.currentTours.put(event.getPersonId(), data);
             this.driverToDeparture.putIfAbsent(event.getPersonId(), event.getTime());
         }
-
-
     }
 
     @Override
     public void notifyIterationEnds(IterationEndsEvent event) {
-        String dir = event.getServices().getConfig().controler().getOutputDirectory();
-        String outputFile = dir + "/BaseCaseTourStats.csv";
-        writeStats(outputFile);
+        writeStats(event.getServices().getControlerIO().getIterationFilename(event.getIteration(), "BaseCaseTourStats.csv"));
     }
 
     @Override
     public void reset(int iteration) {
+        this.currentTours.clear();
+        this.driverToDistance.clear();
+        this.driverToDeparture.clear();
+        this.driverToArrival.clear();
+        this.driverToServiceNo.clear();
+
+        this.finishedTours.clear();
 
     }
 

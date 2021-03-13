@@ -68,11 +68,8 @@ public class NeverStartedToursAnalysisV1 implements DrtBlockingRequestSubmittedE
                     writer.write(i + ";" + data.requestId + ";" + data.time);
                     writer.newLine();
                 }
-
-
                 i++;
             }
-
             writer.close();
         } catch(IOException e) {
             e.printStackTrace();
@@ -98,9 +95,13 @@ public class NeverStartedToursAnalysisV1 implements DrtBlockingRequestSubmittedE
 
     @Override
     public void notifyIterationEnds(IterationEndsEvent event) {
-        String dir = event.getServices().getConfig().controler().getOutputDirectory();
-        String outputFile = dir + "/neverStartedTourStatsV1.csv";
-        writeStats(outputFile);
+        writeStats(event.getServices().getControlerIO().getIterationFilename(event.getIteration(), "neverStartedTourStatsV1.csv"));
+    }
+
+    @Override
+    public void reset(int iteration) {
+        this.allTours.clear();
+        this.scheduledTours.clear();
     }
 
     private class DrtBlockingTourData {

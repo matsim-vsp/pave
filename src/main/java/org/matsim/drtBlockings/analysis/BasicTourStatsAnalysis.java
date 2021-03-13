@@ -15,6 +15,7 @@ import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.contrib.dvrp.util.DvrpEventsReaders;
 import org.matsim.contrib.dvrp.vrpagent.TaskStartedEvent;
 import org.matsim.contrib.dvrp.vrpagent.TaskStartedEventHandler;
+import org.matsim.contrib.freight.carrier.CarrierService;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
@@ -37,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 public class BasicTourStatsAnalysis implements DrtBlockingRequestScheduledEventHandler, TaskStartedEventHandler,
-        DrtBlockingEndedEventHandler, LinkEnterEventHandler, ActivityStartEventHandler, ActivityEndEventHandler, IterationEndsListener {
+        DrtBlockingEndedEventHandler, LinkEnterEventHandler, IterationEndsListener {
 
     private Network network;
     private Map<Id<DvrpVehicle>, DrtBlockingTourData> currentTours = new HashMap<>();
@@ -51,8 +52,7 @@ public class BasicTourStatsAnalysis implements DrtBlockingRequestScheduledEventH
     private Map<Id<DvrpVehicle>, Id<Request>> vehToRequest = new HashMap<>();
     private Map<Id<DvrpVehicle>, Integer> vehToTaskNo = new HashMap<>();
     private Map<Id<DvrpVehicle>, Integer> vehToServiceNo = new HashMap<>();
-
-    private int started = 0;
+    private Map<Id<DvrpVehicle>, List<Id<CarrierService>>> vehToServices = new HashMap<>();
 
     private List<DrtBlockingTourData> finishedTours = new ArrayList<>();
 
@@ -147,7 +147,7 @@ public class BasicTourStatsAnalysis implements DrtBlockingRequestScheduledEventH
 
             if (event.getTaskType()==FreightRetoolTask.RETOOL_TASK_TYPE) {
 
-                System.out.println(event.getTime() + " " + event.getTaskType() + " " + event.getLinkId());
+//                System.out.println(event.getTime() + " " + event.getTaskType() + " " + event.getLinkId());
 
                 if(this.vehToDistance.containsKey(dvrpVehicleId)) {
                     this.vehToAccessDistance.putIfAbsent(dvrpVehicleId, this.vehToDistance.get(dvrpVehicleId));
@@ -168,26 +168,21 @@ public class BasicTourStatsAnalysis implements DrtBlockingRequestScheduledEventH
                 }
             } else if(event.getTaskType()== FreightServiceTask.FREIGHT_SERVICE_TASK_TYPE) {
 
-                this.started = this.started +1;
+                List<Id<CarrierService>> services = new ArrayList<>();
                 if(!this.vehToServiceNo.containsKey(dvrpVehicleId)) {
                     this.vehToServiceNo.put(dvrpVehicleId, 1);
                 } else {
                     this.vehToServiceNo.replace(dvrpVehicleId, this.vehToServiceNo.get(dvrpVehicleId) + 1);
                 }
-
-
-                System.out.println(event.getTime() + " " + event.getTaskType() + " " + event.getLinkId());
                 serviceCount = serviceCount +1;
-
-//                System.out.println(dvrpVehicleId + " " + this.vehToServiceNo.get(dvrpVehicleId) + " " + event.getTime());
 
             } else if(event.getTaskType()== DrtDriveTask.TYPE) {
 
             } else if (event.getTaskType()==FreightDriveTask.FREIGHT_DRIVE_TASK_TYPE) {
-                System.out.println(event.getTime() + " " + event.getTaskType() + " " + event.getLinkId());
+//                System.out.println(event.getTime() + " " + event.getTaskType() + " " + event.getLinkId());
             }
             else {
-                System.out.println(event.getTaskType());
+//                System.out.println(event.getTaskType());
             }
         }
     }
@@ -251,42 +246,23 @@ public class BasicTourStatsAnalysis implements DrtBlockingRequestScheduledEventH
 
     @Override
     public void notifyIterationEnds(IterationEndsEvent event) {
-        String dir = event.getServices().getConfig().controler().getOutputDirectory();
-        String outputFile = dir + "/BasicTourStats.csv";
-        writeStats(outputFile);
+        writeStats(event.getServices().getControlerIO().getIterationFilename(event.getIteration(), "BasicTourStats.csv"));
     }
 
     @Override
     public void reset(int iteration) {
+        this.currentTours.clear();
+        this.vehToDistance.clear();
+        this.vehToDeparture.clear();
+        this.vehToArrival.clear();
+        this.vehToAccessDistance.clear();
+        this.vehToAccessDuration.clear();
+        this.vehToRequest.clear();
+        this.vehToTaskNo.clear();
+        this.vehToServiceNo.clear();
+        this.vehToServices.clear();
 
-    }
-
-    @Override
-    public void handleEvent(ActivityStartEvent event) {
-
-        Id<DvrpVehicle> dvrpVehicleId = Id.create(event.getPersonId(), DvrpVehicle.class);
-
-//        System.out.println(event.getActType());
-
-        if(event.getActType().equals("FreightDrtDelivery")) {
-
-
-        }
-
-
-    }
-
-    @Override
-    public void handleEvent(ActivityEndEvent event) {
-
-        if(event.getActType().equals("FreightDeliveryTask")) {
-            if(this.started==1) {
-                this.started = this.started -1;
-            } else {
-                System.out.println(event.getPersonId());
-            }
-        }
-
+        this.finishedTours.clear();
     }
 
     private class DrtBlockingTourData {
