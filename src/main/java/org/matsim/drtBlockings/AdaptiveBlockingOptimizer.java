@@ -246,7 +246,7 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
                 previousTask = task;
             }
             schedule.addTask(new DrtStayTask(previousTask.getEndTime(), vehicle.getServiceEndTime(), Tasks.getEndLink(previousTask)));
-            System.out.println(schedule.getTasks());
+//            System.out.println(schedule.getTasks());
     }
 
     private OptionalTime retrieveEndTimeOfBlocking(Schedule schedule) {

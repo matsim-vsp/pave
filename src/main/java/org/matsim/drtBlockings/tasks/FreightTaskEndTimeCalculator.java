@@ -20,6 +20,7 @@
 
 package org.matsim.drtBlockings.tasks;
 
+import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.schedule.DrtStayTaskEndTimeCalculator;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
@@ -27,7 +28,10 @@ import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.TimeWindow;
 
+
 public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
+
+    private static final Logger log = Logger.getLogger(DrtStayTaskEndTimeCalculator.class);
 
     private final FreightConfigGroup.TimeWindowHandling timeWindowHandling;
 
@@ -47,7 +51,11 @@ public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
                 return timeWindow.getStart() + duration;
             } else if(newBeginTime > timeWindow.getEnd()){
                 //TODO do something less restrictive
-                throw new RuntimeException("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() + " but it will come too late for that");
+                // done! march 21
+                log.warn("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() +
+                        " but it will come too late for that! Since there is no structure to interrupt tours yet, the tour will be finished though!");
+//                throw new RuntimeException("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() + " but it will come too late for that");
+                return newBeginTime + duration;
             }
         }
 
