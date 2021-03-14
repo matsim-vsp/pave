@@ -20,9 +20,7 @@ import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
 import org.matsim.contrib.freight.FreightConfigGroup;
-import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
-import org.matsim.contrib.freight.carrier.CarrierUtils;
-import org.matsim.contrib.freight.carrier.Carriers;
+import org.matsim.contrib.freight.carrier.*;
 import org.matsim.contrib.freight.controler.CarrierModule;
 import org.matsim.contrib.freight.controler.CarrierPlanStrategyManagerFactory;
 import org.matsim.contrib.freight.controler.CarrierScoringFunctionFactory;
@@ -39,6 +37,9 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.MatsimServices;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.controler.listener.IterationEndsListener;
+import org.matsim.core.replanning.GenericPlanStrategyImpl;
+import org.matsim.core.replanning.GenericStrategyManager;
+import org.matsim.core.replanning.selectors.KeepSelected;
 import org.matsim.core.scoring.functions.ScoringParametersForPerson;
 import org.matsim.core.scoring.functions.SubpopulationScoringParameters;
 import org.matsim.drtBlockings.DrtBlockingModule;
@@ -66,9 +67,9 @@ public class RunBaseCaseInBerlin {
 
     //GENERAL INPUT
     //dir for 1 carrier only
-    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
+    private static final String INPUT_DIR = "D:/Simon/tubcloud2/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
     //dir for all Berlin carriers
-//    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
+//    private static final String INPUT_DIR = "D:/Simon/tubcloud2/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
     private static final String INPUT_CONFIG = INPUT_DIR + "p2-23.output_config.xml";
     private static final String INPUT_NETWORK_CHANGE_EVENTS = INPUT_DIR + "p2-23.networkChangeEvents.xml.gz";
     //DIE FOLGENDEN PLÄNE FÜR SERIOUS RUNS VERWENDEN!
@@ -202,13 +203,14 @@ public class RunBaseCaseInBerlin {
 
         Controler controler = RunBerlinScenario.prepareControler(scenario);
         configureDRTOnly(scenario, controler);
+//        CarrierVehicleTypes types = FreightUtils.getCarrierVehicleTypes(scenario);
 
         //this was copied from PFAV RunNormalFreightInBerlin class, not sure if its necessary
         controler.addOverridingModule(new CarrierModule());
         controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
-                bind(CarrierPlanStrategyManagerFactory.class).toInstance(() -> null);
+                bind(CarrierPlanStrategyManagerFactory.class).toInstance(new DummyCarrierPlansStrategyManagerFactory());
                 bind(CarrierScoringFunctionFactory.class).to(CarrierScoringFunctionFactoryImpl.class);
                 bind(ScoringParametersForPerson.class).to(SubpopulationScoringParameters.class).in(Singleton.class);
             }
@@ -268,6 +270,23 @@ public class RunBaseCaseInBerlin {
             withoutFreight.writeGraphic(dir + "legHistogram_withoutFreight.png");
             withoutFreight.reset(event.getIteration());
         });
+    }
+
+    private static class DummyCarrierPlansStrategyManagerFactory implements CarrierPlanStrategyManagerFactory {
+
+
+        @Override
+        public GenericStrategyManager<CarrierPlan, Carrier> createStrategyManager() {
+
+            final GenericStrategyManager<CarrierPlan, Carrier> strategyManager = new GenericStrategyManager<>();
+
+            GenericPlanStrategyImpl<CarrierPlan, Carrier> strategy = new GenericPlanStrategyImpl<>(new KeepSelected<CarrierPlan, Carrier>());
+
+
+
+            strategyManager.addStrategy(strategy, null, 0.5);
+            return strategyManager;
+        }
     }
 
 }
