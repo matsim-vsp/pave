@@ -347,6 +347,7 @@ export default class VueComponent extends Vue {
     const fname = 'run-lookup.yaml'
     const runYaml = yaml.parse(await this.myState.svnRoot.getFileText(fname))
     this.myState.runFinder = runYaml
+    console.log({ runYaml })
   }
 
   private setInitialRun() {
@@ -420,22 +421,22 @@ export default class VueComponent extends Vue {
     if (!run) return
 
     const incomePerDay =
-      run.calcDemand * run.userCostFixed + run.calcRevenueDistance * run.userCostPerKm
+      run.calcDemand1 * run.userCostFixed1 + run.calcRevenueDistance1 * run.userCostPerKm1
 
     this.runHeader = {
-      demand: 0 + run.calcDemand,
-      fleetSize: 0 + run.calcFleetSize,
-      mileage: Math.round(0 + run.calcMileage),
+      demand: 0 + run.calcDemand1,
+      fleetSize: 0 + run.calcFleetSize1,
+      mileage: Math.round(0 + run.calcMileage1),
       carMileage: Math.round(0 + run.calcCarKm),
-      revenueDistance: Math.round(0 + run.calcRevenueDistance),
+      revenueDistance: Math.round(0 + run.calcRevenueDistance1),
       incomePerDay: Math.round(0 + incomePerDay),
-      serviceQuality: 0 + run.calcServiceLevel,
+      serviceQuality: 0 + run.calcServiceLevel1,
       tollIncome: run.tollIncome || 0,
     }
 
     this.runCosts = {
-      fixedCosts: run.calcFixedCosts,
-      variableCosts: run.calcVariableCosts,
+      fixedCosts: run.calcFixedCosts1,
+      variableCosts: run.calcVariableCosts1,
     }
 
     this.buildModeSharePieChart()
