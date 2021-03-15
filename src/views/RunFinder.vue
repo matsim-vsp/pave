@@ -413,6 +413,8 @@ export default class VueComponent extends Vue {
     return this.revenuePerDay() * 365.0
   }
 
+  private operatorNumber = 1
+
   private showRunHeader() {
     console.log('showRunHeader', this.myState.selectedRun)
 
@@ -421,22 +423,23 @@ export default class VueComponent extends Vue {
     if (!run) return
 
     const incomePerDay =
-      run.calcDemand1 * run.userCostFixed1 + run.calcRevenueDistance1 * run.userCostPerKm1
+      run[`calcDemand${this.operatorNumber}`] * run[`userCostFixed${this.operatorNumber}`] +
+      run[`calcRevenueDistance${this.operatorNumber}`] * run[`userCostPerKm${this.operatorNumber}`]
 
     this.runHeader = {
-      demand: 0 + run.calcDemand1,
-      fleetSize: 0 + run.calcFleetSize1,
-      mileage: Math.round(0 + run.calcMileage1),
+      demand: 0 + run[`calcDemand${this.operatorNumber}`],
+      fleetSize: 0 + run[`calcFleetSize${this.operatorNumber}`],
+      mileage: Math.round(0 + run[`calcMileage${this.operatorNumber}`]),
       carMileage: Math.round(0 + run.calcCarKm),
-      revenueDistance: Math.round(0 + run.calcRevenueDistance1),
+      revenueDistance: Math.round(0 + run[`calcRevenueDistance${this.operatorNumber}`]),
       incomePerDay: Math.round(0 + incomePerDay),
-      serviceQuality: 0 + run.calcServiceLevel1,
+      serviceQuality: 0 + run[`calcServiceLevel${this.operatorNumber}`],
       tollIncome: run.tollIncome || 0,
     }
 
     this.runCosts = {
-      fixedCosts: run.calcFixedCosts1,
-      variableCosts: run.calcVariableCosts1,
+      fixedCosts: run[`calcFixedCosts${this.operatorNumber}`],
+      variableCosts: run[`calcVariableCosts${this.operatorNumber}`],
     }
 
     this.buildModeSharePieChart()
