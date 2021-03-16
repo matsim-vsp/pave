@@ -43,7 +43,10 @@
           h3.curate-heading DRT Operator: Key Performance Indicators
           p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
 
-          p OPERATOR 1: &lt; &gt;
+          p(v-if="numberOfOperators > 1"): b {{ operatorName }}:
+            button.button.is-small(style="margin-left: 0.5rem" @click="updateOperator(-1)") &lt;
+            button.button.is-small(@click="updateOperator(1)") &gt;
+
           .summary-table(v-if="myState.selectedRun && myState.vizes.length")
             .col1
               b.tlabel *Vehicle costs
@@ -76,7 +79,7 @@
               .tlabel.vspace.aboveline(
                 :class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
               .tlabel.blue {{ runHeader.tollIncome.toLocaleString() }} €
-              .tlabel {{ totalMileage().toLocaleString() }} v•km
+              .tlabel {{ totalMileage.toLocaleString() }} v•km
 
             .col3(v-if="modeSharePie.description")
               sankey-flipper(:myState="myState" :modeSharePie="modeSharePie")
@@ -137,7 +140,7 @@ import { BreadCrumb, VisualizationPlugin, Status, SVNProject } from '@/Globals'
 import SankeyFlipper from '@/components/SankeyFlipper.vue'
 import VegaComponent from '@/plugins/vega-lite/VegaLite.vue'
 
-const RUN_LOG_NUM_KPI_COLUMNS = 12
+const RUN_LOG_NUM_KPI_COLUMNS = 9
 
 interface VizEntry {
   component: string
@@ -163,6 +166,7 @@ interface IMyState {
 interface RunFinder {
   collection?: string
   notes?: string
+  operators?: string[]
   dimensions: {
     heading: string
     subheading?: string
@@ -295,8 +299,30 @@ export default class VueComponent extends Vue {
 
     if (this.myState.selectedRun) {
       await this.fetchFolderContents()
+
+      const run = this.runLookup[this.myState.selectedRun]
+      if (run && run.calcDemand2) this.numberOfOperators = 2
+      else this.numberOfOperators = 1
+
       this.showRunHeader()
     }
+  }
+
+  private updateOperator(inc: number) {
+    const z = (this.operatorNumber + inc + 1) % this.numberOfOperators
+    this.operatorNumber = z + 1
+    console.log(this.operatorNumber)
+    this.showRunHeader()
+  }
+
+  private get operatorName() {
+    let name = 'OPERATOR ' + this.operatorNumber
+    if (this.myState.runFinder.operators) {
+      name =
+        this.myState.runFinder.operators[this.operatorNumber - 1] ||
+        'OPERATOR ' + this.operatorNumber
+    }
+    return name
   }
 
   private async loadRunLog() {
@@ -316,6 +342,7 @@ export default class VueComponent extends Vue {
         skipEmptyLines: true,
         // delimiter: ';',
       })
+
       allRuns = runLog.data as any[]
     } catch (e) {
       console.log(e)
@@ -327,7 +354,7 @@ export default class VueComponent extends Vue {
     allRuns.forEach(run => {
       let uniqueId = ''
       Object.values(run)
-        .slice(RUN_LOG_NUM_KPI_COLUMNS)
+        .slice(3 + 2 * RUN_LOG_NUM_KPI_COLUMNS)
         .forEach(value => {
           if (value) uniqueId += `-${value}`
         })
@@ -336,6 +363,8 @@ export default class VueComponent extends Vue {
     })
     // console.log({ runLogFolderLookup: this.myState.runLogFolderLookup })
   }
+
+  private numberOfOperators = 1
 
   private async buildRunFinder() {
     if (!this.myState.svnRoot) return
@@ -399,11 +428,7 @@ export default class VueComponent extends Vue {
     )
   }
 
-  private totalMileage() {
-    const total = this.runHeader.mileage + (this.runHeader.carMileage || 0)
-
-    return Math.round(total)
-  }
+  private totalMileage = 0
 
   private revenuePerDay() {
     return this.runHeader.incomePerDay - this.expensesPerDay()
@@ -436,6 +461,9 @@ export default class VueComponent extends Vue {
       serviceQuality: 0 + run[`calcServiceLevel${this.operatorNumber}`],
       tollIncome: run.tollIncome || 0,
     }
+    this.totalMileage = Math.round(
+      0 + run.calcMileage1 + run.calcMileage2 + (this.runHeader.carMileage || 0)
+    )
 
     this.runCosts = {
       fixedCosts: run[`calcFixedCosts${this.operatorNumber}`],
