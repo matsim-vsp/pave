@@ -91,6 +91,7 @@ import {
   VisualizationPlugin,
   LIGHT_MODE,
   DARK_MODE,
+  Status,
 } from '@/Globals'
 
 import XyHexLayer from './XyHexLayer'
@@ -242,6 +243,11 @@ class XyHexagons extends Vue {
       // maybe it failed because password?
       if (this.myState.fileSystem && this.myState.fileSystem.need_password && e.status === 401) {
         globalStore.commit('requestLogin', this.myState.fileSystem.url)
+      } else {
+        this.$store.commit('setStatus', {
+          type: Status.WARNING,
+          msg: `Could not find: ${this.myState.subfolder}/${this.myState.yamlConfig}`,
+        })
       }
     }
     const t = this.vizDetails.title ? this.vizDetails.title : 'Hex Aggregation'
@@ -408,7 +414,7 @@ class XyHexagons extends Vue {
         const json = await coroutines.parseAsync(text)
         dataArray = json[this.vizDetails.data.elements]
       } else {
-        'papa-parsing'
+        // 'papa-parsing'
         // if it's not JSON, let's assume it's csv/tsv/xsv and let papaparse figure it out
         const csv = Papaparse.parse(text, {
           header: true,
@@ -420,6 +426,10 @@ class XyHexagons extends Vue {
     } catch (e) {
       console.error(e)
       this.myState.statusMessage = '' + e
+      this.$store.commit('setStatus', {
+        type: Status.WARNING,
+        msg: `Error loading/parsing: ${this.myState.subfolder}/${this.vizDetails.file}`,
+      })
     }
     console.log({ dataArray })
     return { dataArray }
