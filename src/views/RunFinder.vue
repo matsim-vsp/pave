@@ -462,7 +462,7 @@ export default class VueComponent extends Vue {
       tollIncome: run.tollIncome || 0,
     }
     this.totalMileage = Math.round(
-      0 + run.calcMileage1 + run.calcMileage2 + (this.runHeader.carMileage || 0)
+      0 + run.calcMileage1 + (run.calcMileage2 || 0) + (this.runHeader.carMileage || 0)
     )
 
     this.runCosts = {
