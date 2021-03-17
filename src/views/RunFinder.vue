@@ -4,15 +4,26 @@
     .dimensions(v-if="myState.runFinder.dimensions.length")
       h3 Select Run:
       .dimension(v-for="d in myState.runFinder.dimensions" :key="d.heading")
-        h4 {{ d.heading }}
-        p {{ d.subheading }}
+        .all-areas(v-if="d.heading === 'Service Area'")
+          h4 {{ d.heading }}
+          p {{ d.subheading }}
 
-        button.button(
-          v-for="option in d.options"
-          :key="`${option.title}/${option.value}`"
-          :class="{'is-link': myState.activeButtons[d.heading] === option.value }"
-          @click="clickedOptionButton(d.heading, option.value)"
-        ) {{ option.title }}
+          img(v-for="option in d.options"  :key="`${option.title}/${option.value}`"
+              :src="getUrlForServiceAreaImage(option)"
+              @click="clickedOptionButton(d.heading, option.value)"
+              :class="{'is-selected': myState.activeButtons[d.heading] === option.value }"
+          )
+
+        .all-buttons(v-if="d.heading !== 'Service Area'")
+          h4 {{ d.heading }}
+          p {{ d.subheading }}
+
+          button.button(
+            v-for="option in d.options"
+            :key="`${option.title}/${option.value}`"
+            :class="{'is-link': myState.activeButtons[d.heading] === option.value }"
+            @click="clickedOptionButton(d.heading, option.value)"
+          ) {{ option.title }}
 
   .right-strip.cream
     .stripe(v-if="myState.svnProject")
@@ -225,6 +236,10 @@ export default class VueComponent extends Vue {
     }
 
     return svnProject[0]
+  }
+
+  private getUrlForServiceAreaImage(area: any) {
+    return this.myState.svnRoot?.cleanURL(area.image)
   }
 
   private generateBreadcrumbs() {
@@ -960,6 +975,16 @@ h3.curate-heading {
 
 input {
   margin-bottom: 1rem;
+}
+
+img {
+  border: 0.5rem solid #ffffff00;
+  opacity: 0.9;
+}
+
+img.is-selected {
+  border: 0.5rem solid $colorPurple;
+  opacity: 1;
 }
 
 @media only screen and (max-width: 50em) {
