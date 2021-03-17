@@ -16,11 +16,9 @@
 
         svn-projects.gap
 
-        h2 {{ $t('more-info') }}
-        .readme(v-html="readmeBottom")
+        .readme(v-html="readme")
 
 </template>
-
 <i18n>
 en:
   pave-project: 'PAVE Project'
@@ -33,10 +31,8 @@ de:
 </i18n>
 
 <script lang="ts">
-const readme = require('@/assets/info-top.md')
-const bottom = require('@/assets/info-bottom.md')
-
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import MarkdownIt from 'markdown-it'
 
 import Colophon from '@/components/Colophon.vue'
 import VizCard from '@/components/VizCard.vue'
@@ -44,25 +40,29 @@ import SvnProjects from '@/components/SVNProjects.vue'
 
 import globalStore from '@/store'
 
+const SVN_ROOT =
+  'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website'
+
 @Component({
   components: { Colophon, SvnProjects, VizCard },
 })
 class MyComponent extends Vue {
-  private mounted() {
-    const crumbs: any[] = []
-    //   {
-    //     label: 'aftersim',
-    //     url: '/',
-    //   },
-    // ]
-
-    // save them!
-    globalStore.commit('setBreadCrumbs', crumbs)
-  }
-
   private state = globalStore.state
-  private readme = readme
-  private readmeBottom = bottom
+  private readme = ''
+  private markdownParser = new MarkdownIt()
+
+  private async mounted() {
+    const crumbs: any[] = []
+    globalStore.commit('setBreadCrumbs', crumbs)
+
+    try {
+      const readmeURL = `${SVN_ROOT}/readme.md`
+      const readmeMd = await fetch(readmeURL).then(r => r.text())
+      this.readme = this.markdownParser.render(readmeMd)
+    } catch (e) {
+      // no readme? oh well
+    }
+  }
 }
 export default MyComponent
 </script>

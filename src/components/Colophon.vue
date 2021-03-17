@@ -37,11 +37,11 @@ en:
   a(href='https://www.bmvi.de' target="_blank")
     img(src="@/assets/images/logo-bmvi.png")
 
-  .team PAVE Team, VSP
-  .professor Kai Nagel, Professor
+  //- .team PAVE Team, VSP
+  //- .professor Kai Nagel, Professor
 
-  p Tilmann Schlenther
-  p Billy Charlton
+  //- p Tilmann Schlenther
+  //- p Billy Charlton
 
   .team Contact
 
