@@ -474,7 +474,7 @@ export default class VueComponent extends Vue {
       revenueDistance: Math.round(0 + run[`calcRevenueDistance${this.operatorNumber}`]),
       incomePerDay: Math.round(0 + incomePerDay),
       serviceQuality: 0 + run[`calcServiceLevel${this.operatorNumber}`],
-      tollIncome: run.tollIncome || 0,
+      tollIncome: run.calcTollIncome || 0,
     }
     this.totalMileage = Math.round(
       0 + run.calcMileage1 + (run.calcMileage2 || 0) + (this.runHeader.carMileage || 0)
