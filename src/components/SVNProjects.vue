@@ -57,7 +57,8 @@ export default class VueComponent extends Vue {
 
 .desc h3 {
   color: var(--text);
-  margin-bottom: 0.25rem;
+  margin: 0.5rem 0;
+  // margin-bottom: 0.25rem;
 }
 
 .project .desc {

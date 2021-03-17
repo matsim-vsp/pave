@@ -25,17 +25,21 @@ const config: any = {
       svn:
         'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/1-robotaxi',
       need_password: false,
-      thumbnail: 'thumb-robots.jpg',
+      thumbnail:
+        'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/images/vehicles/' +
+        'Robotaxi_Taxi.jpg',
     },
     {
       name: '2. Pooling',
       url: '2-pooling',
       description: 'Shared taxi service',
-      // svn: 'http://localhost:8000/pave/2-pooling',
+      // svn: 'http://localhost:8000/2-pooling',
       svn:
         'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/2-pooling',
       need_password: false,
-      thumbnail: 'thumb-robots.jpg',
+      thumbnail:
+        'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/images/vehicles/' +
+        'RoboShuttle.jpg',
     },
     {
       name: '3. Combined',
@@ -44,7 +48,9 @@ const config: any = {
       svn:
         'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/3-combined',
       need_password: false,
-      thumbnail: 'thumb-robots.jpg',
+      thumbnail:
+        'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/images/vehicles/' +
+        'Taxi_Und_Shuttle.jpg',
     },
     {
       name: '4. Ban Cars',
@@ -53,7 +59,9 @@ const config: any = {
       svn:
         'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/4-ban-cars',
       need_password: false,
-      thumbnail: 'thumb-robots.jpg',
+      thumbnail:
+        'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/images/vehicles/' +
+        'Taxi_Und_Shuttle.jpg',
     },
     // {
     //   name: 'local',
