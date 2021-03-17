@@ -61,7 +61,7 @@ const config: any = {
       need_password: false,
       thumbnail:
         'https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/projects/pave/website/images/vehicles/' +
-        'Taxi_Und_Shuttle.jpg',
+        'ban-cars.jpg',
     },
     // {
     //   name: 'local',
