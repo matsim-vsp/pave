@@ -1,16 +1,15 @@
 <template lang="pug">
 #home
+
   .banner
     h2 {{ $t('pave-project') }}
     h3 VSP / Technische Universität Berlin
 
-  .tu-logo
-    img.img-logo(src="@/assets/images/tu-logo.png")
-
   .page-area
+    colophon.colophon
     .content
       .main
-        .right(style="text-align: right;")
+        .right
 
         h1 {{ $t('pave-project') }}
         h2.readme {{ $t('tagLine') }}
@@ -71,6 +70,12 @@ export default MyComponent
 <style scoped lang="scss">
 @import '@/styles.scss';
 
+#home {
+  // display: grid;
+  // grid-template-columns: 1fr auto;
+  // grid-template-rows: auto auto;
+}
+
 .gap {
   margin-top: 2rem;
   margin-bottom: 2rem;
@@ -88,6 +93,8 @@ export default MyComponent
 }
 
 .banner {
+  grid-row: 1 / 2;
+  grid-column: 1 / 2;
   display: flex;
   flex-direction: column;
   padding: 6rem 3rem 1rem 3rem;
@@ -167,6 +174,9 @@ h2.readme {
 }
 
 .colophon {
+  grid-row: 1 / 3;
+  grid-column: 2 / 3;
+
   padding: 2rem 2rem 1rem 5rem;
   text-align: right;
   font-size: 0.85rem;
@@ -182,6 +192,8 @@ h2.readme {
 }
 
 .page-area {
+  grid-row: 2 / 3;
+  grid-column: 1 / 2;
   display: flex;
   flex-direction: row-reverse;
 }

@@ -1,31 +1,54 @@
+<i18n>
+en:
+  paveproject: 'PAVE Project Team'
+  contact: 'Contact'
+  partners: 'Project Partners'
+</i18n>
+
 <template lang="pug">
 #colophon-content
   .logo(style="width: 100%;")
-    a(href='https://www.vsp.tu-berlin.de' target="_blank")
+    a(href='https://www.tu.berlin' target="_blank")
+      img(src="@/assets/images/8-pave.png")
+
+  .logo(style="width: 100%;")
+    a(href='https://www.tu.berlin' target="_blank")
       img(src="@/assets/images/tu-logo.png")
+
+  .logo(style="width: 100%;")
+    a(href='https://www.vsp.tu-berlin.de' target="_blank")
+      img(src="@/assets/images/vsp-logo-300dpi.png")
+
+  .logo(style="width: 100%;")
+    img(src="@/assets/images/2-univ-magdeburg.png")
+
+  .logo(style="width: 100%;")
+    img(src="@/assets/images/3-iav.png")
+
+  .logo(style="width: 100%;")
+    img(src="@/assets/images/4-bosch.png")
+
+  .logo(style="width: 100%;")
+    img(src="@/assets/images/5-carl-benz.png")
+
+  .logo(style="width: 100%;")
+    img(src="@/assets/images/6-ina-logo.png")
+
+  a(href='https://www.bmvi.de' target="_blank")
+    img(src="@/assets/images/logo-bmvi.png")
+
+  .team PAVE Team, VSP
   .professor Kai Nagel, Professor
 
-  .team TU AVÖV Team
-
-  p Ihab Kaddoura
-  p Gregor Leich
+  p Tilmann Schlenther
   p Billy Charlton
-
 
   .team Contact
 
   p.nonbreak: a(href="mailto:sekretariat@vsp.tu-berlin.de") Email
 
-  .team Projektpartner
-
-  .partners
-    p: a(href='https://www.uni-due.de/' target="_blank") Universität<br/>Duisburg-Essen
-    p: a(href='https://www.bvg.de/' target="_blank") Berliner&nbsp;Verkehrsbetriebe&nbsp;(BVG)
-    p: a(href='https://senozon.com' target="_blank") Senozon Deutschland GmbH
-
-  a(href='https://www.bmvi.de' target="_blank")
-    img(src="@/assets/images/logo-bmvi.png")
-
+  .team GDPR
+  p No personal data collected.
 </template>
 
 <script lang="ts">
@@ -77,6 +100,10 @@ export default {
 .nonbreak {
   width: max-content;
   margin-left: auto;
+}
+
+.logo {
+  margin-bottom: 2rem;
 }
 
 @media only screen and (max-width: 640px) {
