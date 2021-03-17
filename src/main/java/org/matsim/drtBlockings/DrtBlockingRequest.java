@@ -64,7 +64,7 @@ public class DrtBlockingRequest implements Request {
 
     double getPlannedBlockingDuration() { return this.duration; }
 
-    List<Task> getTasks() {
+    public List<Task> getTasks() {
         return this.tasks;
     }
 
