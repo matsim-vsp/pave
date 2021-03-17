@@ -7,7 +7,8 @@
 
   .page-area
     colophon.colophon
-    .content
+
+    .zcontent
       .main
         .right
 
@@ -70,18 +71,12 @@ export default MyComponent
 <style scoped lang="scss">
 @import '@/styles.scss';
 
-#home {
-  // display: grid;
-  // grid-template-columns: 1fr auto;
-  // grid-template-rows: auto auto;
-}
-
 .gap {
   margin-top: 2rem;
   margin-bottom: 2rem;
 }
 
-.content {
+.zcontent {
   flex: 1;
   padding: 1rem 3rem 5rem 3rem;
   display: flex;
@@ -236,7 +231,7 @@ h2.readme {
     padding: 2rem 1rem;
   }
 
-  .content {
+  .zcontent {
     padding: 2rem 1rem 8rem 1rem;
     flex-direction: column-reverse;
   }
