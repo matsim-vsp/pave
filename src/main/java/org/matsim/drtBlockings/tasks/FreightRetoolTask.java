@@ -30,6 +30,10 @@ public class FreightRetoolTask extends StayTask {
 
     public static final DrtTaskType RETOOL_TASK_TYPE = new DrtTaskType("RETOOL", STAY);
 
+    //TODO make this configurable
+    //source: DLR guy, not official though, a quotable paper or so would be nice
+    public static final double RETOOL_DURATION = 1.5 * 60;
+
     public FreightRetoolTask(double beginTime, double endTime, Link link) {
         super(RETOOL_TASK_TYPE, beginTime, endTime, link);
     }

@@ -20,7 +20,6 @@
 
 package org.matsim.drtBlockings;
 
-import com.graphhopper.jsprit.core.problem.solution.route.activity.ServiceActivity;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -45,9 +44,6 @@ import java.util.*;
 
 class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
-    //TODO make this configurable
-    //source: DLR guy, not official though, a quotable paper or so woulb be nice
-    static final double RETOOL_DURATION = 1.5 * 60;
     static final double SUBMISSION_LOOK_AHEAD = 15 * 60;
 
     private final Network network;
@@ -147,16 +143,16 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
         //if jsprit scheduled the tour start way too early, just account for the ttDepot2FirstDelivery * 1.5 and ignore the original start time
         if(tourStart + ttDepot2FirstDelivery * bufferFactor <= firstDeliveryEarliestStart){
-            calculatedStart = firstDeliveryEarliestStart - ttDepot2FirstDelivery * bufferFactor - RETOOL_DURATION;
+            calculatedStart = firstDeliveryEarliestStart - ttDepot2FirstDelivery * bufferFactor - FreightRetoolTask.RETOOL_DURATION;
         } else {
-            calculatedStart = tourStart - RETOOL_DURATION;
+            calculatedStart = tourStart - FreightRetoolTask.RETOOL_DURATION;
         }
         return Math.max(qSimStartTime, Math.max(vehicleEarliestStart, calculatedStart));
     }
 
     private List<Task> convertScheduledTour2DvrpTasks(ScheduledTour scheduledTour, double blockingStart) {
         List<Task> tourTasks = new ArrayList<>();
-        double previousTaskEndTime = blockingStart + RETOOL_DURATION;
+        double previousTaskEndTime = blockingStart + FreightRetoolTask.RETOOL_DURATION;
         tourTasks.add(new FreightRetoolTask(blockingStart, previousTaskEndTime, network.getLinks().get(scheduledTour.getTour().getStartLinkId())));
 
         List<Tour.TourElement> tourElements = scheduledTour.getTour().getTourElements();
@@ -187,7 +183,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
                 previousTaskEndTime = currentTaskEndTime;
             }
         }
-        tourTasks.add(new FreightRetoolTask(previousTaskEndTime, previousTaskEndTime + RETOOL_DURATION , network.getLinks().get(scheduledTour.getTour().getEndLinkId())));
+        tourTasks.add(new FreightRetoolTask(previousTaskEndTime, previousTaskEndTime + FreightRetoolTask.RETOOL_DURATION , network.getLinks().get(scheduledTour.getTour().getEndLinkId())));
 
         return tourTasks;
     }

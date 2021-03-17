@@ -42,29 +42,29 @@ public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
 
     @Override
     public double calcNewEndTime(DvrpVehicle vehicle, StayTask task, double newBeginTime) {
-        double duration = task.getEndTime() - task.getBeginTime();
-
+        double duration;
         if(timeWindowHandling.equals(FreightConfigGroup.TimeWindowHandling.enforceBeginnings) &&
                 (task.getTaskType().equals(FreightServiceTask.FREIGHT_SERVICE_TASK_TYPE) || task.getTaskType().equals(FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE) ) ) {
             TimeWindow timeWindow = task instanceof FreightServiceTask ? ((FreightServiceTask) task).getTimeWindow() : ((FreightPickupTask) task).getTimeWindow();
+            duration = task instanceof FreightServiceTask ? ((FreightServiceTask) task).getCarrierService().getServiceDuration() : ((FreightPickupTask) task).getShipment().getPickupServiceTime();
+
             if(newBeginTime <= timeWindow.getStart()){
+                log.info("vehicle " + vehicle.getId() + " is too early at service " + ((FreightServiceTask) task).getCarrierService().getId() + ". newBeginTime = " + newBeginTime);
                 return timeWindow.getStart() + duration;
             } else if(newBeginTime > timeWindow.getEnd()){
-                //TODO do something less restrictive
-                // done! march 21
-                log.warn("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() +
-                        " but it will come too late for that! Since there is no structure to interrupt tours yet, the tour will be finished though!");
+                //this has been proved to be to restrictive.
 //                throw new RuntimeException("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() + " but it will come too late for that");
-                return newBeginTime + duration;
             }
-        }
 
-        if(task.getTaskType().equals(FreightServiceTask.FREIGHT_SERVICE_TASK_TYPE) ||
-                task.getTaskType().equals(FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE) ||
-                task.getTaskType().equals(FreightRetoolTask.RETOOL_TASK_TYPE) ) {
-            return newBeginTime + duration;
         }
-
+        if (FreightServiceTask.FREIGHT_SERVICE_TASK_TYPE.equals(task.getTaskType())) {
+            return newBeginTime + ((FreightServiceTask) task).getCarrierService().getServiceDuration();
+        } else if (FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE.equals(task.getTaskType())) {
+            return newBeginTime + ((FreightPickupTask) task).getShipment().getPickupServiceTime();
+        } else if (FreightRetoolTask.RETOOL_TASK_TYPE.equals(task.getTaskType())) {
+            return newBeginTime + FreightRetoolTask.RETOOL_DURATION;
+        }
         return super.calcNewEndTime(vehicle, task, newBeginTime);
+
     }
 }

@@ -16,6 +16,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
+import org.matsim.drtBlockings.tasks.FreightRetoolTask;
 import org.matsim.testcases.MatsimTestUtils;
 import org.matsim.vehicles.VehicleType;
 
@@ -112,7 +113,7 @@ public class FreightBlockingRequestCreatorTest {
 //            the vehicle needs to travel 1 link on the way to the depot, 1 complete link on the way to the service and 7 complete links on the way back to the depot (each link takes 100 seconds)
 //            plus an additional second for each start links.
 //            plus retool duration and service duration (5 minutes)
-            double duration =  FreightBlockingRequestCreator.RETOOL_DURATION * 2 + 5*60 + 8 * 100 + 1 + 1;
+            double duration =  FreightRetoolTask.RETOOL_DURATION * 2 + 5*60 + 8 * 100 + 1 + 1;
             Assert.assertEquals(duration, request.getPlannedBlockingDuration(), MatsimTestUtils.EPSILON);
 
 //            drive to depot, retool, drive to service, service, drive to depot
@@ -124,12 +125,12 @@ public class FreightBlockingRequestCreatorTest {
             Assert.assertNotNull(request);
 
 //      service time window starts at 10 a.m., travel time from depot to service = 100s which is multiplied by a bufferFactor of 1.25 (this is done because jsprit calculates with waiting at the first service which we want to avoid)
-            double submissionTime = 10*3600 - FreightBlockingRequestCreator.SUBMISSION_LOOK_AHEAD - FreightBlockingRequestCreator.RETOOL_DURATION - 125;
+            double submissionTime = 10*3600 - FreightBlockingRequestCreator.SUBMISSION_LOOK_AHEAD - FreightRetoolTask.RETOOL_DURATION - 125;
 
             //            the vehicle needs to travel 1 link on the way to the depot, 1 complete link on the way to the service and 7 complete links on the way back to the depot (each link takes 100 seconds)
 //            plus an additional second for each start links.
 //            plus retool duration and service duration (5 minutes)
-            double duration =  FreightBlockingRequestCreator.RETOOL_DURATION * 2 + 5*60 + 8 * 100 + 1 + 1;
+            double duration =  FreightRetoolTask.RETOOL_DURATION * 2 + 5*60 + 8 * 100 + 1 + 1;
             Assert.assertEquals(duration, request.getPlannedBlockingDuration(), MatsimTestUtils.EPSILON);
 
             Assert.assertEquals(submissionTime, request.getSubmissionTime(), MatsimTestUtils.EPSILON);
@@ -143,7 +144,7 @@ public class FreightBlockingRequestCreatorTest {
             //but the services' earliest start is 10 a.m.
             //so we set the tour start to 10 a.m. - 100s  * bufferfactor - RETOOL-Duration
 
-            Assert.assertEquals(10*3600 - 100 * 1.25 - FreightBlockingRequestCreator.RETOOL_DURATION, request.getTasks().get(0).getBeginTime(), MatsimTestUtils.EPSILON);
+            Assert.assertEquals(10*3600 - 100 * 1.25 - FreightRetoolTask.RETOOL_DURATION, request.getTasks().get(0).getBeginTime(), MatsimTestUtils.EPSILON);
         }
     }
 }
