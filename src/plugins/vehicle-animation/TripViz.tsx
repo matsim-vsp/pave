@@ -183,7 +183,7 @@ export default function Component(props: {
         currentTime: simulationTime,
         shadowEnabled: false,
         noAlloc: true,
-        iconAtlas: '/icon-atlas.png',
+        iconAtlas: '/pave/icon-atlas.png',
         iconMapping: ICON_MAPPING,
         sizeScale: 1,
         billboard: true,
