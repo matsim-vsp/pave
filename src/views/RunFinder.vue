@@ -58,8 +58,8 @@
             span.icon.is-small: i.fas.fa-info
             span Info
 
-          article.message.is-dark.hide 
-            .message-body  
+          article.message.is-dark.hide
+            .message-body
               p(v-html="myState.information")
 
           p(v-if="numberOfOperators > 1"): b {{ operatorName }}:
@@ -571,6 +571,10 @@ export default class VueComponent extends Vue {
     this.myState.vizes[viz].title = title
   }
 
+  @Watch('globalState.locale') swapLocale() {
+    this.showInformation()
+  }
+
   @Watch('globalState.colorScheme') swapColors() {
     // medium-zoom freaks out if color theme is swapped.
     // so let's reload images just in case.
@@ -616,8 +620,8 @@ export default class VueComponent extends Vue {
   }
 
   private async showInformation() {
-    const information = '../kpi-info-button.md'
-
+    const information = `../kpi-info-button.${this.globalState.locale}.md`
+    console.log(information)
     if (!this.myState.svnRoot) return
     try {
       const text = await this.myState.svnRoot.getFileText(information)
