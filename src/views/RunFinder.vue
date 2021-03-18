@@ -54,6 +54,14 @@
           h3.curate-heading DRT Operator: Key Performance Indicators
           p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
 
+          button.button.infohover
+            span.icon.is-small: i.fas.fa-info
+            span Info
+
+          article.message.is-dark.hide 
+            .message-body  
+              p(v-html="myState.information")
+
           p(v-if="numberOfOperators > 1"): b {{ operatorName }}:
             button.button.is-small(style="margin-left: 0.5rem" @click="updateOperator(-1)") &lt;
             button.button.is-small(@click="updateOperator(1)") &gt;
@@ -165,6 +173,7 @@ interface IMyState {
   files: string[]
   isLoading: boolean
   readme: string
+  information: string
   svnProject: SVNProject | null
   svnRoot?: HTTPFileSystem
   vizes: VizEntry[]
@@ -219,6 +228,7 @@ export default class VueComponent extends Vue {
     files: [],
     isLoading: false,
     readme: '',
+    information: '',
     svnProject: null,
     vizes: [],
     runFinder: { dimensions: [] },
@@ -271,6 +281,7 @@ export default class VueComponent extends Vue {
       files: [],
       isLoading: false,
       readme: '',
+      information: '',
       svnProject: null,
       vizes: [],
       runFinder: { dimensions: [] },
@@ -578,6 +589,8 @@ export default class VueComponent extends Vue {
 
     await this.showReadme()
 
+    await this.showInformation()
+
     this.buildShowEverythingView()
 
     // make sure page is rendered before we attach zoom semantics
@@ -599,6 +612,18 @@ export default class VueComponent extends Vue {
     } catch (e) {
       console.warn('couldnt find readme')
       // no readme? oh well
+    }
+  }
+
+  private async showInformation() {
+    const information = '../kpi-info-button.md'
+
+    if (!this.myState.svnRoot) return
+    try {
+      const text = await this.myState.svnRoot.getFileText(information)
+      this.myState.information = this.mdRenderer.render(text)
+    } catch (e) {
+      console.warn('couldnt find information')
     }
   }
 
@@ -867,6 +892,14 @@ h2 {
 .readme-header {
   font-size: 1rem;
   padding-bottom: 1rem;
+}
+
+.hide {
+  display: none;
+}
+
+.infohover:hover + .hide {
+  display: flex;
 }
 
 h3.curate-heading {
