@@ -18,7 +18,7 @@
                 :onClick = "handleClick")
 
   .right-side(v-if="isLoaded && !thumbnail")
-    collapsible-panel(:darkMode="true" width="150" direction="right")
+    collapsible-panel(:darkMode="true" width="200" direction="right")
       .big.clock
         p {{ myState.clock }}
 
@@ -757,7 +757,7 @@ export default VehicleAnimation
   min-height: $thumbnailHeight;
   background: url('assets/thumbnail.jpg') no-repeat;
   background-size: cover;
-  grid-template-columns: 1fr min-content;
+  grid-template-columns: 1fr auto;
   grid-template-rows: auto auto 1fr auto;
   grid-template-areas:
     'title              .'
