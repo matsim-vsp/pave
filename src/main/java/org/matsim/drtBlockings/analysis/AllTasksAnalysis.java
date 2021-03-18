@@ -47,8 +47,8 @@ public class AllTasksAnalysis implements ActivityStartEventHandler, DrtBlockingR
 
     private Carriers carriers;
     private String mode = "drt";
-    static final double RETOOL_DURATION = 1.5 * 60;
-    static final double SUBMISSION_LOOK_AHEAD = 15 * 60;
+    static final double RETOOL_DURATION = FreightRetoolTask.RETOOL_DURATION;
+    static final double SUBMISSION_LOOK_AHEAD = 7 * 60;
 
     private Map<Id<CarrierService>, ActivityStartEvent> serviceStartEvents = new HashMap<>();
     private Map<Id<DvrpVehicle>, TaskStartedEvent> taskStartEvents = new HashMap<>();
@@ -72,8 +72,8 @@ public class AllTasksAnalysis implements ActivityStartEventHandler, DrtBlockingR
 //        String carrierPlans = dir + "carriers_4hTimeWindows_openBerlinNet_8-24_PLANNED.xml";
         String carrierPlans = dir + "carriers_4hTimeWindows_openBerlinNet_LichtenbergNord_8-24_PLANNED.xml";
         String carrierVehTypes = dir + "carrier_vehicleTypes.xml";
-        String eventsFile = dir + "p2-23DRTBlockingPolicyCase.2.events.xml.gz";
-        String outputFile = dir + "TaskAnalysis.csv";
+        String eventsFile = dir + "bug fixed attempt 1/p2-23DRTBlockingPolicyCase.2.events.xml.gz";
+        String outputFile = dir + "bug fixed attempt 1/TaskAnalysis.csv";
 
         Config config = ConfigUtils.loadConfig(inputConfig);
         config.network().setInputFile(inputNetwork);
@@ -157,7 +157,6 @@ public class AllTasksAnalysis implements ActivityStartEventHandler, DrtBlockingR
                     newList.add(event);
                     data.taskEndedEvents = newList;
                 }
-
             }
         }
     }
@@ -370,18 +369,19 @@ public class AllTasksAnalysis implements ActivityStartEventHandler, DrtBlockingR
 
     void writeAnalysis(String outputFilePath) throws IOException {
         BufferedWriter writer = IOUtils.getBufferedWriter(outputFilePath);
-//        writer.write("vehicleId;requestId;task;taskIdx;actualStart;plannedStart;plannedEnd");
-        writer.write("vehicleId;requestId;task;taskIdx;actualEnd;plannedStart;plannedEnd");
+        writer.write("vehicleId;requestId;task;taskIdx;actualStart;plannedStart;plannedEnd");
+//        writer.write("vehicleId;requestId;task;taskIdx;actualEnd;plannedStart;plannedEnd");
         for(RequestData data : this.finishedTours) {
-//            for(TaskStartedEvent event : data.taskStartedEvents) {
-            for(TaskEndedEvent event : data.taskEndedEvents) {
+            for(TaskStartedEvent event : data.taskStartedEvents) {
+//            for(TaskEndedEvent event : data.taskEndedEvents) {
+
+                Task task = data.request.getTasks().get(0);
 
                 writer.newLine();
                 writer.write(data.vehId + ";" + data.request.getId()  + ";" + event.getTaskType() + ";" +
                         event.getTaskIndex() + ";" + event.getTime() + ";");
 
-                writer.write(data.request.getTasks().get(0).getBeginTime() + ";" +
-                        data.request.getTasks().get(0).getEndTime());
+                writer.write(task.getBeginTime() + ";" + task.getEndTime());
 
                 data.request.getTasks().remove(0);
             }
