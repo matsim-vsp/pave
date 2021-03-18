@@ -387,13 +387,13 @@ class MyComponent extends Vue {
   }
 
   private setupMap() {
-    this.mymap = new mapboxgl.Map({
-      container: this.mapId,
-      logoPosition: 'bottom-right',
-      style: 'mapbox://styles/mapbox/outdoors-v9',
-    })
-
     try {
+      this.mymap = new mapboxgl.Map({
+        container: this.mapId,
+        logoPosition: 'bottom-right',
+        style: 'mapbox://styles/mapbox/outdoors-v9',
+      })
+
       const extent = localStorage.getItem(this.$route.fullPath + '-bounds')
       if (extent) {
         const lnglat = JSON.parse(extent)
@@ -412,15 +412,14 @@ class MyComponent extends Vue {
           })
         }
       }
+      this.mymap.on('click', this.handleEmptyClick)
+      // Start doing stuff AFTER the MapBox library has fully initialized
+      this.mymap.on('load', this.mapIsReady)
+      // this.mymap.addControl(new mapboxgl.ScaleControl(), 'bottom-right')
+      this.mymap.addControl(new mapboxgl.NavigationControl(), 'top-right')
     } catch (e) {
       // no consequence if json was weird, just drop it
     }
-
-    this.mymap.on('click', this.handleEmptyClick)
-    // Start doing stuff AFTER the MapBox library has fully initialized
-    this.mymap.on('load', this.mapIsReady)
-    // this.mymap.addControl(new mapboxgl.ScaleControl(), 'bottom-right')
-    this.mymap.addControl(new mapboxgl.NavigationControl(), 'top-right')
 
     // clean up display just when we're in thumbnail mode
     if (this.thumbnail) {

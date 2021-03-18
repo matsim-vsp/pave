@@ -15,16 +15,15 @@ en:
   annualSubsidy: 'Annual revenue'
   tollIncome: 'Toll income/day'
   totalKm: 'Total mileage'
-  prev: 'Prev'
-  next: 'Next'
   rides: 'rides'
   vehicles: 'vehicles'
   vehKm: 'v•km'
+  selectRun: 'Select Run'
 de:
   kpi: 'DRT-Anbieter Kennzahlen'
   vehCosts: 'Fahrzeugkosten'
   perDay: 'Pro Tag'
-  perKm: 'Pro km'
+  perKm: 'Pro Km'
   waitTime: '95% Wartezeiten'
   demand: 'Nachfrage'
   fleetSize: 'Flottengröße'
@@ -36,11 +35,10 @@ de:
   annualSubsidy: 'Jährlicher Subventionen'
   tollIncome: 'Mauteinnahmen/Tag'
   totalKm: 'Gesamtfahrleistung'
-  prev: 'LETZTE'
-  next: 'NÄCHSTE'
   rides: 'Fahrten'
   vehicles: 'Fahrzeuge'
-  vehKm: 'F•km'
+  vehKm: 'F•Km'
+  selectRun: 'Wähle einen Run'
 
 </i18n>
 
@@ -48,9 +46,10 @@ de:
 .folder-browser
   .left-strip
     .dimensions(v-if="myState.runFinder.dimensions.length")
-      h3 Select Run:
+      h3 {{ $t('selectRun')}}:
+
       .dimension(v-for="d in myState.runFinder.dimensions" :key="d.heading")
-        .all-areas(v-if="d.heading === 'Service Area'")
+        .all-areas(v-if="d.options[0].image")
           h4 {{ d.heading }}
           p {{ d.subheading }}
 
@@ -61,7 +60,7 @@ de:
             )
             p {{ option.value }}
 
-        .all-buttons(v-if="d.heading !== 'Service Area'")
+        .all-buttons(v-else)
           h4 {{ d.heading }}
           p {{ d.subheading }}
 
@@ -323,7 +322,7 @@ export default class VueComponent extends Vue {
     this.updateRoute()
   }
 
-  private beforeDestory() {
+  private beforeDestroy() {
     globalStore.commit('setFullScreen', false)
   }
 
@@ -356,7 +355,7 @@ export default class VueComponent extends Vue {
     const svnProject = this.getFileSystem(this.$route.name)
 
     if (svnProject !== this.myState.svnProject) {
-      console.log('clearning')
+      console.log('clearing')
       this.clearState()
       this.myState.svnRoot = new HTTPFileSystem(svnProject)
       await this.buildRunFinder()
@@ -458,7 +457,7 @@ export default class VueComponent extends Vue {
 
     await this.loadRunLog()
 
-    const fname = 'run-lookup.yaml'
+    const fname = `run-lookup.${this.globalState.locale}.yaml`
     const runYaml = yaml.parse(await this.myState.svnRoot.getFileText(fname))
     this.myState.runFinder = runYaml
     console.log({ runYaml })
@@ -630,8 +629,12 @@ export default class VueComponent extends Vue {
     this.myState.vizes[viz].title = title
   }
 
-  @Watch('globalState.locale') swapLocale() {
-    this.showInformation()
+  @Watch('globalState.locale') async swapLocale() {
+    console.log('### SWITCHING TO', this.globalState.locale)
+    await this.buildRunFinder()
+    await this.filesChanged()
+    this.myState.selectedRun = ''
+    this.setInitialRun()
   }
 
   @Watch('globalState.colorScheme') swapColors() {
@@ -664,7 +667,7 @@ export default class VueComponent extends Vue {
   }
 
   private async showReadme() {
-    const readme = 'readme.md'
+    const readme = `readme.${this.globalState.locale}.md`
 
     // readme is just per ober-alt for PAVE
 
