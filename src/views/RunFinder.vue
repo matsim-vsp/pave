@@ -1,3 +1,49 @@
+<i18n>
+en:
+  kpi: 'DRT Operator: Key Performance Indicators'
+  vehCosts: 'Vehicle Costs'
+  perDay: 'Per day'
+  perKm: 'Per km'
+  waitTime: '95% waiting times'
+  demand: 'Demand'
+  fleetSize: 'Fleet size'
+  fleetKm: 'Fleet mileage'
+  revDistance: 'Revenue distance'
+  incomePerDay: 'Income/day'
+  expensePerDay: 'Expenses/day'
+  annualRevenue: 'Annual revenue'
+  annualSubsidy: 'Annual revenue'
+  tollIncome: 'Toll income/day'
+  totalKm: 'Total mileage'
+  prev: 'Prev'
+  next: 'Next'
+  rides: 'rides'
+  vehicles: 'vehicles'
+  vehKm: 'v•km'
+de:
+  kpi: 'DRT-Anbieter Kennzahlen'
+  vehCosts: 'Fahrzeugkosten'
+  perDay: 'Pro Tag'
+  perKm: 'Pro km'
+  waitTime: '95% Wartezeiten'
+  demand: 'Nachfrage'
+  fleetSize: 'Flottengröße'
+  fleetKm: 'Flottenfahrleistung'
+  revDistance: 'Umsatzkilometer'
+  incomePerDay: 'Einnahmen/Tag'
+  expensePerDay: 'Ausgaben/Tag'
+  annualRevenue: 'Jährlicher Umsatz'
+  annualSubsidy: 'Jährlicher Subventionen'
+  tollIncome: 'Mauteinnahmen/Tag'
+  totalKm: 'Gesamtfahrleistung'
+  prev: 'LETZTE'
+  next: 'NÄCHSTE'
+  rides: 'Fahrten'
+  vehicles: 'Fahrzeuge'
+  vehKm: 'F•km'
+
+</i18n>
+
 <template lang="pug">
 .folder-browser
   .left-strip
@@ -52,8 +98,8 @@
     .stripe
       .vessel(:style="{borderRadius: '10px', marginBottom: '2rem'}")
         .call-out-box
-          h3.curate-heading DRT Operator: Key Performance Indicators
-          p(v-if="!myState.isLoading && !myState.vizes.length") Nothing to show. Select a different service combination.
+          h3.curate-heading {{ $t('kpi')}}
+          p(v-if="!myState.isLoading && !myState.vizes.length") ...
 
           button.button.infohover
             span.icon.is-small: i.fas.fa-info
@@ -69,37 +115,37 @@
 
           .summary-table(v-if="myState.selectedRun && myState.vizes.length")
             .col1
-              b.tlabel *Vehicle costs
-              .tlabel: b Per day
+              b.tlabel *{{$t('vehCosts')}}
+              .tlabel: b {{$t('perDay')}}
               input.input(v-model="runCosts.fixedCosts")
 
-              .tlabel 95% waiting times &lt;
-              .tlabel Demand
-              .tlabel Fleet size
-              .tlabel Fleet mileage
-              .tlabel.vspace Revenue distance
-              .tlabel.blue Income/day
-              .tlabel.red Expenses/day*
-              .tlabel.vspace.aboveline(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? 'Annual subsidy' : 'Annual revenue' }}
-              .tlabel.blue Toll income/day
-              .tlabel Total mileage
+              .tlabel {{ $t('waitTime')}} &lt;
+              .tlabel {{ $t('demand')}}
+              .tlabel {{ $t('fleetSize')}}
+              .tlabel {{ $t('fleetKm') }}
+              .tlabel.vspace {{ $t('revDistance')}}
+              .tlabel.blue {{ $t('incomePerDay') }}
+              .tlabel.red {{ $t('expensePerDay') }}*
+              .tlabel.vspace.aboveline(:class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome() < 0 ? $t('annualSubsidy') : $t('annualRevenue') }}
+              .tlabel.blue {{ $t('tollIncome')}}
+              .tlabel {{ $t('totalKm') }}
 
             .col2
               .tlabel :
-              .tlabel Per km
+              .tlabel Pro km
               input.input(v-model="runCosts.variableCosts")
 
               .tlabel {{ (runHeader.serviceQuality / 60.0).toFixed(1) }} min
-              .tlabel {{ runHeader.demand.toLocaleString() }} rides
-              .tlabel {{ runHeader.fleetSize.toLocaleString() }} vehicles
-              .tlabel {{ runHeader.mileage.toLocaleString() }} v•km
-              .tlabel.vspace {{ runHeader.revenueDistance.toLocaleString() }} p•km
+              .tlabel {{ runHeader.demand.toLocaleString() }} {{ $t('rides') }}
+              .tlabel {{ runHeader.fleetSize.toLocaleString() }} {{$t('vehicles')}}
+              .tlabel {{ runHeader.mileage.toLocaleString() }} {{ $t('vehKm') }}
+              .tlabel.vspace {{ runHeader.revenueDistance.toLocaleString() }} P•km
               .tlabel.blue {{ runHeader.incomePerDay.toLocaleString() }} €
               .tlabel.red {{ expensesPerDay().toLocaleString() }} €
               .tlabel.vspace.aboveline(
                 :class="{'blue': annualIncome() > 0, 'red': annualIncome() < 0}") {{ annualIncome().toLocaleString() }} €
               .tlabel.blue {{ runHeader.tollIncome.toLocaleString() }} €
-              .tlabel {{ totalMileage.toLocaleString() }} v•km
+              .tlabel {{ totalMileage.toLocaleString() }} {{ $t('vehKm')}}
 
             .col3(v-if="modeSharePie.description")
               sankey-flipper(:myState="myState" :modeSharePie="modeSharePie")

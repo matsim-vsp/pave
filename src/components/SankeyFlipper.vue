@@ -1,3 +1,12 @@
+<i18n>
+en:
+  prev: 'Prev'
+  next: 'Next'
+de:
+  prev: 'Letzte'
+  next: 'Nächste'
+</i18n>
+
 <template lang="pug">
 .sankey-flipper(v-if="activePlot")
   .diagram
@@ -16,9 +25,9 @@
   .buttons-prev-next
     button.button.is-outlined(@click="switchPlot(-1)")
       span.icon.is-small: i.fas.fa-arrow-left
-      span Prev
+      span {{ $t('prev')}}
     button.button.is-outlined(@click="switchPlot(1)")
-      span Next
+      span {{ $t('next')}}
       span.icon.is-small: i.fas.fa-arrow-right
 
 </template>
