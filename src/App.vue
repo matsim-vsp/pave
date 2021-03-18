@@ -40,6 +40,7 @@
         @click="removeErrorMessage(i)"
       )
         i.fa.fa-icon.fa-times
+    button.button.is-small(@click="removeAllErrors()") CLEAR
 
 </template>
 
@@ -114,6 +115,10 @@ class App extends Vue {
 
   private removeErrorMessage(row: number) {
     this.$store.commit('clearError', row)
+  }
+
+  private removeAllErrors() {
+    this.$store.commit('clearAllErrors')
   }
 
   private toggleLocale() {

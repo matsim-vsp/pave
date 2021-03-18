@@ -59,6 +59,9 @@ export default new Vuex.Store({
         state.statusErrors.splice(value, 1) // remove one element
       }
     },
+    clearAllErrors(state) {
+      state.statusErrors = []
+    },
     rotateColors(state) {
       state.colorScheme =
         state.colorScheme === ColorScheme.DarkMode ? ColorScheme.LightMode : ColorScheme.DarkMode
