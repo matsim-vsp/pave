@@ -11,12 +11,8 @@ package org.matsim.drtBlockings.run;
 import ch.sbb.matsim.config.SwissRailRaptorConfigGroup;
 import com.google.inject.Singleton;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.contrib.drt.analysis.DrtAnalysisControlerListener;
-import org.matsim.contrib.drt.analysis.DrtModeAnalysisModule;
-import org.matsim.contrib.drt.analysis.DrtTripsAnalyser;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.run.MultiModeDrtConfigGroup;
-import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.run.DvrpModule;
 import org.matsim.contrib.dvrp.run.DvrpQSimComponents;
 import org.matsim.contrib.freight.FreightConfigGroup;
@@ -31,7 +27,6 @@ import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.MatsimServices;
@@ -67,7 +62,7 @@ public class RunBaseCaseInBerlin {
 
     //GENERAL INPUT
     //dir for 1 carrier only
-    private static final String INPUT_DIR = "D:/Simon/tubcloud2/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
+    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
     //dir for all Berlin carriers
 //    private static final String INPUT_DIR = "D:/Simon/tubcloud2/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
     private static final String INPUT_CONFIG = INPUT_DIR + "p2-23.output_config.xml";
@@ -282,9 +277,7 @@ public class RunBaseCaseInBerlin {
 
             GenericPlanStrategyImpl<CarrierPlan, Carrier> strategy = new GenericPlanStrategyImpl<>(new KeepSelected<CarrierPlan, Carrier>());
 
-
-
-            strategyManager.addStrategy(strategy, null, 0.5);
+            strategyManager.addStrategy(strategy, null, 0.01);
             return strategyManager;
         }
     }
