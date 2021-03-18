@@ -8,11 +8,12 @@
           h4 {{ d.heading }}
           p {{ d.subheading }}
 
-          img(v-for="option in d.options"  :key="`${option.title}/${option.value}`"
-              :src="getUrlForServiceAreaImage(option)"
-              @click="clickedOptionButton(d.heading, option.value)"
-              :class="{'is-selected': myState.activeButtons[d.heading] === option.value }"
-          )
+          .xarea(v-for="option in d.options"  :key="`${option.title}/${option.value}`")
+            img(:src="getUrlForServiceAreaImage(option)"
+                @click="clickedOptionButton(d.heading, option.value)"
+                :class="{'is-selected': myState.activeButtons[d.heading] === option.value }"
+            )
+            p {{ option.value }}
 
         .all-buttons(v-if="d.heading !== 'Service Area'")
           h4 {{ d.heading }}
@@ -1034,6 +1035,14 @@ img {
 img.is-selected {
   border: 0.5rem solid $colorPurple;
   opacity: 1;
+}
+
+.xarea p {
+  text-align: center;
+  margin-top: -2.25rem;
+  color: #223;
+  font-weight: bold;
+  font-size: 1rem;
 }
 
 @media only screen and (max-width: 50em) {
