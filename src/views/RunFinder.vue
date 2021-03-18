@@ -30,8 +30,8 @@
       .vessel
         .project-bar
           .details
-            h2 {{ myState.svnProject.name }}
-            p {{ myState.svnProject.description }}
+            h2 {{ projectName }}
+            p {{ projectDescription }}
 
     //- show network errors
     .stripe(v-if="myState.errorStatus")
@@ -235,6 +235,18 @@ export default class VueComponent extends Vue {
     activeButtons: {},
     runLogFolderLookup: {},
     selectedRun: '',
+  }
+
+  private get projectName() {
+    return this.globalState.locale === 'de'
+      ? this.myState.svnProject?.name_de
+      : this.myState.svnProject?.name
+  }
+
+  private get projectDescription() {
+    return this.globalState.locale === 'de'
+      ? this.myState.svnProject?.description_de
+      : this.myState.svnProject?.description
   }
 
   private getFileSystem(name: string) {

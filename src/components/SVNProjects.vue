@@ -8,15 +8,15 @@
       )
       img(:src="source.thumbnail")
       .desc
-        h3 {{ source.name }}
-        p {{ source.description }}
+        h3 {{ getName(source) }}
+        p {{ getDesc(source) }}
 
 </template>
 
 <script lang="ts">
 import { Vue, Component, Watch, Prop } from 'vue-property-decorator'
 
-import globalStore from '@/store.ts'
+import globalStore from '@/store'
 
 @Component({ components: {}, props: {} })
 export default class VueComponent extends Vue {
@@ -32,6 +32,13 @@ export default class VueComponent extends Vue {
 
   private openProjectTab(source: any) {
     window.open(source, '_blank')
+  }
+
+  private getName(source: { name: string; name_de: string }) {
+    return globalStore.state.locale === 'de' ? source.name_de : source.name
+  }
+  private getDesc(source: { description: string; description_de: string }) {
+    return globalStore.state.locale === 'de' ? source.description_de : source.description
   }
 }
 </script>

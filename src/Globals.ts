@@ -5,8 +5,10 @@ export enum Status {
 
 export interface SVNProject {
   name: string
+  name_de: string
   url: string
   description: string
+  description_de: string
   svn: string
   need_password: boolean
 }
