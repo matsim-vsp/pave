@@ -7,6 +7,8 @@ import DrtRequestLayer from './DrtRequestLayer'
 import MovingIconLayer from '@/layers/moving-icons/moving-icon-layer'
 import PathTraceLayer from '@/layers/PathTraceLayer'
 
+import { MAP_STYLES } from '@/Globals'
+
 const ICON_MAPPING = {
   marker: { x: 0, y: 0, width: 128, height: 128, mask: true },
   info: { x: 128, y: 0, width: 128, height: 128, mask: true },
@@ -61,6 +63,7 @@ const DRT_REQUEST = {
 export default function Component(props: {
   simulationTime: number
   paths: any[]
+  dark: boolean
   drtRequests: any[]
   traces: any[]
   colors: any
@@ -70,13 +73,10 @@ export default function Component(props: {
   searchEnabled: boolean
   onClick: any
 }) {
-  const mapStyle = 'mapbox://styles/vsp-tu-berlin/ckek59op0011219pbwfar1rex'
-  // const mapStyle = 'mapbox://styles/vsp-tu-berlin/ckeetelh218ef19ob5nzw5vbh'
-  // mapStyle = "mapbox://styles/mapbox/dark-v10",
-
   const {
     simulationTime,
     paths,
+    dark,
     traces,
     drtRequests,
     settingsShowLayers,
@@ -92,7 +92,7 @@ export default function Component(props: {
   initialView.latitude = center[1]
   initialView.longitude = center[0]
 
-  const arcWidth = 1
+  const arcWidth = 2
   const [hoverInfo, setHoverInfo] = useState({} as any)
 
   const layers: any = []
@@ -139,7 +139,7 @@ export default function Component(props: {
     )
   }
 
-  if (settingsShowLayers['Routen'])
+  if (settingsShowLayers['Routes'])
     layers.push(
       //@ts-ignore:
       new PathTraceLayer({
@@ -164,7 +164,7 @@ export default function Component(props: {
       })
     )
 
-  if (settingsShowLayers['Fahrzeuge'])
+  if (settingsShowLayers['Vehicles'])
     layers.push(
       //@ts-ignore
       new MovingIconLayer({
@@ -194,7 +194,7 @@ export default function Component(props: {
       })
     )
 
-  if (settingsShowLayers['DRT Anfragen'])
+  if (settingsShowLayers['Requests'])
     layers.push(
       //@ts-ignore:
       new DrtRequestLayer({
@@ -208,7 +208,7 @@ export default function Component(props: {
         getSourceColor: [255, 0, 255],
         getTargetColor: [200, 255, 255],
         getWidth: arcWidth,
-        opacity: 0.5,
+        opacity: 0.7,
         searchFlag: searchEnabled ? 1.0 : 0.0,
       })
     )
@@ -228,7 +228,7 @@ export default function Component(props: {
         // @ts-ignore */
         <StaticMap
           reuseMaps
-          mapStyle={mapStyle}
+          mapStyle={dark ? MAP_STYLES.dark : MAP_STYLES.light}
           preventStyleDiffing={true}
           mapboxApiAccessToken={MAPBOX_TOKEN}
         />

@@ -1,3 +1,16 @@
+<i18n>
+en:
+  requests: 'DRT Requests:'
+  search: 'Search:'
+  passengers: 'Passengers:'
+  speed: 'Speed:'
+de:
+  requests: 'DRT Anfragen'
+  search: 'Suche'
+  passengers: 'Passagiere'
+  speed: 'Geschwindigkeit'
+</i18n>
+
 <template lang="pug">
 #v3-app(:class="{'hide-thumbnail': !thumbnail}"
         :style='{"background": urlThumbnail}' oncontextmenu="return false")
@@ -15,6 +28,7 @@
                 :center="vizDetails.center"
                 :searchEnabled="searchEnabled"
                 :vehicleLookup = "vehicleLookup"
+                :dark="isDarkMode"
                 :onClick = "handleClick")
 
   .right-side(v-if="isLoaded && !thumbnail")
@@ -23,25 +37,24 @@
         p {{ myState.clock }}
 
       .panel-items
-        legend-colors.legend-block(title="Anfragen:" :items="legendRequests")
+        legend-colors.legend-block(:title="$t('requests')" :items="legendRequests")
 
         legend-colors.legend-block(v-if="legendItems.length"
-          title="Passagiere:" :items="legendItems")
+          :title="$t('passengers')" :items="legendItems")
 
         .search-panel
-          p.speed-label(:style="{margin: '1rem 0 0 0', color: textColor.text}") Suche:
+          p.speed-label(:style="{margin: '1rem 0 0 0'}") {{ $t('search') }}
           form(autocomplete="off")
           .field
             p.control.has-icons-left
-              input.input.is-small(type="email" placeholder="Search..." v-model="searchTerm")
+              input.input.is-small.search-box(type="email" placeholder="Search..." v-model="searchTerm")
               span.icon.is-small.is-left
                 i.fas.fa-search
 
         settings-panel.settings-area(:items="SETTINGS" @click="handleSettingChange")
 
         .speed-block
-          p.speed-label(
-            :style="{color: textColor.text}") Geschwindigkeit:
+          p.speed-label {{ $t('speed')}}
             br
             | {{ speed }}x
 
@@ -81,10 +94,8 @@ import * as coroutines from 'js-coroutines'
 
 import globalStore from '@/store'
 import pako from '@aftersim/pako'
-import AnimationView from '@/plugins/agent-animation/AnimationView.vue'
 import CollapsiblePanel from '@/components/CollapsiblePanel.vue'
 import LegendColors from '@/components/LegendColors'
-import ModalMarkdownDialog from '@/components/ModalMarkdownDialog.vue'
 import PlaybackControls from '@/components/PlaybackControls.vue'
 import SettingsPanel from '@/components/SettingsPanel.vue'
 
@@ -97,6 +108,7 @@ import {
   VisualizationPlugin,
   LIGHT_MODE,
   DARK_MODE,
+  Status,
 } from '@/Globals'
 
 import TripViz from '@/plugins/vehicle-animation/TripViz'
@@ -147,11 +159,7 @@ class VehicleAnimation extends Vue {
     5: [255, 85, 0],
   }
 
-  SETTINGS: { [label: string]: boolean } = {
-    Fahrzeuge: true,
-    Routen: false,
-    'DRT Anfragen': false,
-  }
+  SETTINGS: { [label: string]: boolean } = { Vehicles: true, Routes: true, Requests: true }
 
   private legendItems: LegendItem[] = Object.keys(this.COLOR_OCCUPANCY).map(key => {
     return { type: LegendItemType.line, color: this.COLOR_OCCUPANCY[key], value: key, label: key }
@@ -174,7 +182,6 @@ class VehicleAnimation extends Vue {
   public myState = {
     statusMessage: '',
     clock: '00:00',
-    colorScheme: ColorScheme.DarkMode,
     isRunning: false,
     isShowingHelp: false,
     fileApi: this.fileApi,
@@ -203,7 +210,7 @@ class VehicleAnimation extends Vue {
   private requestEnd!: crossfilter.Dimension<any, any>
   private requestVehicle!: crossfilter.Dimension<any, any>
 
-  private simulationTime = 6 * 3600 // 8 * 3600 + 10 * 60 + 10
+  private simulationTime = 5 * 3600 // 8 * 3600 + 10 * 60 + 10
 
   private timeElapsedSinceLastFrame = 0
 
@@ -211,7 +218,7 @@ class VehicleAnimation extends Vue {
   private searchEnabled = false
 
   private globalState = globalStore.state
-  private isDarkMode = this.myState.colorScheme === ColorScheme.DarkMode
+  private isDarkMode = this.globalState.colorScheme === ColorScheme.DarkMode
   private isLoaded = true
   private showHelp = false
 
@@ -220,8 +227,20 @@ class VehicleAnimation extends Vue {
 
   private legendBits: any[] = []
 
-  private async handleSettingChange(label: string) {
-    console.log(label)
+  private async handleSettingChange(i: number) {
+    let label = ''
+    switch (i) {
+      case 0:
+        label = 'Vehicles'
+        break
+      case 1:
+        label = 'Routes'
+        break
+      case 2:
+        label = 'Requests'
+        break
+    }
+
     this.SETTINGS[label] = !this.SETTINGS[label]
     this.updateDatasetFilters()
     this.simulationTime += 1 // this will force a redraw
@@ -357,8 +376,8 @@ class VehicleAnimation extends Vue {
     await this.getVizDetails()
   }
 
-  @Watch('state.colorScheme') private swapTheme() {
-    this.isDarkMode = this.myState.colorScheme === ColorScheme.DarkMode
+  @Watch('globalState.colorScheme') private swapTheme() {
+    this.isDarkMode = this.globalState.colorScheme === ColorScheme.DarkMode
     this.updateLegendColors()
   }
 
@@ -431,7 +450,7 @@ class VehicleAnimation extends Vue {
       bg: '#181518aa',
     }
 
-    return this.myState.colorScheme === ColorScheme.DarkMode ? darkmode : lightmode
+    return this.globalState.colorScheme === ColorScheme.DarkMode ? darkmode : lightmode
   }
 
   private setWallClock() {
@@ -493,12 +512,20 @@ class VehicleAnimation extends Vue {
 
     this.setWallClock()
 
-    this.myState.statusMessage = '/ Dateien laden...'
     console.log('loading files')
+    this.$store.commit('setStatus', {
+      type: Status.INFO,
+      msg: 'Dateien laden...',
+    })
+
     const { trips, drtRequests } = await this.loadFiles()
 
     console.log('parsing vehicle motion')
     this.myState.statusMessage = '/ Standorte berechnen...'
+    this.$store.commit('setStatus', {
+      type: Status.INFO,
+      msg: 'Standorte berechnen...',
+    })
     this.paths = await this.parseVehicles(trips)
     this.pathStart = this.paths.dimension(d => d.t0)
     this.pathEnd = this.paths.dimension(d => d.t1)
@@ -506,6 +533,10 @@ class VehicleAnimation extends Vue {
 
     console.log('Routen verarbeiten...')
     this.myState.statusMessage = '/ Routen verarbeiten...'
+    this.$store.commit('setStatus', {
+      type: Status.INFO,
+      msg: 'Routen verarbeiten...',
+    })
     this.traces = await this.parseRouteTraces(trips)
     this.traceStart = this.traces.dimension(d => d.t0)
     this.traceEnd = this.traces.dimension(d => d.t1)
@@ -513,6 +544,10 @@ class VehicleAnimation extends Vue {
 
     console.log('Anfragen sortieren...')
     this.myState.statusMessage = '/ Anfragen...'
+    this.$store.commit('setStatus', {
+      type: Status.INFO,
+      msg: 'Anfragen sortieren',
+    })
     this.requests = await this.parseDrtRequests(drtRequests)
     this.requestStart = this.requests.dimension(d => d[0]) // time0
     this.requestEnd = this.requests.dimension(d => d[6]) // arrival
@@ -520,6 +555,10 @@ class VehicleAnimation extends Vue {
 
     console.log('GO!')
     this.myState.statusMessage = ''
+    this.$store.commit('setStatus', {
+      type: Status.INFO,
+      msg: '',
+    })
 
     document.addEventListener('visibilitychange', this.handleVisibilityChange, false)
 
@@ -576,7 +615,7 @@ class VehicleAnimation extends Vue {
     if (!this.traceStart || !this.pathStart || !this.requestStart) return
 
     // filter out all traces that havent started or already finished
-    if (this.SETTINGS.Routen) {
+    if (this.SETTINGS.Routes) {
       if (this.searchEnabled) {
         this.traceStart.filterAll()
         this.traceEnd.filterAll()
@@ -588,14 +627,14 @@ class VehicleAnimation extends Vue {
       this.$options.traces = this.traces.allFiltered()
     }
 
-    if (this.SETTINGS.Fahrzeuge) {
+    if (this.SETTINGS.Vehicles) {
       this.pathStart.filter([0, this.simulationTime])
       this.pathEnd.filter([this.simulationTime, Infinity])
       //@ts-ignore:
       this.$options.paths = this.paths.allFiltered()
     }
 
-    if (this.SETTINGS['DRT Anfragen']) {
+    if (this.SETTINGS.Requests) {
       if (this.searchEnabled) {
         this.requestStart.filterAll()
         this.requestEnd.filterAll()
@@ -719,19 +758,12 @@ class VehicleAnimation extends Vue {
       console.error(e)
       this.myState.statusMessage = '' + e
     }
+    console.log({ drtRequests })
     return { trips, drtRequests }
   }
 
   private toggleLoaded(loaded: boolean) {
     this.isLoaded = loaded
-  }
-
-  private rotateColors() {
-    this.myState.colorScheme =
-      this.myState.colorScheme === ColorScheme.DarkMode
-        ? ColorScheme.LightMode
-        : ColorScheme.DarkMode
-    localStorage.setItem('plugin/agent-animation/colorscheme', this.myState.colorScheme)
   }
 }
 
@@ -799,6 +831,7 @@ export default VehicleAnimation
 }
 
 .legend-block {
+  color: var(--textBold);
   margin-top: 2rem;
 }
 
@@ -819,9 +852,6 @@ export default VehicleAnimation
 
 .right-side {
   grid-area: rightside;
-  background-color: $steelGray;
-  box-shadow: 0px 2px 10px #111111ee;
-  color: white;
   display: flex;
   flex-direction: column;
   font-size: 0.8rem;
@@ -844,8 +874,8 @@ export default VehicleAnimation
 .settings-area {
   z-index: 20;
   pointer-events: auto;
-  background-color: $steelGray;
-  color: white;
+  // background-color: var(--bgPanel);
+  color: var(--bgText);
   font-size: 0.8rem;
   padding: 0.25rem 0;
   margin: 1.5rem 0rem 0 0;
@@ -862,6 +892,7 @@ export default VehicleAnimation
 .speed-label {
   font-size: 0.8rem;
   font-weight: bold;
+  color: var(--textFancy);
 }
 
 .clock {
@@ -873,6 +904,7 @@ export default VehicleAnimation
 .clock p {
   text-align: center;
   padding: 5px 10px;
+  color: white;
 }
 
 .tooltip {
@@ -886,8 +918,8 @@ export default VehicleAnimation
 
 input {
   border: none;
-  background-color: #235;
-  color: #ccc;
+  background-color: var(--bgCream4);
+  color: var(--text);
 }
 
 @media only screen and (max-width: 640px) {
