@@ -1,18 +1,31 @@
 <i18n>
 en:
-  head1: 'PAVE: Potential automated vehicle systems'
+  head1: 'PAVE: Potential of automated vehicle systems'
   desc1: 'Automated and connected driving is expected to have considerable potential for road traffic, especially with regard to increasing traffic safety, reducing consumption and emissions, improving traffic efficiency in the medium term, and sustainably strengthening Germany as a location for business and innovation.'
-  head2: 'The idea and the method'
+  head2: 'The concept of Mobility-on-Demand'
   desc2: 'The short video and interactive animation below illustrate what PAVE is all about.'
   head3: 'Explore model results'
   desc3: 'Click on one of the service scenarios below to explore the technical outputs:'
   more-info: 'For more information:'
   video: 'Video: What is PAVE?'
   model: 'Interactive model simulation'
+  projMainPage: 'Project main page'
+  gdpr: 'No personal data stored or collected'
+  matsim: 'All simulations conducted using the MATSim simulation framework:'
 de:
   head1: 'PAVE: Potentiale automatisierter Verkehrssysteme'
   desc1: 'Durch „Automatisiertes und vernetztes Fahren“ wird ein erhebliches Potential für den Straßenverkehr erwartet, insbesondere hinsichtlich „der Steigerung der Verkehrssicherheit, der Verbrauchs- und Emissionsreduzierung, einer mittelfristigen Verbesserung der Verkehrseffizienz und der nachhaltigen Stärkung des Wirtschafts- und Innovationsstandorts Deutschland“.'
-  more-info: 'Für weitere Informationen:'
+  head2: 'Das Konzept hinter Mobility-on-Demand'
+  desc2: 'Hier finden Sie ein Video und eine interaktive Animation zu der Funktionsweise von automatisierten Mobilitätsdiensten'
+  head3: 'Simulationsergebnisse'
+  desc3: 'Klicken Sie auf eine der Schaltflächen um Ergebnisse des jeweiligen Szenarios zu entdecken:'
+  video: 'Video: Was steckt hinter PAVE?'
+  model: 'Interaktive Simulation'
+  more-info: 'Weitere Informationen:'
+  projMainPage: 'Projekt Webseite'
+  gdpr: 'Keine Speicherung oder Sammlung von persönlichen Daten'
+  matsim: 'Alle Simulationen wurden mit dem MATSim Framework durchgeführt'
+
 </i18n>
 
 <template lang="pug">
@@ -53,7 +66,11 @@ de:
 
         h2 {{ $t('more-info') }}
 
-        .readme(v-html="readme")
+        p.with-space {{ $t('projMainPage') }}
+        a(href="https://pave-your-way.de" target="_blank") https://pave-your-way.de
+
+        p.with-space {{ $t('matsim') }}
+        a(href="https://matsim.org" target="_blank") https://matsim.org
 
 </template>
 
@@ -195,7 +212,7 @@ export default MyComponent
 
 a {
   font-size: 1.1rem;
-  color: #00499c;
+  color: var(--link);
 }
 
 .readme {
@@ -207,6 +224,10 @@ a {
 
 h2.readme {
   padding-top: 0;
+}
+
+.with-space {
+  margin-top: 0.5rem;
 }
 
 .main h1 {
