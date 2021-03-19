@@ -14,16 +14,8 @@ Vue.use(Buefy, {
 
 Vue.config.productionTip = false
 
-// locale: we only support EN and DE
-const locale = localStorage.getItem('locale')
-  ? '' + localStorage.getItem('locale')
-  : // @ts-ignore
-  (navigator.language || navigator.userLanguage).startsWith('de')
-  ? 'de'
-  : 'en'
-
 const i18n = new VueI18n({
-  locale,
+  locale: store.state.locale,
   fallbackLocale: 'en',
 })
 

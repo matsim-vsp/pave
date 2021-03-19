@@ -2,9 +2,17 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import { BreadCrumb, ColorScheme, Status, VisualizationPlugin } from '@/Globals'
-import svnConfig from '@/svnConfig.ts'
+import svnConfig from '@/svnConfig'
 
 Vue.use(Vuex)
+
+// locale: we only support EN and DE
+const locale = localStorage.getItem('locale')
+  ? '' + localStorage.getItem('locale')
+  : // @ts-ignore
+  (navigator.language || navigator.userLanguage).startsWith('de')
+  ? 'de'
+  : 'en'
 
 export default new Vuex.Store({
   state: {
@@ -19,7 +27,7 @@ export default new Vuex.Store({
     svnProjects: svnConfig.projects,
     visualizationTypes: new Map() as Map<string, VisualizationPlugin>,
     colorScheme: ColorScheme.DarkMode,
-    locale: 'en',
+    locale,
   },
   getters: {},
   mutations: {

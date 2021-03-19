@@ -36,10 +36,6 @@
     .message-error(v-for="err,i in state.statusErrors")
       p: i.fa.fa-icon.fa-exclamation-triangle(style="color: orange;")
       p(v-html="err")
-      button.button.is-small.is-black.is-inverted(
-        @click="removeErrorMessage(i)"
-      )
-        i.fa.fa-icon.fa-times
     button.button.is-small(@click="removeAllErrors()") CLEAR
 
 </template>
@@ -93,15 +89,15 @@ class App extends Vue {
 
     document.body.style.backgroundColor = theme === ColorScheme.LightMode ? '#edebe4' : '#2d3133'
 
-    // locale: we only support EN and DE
-    const locale = localStorage.getItem('locale')
-      ? '' + localStorage.getItem('locale')
-      : // @ts-ignore
-      (navigator.language || navigator.userLanguage).startsWith('de')
-      ? 'de'
-      : 'en'
+    // // locale: we only support EN and DE
+    // const locale = localStorage.getItem('locale')
+    //   ? '' + localStorage.getItem('locale')
+    //   : // @ts-ignore
+    //   (navigator.language || navigator.userLanguage).startsWith('de')
+    //   ? 'de'
+    //   : 'en'
 
-    this.$store.commit('setLocale', locale)
+    // this.$store.commit('setLocale', locale)
   }
 
   private get topNavLinks() {
@@ -111,10 +107,6 @@ class App extends Vue {
     const topLinks = home.concat(this.state.svnProjects)
 
     return topLinks
-  }
-
-  private removeErrorMessage(row: number) {
-    this.$store.commit('clearError', row)
   }
 
   private removeAllErrors() {
@@ -463,6 +455,7 @@ a:hover {
   background-color: #fff6c3;
   display: flex;
   flex-direction: row;
+  line-height: 1.2rem;
 
   p {
     margin: auto 0.5rem auto 0;
