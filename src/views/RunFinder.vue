@@ -1,44 +1,44 @@
 <i18n>
 en:
-  kpi: 'DRT Operator: Key Performance Indicators'
-  vehCosts: 'Vehicle Costs'
-  perDay: 'Per day'
-  perKm: 'Per km'
-  waitTime: '95% waiting times'
-  demand: 'Demand'
-  fleetSize: 'Fleet size'
-  fleetKm: 'Fleet mileage'
-  revDistance: 'Revenue distance'
-  incomePerDay: 'Income/day'
-  expensePerDay: 'Expenses/day'
   annualRevenue: 'Annual revenue'
   annualSubsidy: 'Annual revenue'
+  demand: 'Demand'
+  expensePerDay: 'Expenses/day'
+  fleetSize: 'Fleet size'
+  fleetKm: 'Fleet mileage'
+  incomePerDay: 'Income/day'
+  kpi: 'DRT Operator: Key Performance Indicators'
+  perDay: 'Per day'
+  perKm: 'Per km'
   tollIncome: 'Toll income/day'
   totalKm: 'Total mileage'
+  revDistance: 'Revenue distance'
   rides: 'rides'
-  vehicles: 'vehicles'
-  vehKm: 'v•km'
   selectRun: 'Select Run'
+  vehCosts: 'Vehicle Costs'
+  vehKm: 'v•km'
+  vehicles: 'vehicles'
+  waitTime: '95% waiting times'
 de:
-  kpi: 'DRT-Anbieter Kennzahlen'
-  vehCosts: 'Fahrzeugkosten'
-  perDay: 'Pro Tag'
-  perKm: 'Pro Km'
-  waitTime: '95% Wartezeiten'
-  demand: 'Nachfrage'
-  fleetSize: 'Flottengröße'
-  fleetKm: 'Flottenfahrleistung'
-  revDistance: 'Umsatzkilometer'
-  incomePerDay: 'Einnahmen/Tag'
-  expensePerDay: 'Ausgaben/Tag'
   annualRevenue: 'Jährlicher Umsatz'
   annualSubsidy: 'Jährlicher Subventionen'
+  demand: 'Nachfrage'
+  expensePerDay: 'Ausgaben/Tag'
+  fleetSize: 'Flottengröße'
+  fleetKm: 'Flottenfahrleistung'
+  incomePerDay: 'Einnahmen/Tag'
+  kpi: 'DRT-Anbieter Kennzahlen'
+  perDay: 'Pro Tag'
+  perKm: 'Pro Km'
+  revDistance: 'Umsatzkilometer'
+  rides: 'Fahrten'
+  selectRun: 'Wähle einen Run'
   tollIncome: 'Mauteinnahmen/Tag'
   totalKm: 'Gesamtfahrleistung'
-  rides: 'Fahrten'
-  vehicles: 'Fahrzeuge'
+  vehCosts: 'Fahrzeugkosten'
   vehKm: 'F•Km'
-  selectRun: 'Wähle einen Run'
+  vehicles: 'Fahrzeuge'
+  waitTime: '95% Wartezeiten'
 
 </i18n>
 
@@ -48,15 +48,15 @@ de:
     .dimensions(v-if="myState.runFinder.dimensions.length")
       h3 {{ $t('selectRun')}}:
 
-      .dimension(v-for="d in myState.runFinder.dimensions" :key="d.heading")
+      .dimension(v-for="d,dimNumber in myState.runFinder.dimensions" :key="d.heading")
         .all-areas(v-if="d.options[0].image")
           h4 {{ d.heading }}
           p {{ d.subheading }}
 
           .xarea(v-for="option in d.options"  :key="`${option.title}/${option.value}`")
             img(:src="getUrlForServiceAreaImage(option)"
-                @click="clickedOptionButton(d.heading, option.value)"
-                :class="{'is-selected': myState.activeButtons[d.heading] === option.value }"
+                @click="clickedOptionButton(dimNumber, option.value)"
+                :class="{'is-selected': myState.activeButtons[dimNumber] === option.value }"
             )
             p {{ option.value }}
 
@@ -67,8 +67,8 @@ de:
           button.button(
             v-for="option in d.options"
             :key="`${option.title}/${option.value}`"
-            :class="{'is-link': myState.activeButtons[d.heading] === option.value }"
-            @click="clickedOptionButton(d.heading, option.value)"
+            @click="clickedOptionButton(dimNumber, option.value)"
+            :class="{'is-link': myState.activeButtons[dimNumber] === option.value }"
           ) {{ option.title }}
 
   .right-strip.cream
@@ -104,7 +104,7 @@ de:
             span.icon.is-small: i.fas.fa-info
             span Info
 
-          article.message.is-dark.hide
+          article.message.is-link.hide
             .message-body
               p(v-html="myState.information")
 
@@ -224,7 +224,7 @@ interface IMyState {
   svnRoot?: HTTPFileSystem
   vizes: VizEntry[]
   runFinder: RunFinder
-  activeButtons: { [heading: string]: string }
+  activeButtons: { [dimNumber: number]: string }
   runLogFolderLookup: { [options: string]: string }
   selectedRun: string
 }
@@ -234,6 +234,7 @@ interface RunFinder {
   notes?: string
   operators?: string[]
   dimensions: {
+    csvColumn: string
     heading: string
     subheading?: string
     options: { title: string; value: string; image?: string }[]
@@ -466,20 +467,24 @@ export default class VueComponent extends Vue {
   private setInitialRun() {
     this.needsInitialRun = false
     const initialRun = this.runLookup[this.myState.selectedRun]
-    for (const dimension of this.myState.runFinder.dimensions) {
-      Vue.set(
-        this.myState.activeButtons,
-        dimension.heading,
-        initialRun ? initialRun[dimension.heading] : dimension.options[0].value
-      )
+    console.log({ initialRun })
+    for (let dimNumber = 0; dimNumber < this.myState.runFinder.dimensions.length; dimNumber++) {
+      const dimension = this.myState.runFinder.dimensions[dimNumber]
+
+      let firstValue = dimension.options[0].value
+      if (initialRun) {
+        firstValue = initialRun[dimension.csvColumn]
+      }
+
+      Vue.set(this.myState.activeButtons, dimNumber, firstValue)
     }
     this.buildRunIdFromButtonSelections()
   }
 
-  private clickedOptionButton(heading: string, option: string) {
-    if (option === this.myState.activeButtons[heading]) return
+  private clickedOptionButton(dimNumber: number, option: string) {
+    if (option === this.myState.activeButtons[dimNumber]) return
 
-    this.myState.activeButtons[heading] = option
+    this.myState.activeButtons[dimNumber] = option
     this.buildRunIdFromButtonSelections()
   }
 
@@ -487,8 +492,8 @@ export default class VueComponent extends Vue {
     if (!this.myState.svnProject) return
 
     const run = this.myState.runFinder.dimensions
-      .map(d => {
-        return this.myState.activeButtons[d.heading]
+      .map((_, index) => {
+        return this.myState.activeButtons[index]
       })
       .join('-')
 
@@ -633,8 +638,6 @@ export default class VueComponent extends Vue {
     console.log('### SWITCHING TO', this.globalState.locale)
     await this.buildRunFinder()
     await this.filesChanged()
-    this.myState.selectedRun = ''
-    this.setInitialRun()
   }
 
   @Watch('globalState.colorScheme') swapColors() {
@@ -1092,6 +1095,10 @@ img.is-selected {
   color: #223;
   font-weight: bold;
   font-size: 1rem;
+}
+
+.xarea img:hover {
+  cursor: pointer;
 }
 
 @media only screen and (max-width: 50em) {

@@ -218,7 +218,8 @@ class MyComponent extends Vue {
   }
 
   public async mounted() {
-    globalStore.commit('setFullScreen', !this.thumbnail)
+    if (!this.thumbnail) globalStore.commit('setFullScreen', !this.thumbnail)
+
     if (!this.yamlConfig) {
       this.buildRouteFromUrl()
     }
