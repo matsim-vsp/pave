@@ -123,7 +123,7 @@ public class RunBaseCaseInBerlin {
         //might need to customize this method, for now it stays as it is in PFAV
         prepareFreightOutputDataAndStats(scenario, controler.getEvents(), controler, FreightUtils.getCarriers(scenario));
 
-        BaseCaseTourStatsAnalysis tourAnalysis = new BaseCaseTourStatsAnalysis(scenario.getNetwork());
+        BaseCaseTourStatsAnalysis tourAnalysis = new BaseCaseTourStatsAnalysis(scenario.getNetwork(), FreightUtils.getCarriers(scenario));
 
         controler.addOverridingModule(new AbstractModule() {
             @Override
