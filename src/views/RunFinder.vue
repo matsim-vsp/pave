@@ -14,7 +14,7 @@ en:
   totalKm: 'Total mileage'
   revDistance: 'Revenue distance'
   rides: 'rides'
-  selectRun: 'Select Run'
+  selectRun: 'Select run:'
   vehCosts: 'Vehicle Costs'
   vehKm: 'v•km'
   vehicles: 'vehicles'
@@ -32,7 +32,7 @@ de:
   perKm: 'Pro Km'
   revDistance: 'Umsatzkilometer'
   rides: 'Fahrten'
-  selectRun: 'Wähle einen Run'
+  selectRun: 'Parameterauswahl'
   tollIncome: 'Mauteinnahmen/Tag'
   totalKm: 'Gesamtfahrleistung'
   vehCosts: 'Fahrzeugkosten'
@@ -46,7 +46,7 @@ de:
 .folder-browser
   .left-strip
     .dimensions(v-if="myState.runFinder.dimensions.length")
-      h3 {{ $t('selectRun')}}:
+      h3 {{ $t('selectRun')}}
 
       .dimension(v-for="d,dimNumber in myState.runFinder.dimensions" :key="d.heading")
         .all-areas(v-if="d.options[0].image")
@@ -154,7 +154,9 @@ de:
           .viz-table
             .viz-grid-item(v-for="viz,index in myState.vizes"
                       :key="viz.config"
-                      @click="clickedVisualization(index)")
+                      @click="clickedVisualization(index)"
+                      v-show="viz.component !== 'sankey-diagram'"
+            )
 
               .viz-frame
                 component.viz-frame-component(
