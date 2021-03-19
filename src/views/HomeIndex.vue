@@ -51,6 +51,8 @@ de:
 
         svn-projects.gap
 
+        h2 {{ $t('more-info') }}
+
         .readme(v-html="readme")
 
 </template>
