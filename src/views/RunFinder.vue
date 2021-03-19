@@ -98,15 +98,10 @@ de:
       .vessel(:style="{borderRadius: '10px', marginBottom: '2rem'}")
         .call-out-box
           h3.curate-heading {{ $t('kpi')}}
+            .icon.is-small.info-icon(@click="infoHover=true")
+              i.fas.fa-info-circle
+
           p(v-if="!myState.isLoading && !myState.vizes.length") ...
-
-          button.button.infohover
-            span.icon.is-small: i.fas.fa-info
-            span Info
-
-          article.message.is-link.hide
-            .message-body
-              p(v-html="myState.information")
 
           p(v-if="numberOfOperators > 1"): b {{ operatorName }}:
             button.button.is-small(style="margin-left: 0.5rem" @click="updateOperator(-1)") &lt;
@@ -172,6 +167,13 @@ de:
                       @title="updateTitle(index, $event)")
                 p {{ viz.title }}
 
+  .modal.info-modal(:class="{'is-active': infoHover}")
+    .modal-background(@click="infoHover=false")
+    .modal-content
+      article.message.is-link
+        .message-body
+          p(v-html="myState.information")
+    button.modal-close.is-large(aria-label="close" @click="infoHover=false")
 
 </template>
 
@@ -252,6 +254,7 @@ export default class VueComponent extends Vue {
 
   private runLookup: any = {}
   private modeSharePie: any = {}
+  private infoHover = false
 
   private runCosts = {
     fixedCosts: 1,
@@ -770,13 +773,21 @@ export default class VueComponent extends Vue {
   grid-template-rows: 100%;
 }
 
+.info-modal {
+  padding: 5rem 5rem;
+}
+
 .left-strip {
+  grid-row: 1 / 2;
+  grid-column: 1 / 2;
   background-color: var(--text);
   color: var(--bgPanel);
   padding: 0 2rem;
 }
 
 .right-strip {
+  grid-row: 1 / 2;
+  grid-column: 2 / 3;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -967,9 +978,9 @@ h2 {
   display: none;
 }
 
-.infohover:hover + .hide {
-  display: flex;
-}
+// .infohover:hover + .hide {
+//   display: flex;
+// }
 
 h3.curate-heading {
   font-size: 1.8rem;
@@ -1098,6 +1109,14 @@ img.is-selected {
 }
 
 .xarea img:hover {
+  cursor: pointer;
+}
+
+.info-icon {
+  margin-left: 1.5rem;
+}
+
+.info-icon:hover {
   cursor: pointer;
 }
 
