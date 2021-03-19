@@ -1,5 +1,6 @@
 <i18n>
 en:
+  pave-project: 'PAVE'
   head1: 'PAVE: Potential of automated vehicle systems'
   desc1: 'Automated and connected driving is expected to have considerable potential for road traffic, especially with regard to increasing traffic safety, reducing consumption and emissions, improving traffic efficiency in the medium term, and sustainably strengthening Germany as a location for business and innovation.'
   head2: 'The concept of Mobility-on-Demand'
@@ -10,9 +11,9 @@ en:
   video: 'Video: What is PAVE?'
   model: 'Interactive model simulation'
   projMainPage: 'Project main page'
-  gdpr: 'No personal data stored or collected'
   matsim: 'All simulations conducted using the MATSim simulation framework:'
 de:
+  pave-project: 'PAVE'
   head1: 'PAVE: Potentiale automatisierter Verkehrssysteme'
   desc1: 'Durch „Automatisiertes und vernetztes Fahren“ wird ein erhebliches Potential für den Straßenverkehr erwartet, insbesondere hinsichtlich „der Steigerung der Verkehrssicherheit, der Verbrauchs- und Emissionsreduzierung, einer mittelfristigen Verbesserung der Verkehrseffizienz und der nachhaltigen Stärkung des Wirtschafts- und Innovationsstandorts Deutschland“.'
   head2: 'Das Konzept hinter Mobility-on-Demand'
@@ -23,7 +24,6 @@ de:
   model: 'Interaktive Simulation'
   more-info: 'Weitere Informationen:'
   projMainPage: 'Projekt Webseite'
-  gdpr: 'Keine Speicherung oder Sammlung von persönlichen Daten'
   matsim: 'Alle Simulationen wurden mit dem MATSim Framework durchgeführt'
 
 </i18n>
@@ -36,8 +36,6 @@ de:
     h3 VSP / Technische Universität Berlin
 
   .page-area
-    colophon.colophon
-
     .zcontent
       .main
         .right
@@ -71,6 +69,11 @@ de:
 
         p.with-space {{ $t('matsim') }}
         a(href="https://matsim.org" target="_blank") https://matsim.org
+
+  .colophon
+    .zcontent
+      .main
+        colophon
 
 </template>
 
@@ -121,7 +124,7 @@ export default MyComponent
 
 .zcontent {
   flex: 1;
-  padding: 1rem 3rem 5rem 3rem;
+  padding: 1rem 0rem 5rem 0rem;
   display: flex;
   width: 100%;
 }
@@ -263,12 +266,6 @@ h2.readme {
 }
 
 .colophon {
-  grid-row: 1 / 3;
-  grid-column: 2 / 3;
-
-  padding: 2rem 2rem 1rem 5rem;
-  text-align: right;
-  font-size: 0.85rem;
   background-color: white;
 }
 

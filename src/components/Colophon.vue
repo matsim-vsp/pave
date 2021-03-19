@@ -3,52 +3,56 @@ en:
   paveproject: 'PAVE Project Team'
   contact: 'Contact'
   partners: 'Project Partners'
+  gdpr: 'No personal data stored or collected'
+de:
+  gdpr: 'Keine Speicherung oder Sammlung von persönlichen Daten'
+
 </i18n>
 
 <template lang="pug">
 #colophon-content
-  .logo(style="width: 100%;")
-    a(href='https://www.tu.berlin' target="_blank")
-      img(src="@/assets/images/8-pave.png")
+  .logo(style="width: 25%; margin-left: -1rem;")
+    img(src="@/assets/images/8-pave.png")
 
-  .logo(style="width: 100%;")
-    a(href='https://www.tu.berlin' target="_blank")
-      img(src="@/assets/images/tu-logo.png")
+  h4 Consortium
 
-  .logo(style="width: 100%;")
-    a(href='https://www.vsp.tu-berlin.de' target="_blank")
-      img(src="@/assets/images/vsp-logo-300dpi.png")
+  .logos
 
-  .logo(style="width: 100%;")
-    img(src="@/assets/images/2-univ-magdeburg.png")
+    .logo
+      img(src="@/assets/images/2-univ-magdeburg.png")
 
-  .logo(style="width: 100%;")
-    img(src="@/assets/images/3-iav.png")
+    .logo
+      img(src="@/assets/images/3-iav.png")
 
-  .logo(style="width: 100%;")
-    img(src="@/assets/images/4-bosch.png")
+    .logo
+      img(src="@/assets/images/6-ina-logo.png")
 
-  .logo(style="width: 100%;")
-    img(src="@/assets/images/5-carl-benz.png")
+    .logo
+      img(src="@/assets/images/4-bosch.png")
 
-  .logo(style="width: 100%;")
-    img(src="@/assets/images/6-ina-logo.png")
+  .logos
 
-  a(href='https://www.bmvi.de' target="_blank")
-    img(src="@/assets/images/logo-bmvi.png")
+    .logo
+      a(href='https://www.tu.berlin' target="_blank")
+        img(src="@/assets/images/tu-logo.png")
 
-  //- .team PAVE Team, VSP
-  //- .professor Kai Nagel, Professor
+    .logo
+      a(href='https://www.vsp.tu-berlin.de' target="_blank")
+        img(src="@/assets/images/vsp-logo-300dpi.png")
 
-  //- p Tilmann Schlenther
-  //- p Billy Charlton
+    .logo(style="width: 75%")
+      img(src="@/assets/images/5-carl-benz.png")
 
-  .team Contact
+    .bmvi
+      a(href='https://www.bmvi.de' target="_blank")
+        img(width="90%" src="@/assets/images/logo-bmvi.png")
 
-  p.nonbreak: a(href="mailto:sekretariat@vsp.tu-berlin.de") Email
+  h4 Contact
 
-  .team GDPR
-  p No personal data collected.
+  p.gdpr: a(href="mailto:sekretariat@vsp.tu-berlin.de") Email VSP TU Berlin
+
+  p.gdpr GDPR: {{ $t('gdpr')}}
+
 </template>
 
 <script lang="ts">
@@ -62,8 +66,33 @@ export default {
 @import '@/styles.scss';
 
 #colophon-content {
-  padding-top: 2rem;
-  width: 16rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0rem 0rem;
+  font-size: 2rem;
+  width: 100%;
+  color: #335;
+}
+
+h4 {
+  border-bottom: 1px solid #ccc;
+}
+
+.logos {
+  margin: 0 0;
+  display: grid;
+  gap: 6rem;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  flex-direction: row;
+}
+
+.logo {
+  margin: auto auto;
+  width: 100%;
+}
+
+.bmvi {
+  margin: 0 0;
 }
 
 .colophon .professor {
@@ -80,30 +109,21 @@ export default {
   color: $bannerHighlight;
 }
 
-.colophon p {
-  margin-bottom: 0px;
-}
-
 .colophon a {
-  font-size: 0.85rem;
-}
-
-.partners {
-  margin-bottom: 2rem;
-
-  p {
-    line-height: 1rem;
-    padding-top: 0.75rem;
-  }
+  color: #55a;
 }
 
 .nonbreak {
   width: max-content;
-  margin-left: auto;
 }
 
 .logo {
   margin-bottom: 2rem;
+}
+
+.gdpr {
+  margin-top: 1rem;
+  font-size: 1.2rem;
 }
 
 @media only screen and (max-width: 640px) {
