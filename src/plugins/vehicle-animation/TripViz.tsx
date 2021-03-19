@@ -56,8 +56,7 @@ const DRT_REQUEST = {
   fromY: 2,
   toX: 3,
   toY: 4,
-  veh: 5,
-  arrival: 6,
+  arrival: 5,
 }
 
 export default function Component(props: {

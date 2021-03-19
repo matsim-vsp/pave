@@ -550,7 +550,7 @@ class VehicleAnimation extends Vue {
     })
     this.requests = await this.parseDrtRequests(drtRequests)
     this.requestStart = this.requests.dimension(d => d[0]) // time0
-    this.requestEnd = this.requests.dimension(d => d[6]) // arrival
+    this.requestEnd = this.requests.dimension(d => d[5]) // arrival
     this.requestVehicle = this.requests.dimension(d => d[5])
 
     console.log('GO!')
@@ -574,7 +574,7 @@ class VehicleAnimation extends Vue {
     if (this.vehicleLookup.length) {
       for (const request of requests) {
         try {
-          request[5] = this.vehicleLookupString[request[5]]
+          request[6] = '' // this.vehicleLookupString[request[5]]
         } catch (e) {}
       }
     }
