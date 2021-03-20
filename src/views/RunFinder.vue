@@ -257,6 +257,7 @@ export default class VueComponent extends Vue {
   private runLookup: any = {}
   private modeSharePie: any = {}
   private infoHover = false
+  private needsInitialRun = true
 
   private runCosts = {
     fixedCosts: 1,
@@ -325,6 +326,7 @@ export default class VueComponent extends Vue {
 
   private mounted() {
     globalStore.commit('setFullScreen', true)
+    this.loadImageLookups()
     this.updateRoute()
   }
 
@@ -332,7 +334,30 @@ export default class VueComponent extends Vue {
     globalStore.commit('setFullScreen', false)
   }
 
-  private needsInitialRun = true
+  private imageLookups: { [pattern: string]: { [lang: string]: string } } = {}
+
+  private async loadImageLookups() {
+    // only load once.
+    if (Object.keys(this.imageLookups).length || !this.myState.svnRoot) return
+
+    try {
+      const csv = await this.myState.svnRoot.getFileText('../thumbnail_title_lookup.csv')
+      const patterns = Papaparse.parse(csv, {
+        header: true,
+        skipEmptyLines: true,
+      }).data as any
+
+      for (const pattern of patterns) {
+        this.imageLookups[pattern.fileNameEnding] = {
+          en: pattern.title_english,
+          de: pattern.title_german,
+        }
+      }
+    } catch (e) {
+      // weird but ok
+      console.warn(e)
+    }
+  }
 
   private clearState() {
     this.runLookup = {}
@@ -371,6 +396,8 @@ export default class VueComponent extends Vue {
     if (!this.myState.svnProject) return
 
     this.myState.svnRoot = new HTTPFileSystem(this.myState.svnProject)
+
+    this.loadImageLookups()
 
     // is the specific run on the URL?
     if (this.$route.params.pathMatch) {
@@ -637,6 +664,13 @@ export default class VueComponent extends Vue {
 
   private updateTitle(viz: number, title: string) {
     this.myState.vizes[viz].title = title
+    // but also check for pre-set filenaming patterns
+    for (const pattern of Object.keys(this.imageLookups)) {
+      if (title.endsWith(pattern)) {
+        this.myState.vizes[viz].title = this.imageLookups[pattern][this.globalState.locale]
+        break
+      }
+    }
   }
 
   @Watch('globalState.locale') async swapLocale() {
