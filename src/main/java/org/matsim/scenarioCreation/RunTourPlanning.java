@@ -26,12 +26,14 @@ class RunTourPlanning {
         String carrierVehtypes = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/CarrierCreationInput/carrier_vehicleTypes.xml";
         String networkFile = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-network.xml.gz\n";
         String changeEventsFile = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/10pct/p2-23/p2-23.networkChangeEvents.xml.gz";
+
         if(args.length != 0){
             inputDir = args[0];
             carriersInputName = args[1];
             carriersOutput = args[2];
             carrierVehtypes = args[3];
             networkFile = args[4];
+            changeEventsFile = args[5];
         }
 
         Config config = ConfigUtils.createConfig(new FreightConfigGroup());
@@ -42,7 +44,7 @@ class RunTourPlanning {
         FreightConfigGroup freightConfig = ConfigUtils.addOrGetModule(config, FreightConfigGroup.class);
         freightConfig.setCarriersFile(inputDir + carriersInputName);
         freightConfig.setTimeWindowHandling(FreightConfigGroup.TimeWindowHandling.enforceBeginnings);
-        freightConfig.setCarriersVehicleTypesFile(carrierVehtypes);
+        freightConfig.setCarriersVehicleTypesFile(inputDir + carrierVehtypes);
         freightConfig.setTravelTimeSliceWidth(1800);
 
 //        Carriers carriers = new Carriers();
