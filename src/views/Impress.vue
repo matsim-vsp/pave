@@ -1,31 +1,10 @@
 <i18n>
 en:
   pave-project: 'PAVE'
-  head1: 'PAVE: Potential of automated vehicle systems'
-  desc1: 'Automated and connected driving is expected to have considerable potential for road traffic, especially with regard to increasing traffic safety, reducing consumption and emissions, improving traffic efficiency in the medium term, and sustainably strengthening Germany as a location for business and innovation.'
-  head2: 'The concept of Mobility-on-Demand'
-  desc2: 'The short video and interactive animation below illustrate what PAVE is all about.'
-  head3: 'Explore model results'
-  desc3: 'Click on one of the service scenarios below to explore the technical outputs:'
-  more-info: 'For more information:'
-  video: 'Video: What is PAVE?'
-  model: 'Interactive model simulation'
-  projMainPage: 'Project main page'
-  matsim: 'All simulations conducted using the MATSim simulation framework:'
+  head1: 'Legal Disclosure'
 de:
   pave-project: 'PAVE'
-  head1: 'PAVE: Potentiale automatisierter Verkehrssysteme'
-  desc1: 'Durch „Automatisiertes und vernetztes Fahren“ wird ein erhebliches Potential für den Straßenverkehr erwartet, insbesondere hinsichtlich „der Steigerung der Verkehrssicherheit, der Verbrauchs- und Emissionsreduzierung, einer mittelfristigen Verbesserung der Verkehrseffizienz und der nachhaltigen Stärkung des Wirtschafts- und Innovationsstandorts Deutschland“.'
-  head2: 'Das Konzept hinter Mobility-on-Demand'
-  desc2: 'Hier finden Sie ein Video und eine interaktive Animation zu der Funktionsweise von automatisierten Mobilitätsdiensten'
-  head3: 'Simulationsergebnisse'
-  desc3: 'Klicken Sie auf eine der Schaltflächen um Ergebnisse des jeweiligen Szenarios zu entdecken:'
-  video: 'Video: Was steckt hinter PAVE?'
-  model: 'Interaktive Simulation'
-  more-info: 'Weitere Informationen:'
-  projMainPage: 'Projekt Webseite'
-  matsim: 'Alle Simulationen wurden mit dem MATSim Framework durchgeführt'
-
+  head1: 'Impressum'
 </i18n>
 
 <template lang="pug">
@@ -33,42 +12,14 @@ de:
 
   .banner
     h2 {{ $t('pave-project') }}
-    h3 VSP / Technische Universität Berlin!
+    h3 VSP / Technische Universität Berlin
 
   .page-area
     .zcontent
       .main
-        .right
 
         h2 {{ $t('head1') }}
-        p {{ $t('desc1') }}
-
-        h2 {{ $t('head2') }}
-        p {{ $t('desc2') }}
-
-        .big-thumbs
-          .project
-            iframe.yt-size(width="100%" src="https://www.youtube-nocookie.com/embed/lE9us7EoaLc" frameborder="2" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen)
-            .desc
-              p {{ $t('video') }}
-          .project
-            router-link(:to="'/v/vehicle-animation/1-robotaxi/viz-vehicles-1.yaml'")
-              img.clip-it(src="/pave/thumb-drt.jpg")
-            .desc
-              p {{ $t('model') }}
-
-        h2 {{ $t('head3') }}
-        p {{ $t('desc3') }}
-
-        svn-projects.gap
-
-        h2 {{ $t('more-info') }}
-
-        p.with-space {{ $t('projMainPage') }}
-        a(href="https://pave-your-way.de" target="_blank") https://pave-your-way.de
-
-        p.with-space {{ $t('matsim') }}
-        a(href="https://matsim.org" target="_blank") https://matsim.org
+        p(v-html="imprint")
 
   .colophon
     .zcontent
@@ -95,20 +46,25 @@ const SVN_ROOT =
 })
 class MyComponent extends Vue {
   private state = globalStore.state
-  private readme = ''
+  private imprint = ''
   private markdownParser = new MarkdownIt()
 
   private async mounted() {
     const crumbs: any[] = []
     globalStore.commit('setBreadCrumbs', crumbs)
+    await this.showImprint()
+  }
 
+  @Watch('state.locale') async languageChanged() {
+    await this.showImprint()
+  }
+
+  private async showImprint() {
     try {
-      const readmeURL = `${SVN_ROOT}/readme.md`
-      const readmeMd = await fetch(readmeURL).then(r => r.text())
-      this.readme = this.markdownParser.render(readmeMd)
-    } catch (e) {
-      // no readme? oh well
-    }
+      const imprintURL = `${SVN_ROOT}/imprint.${this.state.locale}.md`
+      const imprintMd = await fetch(imprintURL).then(r => r.text())
+      this.imprint = this.markdownParser.render(imprintMd)
+    } catch (e) {}
   }
 }
 export default MyComponent
