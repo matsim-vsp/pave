@@ -33,7 +33,7 @@ de:
 
   .banner
     h2 {{ $t('pave-project') }}
-    h3 VSP / Technische Universität Berlin!
+    h3 VSP / Technische Universität Berlin
 
   .page-area
     .zcontent
