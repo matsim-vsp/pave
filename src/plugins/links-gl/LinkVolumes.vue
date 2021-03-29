@@ -149,7 +149,9 @@ class MyPlugin extends Vue {
 
   private geojsonData: any[] = []
 
-  private selectedColorRamp = 'viridis'
+  private selectedColorRamp = 'viridis' // if(darkMode)
+
+  //private selectedColorRamp = 'bluered' // if(!darkMode)
 
   private vizDetails = {
     title: '',

@@ -85,8 +85,8 @@ import TimeSlider from './TimeSlider.vue'
 
 @Component({ components: { TimeSlider } })
 export default class VueComponent extends Vue {
-  // @Prop({ required: true })
-  // private darkMode!: boolean
+  //@Prop({ required: true })
+  //private darkMode!: boolean
 
   @Prop({ required: true })
   private activeColumn!: number
