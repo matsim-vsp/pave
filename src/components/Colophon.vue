@@ -57,8 +57,6 @@ de:
 
   p.gdpr: a(href="imprint") {{ $t('imprint')}}
 
-  
-
 </template>
 
 <script lang="ts">

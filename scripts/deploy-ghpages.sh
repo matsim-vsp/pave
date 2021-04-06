@@ -12,4 +12,5 @@ git add . && git commit -m "gh-pages"
 
 echo --- PUSHING TO GITHUB ---
 git remote add origin git@github.com:matsim-vsp/pave.git
+# git remote add origin https://github.com/matsim-vsp/pave
 git push --force origin master:gh-pages
