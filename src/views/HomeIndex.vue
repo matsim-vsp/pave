@@ -306,45 +306,4 @@ h2.readme {
   margin: 1rem auto;
   padding: 0 1rem;
 }
-
-.tu-logo {
-  margin-top: -4rem;
-  text-align: right;
-  margin-right: 2rem;
-}
-
-.img-logo {
-  height: 8rem;
-}
-
-@media only screen and (max-width: 640px) {
-  .banner {
-    padding: 2rem 1rem;
-  }
-
-  .zcontent {
-    padding: 2rem 1rem 8rem 1rem;
-    flex-direction: column-reverse;
-  }
-
-  .colophon {
-    display: none;
-  }
-
-  .headline {
-    padding: 0rem 0rem 1rem 0rem;
-    font-size: 1.5rem;
-    line-height: 1.8rem;
-  }
-
-  .tu-logo {
-    margin-top: -2rem;
-    text-align: right;
-    margin-right: 0.5rem;
-  }
-
-  .img-logo {
-    height: 4rem;
-  }
-}
 </style>

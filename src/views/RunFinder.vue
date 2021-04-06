@@ -144,6 +144,8 @@ de:
             .col3(v-if="modeSharePie.description")
               sankey-flipper(:myState="myState" :modeSharePie="modeSharePie")
 
+      
+
 
     //- thumbnails of each viz and image in this folder
     .stripe(v-if="myState.vizes.length")
@@ -168,6 +170,10 @@ de:
                       :style="{'pointer-events': viz.component==='image-view' ? 'auto' : 'none'}"
                       @title="updateTitle(index, $event)")
                 p {{ viz.title }}
+    .colophon
+      .zcontent
+        .main
+          colophon
 
   .modal.info-modal(:class="{'is-active': infoHover}")
     .modal-background(@click="infoHover=false")
@@ -207,6 +213,7 @@ import plugins from '@/plugins/pluginRegistry'
 import HTTPFileSystem from '@/util/HTTPFileSystem'
 import { BreadCrumb, VisualizationPlugin, Status, SVNProject } from '@/Globals'
 import SankeyFlipper from '@/components/SankeyFlipper.vue'
+import Colophon from '@/components/Colophon.vue'
 import VegaComponent from '@/plugins/vega-lite/VegaLite.vue'
 
 const RUN_LOG_NUM_KPI_COLUMNS = 9
@@ -246,7 +253,7 @@ interface RunFinder {
 }
 
 @Component({
-  components: Object.assign({ SankeyFlipper }, plugins),
+  components: Object.assign({ SankeyFlipper, Colophon }, plugins),
   props: {},
   i18n,
 })
@@ -1154,6 +1161,25 @@ img.is-selected {
 
 .info-icon:hover {
   cursor: pointer;
+}
+
+.colophon {
+  background-color: white;
+}
+
+.zcontent {
+  flex: 1;
+  padding: 1rem 0rem 5rem 0rem;
+  display: flex;
+  width: 100%;
+}
+
+.main {
+  margin: 0 auto;
+}
+
+.main {
+  max-width: 64rem;
 }
 
 @media only screen and (max-width: 50em) {
