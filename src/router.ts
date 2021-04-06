@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter, { Route, RouteConfig } from 'vue-router'
 import HomeIndex from '@/views/HomeIndex.vue'
+import Imprint from '@/views/Impress.vue'
 import FolderBrowser from '@/views/FolderBrowser.vue'
 import RunFinder from '@/views/RunFinder.vue'
 
@@ -13,6 +14,11 @@ const routes = [
     path: '/',
     name: 'Home',
     component: HomeIndex,
+  },
+  {
+    path: '/imprint',
+    name: 'Imprint',
+    component: Imprint,
   },
   {
     // catch-all back to home page

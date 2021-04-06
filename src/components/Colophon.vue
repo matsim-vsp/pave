@@ -4,8 +4,10 @@ en:
   contact: 'Contact'
   partners: 'Project Partners'
   gdpr: 'No personal data stored or collected'
+  imprint: 'Legal notice'
 de:
   gdpr: 'Keine Speicherung oder Sammlung von persönlichen Daten'
+  imprint: 'Impressum'
 
 </i18n>
 
@@ -52,6 +54,10 @@ de:
   p.gdpr: a(href="mailto:sekretariat@vsp.tu-berlin.de") Email VSP TU Berlin
 
   p.gdpr GDPR: {{ $t('gdpr')}}
+
+  p.gdpr: a(href="imprint") {{ $t('imprint')}}
+
+  
 
 </template>
 
