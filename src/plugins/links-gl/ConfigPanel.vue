@@ -138,6 +138,7 @@ export default class VueComponent extends Vue {
     this.debounceScale()
   }
 
+  // TODO: This does not work if the darkmode is active when the page is loaded. For this the darkmode must be switched off once and switched on again.
   private changeColorForDarkMode() {
     if (this.isDarkMode) {
       ;(document.getElementsByClassName('color-button') as HTMLCollectionOf<
