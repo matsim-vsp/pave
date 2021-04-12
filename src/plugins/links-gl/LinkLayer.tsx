@@ -98,7 +98,7 @@ export default function Component({
   const fetchColor = scaleThreshold()
     .domain(new Array(20).fill(0).map((v, i) => 0.05 * i))
     .range(builtColors)
-  // .range(dark ? builtColors : builtColors.reverse())
+    .range(dark ? builtColors : builtColors.reverse())
 
   // this assumes that zero means hide the link. This may not be generic enough
   const colorPaleGrey = dark ? [80, 80, 80, 40] : [212, 212, 212, 40]

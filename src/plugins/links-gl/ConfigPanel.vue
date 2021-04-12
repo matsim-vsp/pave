@@ -47,8 +47,9 @@
     p: b {{ $t('colors') }}
       .dropdown.full-width(:class="{'is-active': isColorButtonActive}")
         .dropdown-trigger
-          img.color-button(:src="`/pave/colors/scale-${selectedColorRamp}.png`"
-              @click="() => this.isColorButtonActive = !this.isColorButtonActive"
+          img.color-button(v-bind:style="[isDarkMode ? {'transform' : 'scaleX(1)'} : {'transform' : 'scaleX(-1)'}]"
+                          :src="`/pave/colors/scale-${selectedColorRamp}.png`"
+                          @click="() => this.isColorButtonActive = !this.isColorButtonActive"
           )
 
         #dropdown-menu-color-selector.dropdown-menu(role="menu")
@@ -56,7 +57,8 @@
             a.dropdown-item(v-for="colorRamp in Object.keys(colorRamps)"
                             @click="handleColorRamp(colorRamp)"
                             :style="{'padding': '0.25rem 0.25rem'}")
-              img(:src="`/pave/colors/scale-${colorRamp}.png`")
+              img.swapColor(v-bind:style="[isDarkMode ? {'transform' : 'scaleX(1)'} : {'transform' : 'scaleX(-1)'}]"
+                            :src="`/pave/colors/scale-${colorRamp}.png`")
               p(:style="{'lineHeight': '1rem', 'marginBottom':'0.25rem'}") {{ colorRamp }}
 
 </template>
@@ -81,12 +83,14 @@ de:
 import { Vue, Component, Watch, Prop } from 'vue-property-decorator'
 import { debounce } from 'debounce'
 
+import globalStore from '@/store'
 import TimeSlider from './TimeSlider.vue'
+import { ColorScheme } from '@/Globals'
 
 @Component({ components: { TimeSlider } })
 export default class VueComponent extends Vue {
-  // @Prop({ required: true })
-  // private darkMode!: boolean
+  //@Prop({ required: true })
+  //private darkMode!: boolean
 
   @Prop({ required: true })
   private activeColumn!: number
@@ -118,6 +122,9 @@ export default class VueComponent extends Vue {
     picnic: { png: 'scale-picnic.png' },
   }
 
+  private globalState = globalStore.state
+  private isDarkMode = this.globalState.colorScheme === ColorScheme.DarkMode
+
   private mounted() {
     this.scaleWidthValue = '' + this.scaleWidth
   }
@@ -129,6 +136,47 @@ export default class VueComponent extends Vue {
       return
     }
     this.debounceScale()
+  }
+
+  private changeColorForDarkMode() {
+    if (this.isDarkMode) {
+      ;(document.getElementsByClassName('color-button') as HTMLCollectionOf<
+        HTMLElement
+      >)[0].style.transform = 'scaleX(1)'
+    } else {
+      ;(document.getElementsByClassName('color-button') as HTMLCollectionOf<
+        HTMLElement
+      >)[0].style.transform = 'scaleX(-1)'
+    }
+
+    var i
+
+    if (this.isDarkMode) {
+      for (
+        i = 0;
+        i < (document.getElementsByClassName('swapColor') as HTMLCollectionOf<HTMLElement>).length;
+        i++
+      ) {
+        ;(document.getElementsByClassName('swapColor') as HTMLCollectionOf<HTMLElement>)[
+          i
+        ].style.transform = 'scaleX(1)'
+      }
+    } else {
+      for (
+        i = 0;
+        i < (document.getElementsByClassName('swapColor') as HTMLCollectionOf<HTMLElement>).length;
+        i++
+      ) {
+        ;(document.getElementsByClassName('swapColor') as HTMLCollectionOf<HTMLElement>)[
+          i
+        ].style.transform = 'scaleX(-1)'
+      }
+    }
+  }
+
+  @Watch('globalState.colorScheme') private swapTheme() {
+    this.isDarkMode = this.globalState.colorScheme === ColorScheme.DarkMode
+    this.changeColorForDarkMode()
   }
 
   private debounceScale = debounce(this.gotNewScale, 500)
