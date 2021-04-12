@@ -57,7 +57,7 @@
             a.dropdown-item(v-for="colorRamp in Object.keys(colorRamps)"
                             @click="handleColorRamp(colorRamp)"
                             :style="{'padding': '0.25rem 0.25rem'}")
-              img.swapColor(v-bind="[isDarkMode ? {'transform' : 'scaleX(-1)'} : {'transform' : 'scaleX(1)'}]"
+              img.swapColor(v-bind:style="[isDarkMode ? {'transform' : 'scaleX(1)'} : {'transform' : 'scaleX(-1)'}]"
                             :src="`/pave/colors/scale-${colorRamp}.png`")
               p(:style="{'lineHeight': '1rem', 'marginBottom':'0.25rem'}") {{ colorRamp }}
 
