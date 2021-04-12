@@ -19,7 +19,7 @@ de:
       .main
 
         h2 {{ $t('head1') }}
-        p(v-html="imprint")
+        p.imprint-style(v-html="imprint")
 
   .colophon
     .zcontent
@@ -302,5 +302,12 @@ h2.readme {
   .img-logo {
     height: 4rem;
   }
+}
+</style>
+
+<style scoped>
+.imprint-style >>> h4 {
+  font-size: 1.2rem;
+  font-weight: bolder;
 }
 </style>
