@@ -55,7 +55,7 @@ de:
 
   p.gdpr GDPR: {{ $t('gdpr')}}
 
-  p.gdpr: a(href="../../imprint") {{ $t('imprint')}} <!--TODO: Change href link-->
+  p.gdpr: router-link(to="/imprint") {{ $t('imprint')}} <!--TODO: Change href link-->
 
 </template>
 
