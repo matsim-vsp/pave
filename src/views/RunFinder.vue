@@ -1,7 +1,7 @@
 <i18n>
 en:
-  annualRevenue: 'Annual revenue'
-  annualSubsidy: 'Annual revenue'
+  annualRevenue: 'Annual profit'
+  annualSubsidy: 'Annual loss'
   demand: 'Demand'
   expensePerDay: 'Expenses/day'
   fleetSize: 'Fleet size'
@@ -20,8 +20,8 @@ en:
   vehicles: 'vehicles'
   waitTime: '95% waiting times'
 de:
-  annualRevenue: 'Jährlicher Umsatz'
-  annualSubsidy: 'Jährlicher Subventionen'
+  annualRevenue: 'Gewinn/Jahr'
+  annualSubsidy: 'Verlust/Jahr'
   demand: 'Nachfrage'
   expensePerDay: 'Ausgaben/Tag'
   fleetSize: 'Flottengröße'
@@ -144,7 +144,7 @@ de:
             .col3(v-if="modeSharePie.description")
               sankey-flipper(:myState="myState" :modeSharePie="modeSharePie")
 
-      
+
 
 
     //- thumbnails of each viz and image in this folder
