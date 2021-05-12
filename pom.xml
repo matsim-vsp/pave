@@ -130,6 +130,13 @@
 			<type>pom</type>
 		</dependency>
 
+		<dependency>
+			<groupId>org.matsim.contrib</groupId>
+			<artifactId>emissions</artifactId>
+			<version>${matsim.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- berlin scenario-->
 <!--		<dependency>-->
 <!--			<groupId>com.github.matsim-vsp</groupId>-->
