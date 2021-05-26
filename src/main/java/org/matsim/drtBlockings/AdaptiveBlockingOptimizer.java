@@ -175,8 +175,6 @@ class AdaptiveBlockingOptimizer implements BlockingOptimizer {
                 //Do we still need the latestBlockingSchedulingTIme?? Because with our vehicles for each time window, its not
                 //possible to exceed the global service time
                 //instead of using this we should use timer.getTimeOfDay() > drtBlockingRequest.getBlockingStart.
-                //TODO Before doing serious runs it should be tested that the above constraint
-                // of latestBlockingSchedulingTime really never is false. SM Feb 20
                 rejectBlockingRequest(drtBlockingRequest);
                 blockingRequestsIterator.remove();
             } else {

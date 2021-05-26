@@ -62,21 +62,21 @@ public class RunBaseCaseInBerlin {
 
     //GENERAL INPUT
     //dir for 1 carrier only
-    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
+//    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
     //dir for all Berlin carriers
-//    private static final String INPUT_DIR = "D:/Simon/tubcloud2/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
+    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
     private static final String INPUT_CONFIG = INPUT_DIR + "p2-23.output_config.xml";
     private static final String INPUT_NETWORK_CHANGE_EVENTS = INPUT_DIR + "p2-23.networkChangeEvents.xml.gz";
     //DIE FOLGENDEN PLÄNE FÜR SERIOUS RUNS VERWENDEN!
-//    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtUsersOnly_selectedPlans_noRoutes.xml.gz";
-    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_200Persons.xml.gz";
+    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtUsersOnly_selectedPlans_noRoutes.xml.gz";
+//    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_200Persons.xml.gz";
     private static final String INPUT_NETWORK = INPUT_DIR + "p2-23.output_network.xml.gz";
     private static final String INPUT_DRT_VEHICLES = INPUT_DIR + "p2-23.drt__vehicles.xml.gz";
 
     //CARRIER INPUT
-//    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_8-24_PLANNED.xml";
-    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_LichtenbergNord_8-24_PLANNED_oneTour.xml";
-    private static final String CARRIER_VEHICLE_TYPES = INPUT_DIR + "carrier_vehicleTypes.xml";
+    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_8-24_BaseCase_PLANNED.xml";
+//    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_LichtenbergNord_8-24_PLANNED_oneTour.xml";
+    private static final String CARRIER_VEHICLE_TYPES = INPUT_DIR + "carrier_vehicleTypes_wTimeCost.xml";
     private static final boolean RUN_TOURPLANNING = false;
 
     private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/base_cases/" + CARRIERS_PLANS_PLANNED.replace(INPUT_DIR, "");

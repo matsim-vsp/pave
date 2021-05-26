@@ -21,7 +21,7 @@ class RunTourPlanning {
     public static void main(String[] args) {
 
         String inputDir = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/CarrierCreationInput/readyForTourPlanning/";
-        String carriersInputName = "carriers_4hTimeWindows_openBerlinNet_fullDay.xml ";
+        String carriersInputName = "carriers_4hTimeWindows_openBerlinNet_LichtenbergNord_8-24.xml";
         String carriersOutput = inputDir + "PLANNED/" + carriersInputName;
         String carrierVehtypes = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/CarrierCreationInput/carrier_vehicleTypes.xml";
         String networkFile = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.5-10pct/input/berlin-v5.5-network.xml.gz\n";

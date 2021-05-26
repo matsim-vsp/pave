@@ -48,7 +48,10 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
     //this means that the first service of a tour often has a very big duration!
     //7 min was chosen because in the base drt runs the 95 percentile
     // of average customer waiting has to be fewer than 7min SM March21
-    static final double SUBMISSION_LOOK_AHEAD = 7 * 60;
+//    static final double SUBMISSION_LOOK_AHEAD = 7 * 60;
+
+//    static final double SUBMISSION_LOOK_AHEAD = FreightRetoolTask.RETOOL_DURATION + 104;
+    static final double SUBMISSION_LOOK_AHEAD = FreightRetoolTask.RETOOL_DURATION;
 
     private final Network network;
     private final String mode;
