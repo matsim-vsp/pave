@@ -66,14 +66,14 @@ public class AllTasksAnalysis implements ActivityStartEventHandler, DrtBlockingR
     public static void main(String args[]) {
 
 
-        String dir = "C:/Users/simon/Documents/UNI/MA/Projects/paveFork/output/berlin-v5.5-10pct/policy_cases/test/";
+        String dir = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/Analysis/TaskComp/";
         String inputConfig = dir + "p2-23.output_config.xml";
         String inputNetwork = dir + "p2-23.output_network.xml.gz";
 //        String carrierPlans = dir + "carriers_4hTimeWindows_openBerlinNet_8-24_PLANNED.xml";
-        String carrierPlans = dir + "carriers_4hTimeWindows_openBerlinNet_LichtenbergNord_8-24_PLANNED.xml";
-        String carrierVehTypes = dir + "carrier_vehicleTypes.xml";
-        String eventsFile = dir + "bug fixed attempt 1/p2-23DRTBlockingPolicyCase.2.events.xml.gz";
-        String outputFile = dir + "bug fixed attempt 1/TaskAnalysis.csv";
+        String carrierPlans = dir + "carriers_2hTimeWindows_openBerlinNet_fullDay_PLANNED.xml";
+        String carrierVehTypes = dir + "carrier_vehicleTypes_woTimeCost.xml";
+        String eventsFile = dir + "p2-23DRTBlockingPolicyCase.2.events.xml.gz";
+        String outputFile = dir + "TaskAnalysis.csv";
 
         Config config = ConfigUtils.loadConfig(inputConfig);
         config.network().setInputFile(inputNetwork);
@@ -378,7 +378,7 @@ public class AllTasksAnalysis implements ActivityStartEventHandler, DrtBlockingR
                 Task task = data.request.getTasks().get(0);
 
                 writer.newLine();
-                writer.write(data.vehId + ";" + data.request.getId()  + ";" + event.getTaskType() + ";" +
+                writer.write(data.vehId + ";" + data.request.getId()  + ";" + event.getTaskType().name() + ";" +
                         event.getTaskIndex() + ";" + event.getTime() + ";");
 
                 writer.write(task.getBeginTime() + ";" + task.getEndTime());
