@@ -19,17 +19,12 @@ import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.CarrierPlanXmlWriterV2;
 import org.matsim.contrib.freight.carrier.CarrierUtils;
 import org.matsim.contrib.freight.carrier.Carriers;
-import org.matsim.contrib.freight.controler.CarrierModule;
-import org.matsim.contrib.freight.controler.CarrierPlanStrategyManagerFactory;
-import org.matsim.contrib.freight.controler.CarrierScoringFunctionFactory;
 import org.matsim.contrib.freight.usecases.analysis.CarrierScoreStats;
 import org.matsim.contrib.freight.usecases.analysis.LegHistogram;
-import org.matsim.contrib.freight.usecases.chessboard.CarrierScoringFunctionFactoryImpl;
 import org.matsim.contrib.freight.utils.FreightUtils;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.MatsimServices;
@@ -39,7 +34,7 @@ import org.matsim.core.scoring.functions.ScoringParametersForPerson;
 import org.matsim.core.scoring.functions.SubpopulationScoringParameters;
 import org.matsim.drtBlockings.DrtBlockingModule;
 import org.matsim.drtBlockings.analysis.BasicTourStatsAnalysis;
-import org.matsim.drtBlockings.analysis.NeverStartedToursAnalysisV1;
+import org.matsim.drtBlockings.analysis.NeverStartedToursAnalysis;
 import org.matsim.drtBlockings.analysis.ServicesConductedAnalysis;
 import org.matsim.drtBlockings.analysis.ToursFromCarriersFileAnalysis;
 import org.matsim.run.RunBerlinScenario;
@@ -129,7 +124,7 @@ public class RunPolicyCaseInBerlin {
 
         //not sure which analysis are needed. We may need to add some analysis classes
         BasicTourStatsAnalysis basicBlockingAnalysis = new BasicTourStatsAnalysis(scenario.getNetwork());
-        NeverStartedToursAnalysisV1 blockingRejectionAnalysis = new NeverStartedToursAnalysisV1();
+        NeverStartedToursAnalysis blockingRejectionAnalysis = new NeverStartedToursAnalysis();
         ServicesConductedAnalysis servicesConductedAnalysis = new ServicesConductedAnalysis(FreightUtils.getCarriers(scenario));
         ToursFromCarriersFileAnalysis toursFromCarriersFileAnalysis = new ToursFromCarriersFileAnalysis(scenario.getNetwork(), FreightUtils.getCarriers(scenario));
 
