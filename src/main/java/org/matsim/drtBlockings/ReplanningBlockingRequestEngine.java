@@ -34,7 +34,8 @@ import org.matsim.core.mobsim.framework.events.MobsimAfterSimStepEvent;
 import org.matsim.core.mobsim.framework.events.MobsimInitializedEvent;
 import org.matsim.drtBlockings.events.DrtBlockingRequestRejectedEvent;
 import org.matsim.drtBlockings.events.DrtBlockingRequestRejectedEventHandler;
-import org.matsim.drtBlockings.tasks.FreightDeliveryTask;
+import org.matsim.drtBlockings.tasks.FreightPickupTask;
+import org.matsim.drtBlockings.tasks.FreightServiceTask;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
@@ -100,13 +101,10 @@ class ReplanningBlockingRequestEngine implements BlockingRequestEngine, DrtBlock
             if(! this.rejectedRequests.contains(submittedRequest.getId())){
                 Carrier carrier =  carriers.getCarriers().get(submittedRequest.getCarrierId());
                 for (Task task : submittedRequest.getTasks()) {
-                    if (task instanceof FreightDeliveryTask){
-                        Tour.TourActivity act = ((FreightDeliveryTask) task).getTourActivity();
-                        if(act instanceof Tour.ShipmentBasedActivity){
-                            carrier.getShipments().remove(((Tour.ShipmentBasedActivity) act).getShipment());
-                        } else if (act instanceof Tour.ServiceActivity){
-                            carrier.getServices().remove(((Tour.ServiceActivity) act).getService());
-                        }
+                    if (task instanceof FreightServiceTask){
+                        carrier.getServices().remove(((FreightServiceTask) task).getCarrierService());
+                    } else if (task instanceof FreightPickupTask){
+                        carrier.getShipments().remove( ((FreightPickupTask) task).getShipment());
                     }
                 }
             }

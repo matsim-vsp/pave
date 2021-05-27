@@ -23,5 +23,5 @@ import org.matsim.core.events.MobsimScopeEventHandler;
 import org.matsim.core.mobsim.framework.listeners.MobsimAfterSimStepListener;
 import org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener;
 
-public interface BlockingRequestEngine  extends MobsimInitializedListener, MobsimAfterSimStepListener, MobsimScopeEventHandler {
+interface BlockingRequestEngine  extends MobsimInitializedListener, MobsimAfterSimStepListener, MobsimScopeEventHandler {
 }

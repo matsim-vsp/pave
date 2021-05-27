@@ -20,6 +20,7 @@
 
 package org.matsim.drtBlockings.tasks;
 
+import org.apache.log4j.Logger;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.schedule.DrtStayTaskEndTimeCalculator;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
@@ -27,7 +28,10 @@ import org.matsim.contrib.dvrp.schedule.StayTask;
 import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.contrib.freight.carrier.TimeWindow;
 
+
 public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
+
+    private static final Logger log = Logger.getLogger(DrtStayTaskEndTimeCalculator.class);
 
     private final FreightConfigGroup.TimeWindowHandling timeWindowHandling;
 
@@ -38,21 +42,29 @@ public class FreightTaskEndTimeCalculator extends DrtStayTaskEndTimeCalculator {
 
     @Override
     public double calcNewEndTime(DvrpVehicle vehicle, StayTask task, double newBeginTime) {
-        double duration = task.getEndTime() - task.getBeginTime();
-        if(task.getTaskType().equals(FreightDeliveryTask.FREIGHT_DELIVERY_TASK_TYPE)
-                && timeWindowHandling.equals(FreightConfigGroup.TimeWindowHandling.enforceBeginnings)){
-                TimeWindow timeWindow = ((FreightDeliveryTask) task).getTimeWindow();
-                duration = ((FreightDeliveryTask) task).getDeliveryDuration();
-                if(newBeginTime <= timeWindow.getStart()){
-                    return timeWindow.getStart() + duration;
-                } else if(newBeginTime > timeWindow.getEnd()){
-                    //TODO do something less restrictive
-                    throw new RuntimeException("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() + " but it will come too late for that");
-                }
-        } else if(task.getTaskType().equals(FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE)
-            || task.getTaskType().equals(FreightRetoolTask.RETOOL_TASK_TYPE)){
-            return newBeginTime + duration;
+        double duration;
+        if(timeWindowHandling.equals(FreightConfigGroup.TimeWindowHandling.enforceBeginnings) &&
+                (task.getTaskType().equals(FreightServiceTask.FREIGHT_SERVICE_TASK_TYPE) || task.getTaskType().equals(FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE) ) ) {
+            TimeWindow timeWindow = task instanceof FreightServiceTask ? ((FreightServiceTask) task).getTimeWindow() : ((FreightPickupTask) task).getTimeWindow();
+            duration = task instanceof FreightServiceTask ? ((FreightServiceTask) task).getCarrierService().getServiceDuration() : ((FreightPickupTask) task).getShipment().getPickupServiceTime();
+
+            if(newBeginTime <= timeWindow.getStart()){
+                log.info("vehicle " + vehicle.getId() + " is too early at service " + ((FreightServiceTask) task).getCarrierService().getId() + ". newBeginTime = " + newBeginTime);
+                return timeWindow.getStart() + duration;
+            } else if(newBeginTime > timeWindow.getEnd()){
+                //this has been proved to be to restrictive.
+//                throw new RuntimeException("vehicle " + vehicle.getId() + " has to reschedule delivery " + task.toString() + " but it will come too late for that");
+            }
+
+        }
+        if (FreightServiceTask.FREIGHT_SERVICE_TASK_TYPE.equals(task.getTaskType())) {
+            return newBeginTime + ((FreightServiceTask) task).getCarrierService().getServiceDuration();
+        } else if (FreightPickupTask.FREIGHT_PICKUP_TASK_TYPE.equals(task.getTaskType())) {
+            return newBeginTime + ((FreightPickupTask) task).getShipment().getPickupServiceTime();
+        } else if (FreightRetoolTask.RETOOL_TASK_TYPE.equals(task.getTaskType())) {
+            return newBeginTime + FreightRetoolTask.RETOOL_DURATION;
         }
         return super.calcNewEndTime(vehicle, task, newBeginTime);
+
     }
 }

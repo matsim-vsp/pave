@@ -18,6 +18,7 @@ public class DrtBlockingRequest implements Request {
     private final Id<Carrier> carrierId;
     private final double duration;
     private final String mode;
+    private final double startTime;
 
     private List<Task> tasks;
 
@@ -33,6 +34,7 @@ public class DrtBlockingRequest implements Request {
         this.tasks = builder.tasks;
         this.carrierId = builder.carrierId;
         this.duration = builder.duration;
+        this.startTime = builder.startTime;
     }
 
     public static Builder newBuilder() { return new Builder(); }
@@ -45,6 +47,7 @@ public class DrtBlockingRequest implements Request {
         builder.submissionTime = copy.getSubmissionTime();
         builder.tasks = copy.getTasks();
         builder.duration = copy.duration;
+        builder.startTime = copy.startTime;
 
         return builder;
     }
@@ -61,7 +64,7 @@ public class DrtBlockingRequest implements Request {
 
     double getPlannedBlockingDuration() { return this.duration; }
 
-    List<Task> getTasks() {
+    public List<Task> getTasks() {
         return this.tasks;
     }
 
@@ -77,6 +80,8 @@ public class DrtBlockingRequest implements Request {
 
     public String getMode() { return this.mode; }
 
+    public double getStartTime() { return this.startTime; }
+
     public static final class Builder {
 
         private Id<Request> id;
@@ -85,6 +90,7 @@ public class DrtBlockingRequest implements Request {
         private Double duration;
         private Id<Carrier> carrierId;
         private List<Task> tasks;
+        private Double startTime;
 
         public Builder id(Id<Request> val) {
             id = val;
@@ -113,6 +119,11 @@ public class DrtBlockingRequest implements Request {
 
         public Builder tasks(List<Task> val) {
             tasks = val;
+            return this;
+        }
+
+        public Builder startTime(Double val) {
+            startTime = val;
             return this;
         }
 

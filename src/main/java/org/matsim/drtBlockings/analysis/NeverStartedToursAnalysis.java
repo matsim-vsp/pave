@@ -1,16 +1,13 @@
 package org.matsim.drtBlockings.analysis;
 
-import com.google.common.base.Function;
 import org.matsim.api.core.v01.Id;
-import org.matsim.contrib.drt.passenger.events.DrtRequestSubmittedEvent;
-import org.matsim.contrib.drt.passenger.events.DrtRequestSubmittedEventHandler;
-import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.optimizer.Request;
 import org.matsim.core.api.experimental.events.EventsManager;
+import org.matsim.core.controler.events.IterationEndsEvent;
+import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.utils.io.IOUtils;
-import org.matsim.drtBlockings.DrtBlockingRequest;
 import org.matsim.drtBlockings.events.*;
 
 import java.io.BufferedWriter;
@@ -20,7 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NeverStartedToursAnalysisV1 implements DrtBlockingRequestSubmittedEventHandler, DrtBlockingRequestScheduledEventHandler {
+public class NeverStartedToursAnalysis implements DrtBlockingRequestSubmittedEventHandler,
+        DrtBlockingRequestScheduledEventHandler, IterationEndsListener {
 
     private Map<Id<Request>, Double> requestToTime = new HashMap<>();
 //    private Map<Id<DvrpVehicle>, DrtBlockingTourData> allTours = new HashMap<>();
@@ -39,7 +37,7 @@ public class NeverStartedToursAnalysisV1 implements DrtBlockingRequestSubmittedE
         String outputFile = dir + "neverStartedTourStatsV1.csv";
 
         EventsManager manager = EventsUtils.createEventsManager();
-        NeverStartedToursAnalysisV1 handler = new NeverStartedToursAnalysisV1();
+        NeverStartedToursAnalysis handler = new NeverStartedToursAnalysis();
         manager.addHandler(handler);
         manager.initProcessing();
         MatsimEventsReader reader = DrtBlockingEventsReader.create(manager);
@@ -65,11 +63,8 @@ public class NeverStartedToursAnalysisV1 implements DrtBlockingRequestSubmittedE
                     writer.write(i + ";" + data.requestId + ";" + data.time);
                     writer.newLine();
                 }
-
-
                 i++;
             }
-
             writer.close();
         } catch(IOException e) {
             e.printStackTrace();
@@ -90,11 +85,18 @@ public class NeverStartedToursAnalysisV1 implements DrtBlockingRequestSubmittedE
 
     @Override
     public void handleEvent(DrtBlockingRequestScheduledEvent event) {
-
-//        double submitTime = this.requestToTime.remove(event.getRequestId());
-//        DrtBlockingTourData data = new DrtBlockingTourData(event.getRequestId(), submitTime);
-
         this.scheduledTours.add(event.getRequestId());
+    }
+
+    @Override
+    public void notifyIterationEnds(IterationEndsEvent event) {
+        writeStats(event.getServices().getControlerIO().getIterationFilename(event.getIteration(), "neverStartedTourStatsV1.csv"));
+    }
+
+    @Override
+    public void reset(int iteration) {
+        this.allTours.clear();
+        this.scheduledTours.clear();
     }
 
     private class DrtBlockingTourData {

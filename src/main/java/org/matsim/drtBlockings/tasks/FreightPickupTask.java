@@ -20,9 +20,11 @@
 
 package org.matsim.drtBlockings.tasks;
 
+import com.graphhopper.jsprit.core.problem.job.Shipment;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.drt.schedule.DrtTaskType;
 import org.matsim.contrib.dvrp.schedule.StayTask;
+import org.matsim.contrib.freight.carrier.CarrierShipment;
 import org.matsim.contrib.freight.carrier.TimeWindow;
 import org.matsim.contrib.freight.carrier.Tour;
 
@@ -32,24 +34,18 @@ public class FreightPickupTask extends StayTask {
 
     public static final DrtTaskType FREIGHT_PICKUP_TASK_TYPE = new DrtTaskType("PICKUP", STAY);
 
-    private TimeWindow timeWindow;
-    private final int capacity;
-
-    public FreightPickupTask(Tour.ServiceActivity serviceActivity,  double start, double end, Link location) {
-        super(FREIGHT_PICKUP_TASK_TYPE, start , end, location);
-        if(location.getId() != serviceActivity.getLocation()) throw new IllegalArgumentException();
-        this.timeWindow = serviceActivity.getTimeWindow();
-        this.capacity = serviceActivity.getService().getCapacityDemand();
-    }
+    private CarrierShipment shipment;
 
     public FreightPickupTask(Tour.Pickup pickupActivity, double start, double end, Link location){
         super(FREIGHT_PICKUP_TASK_TYPE, start, end, location);
         if(location.getId() != pickupActivity.getLocation()) throw new IllegalArgumentException();
-        this.timeWindow = pickupActivity.getTimeWindow();
-        this.capacity = pickupActivity.getShipment().getSize();
+        this.shipment = pickupActivity.getShipment();
     }
 
     public TimeWindow getTimeWindow() {
-        return timeWindow;
+        return this.shipment.getPickupTimeWindow();
     }
+
+    public CarrierShipment getShipment() {return this.shipment;}
+
 }

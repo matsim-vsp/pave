@@ -34,18 +34,24 @@ import org.matsim.contrib.freight.carrier.*;
 import org.matsim.core.config.Config;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.util.TravelTime;
-import org.matsim.drtBlockings.tasks.FreightDeliveryTask;
+import org.matsim.drtBlockings.tasks.FreightServiceTask;
 import org.matsim.drtBlockings.tasks.FreightDriveTask;
 import org.matsim.drtBlockings.tasks.FreightPickupTask;
 import org.matsim.drtBlockings.tasks.FreightRetoolTask;
+import org.matsim.vehicles.Vehicle;
 
 import java.util.*;
 
 class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
-    //TODO make this configurable
-    static final double RETOOL_DURATION = 5*60;
-    static final double SUBMISSION_LOOK_AHEAD = 15 * 60;
+    //changed from 15min to 7min because tours often started before the services time window begins
+    //this means that the first service of a tour often has a very big duration!
+    //7 min was chosen because in the base drt runs the 95 percentile
+    // of average customer waiting has to be fewer than 7min SM March21
+//    static final double SUBMISSION_LOOK_AHEAD = 7 * 60;
+
+//    static final double SUBMISSION_LOOK_AHEAD = FreightRetoolTask.RETOOL_DURATION + 104;
+    static final double SUBMISSION_LOOK_AHEAD = FreightRetoolTask.RETOOL_DURATION;
 
     private final Network network;
     private final String mode;
@@ -69,6 +75,7 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
         carriers.getCarriers().values().forEach(carrier -> {
             if(CarrierUtils.getCarrierMode(carrier).equals(mode)){
+                System.out.println("CARRIER: " + carrier.getId());
                 requests.addAll(createBlockingRequestsForCarrier(carrier));
             }
         });
@@ -77,17 +84,23 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
     private Set<DrtBlockingRequest> createBlockingRequestsForCarrier(Carrier carrier){
         Set<DrtBlockingRequest> requests = new HashSet<>();
-        Map<Id<CarrierVehicle>, Integer> vehicleCount = new HashMap<>();
+        Map<Id<Vehicle>, Integer> vehicleCount = new HashMap<>();
 
 //        int count = 0;
+        int vehCount;
         for (ScheduledTour tour : carrier.getSelectedPlan().getScheduledTours()){
-            int vehCount;
+
             if(vehicleCount.get(tour.getVehicle().getId()) == null){
                 vehCount = 1;
             } else{
-                vehCount = vehicleCount.get(tour.getVehicle().getId());
+                vehCount = vehicleCount.get(tour.getVehicle().getId()) + 1;
+                vehicleCount.replace(tour.getVehicle().getId(), vehCount);
             }
-            String tourID = carrier.getId() + "_" + tour.getVehicle().getId() + "_" + vehCount; /* + "_" + count;*/
+
+            //TODO add noOfServices to tourId!
+            //or better Id of first service!
+//            String tourID = carrier.getId() + "" + tour.getVehicle().getId() + "_" + vehCount; /* + "_" + count;*/
+            String tourID = carrier.getId() + "" + tour.getVehicle().getId() + "_" + getFirstTourServiceOrShipmentForId(tour.getTour());
             requests.add(createRequest(carrier.getId(), Id.create(tour.getVehicle().getId(), DvrpVehicle.class), tour, tourID));
 //            count++;
         }
@@ -104,12 +117,13 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
         double blockingEnd = tourTasks.get(tourTasks.size() - 1).getEndTime();
 
         DrtBlockingRequest request = DrtBlockingRequest.newBuilder()
-                .id(Id.create(id, Request.class))
+                .id(id)
                 .mode(mode)
                 .carrierId(carrierId)
                 .submissionTime(submissionTime)
                 .duration(blockingEnd - blockingStart)
                 .tasks(tourTasks)
+                .startTime(blockingStart)
                 .build();
 
         return request;
@@ -136,16 +150,16 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 
         //if jsprit scheduled the tour start way too early, just account for the ttDepot2FirstDelivery * 1.5 and ignore the original start time
         if(tourStart + ttDepot2FirstDelivery * bufferFactor <= firstDeliveryEarliestStart){
-            calculatedStart = firstDeliveryEarliestStart - ttDepot2FirstDelivery * bufferFactor - RETOOL_DURATION;
+            calculatedStart = firstDeliveryEarliestStart - ttDepot2FirstDelivery * bufferFactor - FreightRetoolTask.RETOOL_DURATION;
         } else {
-            calculatedStart = tourStart - RETOOL_DURATION;
+            calculatedStart = tourStart - FreightRetoolTask.RETOOL_DURATION;
         }
         return Math.max(qSimStartTime, Math.max(vehicleEarliestStart, calculatedStart));
     }
 
     private List<Task> convertScheduledTour2DvrpTasks(ScheduledTour scheduledTour, double blockingStart) {
         List<Task> tourTasks = new ArrayList<>();
-        double previousTaskEndTime = blockingStart + RETOOL_DURATION;
+        double previousTaskEndTime = blockingStart + FreightRetoolTask.RETOOL_DURATION;
         tourTasks.add(new FreightRetoolTask(blockingStart, previousTaskEndTime, network.getLinks().get(scheduledTour.getTour().getStartLinkId())));
 
         List<Tour.TourElement> tourElements = scheduledTour.getTour().getTourElements();
@@ -164,20 +178,19 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
                 double currentTaskEndTime = previousTaskEndTime + ((Tour.TourActivity) tourElement).getDuration();
                 if (tourElement instanceof Tour.ServiceActivity){
                     Tour.ServiceActivity serviceAct = (Tour.ServiceActivity) tourElement;
-                    tourTasks.add(new FreightDeliveryTask(serviceAct, previousTaskEndTime, currentTaskEndTime,  network.getLinks().get(serviceAct.getLocation())));
+                    tourTasks.add(new FreightServiceTask(serviceAct, previousTaskEndTime, currentTaskEndTime,  network.getLinks().get(serviceAct.getLocation())));
                 } else if(tourElement instanceof Tour.Pickup){
                     Tour.Pickup pickup = (Tour.Pickup) tourElement;
                     tourTasks.add(new FreightPickupTask(pickup, previousTaskEndTime, currentTaskEndTime, network.getLinks().get(pickup.getLocation())));
                 } else if (tourElement instanceof Tour.Delivery){
-                    Tour.Delivery delivery = (Tour.Delivery) tourElement;
-                    tourTasks.add(new FreightDeliveryTask(delivery, previousTaskEndTime, currentTaskEndTime, network.getLinks().get(delivery.getLocation())));
+                    throw new RuntimeException("no drt task type implemented yet for freight delivery activities..."); //TODO
                 } else {
                     throw new RuntimeException();
                 }
                 previousTaskEndTime = currentTaskEndTime;
             }
         }
-        tourTasks.add(new FreightRetoolTask(previousTaskEndTime, previousTaskEndTime + RETOOL_DURATION , network.getLinks().get(scheduledTour.getTour().getEndLinkId())));
+        tourTasks.add(new FreightRetoolTask(previousTaskEndTime, previousTaskEndTime + FreightRetoolTask.RETOOL_DURATION , network.getLinks().get(scheduledTour.getTour().getEndLinkId())));
 
         return tourTasks;
     }
@@ -207,6 +220,22 @@ class FreightBlockingRequestCreator implements BlockingRequestCreator {
 //        double totalTT = 1.0D + networkRoute.getTravelTime() + linkTT;
         double totalTT = (currentTime + linkTT) - departureTime;
         return new VrpPathWithTravelDataImpl(departureTime, totalTT, links, linkTTs);
+    }
+
+    private Id<CarrierService> getFirstTourServiceOrShipmentForId(Tour tour) {
+
+        Id<CarrierService> firstServiceOrShipmentId = null;
+        for(Tour.TourElement e : tour.getTourElements()) {
+            if(e instanceof Tour.ServiceActivity) {
+                firstServiceOrShipmentId = ((Tour.ServiceActivity) e).getService().getId();
+                break;
+            } else if(e instanceof Tour.ShipmentBasedActivity) {
+                firstServiceOrShipmentId = Id.create(((Tour.ShipmentBasedActivity) e).getShipment().getId(), CarrierService.class);   
+                break;
+            }
+        }
+
+        return firstServiceOrShipmentId;
     }
 
 }

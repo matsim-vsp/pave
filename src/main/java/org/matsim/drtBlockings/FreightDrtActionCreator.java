@@ -32,15 +32,20 @@ import org.matsim.contrib.dynagent.DynAction;
 import org.matsim.contrib.dynagent.DynAgent;
 import org.matsim.contrib.dynagent.IdleDynActivity;
 import org.matsim.core.mobsim.framework.MobsimTimer;
-import org.matsim.drtBlockings.tasks.FreightDeliveryTask;
+import org.matsim.drtBlockings.tasks.FreightServiceTask;
 import org.matsim.drtBlockings.tasks.FreightPickupTask;
 import org.matsim.drtBlockings.tasks.FreightRetoolTask;
 
-class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
+public class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
 
 	private final VrpLegFactory legFactory;
 	private final PassengerHandler passengerHandler;
 	private final DrtActionCreator delegate;
+
+	public static final String SERVICE_ACTTYPE_PREFIX = "FreightDrtService_";
+	public static final String PICKUP_ACTTYPE_PREFIX = "FreightDrtPickup_";
+	public static final String RETOOL_ACTTYPE_PREFIX = "FreightDrtRetooling";
+
 
 	FreightDrtActionCreator(PassengerHandler passengerHandler, MobsimTimer timer, DvrpConfigGroup dvrpCfg) {
 		this(passengerHandler, v -> VrpLegFactory.createWithOnlineTracker(dvrpCfg.getMobsimMode(), v,
@@ -60,14 +65,16 @@ class FreightDrtActionCreator implements VrpAgentLogic.DynActionCreator {
 		//we can use IdleDynActivity even though vehicle is not idle. The object type only
         //prohibits to alter the activity and time...
 
-        if(currentTask instanceof FreightDeliveryTask)
-                return new IdleDynActivity("FreightDrtDelivery", currentTask::getEndTime);
+        if(currentTask instanceof FreightServiceTask)
+                return new IdleDynActivity(SERVICE_ACTTYPE_PREFIX + ((FreightServiceTask) currentTask).getCarrierService().getId(),
+						currentTask::getEndTime);
 
         if(currentTask instanceof FreightPickupTask)
-                return new IdleDynActivity("FreightDrtPickup", currentTask::getEndTime);
+                return new IdleDynActivity(PICKUP_ACTTYPE_PREFIX + ((FreightPickupTask) currentTask).getShipment().getId(),
+						currentTask::getEndTime);
 
         if(currentTask instanceof FreightRetoolTask)
-                return new IdleDynActivity("FreightDrtRetooling", currentTask::getEndTime);
+                return new IdleDynActivity(RETOOL_ACTTYPE_PREFIX, currentTask::getEndTime);
 
         else return delegate.createAction(dynAgent, vehicle, now);
     }
