@@ -61,11 +61,11 @@ public class RunPolicyCaseInBerlin {
     //dir for 1 carrier only
 //    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Lichtenberg Nord_Carrier/";
     //dir for all Berlin carriers
-    private static final String INPUT_DIR = "C:/Users/simon/tubCloud/Shared/MA-Meinhardt/InputDRT/Berlin_Carriers/";
+    private static final String INPUT_DIR = "C:/Users/Simon/Documents/vsp-papers/Using_On-Demand-Vehicle-Fleets_for_Person_and_Freight_Transport/JTTM_re-publish/InputDRT/Berlin_Carriers/";
     private static final String INPUT_CONFIG = INPUT_DIR + "p2-23.output_config.xml";
     private static final String INPUT_NETWORK_CHANGE_EVENTS = INPUT_DIR + "p2-23.networkChangeEvents.xml.gz";
-    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtUsersOnly_selectedPlans_noRoutes.xml.gz";
-//    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_200Persons.xml.gz";
+//    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_drtUsersOnly_selectedPlans_noRoutes.xml.gz";
+    private static final String INPUT_DRT_PLANS = INPUT_DIR + "p2-23.output_plans_200Persons.xml.gz";
     private static final String INPUT_NETWORK = INPUT_DIR + "p2-23.output_network.xml.gz";
     private static final String INPUT_DRT_VEHICLES = INPUT_DIR + "p2-23.drt__vehicles.xml.gz";
 
@@ -204,7 +204,7 @@ public class RunPolicyCaseInBerlin {
                 FreightUtils.getCarriers(scenario).getCarriers().values().forEach(carrier -> {
                     CarrierUtils.setJspritIterations(carrier, 50);
                 });
-                FreightUtils.runJsprit(scenario, freightCfg);
+                FreightUtils.runJsprit(scenario);
                 new File(config.controler().getOutputDirectory()).mkdirs();
                 new CarrierPlanXmlWriterV2(FreightUtils.getCarriers(scenario)).write(config.controler().getOutputDirectory() + "carriers_planned.xml");
             } catch (InterruptedException e) {
