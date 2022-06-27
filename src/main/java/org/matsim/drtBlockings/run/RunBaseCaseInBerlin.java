@@ -181,7 +181,7 @@ public class RunBaseCaseInBerlin {
                 FreightUtils.getCarriers(scenario).getCarriers().values().forEach(carrier -> {
                     CarrierUtils.setJspritIterations(carrier, 50);
                 });
-                FreightUtils.runJsprit(scenario, freightCfg);
+                FreightUtils.runJsprit(scenario);
                 new File(config.controler().getOutputDirectory()).mkdirs();
                 new CarrierPlanXmlWriterV2(FreightUtils.getCarriers(scenario)).write(config.controler().getOutputDirectory() + "carriers_planned.xml");
             } catch (InterruptedException e) {

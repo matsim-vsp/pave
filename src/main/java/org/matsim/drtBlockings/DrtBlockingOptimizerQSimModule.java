@@ -100,7 +100,7 @@ class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
                         getter.getModal(EmptyVehicleRelocator.class), getter.getModal(UnplannedRequestInserter.class))))
                 .in(Singleton.class);
 
-        bindModal(VehicleData.EntryFactory.class).toProvider(modalProvider(
+        bindModal(VehicleEntry.EntryFactory.class).toProvider(modalProvider(
                 getter -> new BlockingVehicleDataEntryFactory(drtCfg, getter.getModal(DrtBlockingManager.class))))
                 .in(Singleton.class);
 
@@ -154,7 +154,7 @@ class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
                 getter -> new DefaultUnplannedRequestInserter(drtCfg, getter.getModal(Fleet.class),
                         getter.get(MobsimTimer.class), getter.get(EventsManager.class),
                         getter.getModal(RequestInsertionScheduler.class),
-                        getter.getModal(VehicleData.EntryFactory.class),
+                        getter.getModal(VehicleEntry.EntryFactory.class),
                         getter.getModal(new TypeLiteral<DrtInsertionSearch<OneToManyPathSearch.PathData>>() {
                         }), getter.getModal(QSimScopeForkJoinPoolHolder.class).getPool()))).asEagerSingleton();
 
