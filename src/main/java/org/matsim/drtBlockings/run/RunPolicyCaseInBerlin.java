@@ -55,6 +55,7 @@ public class RunPolicyCaseInBerlin {
      *             6) path to output directory
      *             7) path to networkChangeEvents
      *             8) path to plans
+     *             9) wished value for minIdleVehicleRatio. Standard is 0.5
      */
 
     //General input
@@ -77,8 +78,10 @@ public class RunPolicyCaseInBerlin {
 //    private static final String CARRIERS_PLANS_PLANNED = INPUT_DIR + "carriers_4hTimeWindows_openBerlinNet_LichtenbergNord_8-24_PLANNED_oneTour.xml";
     private static final String CARRIER_VEHICLE_TYPES = INPUT_DIR + "carrier_vehicleTypes_woTimeCost.xml";
     private static final boolean RUN_TOURPLANNING = false;
+    private static final double MIN_IDLE_VEHICLE_RATIO = 0.5;
 
-    private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/policy_cases/" + CARRIERS_PLANS_PLANNED.replace(INPUT_DIR, "");
+    private static final String OUTPUT_DIR = "./output/berlin-v5.5-10pct/policy_cases/" + CARRIERS_PLANS_PLANNED.replace(INPUT_DIR, "")
+            + "_minIdleVehicleRatio" + MIN_IDLE_VEHICLE_RATIO;
 
     public static void main(String[] args) {
         String configPath;
@@ -89,6 +92,7 @@ public class RunPolicyCaseInBerlin {
         String outputPath;
         String networkChangeEvents;
         String inputPlans;
+        double minIdleVehicleRatio;
 
 
         if(args.length > 0){
@@ -100,6 +104,7 @@ public class RunPolicyCaseInBerlin {
             outputPath = args[5];
             networkChangeEvents = args[6];
             inputPlans = args[7];
+            minIdleVehicleRatio = Double.parseDouble(args[8]);
         } else {
             configPath = INPUT_CONFIG;
             carrierPlans = CARRIERS_PLANS_PLANNED;
@@ -109,6 +114,7 @@ public class RunPolicyCaseInBerlin {
             outputPath = OUTPUT_DIR;
             networkChangeEvents = INPUT_NETWORK_CHANGE_EVENTS;
             inputPlans = INPUT_DRT_PLANS;
+            minIdleVehicleRatio = MIN_IDLE_VEHICLE_RATIO;
         }
 
         Config config = prepareConfig(configPath, carrierPlans, carrierVehTypes, inputNetwork, outputPath,
@@ -116,7 +122,7 @@ public class RunPolicyCaseInBerlin {
 
         Scenario scenario = prepareScenario(config, performTourplanning);
 
-        Controler controler = prepareControler(scenario);
+        Controler controler = prepareControler(scenario, minIdleVehicleRatio);
 
         //might need to customize this method, for now it stays as it is in PFAV
         //not sure if its needed here because we already got our carriers analyzed with the following analysis
@@ -216,10 +222,10 @@ public class RunPolicyCaseInBerlin {
         return scenario;
     }
 
-    public static Controler prepareControler(Scenario scenario) {
+    public static Controler prepareControler(Scenario scenario, double minIdleVehicleRatio) {
 
         Controler controler = RunBerlinScenario.prepareControler(scenario);
-        configureDRTIncludingDRTBlocking(scenario, controler);
+        configureDRTIncludingDRTBlocking(scenario, controler, minIdleVehicleRatio);
 
         //this was copied from PFAV RunNormalFreightInBerlin class, not sure if its necessary
 //        controler.addOverridingModule(new CarrierModule());
@@ -235,7 +241,7 @@ public class RunPolicyCaseInBerlin {
         return controler;
     }
 
-    private static void configureDRTIncludingDRTBlocking(Scenario scenario, Controler controler) {
+    private static void configureDRTIncludingDRTBlocking(Scenario scenario, Controler controler, double minIdleVehicleRatio) {
 
         //this line is only needed if DrtBlocking is wished to be activated (=only in the policy cases)
         DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(scenario.getConfig());
@@ -248,7 +254,7 @@ public class RunPolicyCaseInBerlin {
             @Override
             public void install() {
                 install(new DvrpModule());
-                install(new DrtBlockingModule(drtCfg));
+                install(new DrtBlockingModule(drtCfg, minIdleVehicleRatio));
             }
         });
         controler.configureQSimComponents(DvrpQSimComponents.activateAllModes(MultiModeDrtConfigGroup.get(controler.getConfig())));

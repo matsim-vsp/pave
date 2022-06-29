@@ -68,10 +68,12 @@ import com.google.inject.name.Named;
 class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
 
 	private final DrtConfigGroup drtCfg;
+    private final double minIdleVehicleRatio;
 
-	DrtBlockingOptimizerQSimModule(DrtConfigGroup drtConfigGroup) {
+	DrtBlockingOptimizerQSimModule(DrtConfigGroup drtConfigGroup, double minIdleVehicleRatio) {
 		super(drtConfigGroup.getMode());
         this.drtCfg = drtConfigGroup;
+        this.minIdleVehicleRatio = minIdleVehicleRatio;
     }
 
     @Override
@@ -86,7 +88,7 @@ class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
                         getter.get(EventsManager.class),
                         getter.getModal(Network.class),
                         getter.get(MobsimTimer.class),
-                        getter.get(Config.class)) {
+                        getter.get(Config.class), minIdleVehicleRatio) {
         }));
 
 		bindModal(DrtOptimizer.class).to(modalKey(BlockingOptimizer.class));
