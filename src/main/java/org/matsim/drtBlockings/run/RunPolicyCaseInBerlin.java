@@ -55,7 +55,8 @@ public class RunPolicyCaseInBerlin {
      *             6) path to output directory
      *             7) path to networkChangeEvents
      *             8) path to plans
-     *             9) wished value for minIdleVehicleRatio. Standard is 0.5
+     *             9) path to drt vehicles file
+     *             10) wished value for minIdleVehicleRatio. Standard is 0.5
      */
 
     //General input
@@ -92,6 +93,7 @@ public class RunPolicyCaseInBerlin {
         String outputPath;
         String networkChangeEvents;
         String inputPlans;
+        String inputVehicles;
         double minIdleVehicleRatio;
 
 
@@ -104,7 +106,9 @@ public class RunPolicyCaseInBerlin {
             outputPath = args[5];
             networkChangeEvents = args[6];
             inputPlans = args[7];
-            minIdleVehicleRatio = Double.parseDouble(args[8]);
+            inputVehicles = args[8];
+            minIdleVehicleRatio = Double.parseDouble(args[9]);
+            System.out.println("Executing run script with the following arguments: " + args);
         } else {
             configPath = INPUT_CONFIG;
             carrierPlans = CARRIERS_PLANS_PLANNED;
@@ -114,6 +118,7 @@ public class RunPolicyCaseInBerlin {
             outputPath = OUTPUT_DIR;
             networkChangeEvents = INPUT_NETWORK_CHANGE_EVENTS;
             inputPlans = INPUT_DRT_PLANS;
+            inputVehicles = INPUT_DRT_VEHICLES;
             minIdleVehicleRatio = MIN_IDLE_VEHICLE_RATIO;
         }
 
@@ -122,7 +127,7 @@ public class RunPolicyCaseInBerlin {
 
         Scenario scenario = prepareScenario(config, performTourplanning);
 
-        Controler controler = prepareControler(scenario, minIdleVehicleRatio);
+        Controler controler = prepareControler(scenario, inputVehicles, minIdleVehicleRatio);
 
         //might need to customize this method, for now it stays as it is in PFAV
         //not sure if its needed here because we already got our carriers analyzed with the following analysis
@@ -222,10 +227,10 @@ public class RunPolicyCaseInBerlin {
         return scenario;
     }
 
-    public static Controler prepareControler(Scenario scenario, double minIdleVehicleRatio) {
+    public static Controler prepareControler(Scenario scenario, String inputVehicles, double minIdleVehicleRatio) {
 
         Controler controler = RunBerlinScenario.prepareControler(scenario);
-        configureDRTIncludingDRTBlocking(scenario, controler, minIdleVehicleRatio);
+        configureDRTIncludingDRTBlocking(scenario, controler, inputVehicles, minIdleVehicleRatio);
 
         //this was copied from PFAV RunNormalFreightInBerlin class, not sure if its necessary
 //        controler.addOverridingModule(new CarrierModule());
@@ -241,11 +246,11 @@ public class RunPolicyCaseInBerlin {
         return controler;
     }
 
-    private static void configureDRTIncludingDRTBlocking(Scenario scenario, Controler controler, double minIdleVehicleRatio) {
+    private static void configureDRTIncludingDRTBlocking(Scenario scenario, Controler controler, String inputVehicles, double minIdleVehicleRatio) {
 
         //this line is only needed if DrtBlocking is wished to be activated (=only in the policy cases)
         DrtConfigGroup drtCfg = DrtConfigGroup.getSingleModeDrtConfig(scenario.getConfig());
-        drtCfg.setVehiclesFile(INPUT_DRT_VEHICLES);
+        drtCfg.setVehiclesFile(inputVehicles);
 
         //Here the main difference between base case and policy cases is set:
         //Base case does not need to add DrtBlockingModule
