@@ -20,6 +20,8 @@
 
 package org.matsim.drtBlockings;
 
+import com.google.inject.*;
+import com.google.inject.name.Names;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.optimizer.*;
@@ -27,7 +29,6 @@ import org.matsim.contrib.drt.optimizer.depot.DepotFinder;
 import org.matsim.contrib.drt.optimizer.depot.NearestStartLinkAsDepot;
 import org.matsim.contrib.drt.optimizer.insertion.*;
 import org.matsim.contrib.drt.optimizer.rebalancing.RebalancingStrategy;
-import org.matsim.contrib.drt.passenger.DrtRequestCreator;
 import org.matsim.contrib.drt.run.DrtConfigGroup;
 import org.matsim.contrib.drt.schedule.DrtTaskFactory;
 import org.matsim.contrib.drt.schedule.DrtTaskFactoryImpl;
@@ -38,9 +39,7 @@ import org.matsim.contrib.drt.scheduler.RequestInsertionScheduler;
 import org.matsim.contrib.dvrp.fleet.Fleet;
 import org.matsim.contrib.dvrp.optimizer.VrpOptimizer;
 import org.matsim.contrib.dvrp.passenger.DefaultPassengerRequestValidator;
-import org.matsim.contrib.dvrp.passenger.PassengerEngineQSimModule;
 import org.matsim.contrib.dvrp.passenger.PassengerHandler;
-import org.matsim.contrib.dvrp.passenger.PassengerRequestCreator;
 import org.matsim.contrib.dvrp.passenger.PassengerRequestValidator;
 import org.matsim.contrib.dvrp.path.OneToManyPathSearch;
 import org.matsim.contrib.dvrp.run.AbstractDvrpModeQSimModule;
@@ -49,7 +48,6 @@ import org.matsim.contrib.dvrp.run.ModalProviders;
 import org.matsim.contrib.dvrp.schedule.ScheduleTimingUpdater;
 import org.matsim.contrib.dvrp.trafficmonitoring.DvrpTravelTimeModule;
 import org.matsim.contrib.dvrp.vrpagent.VrpAgentLogic;
-import org.matsim.contrib.dvrp.vrpagent.VrpAgentSourceQSimModule;
 import org.matsim.contrib.freight.FreightConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
@@ -59,11 +57,9 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.drtBlockings.tasks.FreightTaskEndTimeCalculator;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
+
+import java.util.function.Function;
 
 class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
 
@@ -87,17 +83,37 @@ class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
         // here.)  kai, mar'23
 
         addModalComponent(BlockingOptimizer.class, modalProvider(
-                getter -> new AdaptiveBlockingOptimizer(getter.getModal(DefaultDrtOptimizer.class),
-                        getter.getModal(Fleet.class),
-                        getter.getModal(DrtScheduleInquiry.class),
-                        getter.getModal(DrtBlockingManager.class),
-                        getter.getModal(DrtBlockingRequestDispatcher.class),
-                        getter.getNamed(TravelTime.class, DvrpTravelTimeModule.DVRP_ESTIMATED),
-                        getter.get(EventsManager.class),
-                        getter.getModal(Network.class),
-                        getter.get(MobsimTimer.class),
-                        getter.get(Config.class), minIdleVehicleRatio) {
-        }));
+                        getter -> new AdaptiveBlockingOptimizer(getter.getModal(DefaultDrtOptimizer.class),
+                                        getter.getModal(Fleet.class),
+                                        getter.getModal(DrtScheduleInquiry.class),
+                                        getter.getModal(DrtBlockingManager.class),
+                                        getter.getModal(DrtBlockingRequestDispatcher.class),
+                                        getter.getNamed(TravelTime.class, DvrpTravelTimeModule.DVRP_ESTIMATED),
+                                        getter.get(EventsManager.class),
+                                        getter.getModal(Network.class),
+                                        getter.get(MobsimTimer.class),
+                                        getter.get(Config.class), minIdleVehicleRatio) {
+                        }));
+
+        // In my view, the following would also work.  Personally, I would prefer that, since it is closer to the standard guice syntax.  Somehow, I
+        // think that it should also possible to do a modal bind of the AdaptiveBlockingOptimizer, and then it should be able to pull out the material
+        // by itself (i.e. try to avoid generating explicit instances of material that is guice-bound).  kai, mar' 23
+//        addModalComponent(BlockingOptimizer.class, new ModalProviders.AbstractProvider<AdaptiveBlockingOptimizer>( getMode() ) {
+//                            @Inject private Injector injector;
+//
+//                            @Override public AdaptiveBlockingOptimizer get(){
+//                                return new AdaptiveBlockingOptimizer( getModalInstance( DefaultDrtOptimizer.class ),
+//                                                getModalInstance( Fleet.class ),
+//                                                getModalInstance( DrtScheduleInquiry.class ),
+//                                                getModalInstance( DrtBlockingManager.class ),
+//                                                getModalInstance( DrtBlockingRequestDispatcher.class ),
+//                                                injector.getInstance( Key.get( TravelTime.class, Names.named( DvrpTravelTimeModule.DVRP_ESTIMATED ) ) ),
+//                                                injector.getInstance( EventsManager.class ),
+//                                                getModalInstance( Network.class ),
+//                                                getModalInstance( MobsimTimer.class ),
+//                                                injector.getInstance( Config.class ), minIdleVehicleRatio );
+//                            }
+//        } );
 
         bindModal(DrtOptimizer.class).to(modalKey(BlockingOptimizer.class));
 
