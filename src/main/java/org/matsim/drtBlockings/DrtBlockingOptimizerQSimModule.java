@@ -78,6 +78,14 @@ class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
 
     @Override
     protected void configureQSim() {
+        // the "modal" methods are MMs way to bind things not in the normal guice way, but under a "tag" that refers to the corresponding drt mode.
+        // That drt mode is communicated in the constructor, and passed on via the "super" command to the super-class.  kai, mar '23
+
+        // addModalComponent(a,b) is (1) bind a to a provider of b, and (2) register a to the QSim.  For the latter, the "qsimComponent" syntax is
+        // used, which I generally try to avoid.  Because b is a provider, a lot of stuff is not yet there, and in consequence a lot of arguments need
+        // to be used that get stuff later.  (My intuition is that guice should make these kind of things unnecessary, but evidently that did not work
+        // here.)  kai, mar'23
+
         addModalComponent(BlockingOptimizer.class, modalProvider(
                 getter -> new AdaptiveBlockingOptimizer(getter.getModal(DefaultDrtOptimizer.class),
                         getter.getModal(Fleet.class),
@@ -91,7 +99,7 @@ class DrtBlockingOptimizerQSimModule extends AbstractDvrpModeQSimModule {
                         getter.get(Config.class), minIdleVehicleRatio) {
         }));
 
-		bindModal(DrtOptimizer.class).to(modalKey(BlockingOptimizer.class));
+        bindModal(DrtOptimizer.class).to(modalKey(BlockingOptimizer.class));
 
         bindModal(DefaultDrtOptimizer.class).toProvider(modalProvider(
                 getter -> new DefaultDrtOptimizer(drtCfg, getter.getModal(Fleet.class), getter.get(MobsimTimer.class),
