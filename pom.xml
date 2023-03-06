@@ -22,7 +22,8 @@
 
 		<!--		2020w51 is consistent with matsim version in matsim-berlin-v5.5.2-->
 <!--		<matsim.version>13.0-2020w51-SNAPSHOT</matsim.version>-->
-		<matsim.version>14.0-PR1512</matsim.version>
+<!--		<matsim.version>14.0-PR1512</matsim.version>-->
+		<matsim.version>13.0</matsim.version>
 		<mainClass>org.matsim.run.drtBlocking.RunDrtBlockingBerlin</mainClass>
 	</properties>
 
@@ -184,11 +185,11 @@
 			<version>${matsim.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.github.ovgu-mansci</groupId>
-			<artifactId>pave</artifactId>
-			<version>-SNAPSHOT</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.github.ovgu-mansci</groupId>-->
+<!--			<artifactId>pave</artifactId>-->
+<!--			<version>-SNAPSHOT</version>-->
+<!--		</dependency>-->
 
 	</dependencies>
 
